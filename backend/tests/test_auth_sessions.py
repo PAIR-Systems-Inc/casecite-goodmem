@@ -397,6 +397,10 @@ class TestMfaHardening:
     def test_correct_password_does_not_reset_the_mfa_lockout_counter(self, client, users):
         _uid, email, _secret = _enroll(users)
         account_lockout.clear_account_lockout(email)
+        # The counter under test is the in-memory one; with a Redis service
+        # (CI) the failures would be recorded there and the dict stay empty.
+        no_redis = patch("app.middleware.security.get_redis", return_value=None)
+        no_redis.start()
         try:
             for _ in range(2):
                 challenge = client.post(
@@ -409,6 +413,7 @@ class TestMfaHardening:
             # Entering the password again (twice above) must not have wiped them.
             assert len(account_lockout._account_failures[email]) == 2
         finally:
+            no_redis.stop()
             account_lockout.clear_account_lockout(email)
 
     def test_repeated_bad_codes_lock_the_account(self, client, users):
