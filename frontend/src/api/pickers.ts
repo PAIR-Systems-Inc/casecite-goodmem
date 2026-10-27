@@ -31,10 +31,14 @@ Object.assign(api, {
     });
   },
 
-  async importFromDropboxChooser(files: unknown[]): Promise<ImportResponse> {
+  async importFromDropboxChooser(
+    files: Array<{ name: string; url?: string; size?: number }>,
+  ): Promise<ImportResponse> {
+    // The backend takes Dropbox Chooser's own field names (`link`, `bytes`).
+    const body = files.map(f => ({ name: f.name, link: f.url, bytes: f.size }));
     return api.request('/pickers/dropbox/import', {
       method: 'POST',
-      body: JSON.stringify(files),
+      body: JSON.stringify(body),
     });
   },
 });

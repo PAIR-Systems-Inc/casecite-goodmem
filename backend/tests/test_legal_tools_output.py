@@ -148,3 +148,49 @@ class TestErrorMapping:
     def test_other_errors_keep_fallback(self):
         exc = courtlistener_http_error(KeyError("boom"), "x", "Search failed.")
         assert exc.status_code == 500 and exc.detail == "Search failed."
+
+
+class TestSearchCursor:
+    """The cursor is round-tripped through the client and fetched with the
+    instance's CourtListener token, so it must stay on CourtListener."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "cursor",
+        [
+            "https://attacker.example/collect",
+            "http://www.courtlistener.com/api/rest/v4/search/?cursor=x",
+            "https://www.courtlistener.com.attacker.example/api/rest/v4/search/",
+            "https://user@www.courtlistener.com/api/rest/v4/search/",
+            "https://www.courtlistener.com:8443/api/rest/v4/search/",
+            "https://www.courtlistener.com/admin/",
+            "http://169.254.169.254/latest/meta-data/",
+        ],
+    )
+    async def test_foreign_cursor_is_refused_before_any_request(self, cursor):
+        def handler(url, params):
+            raise AssertionError(f"request sent to {url}")
+
+        svc = LegalToolsService()
+        svc.api_token = "t"
+        with (
+            patch("app.services.legal_tools._case_lookup.cl_client", _client_cm(handler)),
+            pytest.raises(ValueError, match="cursor"),
+        ):
+            await svc.search_cases("negligence", cursor=cursor)
+
+    @pytest.mark.asyncio
+    async def test_courtlistener_cursor_is_followed(self):
+        cursor = "https://www.courtlistener.com/api/rest/v4/search/?cursor=abc&q=negligence"
+        seen = []
+
+        def handler(url, params):
+            seen.append(url)
+            return _Resp(200, {"results": [], "count": 0})
+
+        svc = LegalToolsService()
+        svc.api_token = "t"
+        with patch("app.services.legal_tools._case_lookup.cl_client", _client_cm(handler)):
+            result = await svc.search_cases("negligence", cursor=cursor)
+        assert seen == [cursor]
+        assert result["results"] == []

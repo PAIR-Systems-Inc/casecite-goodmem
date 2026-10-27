@@ -39,14 +39,14 @@ universal, so it includes a few packages that install only on some platforms.
 | [asyncpg](https://pypi.org/project/asyncpg/) | 0.29.0 | Apache License, Version 2.0 |
 | [attrs](https://pypi.org/project/attrs/) | 26.1.0 | MIT |
 | [bcrypt](https://pypi.org/project/bcrypt/) | 5.0.0 | Apache-2.0 |
-| [build](https://pypi.org/project/build/) | 1.5.1 | MIT |
+| [build](https://pypi.org/project/build/) | 1.6.1 | MIT |
 | [certifi](https://github.com/certifi/python-certifi) | 2026.6.17 | MPL-2.0 |
 | [cffi](https://pypi.org/project/cffi/) | 2.1.0 | MIT-0 |
 | [charset-normalizer](https://pypi.org/project/charset-normalizer/) | 3.4.9 | MIT |
 | [chromadb](https://github.com/chroma-core/chroma) | 1.5.9 | Apache Software License |
 | [click](https://github.com/pallets/click/) | 8.4.2 | BSD-3-Clause |
 | [colorama](https://github.com/tartley/colorama) | 0.4.6 | BSD License |
-| [cryptography](https://pypi.org/project/cryptography/) | 50.0.0 | Apache-2.0 OR BSD-3-Clause |
+| [cryptography](https://pypi.org/project/cryptography/) | 50.0.2 | Apache-2.0 OR BSD-3-Clause |
 | [distro](https://github.com/python-distro/distro) | 1.9.0 | Apache License, Version 2.0 |
 | [dnspython](https://pypi.org/project/dnspython/) | 2.8.0 | ISC |
 | [durationpy](https://github.com/icholy/durationpy) | 0.10 | MIT |
@@ -112,7 +112,7 @@ universal, so it includes a few packages that install only on some platforms.
 | [pydantic-core](https://github.com/pydantic/pydantic) | 2.46.4 | MIT |
 | [pydantic-settings](https://github.com/pydantic/pydantic-settings) | 2.14.2 | MIT |
 | [pygments](https://pygments.org) | 2.20.0 | BSD-2-Clause |
-| [pyjwt](https://github.com/jpadilla/pyjwt) | 2.15.0 | MIT |
+| [pyjwt](https://github.com/jpadilla/pyjwt) | 2.15.1 | MIT |
 | [pyotp](https://github.com/pyotp/pyotp) | 2.9.0 | MIT License |
 | [pypdf](https://github.com/py-pdf/pypdf) | 6.19.0 | BSD-3-Clause |
 | [pypdfium2](https://github.com/pypdfium2-team/pypdfium2) | 5.11.0 | BSD-3-Clause, Apache-2.0, dependency licenses |

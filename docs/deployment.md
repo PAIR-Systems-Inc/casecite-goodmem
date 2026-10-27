@@ -247,10 +247,10 @@ When in doubt, restore the pre-deploy backup instead.
 
 ```bash
 # Roll back the most recent migration (runs inside the backend container)
-docker compose -f docker-compose.prod.yml exec backend alembic downgrade -1
+docker compose -f docker-compose.prod.yml exec -u appuser backend alembic downgrade -1
 
 # Or to a specific revision
-docker compose -f docker-compose.prod.yml exec backend alembic downgrade <revision_id>
+docker compose -f docker-compose.prod.yml exec -u appuser backend alembic downgrade <revision_id>
 ```
 
 ### Backup before every deploy

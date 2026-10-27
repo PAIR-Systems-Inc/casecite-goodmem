@@ -24,6 +24,23 @@ find /app/data -type d -exec chmod 750 {} +
 # Clean up stale ChromaDB lock files from unclean shutdowns
 rm -f /app/data/chroma/*.lock 2>/dev/null || true
 
+# Validate gosu is available for privilege drop
+if ! command -v gosu &> /dev/null; then
+    echo "ERROR: gosu not found - cannot drop privileges safely"
+    exit 1
+fi
+
+# Verify privilege drop works before running anything as appuser
+if ! gosu appuser id &> /dev/null; then
+    echo "ERROR: gosu cannot switch to appuser - check user configuration"
+    exit 1
+fi
+
+# Run database migrations as appuser, like the app itself. Importing the models
+# constructs app services that read and rewrite files under /app/data (the
+# token-revocation log among them); run as root, those files came out
+# root-owned and 0600, so uvicorn could not read them and started from empty.
+#
 # Run database migrations (PostgreSQL only). Fail loudly if the Alembic config
 # is missing — a silent skip means schema changes never apply and the DB drifts
 # in production. SQLite (no DATABASE_URL) is a dev-only (DEBUG=true) path whose schema is
@@ -38,8 +55,8 @@ elif [ -f "/app/alembic.ini" ]; then
     # Brownfield bootstrap: databases built by create_all before migrations
     # shipped have tables but no alembic_version — stamp the baseline so
     # `upgrade head` doesn't try to CREATE TABLE over the existing schema.
-    cd /app && python -m app.utils.migration_bootstrap || { echo "ERROR: migration bootstrap failed"; exit 1; }
-    alembic upgrade head || { echo "ERROR: Alembic migrations failed"; exit 1; }
+    cd /app && gosu appuser python -m app.utils.migration_bootstrap || { echo "ERROR: migration bootstrap failed"; exit 1; }
+    gosu appuser alembic upgrade head || { echo "ERROR: Alembic migrations failed"; exit 1; }
     echo "Migrations complete."
 else
     echo "ERROR: /app/alembic.ini not found — migrations cannot run. This image is misbuilt."
@@ -50,18 +67,6 @@ fi
 # Start nginx in background (as root, it will fork workers)
 echo "Starting nginx..."
 nginx
-
-# Validate gosu is available for privilege drop
-if ! command -v gosu &> /dev/null; then
-    echo "ERROR: gosu not found - cannot drop privileges safely"
-    exit 1
-fi
-
-# Verify privilege drop works before starting uvicorn
-if ! gosu appuser id &> /dev/null; then
-    echo "ERROR: gosu cannot switch to appuser - check user configuration"
-    exit 1
-fi
 
 # In the unified image nginx proxies to uvicorn over loopback, so the only
 # trusted hop is 127.0.0.1. Default TRUSTED_PROXIES accordingly so client-IP

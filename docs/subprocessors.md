@@ -30,7 +30,7 @@ InfoSec team can assess and control it.
 | **SendGrid** | Password-reset email | Recipient email address, reset link | Optional; leave `SENDGRID_API_KEY` unset |
 | **Microsoft identity platform** (`login.microsoftonline.com`) | Azure AD SSO token validation | Fetches Microsoft's public signing keys; no user data sent | Only when Azure AD SSO is configured |
 | **Document-storage providers** — Google Drive, Microsoft OneDrive/SharePoint (Graph), Box, Dropbox, iManage, NetDocuments, Filevine, Clio | When a user connects an account, picks files or runs a sync | OAuth tokens; requests for the files being imported. Data flows *in* from the provider | Each connector is off until its client ID/secret is configured |
-| **OpenAI public blob storage** (`openaipublic.blob.core.windows.net`) | First use of the tokenizer after a fresh install | Nothing about your data — a one-time download of the `tiktoken` encoding file | Behind a strict egress allowlist, allow this host once or pre-seed `TIKTOKEN_CACHE_DIR` |
+| **OpenAI public blob storage** (`openaipublic.blob.core.windows.net`) | First use of the tokenizer after a fresh install outside Docker (the Docker image ships the file in `/opt/tiktoken`) | Nothing about your data — a one-time download of the `tiktoken` encoding file | Behind a strict egress allowlist, allow this host once or pre-seed `TIKTOKEN_CACHE_DIR` |
 
 A custom OpenAI-compatible gateway (Groq, Together, an internal proxy, …) set
 through `OPENAI_BASE_URL` receives what the OpenAI row describes.
@@ -56,7 +56,7 @@ application, and no script is fetched from a CDN on page load.
   from `OPENAI_BASE_URL` on purpose: with only the chat endpoint redirected,
   uploaded document text would still be sent to `api.openai.com` for embedding.
   Changing the embedding model requires re-indexing existing documents.
-- With **both** set, no provider keys configured, `VECTOR_DB=chroma`, and the
+- With **both** set, `VECTOR_DB=chroma`, no provider keys configured, and the
   connectors and CourtListener features unused, no document text leaves the
   deployment.
 - **Provider allowlist:** `HIPAA_ENFORCEMENT_ENABLED=true` with

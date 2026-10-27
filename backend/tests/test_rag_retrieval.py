@@ -1194,3 +1194,33 @@ class TestAuthorityMapCoverageNotes:
             "not be analysed; 12 of 30 propositions were researched; 2 opinion(s) were "
             "only partly read."
         ]
+
+
+class TestKeyPhrasesFromQuery:
+    """Query words are user text: regex metacharacters in them must not crash
+    citation building after the answer has been generated."""
+
+    @pytest.mark.parametrize(
+        "query",
+        [
+            "What is the cap (if any) on liability?",
+            "Does the license cover c++ code?",
+            "Is there a [carve-out] for fraud?",
+            "Fees (plus expenses)* owed?",
+        ],
+    )
+    def test_metacharacters_in_query_do_not_raise(self, query):
+        from app.services.rag.citations import extract_key_phrases
+
+        text = (
+            "Liability, if any), is capped at fees paid. Licensee may use c++ code "
+            "and the [carve-out] for fraud applies. Fees (plus expenses)* are owed."
+        )
+        phrases = extract_key_phrases(text, query)
+        assert isinstance(phrases, list)
+
+    def test_query_word_still_matches_with_trailing_punctuation(self):
+        from app.services.rag.citations import extract_key_phrases
+
+        phrases = extract_key_phrases("the indemnification obligations survive", "indemnification?")
+        assert "indemnification" in phrases

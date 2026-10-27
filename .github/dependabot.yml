@@ -36,3 +36,13 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 3
+    # The Docker image is built only on pushes to main, so a base-image PR is
+    # never built before merge. Runtime moves are made by hand instead:
+    ignore:
+      # A new Python minor needs requirements.lock regenerated for it
+      # (`--python-version`) and CI's PYTHON_VERSION moved in step.
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      # Odd-numbered Node majors are never LTS; move between LTS lines by hand.
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]

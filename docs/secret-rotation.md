@@ -74,8 +74,8 @@ python3 scripts/rotate_encryption_key.py
 docker compose -f docker-compose.prod.yml up -d backend
 
 # 3. Rewrite every stored ciphertext under the new salt (dry run first)
-docker compose -f docker-compose.prod.yml exec backend python -m app.utils.reencrypt --dry-run
-docker compose -f docker-compose.prod.yml exec backend python -m app.utils.reencrypt
+docker compose -f docker-compose.prod.yml exec -u appuser backend python -m app.utils.reencrypt --dry-run
+docker compose -f docker-compose.prod.yml exec -u appuser backend python -m app.utils.reencrypt
 
 # 4. When it reports 0 failures, retire the old salt
 sed -i '/^ENCRYPTION_SALT_PREVIOUS=/d' .env

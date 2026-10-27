@@ -12,6 +12,7 @@ Every provider call is checked against the AI provider allowlist first
 (app/services/provider_policy.py).
 """
 
+import functools
 import hashlib
 from typing import TYPE_CHECKING, NamedTuple, Optional
 
@@ -92,11 +93,18 @@ class EmbeddingService:
         else:
             self.model = preferred_model
 
-        # Initialize tokenizer for chunking
+    @functools.cached_property
+    def tokenizer(self) -> tiktoken.Encoding:
+        """Tokenizer for chunking, loaded on first use.
+
+        tiktoken downloads its encoding table the first time it is needed (the
+        Docker image ships it pre-fetched). Loading it lazily keeps that
+        download out of import, so the app still starts when it is unreachable.
+        """
         try:
-            self.tokenizer = tiktoken.encoding_for_model("gpt-4")
+            return tiktoken.encoding_for_model("gpt-4")
         except (KeyError, ValueError):
-            self.tokenizer = tiktoken.get_encoding("cl100k_base")
+            return tiktoken.get_encoding("cl100k_base")
 
     @property
     def dimensions(self) -> int:

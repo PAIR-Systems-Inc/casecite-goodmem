@@ -3,6 +3,7 @@ Legal Tools - Case lookup methods.
 """
 
 from typing import Any
+from urllib.parse import urlsplit
 
 from app.services.courtlistener import _html_to_text
 from app.services.courtlistener_gate import cl_client
@@ -23,6 +24,26 @@ from ._helpers import (
 MAX_SUB_OPINIONS = 6
 OPINION_TEXT_LIMIT = 50_000
 
+_CURSOR_HOSTS = ("www.courtlistener.com", "courtlistener.com")
+
+
+def _check_cursor_url(cursor: str) -> None:
+    """Reject a pagination cursor that is not a CourtListener search URL.
+
+    The request carries the instance's CourtListener token, so a cursor naming
+    any other host would hand that token to it (and let a user aim server-side
+    requests at internal addresses).
+    """
+    parts = urlsplit(cursor)
+    if (
+        parts.scheme != "https"
+        or parts.hostname not in _CURSOR_HOSTS
+        or parts.port not in (None, 443)
+        or parts.username is not None
+        or not parts.path.startswith("/api/rest/")
+    ):
+        raise ValueError("Invalid pagination cursor.")
+
 
 class CaseLookupMixin:
     """Mixin providing case lookup functionality."""
@@ -35,10 +56,14 @@ class CaseLookupMixin:
         Returns multiple results that users can scroll through.
         """
         self._check_token()
+        if cursor:
+            _check_cursor_url(cursor)
 
         async with cl_client(timeout=180.0) as client:
             if cursor:
-                # Use cursor URL directly for pagination
+                # The cursor is CourtListener's own "next" URL, round-tripped
+                # through the client; checked above so it cannot point the
+                # request (and the instance's API token) at another host.
                 response = await client.get(cursor, headers=self.headers)
             else:
                 # Initial search. highlight=on is what makes CourtListener fill

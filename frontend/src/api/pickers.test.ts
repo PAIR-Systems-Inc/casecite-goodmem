@@ -59,13 +59,14 @@ describe('api/pickers', () => {
     });
   });
 
-  it('importFromDropboxChooser sends POST to /pickers/dropbox/import', async () => {
-    const files = [{ id: 'db1', name: 'brief.pdf' }];
+  it('importFromDropboxChooser sends Dropbox field names (link, bytes) to /pickers/dropbox/import', async () => {
+    const link = 'https://dl.dropboxusercontent.com/1/view/abc/brief.pdf';
+    const files = [{ id: link, name: 'brief.pdf', size: 2048, url: link }];
     (api.request as any).mockResolvedValue({ message: 'imported' });
     await (api as any).importFromDropboxChooser(files);
     expect(api.request).toHaveBeenCalledWith('/pickers/dropbox/import', {
       method: 'POST',
-      body: JSON.stringify(files),
+      body: JSON.stringify([{ name: 'brief.pdf', link, bytes: 2048 }]),
     });
   });
 });

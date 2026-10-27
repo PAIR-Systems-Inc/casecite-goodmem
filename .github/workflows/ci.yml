@@ -60,11 +60,16 @@ jobs:
           echo "ba6dbb656933921c775ee5a2d1c13a91046e7952e9d919f9bac4cec61d628e7d  $GITLEAKS_TGZ" | sha256sum -c -
           tar xzf "$GITLEAKS_TGZ" -C "$GITLEAKS_DIR"
           chmod +x "$GITLEAKS_DIR/gitleaks"
-          # Run gitleaks and capture output
-          "$GITLEAKS_DIR/gitleaks" detect --source . --report-format json --report-path gitleaks-report.json --no-git || LEAKS_FOUND=$?
+          # Run gitleaks and capture output. --redact: this repo is public, and
+          # the report is printed to the log and uploaded as an artifact.
+          "$GITLEAKS_DIR/gitleaks" detect --source . --redact --report-format json --report-path gitleaks-report.json --no-git || LEAKS_FOUND=$?
           if [ "${LEAKS_FOUND:-0}" -eq 1 ]; then
             echo "::error::Secrets detected! Review gitleaks-report.json"
             cat gitleaks-report.json
+            exit 1
+          elif [ "${LEAKS_FOUND:-0}" -ne 0 ]; then
+            # Any other exit code means the scan itself failed — never a pass.
+            echo "::error::gitleaks exited with code $LEAKS_FOUND; the scan did not complete"
             exit 1
           fi
           echo "✅ No secrets detected"
@@ -171,7 +176,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -244,6 +249,12 @@ jobs:
           pip install -r requirements.lock
           pip install -r requirements-dev.txt
 
+      - name: Fetch tokenizer encoding
+        run: |
+          # tiktoken downloads its encoding table on first use and caches it;
+          # the test suite blocks outbound network, so fetch it beforehand.
+          python -c "import tiktoken; tiktoken.get_encoding('cl100k_base')"
+
       - name: Run tests with coverage
         env:
           SECRET_KEY: test-secret-key-for-ci-only-not-production
@@ -289,7 +300,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -327,7 +338,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 

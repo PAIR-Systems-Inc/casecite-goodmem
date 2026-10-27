@@ -243,7 +243,10 @@ async def clear_local_llm(
     """Revert to the OpenAI defaults from settings (.env)."""
     await delete_secret(LLM_SECRET)
     llm_clients.set_runtime(
-        base_url="",
+        # Back to the .env endpoint, not api.openai.com: an install that set
+        # OPENAI_BASE_URL to keep document text on its own network must not
+        # start sending it to OpenAI because an admin cleared a UI override.
+        base_url=settings.openai_base_url or "",
         chat_model=settings.openai_chat_model,
         utility_model=settings.openai_utility_model,
     )

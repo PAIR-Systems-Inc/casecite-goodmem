@@ -3,13 +3,13 @@
 # Stage 2: Serve both backend API and frontend from one container
 
 # ---- Stage 1: Frontend Build ----
-# Base images float on the minor line on purpose (node:20, python:3.11): a
+# Base images float on the minor line on purpose (node:24, python:3.11): a
 # rebuild picks up OS security fixes, and Trivy gates the image in CI, so a
 # digest pin that nobody bumps means a permanently red build job. For a fully
 # reproducible build, replace the tags with `image@sha256:<digest>` (resolve
 # with `docker buildx imagetools inspect <image>`); Dependabot's docker
 # ecosystem (.github/dependabot.yml) will then propose digest bumps.
-FROM node:20-slim AS frontend-build
+FROM node:24-slim AS frontend-build
 
 WORKDIR /frontend
 COPY frontend/package.json frontend/package-lock.json* ./
@@ -67,6 +67,12 @@ RUN if [ -f requirements.lock ]; then \
 # no fix available short of a new pip release. setuptools stays: greenlet, pillow
 # and uvloop declare it as a runtime requirement.
 RUN python -m pip uninstall -y pip wheel
+
+# tiktoken downloads its encoding table on first use. Fetch it at build time so
+# the app starts and chunks documents with no outbound network access.
+ENV TIKTOKEN_CACHE_DIR=/opt/tiktoken
+RUN python -c "import tiktoken; tiktoken.get_encoding('cl100k_base')" \
+    && chmod -R a+rX /opt/tiktoken
 
 # Copy backend code
 COPY --chown=appuser:appuser backend/app ./app
@@ -129,6 +135,6 @@ ENV SOURCE_COMMIT=$SOURCE_COMMIT
 # nginx bind :80. It then drops privileges: nginx workers run as appuser (see
 # the nginx.conf edit above) and uvicorn — the only process that touches client
 # data — is started as appuser via gosu. start.sh refuses to start if the drop
-# does not work. Alembic migrations run before the drop and touch only the
-# database.
+# does not work. Alembic migrations run as appuser too: importing the models
+# touches files under /app/data, which must stay appuser-owned.
 CMD ["/start.sh"]

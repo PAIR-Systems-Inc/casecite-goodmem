@@ -2,6 +2,7 @@
 
 import logging
 import re
+import string
 import uuid
 from typing import Any
 
@@ -98,10 +99,12 @@ def extract_key_phrases(text: str, query: str) -> list[str]:
     phrases.extend(list(set(legal_terms))[:3])
 
     # Find terms from query that appear in text
-    query_words = [w.lower() for w in query.split() if len(w) > 3]
-    for word in query_words:
+    # Strip punctuation and escape: query words are user text, and an unescaped
+    # "any)" or "c++" is an invalid pattern that would crash the whole answer.
+    query_words = [w.strip(string.punctuation).lower() for w in query.split()]
+    for word in (w for w in query_words if len(w) > 3):
         if word in text.lower():
-            match = re.search(rf"\b(\w*{word}\w*)\b", text, re.IGNORECASE)
+            match = re.search(rf"\b(\w*{re.escape(word)}\w*)\b", text, re.IGNORECASE)
             if match:
                 phrases.append(match.group(1))
 

@@ -7,7 +7,7 @@ Thank you for your interest in contributing. This guide covers the development s
 ### Prerequisites
 
 - Python 3.11+
-- Node.js 20+
+- Node.js 24 (current LTS; CI and the Docker image build with it)
 - Docker (optional, for full-stack testing)
 
 ### Backend

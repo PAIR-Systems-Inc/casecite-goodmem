@@ -1005,7 +1005,7 @@ export interface ApiClient {
   importFromGooglePicker(files: unknown[]): Promise<ImportResponse>;
   importFromOneDrivePicker(files: unknown[]): Promise<ImportResponse>;
   importFromBoxPicker(files: unknown[]): Promise<ImportResponse>;
-  importFromDropboxChooser(files: unknown[]): Promise<ImportResponse>;
+  importFromDropboxChooser(files: Array<{ name: string; url?: string; size?: number }>): Promise<ImportResponse>;
 
   // Matter Strategy & Authority Map
   submitAuthorityMap(payload: AuthorityMapPayload): Promise<{ job_id: string }>;

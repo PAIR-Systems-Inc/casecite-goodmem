@@ -334,16 +334,17 @@ class TestPickerImportHardening:
 
     def test_user_keys_are_passed_to_the_indexer(self, client, auth_headers):
         """Without this a BYOK-only instance cannot embed picker imports."""
+        byok = {"X-OpenAI-Key": "sk-test-not-a-real-key"}
         resp, _, upload, _ = self._import(
             client,
             auth_headers,
             "/api/v1/pickers/box/import",
             [{"id": "9", "name": "contract.pdf", "accessToken": "box-token"}],
-            headers={"X-OpenAI-Key": "sk-test-key-0123456789"},
+            headers=byok,
         )
         assert resp.status_code == 200
         user_keys = upload.call_args.kwargs["user_keys"]
-        assert user_keys.openai == "sk-test-key-0123456789"
+        assert user_keys.openai == byok["X-OpenAI-Key"]
 
     def test_box_file_id_is_url_encoded(self, client, auth_headers):
         resp, download, _, _ = self._import(

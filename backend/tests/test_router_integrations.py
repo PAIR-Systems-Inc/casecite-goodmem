@@ -7,6 +7,7 @@ must never return a secret unmasked, and must audit each change.
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from app.config import settings
 from app.models.enums import UserRole
 from app.services.audit import AuditEventType
 
@@ -158,6 +159,24 @@ class TestLocalLLM:
             base_url="http://localhost:11434/v1", chat_model="llama3", utility_model="llama3"
         )
         assert [e["details"]["action"] for e in audit_events] == ["local_llm_set"]
+
+    @pytest.mark.parametrize(
+        ("env_base_url", "expected"),
+        [("http://vllm.internal/v1", "http://vllm.internal/v1"), (None, "")],
+    )
+    def test_clear_reverts_to_env_endpoint(self, client, admin, env_base_url, expected):
+        """Clearing the UI override restores OPENAI_BASE_URL from .env, not api.openai.com."""
+        with (
+            patch(f"{ROUTER}.delete_secret", new_callable=AsyncMock),
+            patch(f"{ROUTER}.llm_clients.set_runtime") as set_runtime,
+            patch(
+                f"{ROUTER}.settings",
+                settings.model_copy(update={"openai_base_url": env_base_url}),
+            ),
+        ):
+            resp = client.delete(f"{BASE}/local-llm", headers=headers(admin))
+        assert resp.status_code == 200
+        assert set_runtime.call_args.kwargs["base_url"] == expected
 
     @pytest.mark.parametrize("base_url", ["file:///etc/passwd", "localhost:11434", "ftp://host/v1"])
     def test_non_http_base_url_is_rejected(self, client, admin, base_url):

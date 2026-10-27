@@ -6,6 +6,7 @@ import { useRagDocsStore } from '../stores/ragDocsStore';
 vi.mock('../api', () => ({
   api: {
     getDocuments: vi.fn().mockResolvedValue({ documents: [] }),
+    listFolders: vi.fn().mockResolvedValue({ folders: [] }),
     request: vi.fn().mockResolvedValue({}),
   },
   API_BASE_URL: 'http://localhost:8000/api/v1',
