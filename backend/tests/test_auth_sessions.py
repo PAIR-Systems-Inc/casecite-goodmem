@@ -399,7 +399,11 @@ class TestMfaHardening:
         account_lockout.clear_account_lockout(email)
         # The counter under test is the in-memory one; with a Redis service
         # (CI) the failures would be recorded there and the dict stay empty.
-        no_redis = patch("app.middleware.security.get_redis", return_value=None)
+        no_redis = patch.multiple(
+            "app.middleware.security",
+            require_redis=lambda: None,
+            get_redis=lambda: None,
+        )
         no_redis.start()
         try:
             for _ in range(2):
