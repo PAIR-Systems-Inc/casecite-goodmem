@@ -25,6 +25,7 @@ from app.services.authority_mapper.service import find_quote_offset
 from app.services.documents import document_service
 from app.services.llm_clients import chat_model, make_openai, openai_chat
 from app.services.provider_policy import enforce_openai_client
+from app.services.rag.case_law_guard import redact_unverified_case_law
 from app.services.rag.claim_grounding import MIN_CONTENT_RATIO, content_ratio, line_of, tidy_span
 from app.services.rag.generation import chosen_provider_text, provider_of_model, strip_json_fences
 from app.services.rag.prompt_safety import UNTRUSTED_CONTENT_RULE, untrusted_block
@@ -263,6 +264,17 @@ async def per_file_answer(
     content = (await _complete(build_reduce_prompt(query, mapped), 0.2, json_mode=False)).strip()
     if not content:
         return None
+
+    # Case law is never trusted from the model, here as in the pooled answer:
+    # a case the files themselves cite may stay; anything else is redacted.
+    content, removed_refs = redact_unverified_case_law(
+        content, None, [{"text": f["text"]} for f in files]
+    )
+    if removed_refs:
+        logger.warning(
+            f"[CaseLawGuard] Removed {len(removed_refs)} unverified case "
+            f"reference(s) from per-file answer: {removed_refs}"
+        )
 
     failed = [f["filename"] for f in files if f["filename"] not in {m["filename"] for m in mapped}]
     notes = []

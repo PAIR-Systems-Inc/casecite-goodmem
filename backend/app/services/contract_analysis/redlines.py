@@ -43,6 +43,7 @@ from io import BytesIO
 from typing import Any
 
 from app.services.ai_notice import add_docx_notice
+from app.services.contract_analysis.instructions import bounded_instructions
 from app.services.llm_clients import openai_chat, utility_model
 
 logger = logging.getLogger(__name__)
@@ -114,7 +115,7 @@ async def _redraft_clause(
     # The user's own framing (who they represent, what to push for) steers
     # the actual language, not just which issues were selected.
     instructions_note = (
-        f"\nCLIENT INSTRUCTIONS (draft in their favor):\n{instructions.strip()[:1500]}"
+        f"\nCLIENT INSTRUCTIONS (draft in their favor):\n{bounded_instructions(instructions)}"
         if instructions and instructions.strip()
         else ""
     )

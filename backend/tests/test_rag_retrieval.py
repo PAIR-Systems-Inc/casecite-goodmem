@@ -1224,3 +1224,62 @@ class TestKeyPhrasesFromQuery:
 
         phrases = extract_key_phrases("the indemnification obligations survive", "indemnification?")
         assert "indemnification" in phrases
+
+
+class TestPerFileCaseLawGuard:
+    """Per-file answers get the same case-law guard as pooled answers: a case
+    the model invents is redacted; one the files themselves cite stays."""
+
+    @staticmethod
+    def _documents(text: str):
+        doc_service = MagicMock()
+        doc_service.get_document_text = AsyncMock(
+            side_effect=lambda doc_id, user_id: (f"{doc_id}.pdf", text)
+        )
+        return doc_service
+
+    async def _answer(self, file_text: str, reduce_reply: str) -> str:
+        from app.services.rag import per_file
+
+        keys = MagicMock()
+        keys.anthropic = "sk-ant-" + "a" * 40
+        replies = [
+            '{"answer":"See file.","key_quotes":[]}',
+            '{"answer":"See file.","key_quotes":[]}',
+            reduce_reply,
+        ]
+        with (
+            patch.object(per_file, "document_service", self._documents(file_text)),
+            patch.object(per_file, "chosen_provider_text", AsyncMock(side_effect=replies)),
+            patch.object(per_file, "make_openai") as make_openai,
+        ):
+            result = await per_file.per_file_answer(
+                query="Which authority controls?",
+                document_ids=["a", "b"],
+                user_id="user-1",
+                user_keys=keys,
+                model="claude-opus-4-8",
+            )
+        make_openai.assert_not_called()
+        return result["content"]
+
+    @pytest.mark.asyncio
+    async def test_invented_case_is_redacted(self):
+        content = await self._answer(
+            "The lease renews automatically each year.",
+            "Both leases renew. Under Hendricks v. Pemberton Holdings, 412 F.3d 901 "
+            "(9th Cir. 2005), automatic renewal clauses are enforceable.",
+        )
+        assert "Hendricks v. Pemberton Holdings" not in content
+        assert "412 F.3d 901" not in content
+        assert "could not be verified" in content
+
+    @pytest.mark.asyncio
+    async def test_case_cited_in_the_files_is_kept(self):
+        content = await self._answer(
+            "As held in Hendricks v. Pemberton Holdings, 412 F.3d 901 (9th Cir. 2005), "
+            "the renewal clause is enforceable.",
+            "Both files rely on Hendricks v. Pemberton Holdings, 412 F.3d 901.",
+        )
+        assert "Hendricks v. Pemberton Holdings" in content
+        assert "could not be verified" not in content

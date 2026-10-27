@@ -21,7 +21,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-_NUMBER_WORD: dict[str, int] = {
+_ONES: dict[str, int] = {
     "one": 1,
     "two": 2,
     "three": 3,
@@ -41,6 +41,8 @@ _NUMBER_WORD: dict[str, int] = {
     "seventeen": 17,
     "eighteen": 18,
     "nineteen": 19,
+}
+_TENS: dict[str, int] = {
     "twenty": 20,
     "thirty": 30,
     "forty": 40,
@@ -49,23 +51,53 @@ _NUMBER_WORD: dict[str, int] = {
     "seventy": 70,
     "eighty": 80,
     "ninety": 90,
-    "ninety-six": 96,
 }
+_NUMBER_WORD: dict[str, int] = {**_ONES, **_TENS, "hundred": 100}
+
+# Longest first, so "fourteen" is never read as "four".
+_WORD_ALT = "|".join(sorted((*_ONES, *_TENS), key=len, reverse=True))
+# "thirty", "forty-five", "one hundred twenty", "one hundred and twenty".
+_NUMBER_WORDS = rf"(?:{_WORD_ALT})(?:[-\s]+(?:hundred|and|{_WORD_ALT}))*"
+# A quantity as contracts write it: digits or words, optionally followed by the
+# digits in parentheses — "forty-five (45)".
+_QUANTITY = rf"(?P<num>\d{{1,4}}|{_NUMBER_WORDS})\s*(?:\(\s*(?P<paren>\d{{1,4}})\s*\)\s*)?"
 
 
 def _word_to_int(s: str) -> int | None:
+    """ "forty-five" → 45, "one hundred twenty" → 120, "30" → 30; None if unknown."""
     s = s.lower().strip()
     if s.isdigit():
         return int(s)
-    return _NUMBER_WORD.get(s)
+    total = 0
+    for token in re.split(r"[-\s]+", s):
+        if not token or token == "and":
+            continue
+        if token == "hundred":
+            total = (total or 1) * 100
+            continue
+        value = _NUMBER_WORD.get(token)
+        if value is None:
+            return None
+        total += value
+    return total or None
+
+
+def _quantity(m: re.Match) -> int | None:
+    """The number a match names.
+
+    The digits in parentheses are what the drafter meant — "forty-five (45)"
+    is 45 even if the words were misread — so they win over the words.
+    """
+    paren = m.group("paren")
+    if paren:
+        return int(paren)
+    return _word_to_int(m.group("num"))
 
 
 _OFFSET_RE = re.compile(
     r"(?P<adv>within|no\s+later\s+than|not\s+later\s+than|on\s+or\s+before|at\s+least|no\s+more\s+than)?\s*"
-    r"(?P<num>\d{1,4}|one|two|three|four|five|six|seven|eight|nine|ten|"
-    r"twelve|fifteen|eighteen|twenty(?:-?[a-z]+)?|thirty(?:-?[a-z]+)?|sixty|ninety)\s*"
-    r"\(?\s*(?:\d+)?\s*\)?\s*"
-    r"(?P<unit>days?|business\s+days?|calendar\s+days?|months?|years?|weeks?)"
+    + _QUANTITY
+    + r"(?P<unit>days?|business\s+days?|calendar\s+days?|months?|years?|weeks?)"
     r"(?P<rel>\s+(?:after|prior\s+to|before|preceding|following))?",
     re.IGNORECASE,
 )
@@ -78,10 +110,8 @@ _ABSOLUTE_DATE_RE = re.compile(
 
 _PERIOD_RE = re.compile(
     r"\b(?:for\s+a\s+(?:period\s+of\s+)?|during\s+the\s+|term\s+of\s+|of\s+)?"
-    r"(?P<num>\d{1,4}|one|two|three|four|five|six|seven|eight|nine|ten|"
-    r"twelve|fifteen|eighteen|twenty(?:-?[a-z]+)?|thirty(?:-?[a-z]+)?)\s*"
-    r"\(?\s*(?:\d+)?\s*\)?\s*"
-    r"(?P<unit>days?|months?|years?)\s+(?:term|period|following|after|thereafter|after the)",
+    + _QUANTITY
+    + r"(?P<unit>days?|months?|years?)\s+(?:term|period|following|after|thereafter|after the)",
     re.IGNORECASE,
 )
 
@@ -136,12 +166,9 @@ def extract_deadlines(text: str, effective_date: datetime | None = None) -> list
 
     # 1) Relative offsets: "within 30 days after the Effective Date"
     for m in _OFFSET_RE.finditer(text):
-        n = _word_to_int(m.group("num").replace("-", " ").split()[0])
+        n = _quantity(m)
         if n is None:
-            # Try to match the full word like "twenty-four"
-            n = _word_to_int(m.group("num"))
-            if n is None:
-                continue
+            continue
         unit = m.group("unit")
         days = _unit_to_days(unit, n)
         rel = (m.group("rel") or "").lower()
@@ -168,7 +195,7 @@ def extract_deadlines(text: str, effective_date: datetime | None = None) -> list
 
     # 2) Periods (durations): "for a period of three (3) years"
     for m in _PERIOD_RE.finditer(text):
-        n = _word_to_int(m.group("num").split("-")[0]) or _word_to_int(m.group("num"))
+        n = _quantity(m)
         if n is None:
             continue
         days = _unit_to_days(m.group("unit"), n)

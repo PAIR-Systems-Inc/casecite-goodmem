@@ -27,6 +27,7 @@ from typing import Any
 
 from app.services.authority_mapper.service import find_quote_offset
 from app.services.clause_intel.taxonomy_seed import CONTRACT_TYPE_REQUIREMENTS
+from app.services.contract_analysis.instructions import bounded_instructions
 from app.services.llm_clients import openai_chat, utility_model
 from app.services.rag.prompt_safety import UNTRUSTED_CONTENT_RULE, untrusted_block
 
@@ -485,7 +486,7 @@ async def annotate_issues(
     # The firm's own review style beats any canned posture. Free text, bounded.
     instructions_note = (
         "FIRM REVIEW INSTRUCTIONS (follow these; they override the default "
-        "posture wherever they conflict):\n" + instructions.strip()[:2000] + "\n"
+        "posture wherever they conflict):\n" + bounded_instructions(instructions) + "\n"
         if instructions and instructions.strip()
         else ""
     )

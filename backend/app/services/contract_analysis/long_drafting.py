@@ -703,6 +703,14 @@ async def _reconcile(
 
 _HEADING_RE = re.compile(r"^[ \t]*(\d{1,2})\.[ \t]+(\S[^\n]{0,140}?)[ \t]*$", re.M)
 _QUOTE_RE = re.compile(r"[\"“]([^\"”]{20,})[\"”]")
+# What follows the last numbered section — the signature block, schedules,
+# exhibits — is not part of it. The all-caps words are matched as written:
+# "Exhibit A is incorporated" in body text is not a heading.
+_TRAILER_RE = re.compile(
+    r"^[ \t]*(?:(?i:in\s+witness\s+whereof|\[?\s*signature\s+pages?\s+(?:follows?|to\s+follow)\s*\]?)"
+    r"|SIGNATURES?\b|SCHEDULE\b|EXHIBIT\b|ANNEX\b|APPENDIX\b|ATTACHMENT\b)",
+    re.M,
+)
 
 _REVISION_SYSTEM = """You are an expert legal document drafter revising ONE section of a long \
 document. The full document is provided for context; every other section stays \
@@ -732,6 +740,14 @@ def split_sections(text: str) -> list[dict[str, Any]]:
         expected += 1
     for i in range(len(sections) - 1):
         sections[i]["end"] = sections[i + 1]["start"]
+    if sections:
+        # The last section ends where the trailer begins, or revising it would
+        # replace the signature block and schedules with that section alone.
+        last = sections[-1]
+        heading_end = text.find("\n", last["start"])
+        trailer = _TRAILER_RE.search(text, heading_end if heading_end > 0 else last["start"])
+        if trailer:
+            last["end"] = trailer.start()
     return sections if len(sections) >= 3 else []
 
 

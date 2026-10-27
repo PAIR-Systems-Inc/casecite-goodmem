@@ -573,3 +573,49 @@ class TestLongDraftCaseLawGuard:
         )
         assert "Smith v. Jones" in result["text"]
         assert result["case_law_removed"] == []
+
+
+def _long_draft_with_trailer(n_sections: int = 5) -> str:
+    return (
+        _long_draft(n_sections)
+        + "\n\nIN WITNESS WHEREOF, the parties have executed this Agreement.\n\n"
+        "ACME CORP.\nBy: ______________\n\nSCHEDULE 1 — FEES\n\nFee table text.\n"
+    )
+
+
+class TestLastSectionEndsBeforeTheTrailer:
+    def test_split_stops_at_the_signature_block(self):
+        text = _long_draft_with_trailer(5)
+        last = ld.split_sections(text)[-1]
+        body = text[last["start"] : last["end"]]
+        assert "Clause text of section 5." in body
+        assert "IN WITNESS WHEREOF" not in body and "SCHEDULE 1" not in body
+
+    def test_body_text_mentioning_an_exhibit_is_not_a_trailer(self):
+        text = _long_draft(4).replace(
+            "Clause text of section 4. ", "Exhibit A is incorporated by reference. ", 1
+        )
+        last = ld.split_sections(text)[-1]
+        assert last["end"] == len(text)
+
+    @pytest.mark.asyncio
+    async def test_revising_the_last_section_keeps_the_signature_block_and_schedules(self):
+        draft = _long_draft_with_trailer(5)
+        quoted = "Clause text of section 5. Clause text of section 5."
+
+        def handler(system, user, kwargs):
+            assert "SECTION TO REVISE: 5." in user
+            return "5. SECTION 5 TITLE\n\nRewritten clause."
+
+        result = await ld.revise_draft(
+            _client(handler),
+            draft_text=draft,
+            instructions=f'Rewrite this clause — keep every other part unchanged:\n"{quoted}"',
+        )
+        text = result["text"]
+        assert result["revised_sections"] == [5]
+        assert "Rewritten clause." in text
+        assert "Clause text of section 5." not in text
+        assert "IN WITNESS WHEREOF, the parties have executed this Agreement." in text
+        assert "SCHEDULE 1 — FEES\n\nFee table text." in text
+        assert text.index("Rewritten clause.") < text.index("IN WITNESS WHEREOF")

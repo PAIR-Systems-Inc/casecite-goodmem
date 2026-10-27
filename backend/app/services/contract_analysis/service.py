@@ -227,6 +227,9 @@ class ContractAnalysisService:
         except Exception as e:
             logger.warning("general contract analysis failed; continuing rules-only: %s", e)
             general_analysis = None
+            general_error = str(e)
+        else:
+            general_error = None
         if not isinstance(general_analysis, dict):
             general_analysis = None
         elif general_analysis.get("error"):
@@ -234,9 +237,18 @@ class ContractAnalysisService:
                 "general contract analysis returned error; continuing rules-only: %s",
                 general_analysis.get("error"),
             )
+            general_error = str(general_analysis.get("error"))
             general_analysis = None
 
         executive_summary: str | None = None
+        if general_error:
+            # Say so where the reviewer looks. A blank summary reads as
+            # "nothing to report", which is the opposite of what happened.
+            executive_summary = (
+                "The AI summary could not be produced for this document "
+                f"({general_error[:200]}). The findings below come from the "
+                "rule-based checks only."
+            )
         if general_analysis:
             raw_summary = general_analysis.get("summary")
             if isinstance(raw_summary, str) and raw_summary.strip():

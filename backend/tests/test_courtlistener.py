@@ -12,6 +12,11 @@ from datetime import date
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from app.services.courtlistener import (  # noqa: E402
+    CitationTreatment,
+    CitingOpinion,
+    CourtListenerService,
+)
 
 
 class TestCourtListenerService:
@@ -360,3 +365,84 @@ class TestCourtListenerService:
         call_args = mock_client.get.call_args
         params = call_args.kwargs.get("params", call_args[1].get("params", {}))
         assert "H-1B" in params.get("q", "") or "specialty occupation" in params.get("q", "")
+
+
+class TestSubsequentHistoryTreatment:
+    """ "rev'd" and "vacated" next to a cite say the cited decision was undone."""
+
+    def setup_method(self):
+        self.svc = CourtListenerService()
+
+    @pytest.mark.parametrize(
+        "passage",
+        [
+            "See Smith v. Jones, 1 F.3d 1 (2d Cir. 1990), rev'd, 500 U.S. 1 (1991).",
+            "Smith v. Jones, 1 F.3d 1 (2d Cir. 1990), rev’d in part, 500 U.S. 1.",
+            "Smith v. Jones, 1 F.3d 1 (2d Cir. 1990), vacated, 500 U.S. 1 (1991).",
+        ],
+    )
+    def test_is_negative(self, passage):
+        assert self.svc._analyze_treatment(passage) == CitationTreatment.NEGATIVE
+
+    @pytest.mark.parametrize(
+        "passage",
+        [
+            "Smith v. Jones, 1 F.3d 1, vacated on other grounds, 500 U.S. 1.",
+            "Smith v. Jones, 1 F.3d 1, rev'd on other grounds, 500 U.S. 1.",
+        ],
+    )
+    def test_on_other_grounds_is_a_caution(self, passage):
+        assert self.svc._analyze_treatment(passage) == CitationTreatment.CAUTION
+
+
+class TestMergeKeepsTheReadCopy:
+    """An opinion in both the most-cited and the most-recent listings keeps the
+    copy whose passage was read — the other says "neutral" about a case it
+    never looked at."""
+
+    @pytest.mark.asyncio
+    async def test_read_copy_wins_regardless_of_order(self):
+        from unittest.mock import AsyncMock, patch
+
+        svc = CourtListenerService()
+        unread = CitingOpinion(
+            id=7,
+            case_name="Later v. Case",
+            citation=[],
+            court=None,
+            date_filed=None,
+            treatment=CitationTreatment.NEUTRAL,
+            depth=1,
+            snippet=None,
+            context_found=False,
+        )
+        read = CitingOpinion(
+            id=7,
+            case_name="Later v. Case",
+            citation=[],
+            court=None,
+            date_filed=None,
+            treatment=CitationTreatment.NEGATIVE,
+            depth=1,
+            snippet="overruled",
+            context_found=True,
+        )
+        other = CitingOpinion(
+            id=8,
+            case_name="Other v. Case",
+            citation=[],
+            court=None,
+            date_filed=None,
+            treatment=CitationTreatment.NEUTRAL,
+            depth=1,
+            snippet=None,
+            context_found=False,
+        )
+        for most_cited, recent in (([unread, other], [read]), ([read], [other, unread])):
+            with patch.object(
+                svc, "get_citing_opinions", AsyncMock(side_effect=[recent, most_cited])
+            ):
+                merged = await svc._citing_opinions_recent_and_most_cited(1, "1 U.S. 1", None)
+            assert [o.id for o in merged] == [7, 8]
+            assert merged[0].treatment == CitationTreatment.NEGATIVE
+            assert merged[0].context_found is True

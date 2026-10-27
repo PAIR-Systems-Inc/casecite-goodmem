@@ -102,24 +102,24 @@ class TestAnalyzeContract:
 
     @pytest.mark.asyncio
     async def test_analyze_contract_deep_depth(self, analyzer_with_openai):
-        """analysis_depth='deep' sets max_tokens to 4000."""
+        """analysis_depth='deep' sets max_tokens to 12000."""
         result = await analyzer_with_openai.analyze_contract(
             document_text=SAMPLE_CONTRACT,
             analysis_depth="deep",
         )
         call_kwargs = analyzer_with_openai.openai_client.chat.completions.create.call_args
-        assert call_kwargs.kwargs["max_tokens"] == 4000
+        assert call_kwargs.kwargs["max_tokens"] == 12000
         assert result["analysis_depth"] == "deep"
 
     @pytest.mark.asyncio
     async def test_analyze_contract_quick_depth(self, analyzer_with_openai):
-        """analysis_depth='quick' sets max_tokens to 1000."""
+        """analysis_depth='quick' sets max_tokens to 4000."""
         await analyzer_with_openai.analyze_contract(
             document_text=SAMPLE_CONTRACT,
             analysis_depth="quick",
         )
         call_kwargs = analyzer_with_openai.openai_client.chat.completions.create.call_args
-        assert call_kwargs.kwargs["max_tokens"] == 1000
+        assert call_kwargs.kwargs["max_tokens"] == 4000
 
 
 class TestClientConstruction:
@@ -238,3 +238,18 @@ class TestAnalysisCoverage:
         ):
             # A small self-hosted window still analyses a usable amount.
             assert analysis_input_cap_chars("local", 2000) == 40_000
+
+
+class TestCutOffReply:
+    @pytest.mark.asyncio
+    async def test_reply_cut_off_by_the_token_limit_is_an_error_not_a_summary(
+        self, analyzer_with_openai
+    ):
+        """A truncated JSON reply used to surface as a bare parse error; the
+        reason — the output budget — is what the reviewer needs to see."""
+        response = analyzer_with_openai.openai_client.chat.completions.create.return_value
+        response.choices[0].finish_reason = "length"
+        response.choices[0].message.content = '{"summary": "Standard NDA that'
+        result = await analyzer_with_openai.analyze_contract(document_text=SAMPLE_CONTRACT)
+        assert "cut off" in result["error"]
+        assert "8000" in result["error"]

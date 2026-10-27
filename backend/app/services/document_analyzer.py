@@ -150,8 +150,10 @@ Return a comprehensive JSON analysis:
     "confidence_score": 0-100
 }"""
 
+        # Output budget for the JSON analysis. Reasoning models count their
+        # reasoning against it, and a reply cut off mid-JSON is lost whole.
         max_tokens = (
-            4000 if analysis_depth == "deep" else 2000 if analysis_depth == "standard" else 1000
+            12000 if analysis_depth == "deep" else 8000 if analysis_depth == "standard" else 4000
         )
 
         analysis = {}
@@ -187,7 +189,10 @@ Return a comprehensive JSON analysis:
                     max_tokens=max_tokens,
                     response_format={"type": "json_object"},
                 )
-                analysis = json.loads(response.choices[0].message.content)
+                choice = response.choices[0]
+                if getattr(choice, "finish_reason", None) == "length":
+                    raise ValueError(f"the model's reply was cut off at {max_tokens} output tokens")
+                analysis = json.loads(choice.message.content)
                 model_used = openai_model
             except (
                 ValueError,

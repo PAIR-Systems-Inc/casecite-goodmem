@@ -15,6 +15,7 @@ import logging
 from typing import Any
 
 from app.services.authority_mapper.service import find_quote_offset
+from app.services.contract_analysis.instructions import bounded_instructions
 from app.services.llm_clients import openai_chat, utility_model
 from app.services.rag.prompt_safety import UNTRUSTED_CONTENT_RULE, untrusted_block
 
@@ -60,7 +61,7 @@ async def ai_review_findings(
     """
     if client is None:
         return []
-    goal = (instructions or "").strip() or (
+    goal = bounded_instructions(instructions) or (
         "Neutral review: flag anything risky, one-sided, or off-market."
     )
     findings: list[dict[str, Any]] = []
@@ -71,7 +72,7 @@ async def ai_review_findings(
             prompt = (
                 "You are reviewing a contract for a lawyer. Read the contract "
                 "text below and identify every issue that matters FOR THIS "
-                f"GOAL:\n{goal[:2000]}\n\n"
+                f"GOAL:\n{goal}\n\n"
                 f"Contract type (best guess, may be wrong): {contract_type}\n\n"
                 "Judge the contract on its own terms — whatever kind of "
                 "agreement it is. For each issue: a short title; severity "

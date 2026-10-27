@@ -363,9 +363,7 @@ class TestGeneralFindings:
         ]
 
     def test_general_severity_mapping(self):
-        by_ref = {
-            f["ref"]: f for f in collect_findings(CLAUSE_RESULT, GENERAL_ANALYSIS)
-        }
+        by_ref = {f["ref"]: f for f in collect_findings(CLAUSE_RESULT, GENERAL_ANALYSIS)}
         # risks: high -> critical, medium -> major, low -> minor
         assert by_ref["gen-0"]["severity"] == "critical"
         assert by_ref["gen-1"]["severity"] == "major"
@@ -534,8 +532,9 @@ class TestServiceGeneralIntegration:
         general_mock = AsyncMock(side_effect=RuntimeError("provider down"))
         result, run_row, _ = await self._run(general_mock)
 
-        assert result["executive_summary"] is None
-        assert run_row.summary["executive_summary"] is None
+        # The failure is stated in the summary rather than left blank.
+        assert "provider down" in result["executive_summary"]
+        assert run_row.summary["executive_summary"] == result["executive_summary"]
         refs = [i["ref"] for i in result["issues"]]
         # No library fallback: with the general analyzer down and no AI review
         # client, the issues list is honestly empty rather than canned.
@@ -547,7 +546,7 @@ class TestServiceGeneralIntegration:
         general_mock = AsyncMock(return_value={"error": "OpenAI contract analysis failed"})
         result, _, _ = await self._run(general_mock)
 
-        assert result["executive_summary"] is None
+        assert "OpenAI contract analysis failed" in result["executive_summary"]
         refs = [i["ref"] for i in result["issues"]]
         assert not any(r.startswith("dev-") for r in refs)
         assert not any(r.startswith("gen-") for r in refs)
@@ -564,17 +563,35 @@ class TestVerifyAbsenceClaims:
 
     def _issues(self):
         return [
-            {"ref": "miss-0", "title": "Missing payment terms", "why": "No payment clause found.",
-             "grounding": "absence", "severity": "major"},
-            {"ref": "miss-1", "title": "Missing arbitration clause", "why": "No arbitration.",
-             "grounding": "absence", "severity": "minor"},
-            {"ref": "dev-0", "title": "Uncapped liability", "why": "No cap.",
-             "grounding": "span", "severity": "critical", "span_start": 0, "span_end": 10},
+            {
+                "ref": "miss-0",
+                "title": "Missing payment terms",
+                "why": "No payment clause found.",
+                "grounding": "absence",
+                "severity": "major",
+            },
+            {
+                "ref": "miss-1",
+                "title": "Missing arbitration clause",
+                "why": "No arbitration.",
+                "grounding": "absence",
+                "severity": "minor",
+            },
+            {
+                "ref": "dev-0",
+                "title": "Uncapped liability",
+                "why": "No cap.",
+                "grounding": "span",
+                "severity": "critical",
+                "span_start": 0,
+                "span_end": 10,
+            },
         ]
 
     def _client(self, payload):
         import json as _json
         from unittest.mock import AsyncMock, MagicMock
+
         client = MagicMock()
         response = MagicMock()
         response.choices = [MagicMock()]
@@ -585,10 +602,14 @@ class TestVerifyAbsenceClaims:
     @pytest.mark.asyncio
     async def test_refuted_claim_is_downgraded_not_deleted(self):
         quote = "Client will pay the fees set forth in the applicable SOW"
-        client = self._client({"verdicts": [
-            {"index": 0, "addressed": True, "quote": quote},
-            {"index": 1, "addressed": False, "quote": ""},
-        ]})
+        client = self._client(
+            {
+                "verdicts": [
+                    {"index": 0, "addressed": True, "quote": quote},
+                    {"index": 1, "addressed": False, "quote": ""},
+                ]
+            }
+        )
         out = await verify_absence_claims(client, self.CONTRACT, self._issues())
         by_ref = {i["ref"]: i for i in out}
         # Refuted claim survives as a visible, span-grounded "addressed" note.
@@ -596,16 +617,20 @@ class TestVerifyAbsenceClaims:
         assert addressed["title"].startswith("Addressed:")
         assert addressed["status"] == "info"
         assert addressed["grounding"] == "span"
-        assert self.CONTRACT[addressed["span_start"]:addressed["span_end"]] == quote
+        assert self.CONTRACT[addressed["span_start"] : addressed["span_end"]] == quote
         # Genuinely missing claim untouched; span-grounded issues untouched.
         assert by_ref["miss-1"]["grounding"] == "absence"
         assert by_ref["dev-0"]["severity"] == "critical"
 
     @pytest.mark.asyncio
     async def test_refutation_without_locatable_quote_is_ignored(self):
-        client = self._client({"verdicts": [
-            {"index": 0, "addressed": True, "quote": "A sentence not in the contract."},
-        ]})
+        client = self._client(
+            {
+                "verdicts": [
+                    {"index": 0, "addressed": True, "quote": "A sentence not in the contract."},
+                ]
+            }
+        )
         out = await verify_absence_claims(client, self.CONTRACT, self._issues())
         miss0 = next(i for i in out if i["ref"] == "miss-0")
         assert miss0["grounding"] == "absence"  # unverifiable refutation ignored
@@ -618,6 +643,7 @@ class TestVerifyAbsenceClaims:
     @pytest.mark.asyncio
     async def test_llm_failure_keeps_all_issues(self):
         from unittest.mock import AsyncMock, MagicMock
+
         client = MagicMock()
         client.chat.completions.create = AsyncMock(side_effect=ConnectionError("down"))
         issues = self._issues()
@@ -649,10 +675,17 @@ class TestVerifyAbsenceClaims:
             "suggested_language": "Cap liability at 12 months' fees.",
         }
         # The model "refutes" it with a verbatim quote of the very clause that IS the risk.
-        client = self._client({"verdicts": [
-            {"index": 0, "addressed": True,
-             "quote": "Supplier's liability under this Agreement is unlimited."},
-        ]})
+        client = self._client(
+            {
+                "verdicts": [
+                    {
+                        "index": 0,
+                        "addressed": True,
+                        "quote": "Supplier's liability under this Agreement is unlimited.",
+                    },
+                ]
+            }
+        )
         out = await verify_absence_claims(client, self.LIABILITY_CONTRACT, [dict(risk)])
         assert out == [risk]  # untouched: title, severity, grounding, suggested_language
         # ...and it was never even put to the model: no absence claims, no call.
@@ -661,21 +694,47 @@ class TestVerifyAbsenceClaims:
     @pytest.mark.asyncio
     async def test_spanless_risk_is_excluded_even_alongside_absence_claims(self):
         issues = [
-            {"ref": "gen-0", "title": "Uncapped liability", "why": "No cap.",
-             "status": "unusual", "severity": "critical", "grounding": "unverified",
-             "source_kind": "general_risk", "span_start": None, "span_end": None},
-            {"ref": "gen-1", "title": "Missing clause: payment terms", "why": "None found.",
-             "status": "missing", "severity": "major", "grounding": "unverified",
-             "source_kind": "general_missing", "span_start": None, "span_end": None},
+            {
+                "ref": "gen-0",
+                "title": "Uncapped liability",
+                "why": "No cap.",
+                "status": "unusual",
+                "severity": "critical",
+                "grounding": "unverified",
+                "source_kind": "general_risk",
+                "span_start": None,
+                "span_end": None,
+            },
+            {
+                "ref": "gen-1",
+                "title": "Missing clause: payment terms",
+                "why": "None found.",
+                "status": "missing",
+                "severity": "major",
+                "grounding": "unverified",
+                "source_kind": "general_missing",
+                "span_start": None,
+                "span_end": None,
+            },
         ]
         # Index 0 in the CLAIMS list is now the general_missing finding (the
         # only absence claim); a verdict about it must land on gen-1, not gen-0.
-        client = self._client({"verdicts": [
-            {"index": 0, "addressed": True,
-             "quote": "Client will pay the fees within 30 days of invoice."},
-            {"index": 1, "addressed": True,
-             "quote": "Supplier's liability under this Agreement is unlimited."},
-        ]})
+        client = self._client(
+            {
+                "verdicts": [
+                    {
+                        "index": 0,
+                        "addressed": True,
+                        "quote": "Client will pay the fees within 30 days of invoice.",
+                    },
+                    {
+                        "index": 1,
+                        "addressed": True,
+                        "quote": "Supplier's liability under this Agreement is unlimited.",
+                    },
+                ]
+            }
+        )
         out = await verify_absence_claims(client, self.LIABILITY_CONTRACT, issues)
         by_ref = {i["ref"]: i for i in out}
         prompt = client.chat.completions.create.call_args.kwargs["messages"][0]["content"]
@@ -694,10 +753,18 @@ class TestVerifyAbsenceClaims:
     @pytest.mark.asyncio
     async def test_general_missing_finding_is_still_downgraded_when_quote_verifies(self):
         issues = [
-            {"ref": "gen-2", "title": "Missing clause: payment terms", "why": "None found.",
-             "status": "missing", "severity": "major", "grounding": "unverified",
-             "source_kind": "general_missing", "span_start": None, "span_end": None,
-             "suggested_language": "Add a payment clause."},
+            {
+                "ref": "gen-2",
+                "title": "Missing clause: payment terms",
+                "why": "None found.",
+                "status": "missing",
+                "severity": "major",
+                "grounding": "unverified",
+                "source_kind": "general_missing",
+                "span_start": None,
+                "span_end": None,
+                "suggested_language": "Add a payment clause.",
+            },
         ]
         quote = "Client will pay the fees within 30 days of invoice."
         client = self._client({"verdicts": [{"index": 0, "addressed": True, "quote": quote}]})
@@ -707,7 +774,7 @@ class TestVerifyAbsenceClaims:
         assert addressed["status"] == "info"
         assert addressed["severity"] == "minor"
         assert addressed["grounding"] == "span"
-        assert self.LIABILITY_CONTRACT[addressed["span_start"]:addressed["span_end"]] == quote
+        assert self.LIABILITY_CONTRACT[addressed["span_start"] : addressed["span_end"]] == quote
         assert addressed["suggested_language"] is None
 
     def test_is_absence_claim_follows_source_kind(self):
@@ -723,3 +790,26 @@ class TestVerifyAbsenceClaims:
         # Legacy issues without a source_kind fall back to the miss- ref prefix.
         assert is_absence_claim({"ref": "miss-1"})
         assert not is_absence_claim({"ref": "gen-1"})
+
+
+class TestSummaryFailureIsVisible:
+    """A failed summary used to be dropped silently — a blank summary reads
+    as "nothing to report". The reason now sits where the reviewer looks."""
+
+    _run = TestServiceGeneralIntegration._run
+
+    @pytest.mark.asyncio
+    async def test_analyzer_error_is_stated_in_the_executive_summary(self):
+        general_mock = AsyncMock(
+            return_value={"error": "the model's reply was cut off at 8000 output tokens"}
+        )
+        result, run_row, _ = await self._run(general_mock)
+        assert "could not be produced" in result["executive_summary"]
+        assert "cut off at 8000" in result["executive_summary"]
+        assert result["executive_summary"] == run_row.summary["executive_summary"]
+
+    @pytest.mark.asyncio
+    async def test_analyzer_exception_is_stated_in_the_executive_summary(self):
+        general_mock = AsyncMock(side_effect=RuntimeError("provider unreachable"))
+        result, _, _ = await self._run(general_mock)
+        assert "provider unreachable" in result["executive_summary"]

@@ -466,13 +466,17 @@ class CourtListenerService(CourtListenerClientBase):
         r"reject(?:ed|s|ing)? (?:the )?(?:reasoning|holding|rule|analysis|approach|rationale|"
         r"conclusion) (?:of|in)|no longer good law|superseded by statute|reversed on|"
         r"wrongly decided|erroneously decided|declin(?:e|ed|es|ing) to follow|receded from|"
-        r"repudiat(?:e|ed|es|ing))\b",
+        r"repudiat(?:e|ed|es|ing)|"
+        # Subsequent-history notation next to a cite: "Smith, 1 F.3d 1, rev'd,
+        # 500 U.S. 1" / "vacated, ..." — the cited decision itself was undone.
+        r"rev['’]d(?: in part)?|vacated(?: in part)?)\b",
         re.IGNORECASE,
     )
     # "Overruled on other grounds" is Word-of-art for "the point you're citing
     # it for still stands" — a caution, not a negative.
     _OTHER_GROUNDS_RE = re.compile(
-        r"\b(overrul|abrogat|disapprov|reject|supersed)\w*\s+(?:in part\s+)?on other grounds\b",
+        r"\b(overrul|abrogat|disapprov|reject|supersed|rev['’]d|vacat)\w*\s+"
+        r"(?:in part\s+)?on other grounds\b",
         re.IGNORECASE,
     )
     _CAUTION_RE = re.compile(
@@ -768,14 +772,16 @@ class CourtListenerService(CourtListenerClientBase):
         except (httpx.HTTPError, ValueError, KeyError, CitingLookupError) as e:
             logger.warning(f"most-cited citing search failed for {cluster_id}: {e}")
             most_cited = []
-        seen: set[int] = set()
-        merged: list[CitingOpinion] = []
+        # An opinion can be in both lists. Keep the copy whose passage around
+        # the citation was read: the context search can fail for one listing
+        # and succeed for the other, and the unread copy says "neutral" about
+        # an opinion the read copy knows overruled the case.
+        by_id: dict[int, CitingOpinion] = {}
         for opinion in [*most_cited, *recent]:
-            if opinion.id in seen:
-                continue
-            seen.add(opinion.id)
-            merged.append(opinion)
-        return merged
+            have = by_id.get(opinion.id)
+            if have is None or (opinion.context_found and not have.context_found):
+                by_id[opinion.id] = opinion
+        return list(by_id.values())
 
     async def search_by_topic(
         self, topic: str, jurisdiction: str | None = None, limit: int = 20
