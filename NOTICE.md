@@ -74,7 +74,7 @@ universal, so it includes a few packages that install only on some platforms.
 | [jsonschema-specifications](https://github.com/python-jsonschema/jsonschema-specifications) | 2025.9.1 | MIT |
 | [kubernetes](https://github.com/kubernetes-client/python) | 36.0.2 | Apache License Version 2.0 |
 | [lxml](https://lxml.de/) | 6.1.1 | BSD-3-Clause |
-| [mako](https://www.makotemplates.org/) | 1.3.12 | MIT |
+| [mako](https://www.makotemplates.org/) | 1.4.3 | MIT |
 | [markdown-it-py](https://github.com/executablebooks/markdown-it-py) | 4.2.0 | MIT License |
 | [markupsafe](https://github.com/pallets/markupsafe/) | 3.0.3 | BSD-3-Clause |
 | [mdurl](https://github.com/executablebooks/mdurl) | 0.1.2 | MIT License |
