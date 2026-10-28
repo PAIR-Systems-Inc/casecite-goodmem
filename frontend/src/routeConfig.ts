@@ -10,6 +10,7 @@ const ROUTE_TO_MODE: Record<string, string> = {
   '/drafting': 'drafting',
   '/case': 'case',
   '/matters': 'matters',
+  '/review-tables': 'review-tables',
 };
 
 export const MODE_TO_ROUTE: Record<string, string> = {
@@ -21,6 +22,7 @@ export const MODE_TO_ROUTE: Record<string, string> = {
   'drafting': '/drafting',
   'case': '/case',
   'matters': '/matters',
+  'review-tables': '/review-tables',
 };
 
 /**
@@ -31,5 +33,7 @@ export function modeFromPath(pathname: string): string {
   if (pathname === '/case' || pathname.startsWith('/case/')) return 'case';
   // /matters and /matters/:id share the Matters mode.
   if (pathname === '/matters' || pathname.startsWith('/matters/')) return 'matters';
+  // /review-tables and /review-tables/:id share the Tabular Review mode.
+  if (pathname === '/review-tables' || pathname.startsWith('/review-tables/')) return 'review-tables';
   return ROUTE_TO_MODE[pathname] || 'research';
 }

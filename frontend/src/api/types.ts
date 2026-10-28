@@ -466,6 +466,113 @@ export interface MatterAnalysisItem {
   user_id: string | null;
 }
 
+// ==================== Tabular review Types ====================
+
+export type ReviewFieldType = 'text' | 'date' | 'money' | 'number' | 'boolean' | 'duration';
+
+export interface ReviewFieldSpec {
+  /** Stable slug the cells are stored under; the server derives it from the name when omitted. */
+  key?: string | null;
+  name: string;
+  description?: string;
+  type: ReviewFieldType;
+}
+
+export type ReviewCellStatus = 'extracted' | 'unverified' | 'not_found' | 'error' | string;
+
+export interface ReviewCell {
+  document_id: string;
+  field_key: string;
+  value: string | null;
+  quote: string | null;
+  span_start: number | null;
+  span_end: number | null;
+  verified: boolean;
+  status: ReviewCellStatus;
+  error: string | null;
+  model_used: string | null;
+  updated_at: string | null;
+}
+
+export interface ReviewTableDocument {
+  id: string;
+  filename: string;
+  /** False when the caller can no longer read the document (left the matter, deleted). */
+  accessible: boolean;
+}
+
+export interface ReviewTableSummary {
+  id: string;
+  name: string;
+  description: string | null;
+  matter_id: string | null;
+  owner_id: string;
+  /** The caller's role: owner edits and deletes; a matter member reads, runs and exports. */
+  role: 'owner' | 'member' | string;
+  field_count: number;
+  document_count: number;
+  cell_count: number;
+  last_run_at: string | null;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface ReviewTableDetail extends ReviewTableSummary {
+  fields: ReviewFieldSpec[];
+  documents: ReviewTableDocument[];
+  cells: ReviewCell[];
+}
+
+export interface ReviewTableEstimate {
+  documents: number;
+  fields: number;
+  cells: number;
+  llm_calls: number;
+  approx_input_tokens: number;
+  model: string;
+}
+
+export interface ReviewTableRunStarted {
+  job_id: string;
+  poll_url: string;
+  documents: number;
+  fields: number;
+}
+
+export interface ReviewTableRunResult {
+  table_id?: string;
+  documents: number;
+  fields?: number;
+  cells: number;
+  extracted?: number;
+  unverified?: number;
+  not_found?: number;
+  errors?: number;
+}
+
+export interface ReviewTableJob {
+  job_id: string;
+  status: string; // pending | processing | completed | failed | cancelled
+  result?: ReviewTableRunResult | null;
+  error?: string | null;
+  progress?: { message: string; fraction: number | null } | null;
+}
+
+export interface ReviewTableCreateInput {
+  name: string;
+  description?: string | null;
+  matter_id?: string | null;
+  fields: ReviewFieldSpec[];
+  document_ids?: string[];
+}
+
+export interface ReviewTableUpdateInput {
+  name?: string;
+  description?: string | null;
+  fields?: ReviewFieldSpec[];
+  document_ids?: string[];
+}
+
 export interface MatterActivityEvent {
   id: number;
   timestamp: string;
@@ -1152,6 +1259,17 @@ export interface ApiClient {
   getMatterChats(matterId: string): Promise<ChatSessionListResponse>;
   getMatterAnalyses(matterId: string): Promise<{ analyses: MatterAnalysisItem[] }>;
   getMatterActivity(matterId: string, limit?: number): Promise<{ events: MatterActivityEvent[] }>;
+
+  // Tabular review
+  listReviewTables(): Promise<{ tables: ReviewTableSummary[] }>;
+  createReviewTable(input: ReviewTableCreateInput): Promise<ReviewTableDetail>;
+  getReviewTable(tableId: string): Promise<ReviewTableDetail>;
+  updateReviewTable(tableId: string, changes: ReviewTableUpdateInput): Promise<ReviewTableDetail>;
+  deleteReviewTable(tableId: string): Promise<{ status: string; id: string }>;
+  estimateReviewTable(tableId: string): Promise<ReviewTableEstimate>;
+  runReviewTable(tableId: string, scope?: { document_ids?: string[]; field_keys?: string[] }): Promise<ReviewTableRunStarted>;
+  getReviewTableJob(jobId: string): Promise<ReviewTableJob>;
+  exportReviewTable(tableId: string, format: 'xlsx' | 'csv'): Promise<Blob>;
 
   // Connectors
   getConnectors(): Promise<ConnectorDataResponse>;

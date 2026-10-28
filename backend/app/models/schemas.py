@@ -355,6 +355,155 @@ class MatterActivityResponse(BaseModel):
     events: list[MatterActivityEvent]
 
 
+# ---- Tabular review (schema-driven extraction across many documents) ----
+
+
+class ReviewFieldType(str, Enum):
+    TEXT = "text"
+    DATE = "date"
+    MONEY = "money"
+    NUMBER = "number"
+    BOOLEAN = "boolean"
+    DURATION = "duration"
+
+
+_FIELD_KEY_RE = re.compile(r"[^a-z0-9]+")
+
+
+def field_key_from_name(name: str) -> str:
+    """Stable slug a field's cells are stored under: "Governing Law" -> "governing_law"."""
+    key = _FIELD_KEY_RE.sub("_", name.strip().lower()).strip("_")
+    return key[:80] or "field"
+
+
+class ReviewFieldSpec(BaseModel):
+    """One column of a review table. ``key`` is derived from ``name`` when omitted."""
+
+    key: str | None = Field(None, min_length=1, max_length=80)
+    name: str = Field(..., min_length=1, max_length=120)
+    description: str = Field("", max_length=600)
+    type: ReviewFieldType = ReviewFieldType.TEXT
+
+    @model_validator(mode="after")
+    def _fill_key(self) -> "ReviewFieldSpec":
+        self.name = self.name.strip()
+        self.description = self.description.strip()
+        self.key = field_key_from_name(self.key or self.name)
+        return self
+
+
+def _unique_field_keys(fields: list[ReviewFieldSpec]) -> list[ReviewFieldSpec]:
+    seen: set[str] = set()
+    for f in fields:
+        if f.key in seen:
+            raise ValueError(f"Duplicate field: {f.key}")
+        seen.add(f.key or "")
+    return fields
+
+
+class ReviewTableCreateRequest(BaseModel):
+    """Create a review table. Documents may be given explicitly or, with a
+    ``matter_id`` and no ids, default to every document filed under the matter."""
+
+    name: str = Field(..., min_length=1, max_length=300)
+    description: str | None = Field(None, max_length=2000)
+    matter_id: str | None = Field(None, max_length=36)
+    fields: list[ReviewFieldSpec] = Field(..., min_length=1, max_length=40)
+    document_ids: list[str] = Field(default_factory=list, max_length=1000)
+
+    @field_validator("fields")
+    @classmethod
+    def _keys_unique(cls, v: list[ReviewFieldSpec]) -> list[ReviewFieldSpec]:
+        return _unique_field_keys(v)
+
+
+class ReviewTableUpdateRequest(BaseModel):
+    """Change the name, description, schema or document scope. Omitted fields keep their value."""
+
+    name: str | None = Field(None, min_length=1, max_length=300)
+    description: str | None = Field(None, max_length=2000)
+    fields: list[ReviewFieldSpec] | None = Field(None, min_length=1, max_length=40)
+    document_ids: list[str] | None = Field(None, max_length=1000)
+
+    @field_validator("fields")
+    @classmethod
+    def _keys_unique(cls, v: list[ReviewFieldSpec] | None) -> list[ReviewFieldSpec] | None:
+        return _unique_field_keys(v) if v is not None else None
+
+
+class ReviewTableRunRequest(BaseModel):
+    """Run extraction over the whole table, or only the given documents / fields
+    (a per-cell or per-column re-run)."""
+
+    document_ids: list[str] | None = Field(default=None, max_length=1000)
+    field_keys: list[str] | None = Field(default=None, max_length=40)
+
+
+class ReviewCellResponse(BaseModel):
+    document_id: str
+    field_key: str
+    value: str | None = None
+    quote: str | None = None
+    span_start: int | None = None
+    span_end: int | None = None
+    verified: bool = False
+    status: str
+    error: str | None = None
+    model_used: str | None = None
+    updated_at: datetime | None = None
+
+
+class ReviewTableDocument(BaseModel):
+    """A document in the table's scope, as the grid labels it."""
+
+    id: str
+    filename: str
+    accessible: bool = True
+
+
+class ReviewTableSummary(BaseModel):
+    id: str
+    name: str
+    description: str | None = None
+    matter_id: str | None = None
+    owner_id: str
+    role: str  # the caller's role: "owner" | "member"
+    field_count: int
+    document_count: int
+    cell_count: int = 0
+    last_run_at: datetime | None = None
+    created_at: datetime
+    updated_at: datetime | None = None
+
+
+class ReviewTableListResponse(BaseModel):
+    tables: list[ReviewTableSummary]
+
+
+class ReviewTableDetailResponse(ReviewTableSummary):
+    fields: list[ReviewFieldSpec]
+    documents: list[ReviewTableDocument]
+    cells: list[ReviewCellResponse]
+
+
+class ReviewTableEstimateResponse(BaseModel):
+    """What a run would cost, before it is started."""
+
+    documents: int
+    fields: int
+    cells: int
+    llm_calls: int
+    approx_input_tokens: int
+    model: str
+
+
+class ReviewTableRunStarted(BaseModel):
+    job_id: str
+    poll_url: str
+    documents: int
+    fields: int
+
+
 class ChatSessionMessage(BaseModel):
     """A persisted message within a chat session thread."""
 

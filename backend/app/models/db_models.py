@@ -43,6 +43,9 @@ from app.models.enums import (  # noqa: F401
 # Matters & membership (collaboration/isolation unit)
 from app.models.matters import Matter, MatterMember  # noqa: F401
 
+# Tabular review (schema-driven extraction across many documents)
+from app.models.review_tables import ReviewCell, ReviewTable  # noqa: F401
+
 # Branding, Instance Secrets, Workspace Sessions
 from app.models.tracking import (  # noqa: F401
     BrandingConfigDB,

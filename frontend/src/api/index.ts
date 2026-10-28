@@ -8,6 +8,7 @@ import './chatSessions';
 import './workspaceSessions';
 import './documents';
 import './matters';
+import './reviewTables';
 import './settings';
 import './connectors';
 import './pickers';

@@ -39,6 +39,7 @@ from app.routers import (
     matters,
     mfa,
     pickers,
+    review_tables,
     strategy,
     system,
     tools,
@@ -440,6 +441,7 @@ app.include_router(chat_sessions.router, prefix=settings.api_prefix)
 app.include_router(workspace_sessions.router, prefix=settings.api_prefix)
 app.include_router(chat.router, prefix=settings.api_prefix)
 app.include_router(matters.router, prefix=settings.api_prefix)
+app.include_router(review_tables.router, prefix=settings.api_prefix)
 app.include_router(strategy.router, prefix=settings.api_prefix)
 app.include_router(documents.router, prefix=settings.api_prefix)
 app.include_router(connectors.router, prefix=settings.api_prefix)

@@ -531,6 +531,10 @@ class Settings(BaseSettings):
     # Max jobs executing concurrently. Bounds memory/connection use so a burst of
     # submissions (LLM + CourtListener fan-out) can't exhaust the API process.
     job_max_concurrency: int = 5
+    # Documents a tabular review extracts from at the same time within one run.
+    # Each is one utility-model call; the bound keeps a 200-contract review from
+    # opening 200 provider connections at once.
+    review_table_concurrency: int = 4
     # Jobs kept by the in-memory fallback (Redis unavailable) before the oldest
     # finished ones are evicted. Each can hold up to job_max_result_size.
     job_memory_max_jobs: int = 200

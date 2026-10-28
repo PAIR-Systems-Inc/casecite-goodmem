@@ -6,6 +6,7 @@ evaluating the product — what does **not** exist yet.
 ## Current
 - Research chat over the firm's documents with citations back to the source and a case-law guard
 - Contract analysis, redlining as native Word tracked changes, and long-document drafting
+- Tabular review (`/review-tables`): one user-defined field schema across many documents, each value quote-verified against the source, re-runnable per cell, row or column, exported to Excel with a Citations sheet or CSV
 - Strategy briefs with quote-verified authorities (API only)
 - Judge intelligence, citation check, and case-law tools backed by CourtListener
 - Matters: a workspace per client engagement (`/matters`) with the documents, chats, analyses, members and activity filed under it; an active-matter selector that scopes Research, Contracts and Drafting; bulk filing of documents between matters; ownership transfer for offboarding
