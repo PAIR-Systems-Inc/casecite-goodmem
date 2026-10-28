@@ -680,3 +680,41 @@ class TestGoogleSharedDrives:
 
         assert all(params.get("supportsAllDrives") == "true" for params in seen)
         assert seen[1]["alt"] == "media"
+
+
+class TestExperimentalRegistry:
+    """The registry holds back iManage/NetDocuments until EXPERIMENTAL_CONNECTORS."""
+
+    def test_default_registry_excludes_them(self):
+        from app.services.connectors import EXPERIMENTAL_CONNECTORS, build_registry
+
+        registry = build_registry(False)
+        assert set(EXPERIMENTAL_CONNECTORS) == {ConnectorType.IMANAGE, ConnectorType.NETDOCUMENTS}
+        assert not set(EXPERIMENTAL_CONNECTORS) & set(registry)
+        assert {ConnectorType.BOX, ConnectorType.CLIO, ConnectorType.FILEVINE} <= set(registry)
+
+    def test_opt_in_registry_includes_them(self):
+        from app.services.connectors import EXPERIMENTAL_CONNECTORS, build_registry
+
+        registry = build_registry(True)
+        assert set(EXPERIMENTAL_CONNECTORS) <= set(registry)
+        assert set(build_registry(False)) <= set(registry)
+
+    def test_summary_names_disabled_and_enabled_states(self):
+        from app.services.connectors import build_registry, registry_summary
+
+        with patch("app.services.connectors.CONNECTORS", build_registry(False)):
+            off = registry_summary()
+        assert "Disabled as experimental" in off
+        assert "imanage" in off and "netdocuments" in off
+        assert "EXPERIMENTAL_CONNECTORS=true" in off
+
+        with patch("app.services.connectors.CONNECTORS", build_registry(True)):
+            on = registry_summary()
+        assert "Experimental connectors enabled" in on
+        assert "Disabled" not in on
+
+    def test_setting_defaults_off(self):
+        from app.config import Settings
+
+        assert Settings.model_fields["experimental_connectors"].default is False

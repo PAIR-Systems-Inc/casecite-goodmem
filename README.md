@@ -11,7 +11,7 @@ Eight tools behind one login, all reading from the same document corpus.
 | | |
 |---|---|
 | **Research** (`/research`) | Chat over your firm's documents — semantic retrieval with keyword (BM25) rescoring of the candidates, and inline citations back to the source. |
-| **Documents** (`/documents`) | Upload, index, and organize your corpus. Import from Google Drive, OneDrive, Box, Dropbox, iManage, NetDocuments, Filevine, or Clio — OAuth sync, or a file picker where OAuth verification isn't needed. |
+| **Documents** (`/documents`) | Upload, index, and organize your corpus. Import from Google Drive, OneDrive, Box, Dropbox, Filevine, or Clio — OAuth sync, or a file picker where OAuth verification isn't needed. iManage and NetDocuments connectors exist but are experimental (untested against a live tenant) and off unless `EXPERIMENTAL_CONNECTORS=true`. |
 | **Contracts** (`/contracts`) | Full contract review pipeline: analyze an indexed contract or pasted text, chat with a single contract, compare 2–4 contracts clause-by-clause against a baseline, and export a redline, a draft, or the analysis itself. |
 | **Drafting** (`/drafting`) | Draft a document grounded in up to four documents you pick from the Knowledge Base, with server-side text extraction and PDF conversion. Set a target length for long documents (30-page agreements): you review a section plan first, then every section is drafted in its own context window against the full references and the whole is reconciled. Revisions to long drafts are scoped to the sections they touch. |
 | **Case view** (`/case/:id`) | Open a CourtListener opinion and chat with it directly. |
@@ -211,9 +211,13 @@ Not required to boot, but the product does little without them:
   account-wide, so Clio cannot sync a single folder.
 - Filevine uses one firm-wide API key, so it is off until
   `FILEVINE_ENABLED=true` and is then available to admins only.
-- The iManage and NetDocuments connectors are implemented against the vendors'
-  published APIs but have **not** been validated against a live tenant. Test
-  them in your environment before relying on them.
+- The iManage and NetDocuments connectors are **experimental**. They are
+  implemented against the vendors' published APIs but have **not** been tested
+  against a live tenant, so they are not registered by default: they do not
+  appear in the connector list and every route for them is refused. Set
+  `EXPERIMENTAL_CONNECTORS=true` to enable them (they are then listed with
+  `"experimental": true`). If you test them against a real tenant, the
+  maintainer welcomes a report of what worked and what did not.
 - Microsoft and Google connections request read-only scopes. Connections made
   before this release keep their broader grant until reconnected.
 

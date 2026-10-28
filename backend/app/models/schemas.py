@@ -368,6 +368,9 @@ class ConnectorStatus(BaseModel):
     account_email: str | None = None
     docs_indexed: int = 0
     last_sync: datetime | None = None
+    # True for connectors that have not been validated against a live tenant
+    # (iManage, NetDocuments); they are registered only with EXPERIMENTAL_CONNECTORS=true.
+    experimental: bool = False
 
 
 class ConnectorAuthUrl(BaseModel):

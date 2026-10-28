@@ -644,3 +644,85 @@ class TestOAuthCallback:
         assert len(_events(audit, AuditEventType.CONNECTOR_CONNECT)) == 1
         # Single use: the binding cookie is cleared with the state.
         assert 'connector_oauth_binding=""' in response.headers["set-cookie"]
+
+
+class TestExperimentalConnectors:
+    """iManage and NetDocuments are unregistered until EXPERIMENTAL_CONNECTORS=true.
+
+    Settings is frozen, so the registry built for the flag value is swapped in
+    with `build_registry` instead of patching the setting itself.
+    """
+
+    PROVIDERS = ("imanage", "netdocuments")
+
+    @staticmethod
+    def _registry(experimental: bool):
+        from app.services.connectors import build_registry
+
+        return patch("app.services.connectors.CONNECTORS", build_registry(experimental))
+
+    def test_flag_off_hides_them_from_the_list(self, client, auth_headers):
+        with self._registry(False):
+            response = client.get("/api/v1/connectors", headers=auth_headers)
+        assert response.status_code == 200
+        connectors = response.json()["connectors"]
+        types = {c["type"] for c in connectors}
+        assert not types & set(self.PROVIDERS)
+        assert {"google_drive", "onedrive", "box", "dropbox", "clio", "filevine"} <= types
+        assert not any(c.get("experimental") for c in connectors)
+
+    @pytest.mark.parametrize("provider", PROVIDERS)
+    def test_flag_off_refuses_every_route(self, client, auth_headers, provider):
+        """Same answer an unknown provider gets today: 400 naming the available set,
+        plus how to enable the experimental one."""
+        with self._registry(False):
+            status = client.get(f"/api/v1/connectors/{provider}/status", headers=auth_headers)
+            auth = client.get(f"/api/v1/connectors/{provider}/auth", headers=auth_headers)
+            sync = client.post(
+                f"/api/v1/connectors/{provider}/sync",
+                json={"sync_all": True},
+                headers=auth_headers,
+            )
+            disconnect = client.post(
+                f"/api/v1/connectors/{provider}/disconnect", headers=auth_headers
+            )
+            callback = client.get(
+                f"/api/v1/connectors/{provider}/callback",
+                params={"code": "c", "state": "no-such-state"},
+            )
+        for response in (status, auth, sync, disconnect):
+            assert response.status_code == 400, response.text
+            assert "EXPERIMENTAL_CONNECTORS=true" in response.json()["detail"]
+            assert provider not in response.json()["detail"].split("Available connectors: ")[1]
+        # No auth flow can start, so no state exists for the callback to redeem.
+        assert callback.status_code == 400
+
+    def test_flag_on_lists_them_as_experimental(self, client, auth_headers):
+        with self._registry(True):
+            response = client.get("/api/v1/connectors", headers=auth_headers)
+        assert response.status_code == 200
+        by_type = {c["type"]: c for c in response.json()["connectors"]}
+        for provider in self.PROVIDERS:
+            assert by_type[provider]["experimental"] is True
+            assert by_type[provider]["connected"] is False
+        # Other connectors are unaffected by the field.
+        assert by_type["box"].get("experimental", False) is False
+
+    @pytest.mark.parametrize("provider", PROVIDERS)
+    def test_flag_on_status_route_flags_them(self, client, auth_headers, provider):
+        with self._registry(True):
+            response = client.get(f"/api/v1/connectors/{provider}/status", headers=auth_headers)
+            box = client.get("/api/v1/connectors/box/status", headers=auth_headers)
+        assert response.status_code == 200, response.text
+        assert response.json()["experimental"] is True
+        assert response.json()["configured"] is False
+        assert box.json()["experimental"] is False
+
+    @pytest.mark.parametrize("provider", PROVIDERS)
+    def test_flag_on_auth_route_reaches_the_connector(self, client, auth_headers, provider):
+        """With the flag on the routes behave as before: an unconfigured
+        connector is refused for lack of credentials, not for being unknown."""
+        with self._registry(True):
+            response = client.get(f"/api/v1/connectors/{provider}/auth", headers=auth_headers)
+        assert response.status_code == 400, response.text
+        assert "EXPERIMENTAL_CONNECTORS" not in response.json()["detail"]

@@ -460,7 +460,13 @@ class Settings(BaseSettings):
     # BOX_REDIRECT_URI is required for production - no localhost fallback
     box_redirect_uri: str = os.environ.get("BOX_REDIRECT_URI", "")
 
-    # Connector: NetDocuments
+    # Experimental connectors (iManage, NetDocuments). Implemented against the
+    # vendors' published APIs but never validated against a live tenant, so
+    # they are not registered — absent from GET /connectors and refused on
+    # every route — until this is set.
+    experimental_connectors: bool = False
+
+    # Connector: NetDocuments (experimental, see EXPERIMENTAL_CONNECTORS)
     netdocuments_client_id: str | None = None
     netdocuments_client_secret: str | None = None
     # NETDOCUMENTS_REDIRECT_URI is required for production - no localhost fallback
@@ -470,7 +476,7 @@ class Settings(BaseSettings):
     netdocuments_vault_host: str = "https://vault.netvoyage.com"
     netdocuments_api_host: str = "https://api.vault.netvoyage.com"
 
-    # Connector: iManage
+    # Connector: iManage (experimental, see EXPERIMENTAL_CONNECTORS)
     imanage_client_id: str | None = None
     imanage_client_secret: str | None = None
     imanage_base_url: str | None = None

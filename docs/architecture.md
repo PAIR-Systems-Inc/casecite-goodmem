@@ -112,7 +112,9 @@ services/
   authority_mapper/       # Authorities cited across documents
   judge_intel/            # CourtListener judge data + metrics
   legal_tools/            # Case lookup, dockets, citation check
-  connectors/             # Drive, OneDrive, Box, Dropbox, iManage, NetDocuments, Filevine, Clio
+  connectors/             # Drive, OneDrive, Box, Dropbox, Filevine, Clio; iManage and NetDocuments
+                          # are experimental (untested against a live tenant), registered only
+                          # with EXPERIMENTAL_CONNECTORS=true
   provider_policy.py      # AI provider allowlist (every embedding and LLM call)
   llm_clients.py          # Provider client construction
   embeddings.py           # Embedding providers

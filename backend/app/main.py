@@ -8,6 +8,7 @@ startup/shutdown lifecycle.
 import asyncio
 import logging
 import os
+import sys
 from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI
@@ -144,10 +145,9 @@ def acquire_instance_lock(data_dir: "str | os.PathLike[str] | None" = None) -> N
     global _instance_lock_handle
     if _instance_lock_handle is not None:
         return
-    try:
-        import fcntl
-    except ImportError:  # Windows: no advisory file locks of this kind
+    if sys.platform == "win32":  # no advisory file locks of this kind
         return
+    import fcntl
     from pathlib import Path
 
     directory = Path(data_dir) if data_dir is not None else Path(settings.upload_dir).parent
@@ -339,6 +339,12 @@ async def lifespan(app: FastAPI):
         await _load_connector_creds()
     except Exception as _cc_err:
         logger.warning(f"Could not load instance connector credentials: {_cc_err}")
+    try:
+        from app.services.connectors import registry_summary as _connector_registry_summary
+
+        logger.info(_connector_registry_summary())
+    except Exception as _cr_err:  # pragma: no cover - log line only
+        logger.warning(f"Could not summarise connector registry: {_cr_err}")
 
     # Apply the instance-wide custom/local model endpoint (admin-set, DB) over .env.
     try:
