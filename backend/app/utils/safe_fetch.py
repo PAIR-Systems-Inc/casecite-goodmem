@@ -66,7 +66,7 @@ async def _resolve_host(host: str) -> list[str]:
         infos = await loop.getaddrinfo(host, None)
     except OSError as e:
         raise UnsafeURLError(f"Could not resolve host: {host}") from e
-    return [info[4][0] for info in infos]
+    return [str(info[4][0]) for info in infos]
 
 
 async def assert_public_url(url: str, allowed_hosts: tuple[str, ...]) -> None:

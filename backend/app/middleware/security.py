@@ -55,7 +55,7 @@ class RateLimiter:
 
         # Rate limits: (requests, window_seconds)
         # Stricter limits for security-sensitive endpoints
-        self.limits = {
+        self.limits: dict[str, tuple[int, int]] = {
             "default": (100, 60),  # 100 req/min
             "/api/v1/chat": (20, 60),  # 20 req/min (expensive)
             "/api/v1/documents": (50, 60),  # 50 req/min
@@ -93,9 +93,9 @@ class RateLimiter:
 
         # Account-level lockout tracking: {email: [timestamps]}
         self._account_failures: dict[str, list[float]] = defaultdict(list)
-        self._account_lockout_threshold = 5  # failures before lockout
-        self._account_lockout_window = 900  # 15 minutes
-        self._account_lockout_duration = 900  # 15 minutes
+        self._account_lockout_threshold: int = 5  # failures before lockout
+        self._account_lockout_window: int = 900  # 15 minutes
+        self._account_lockout_duration: int = 900  # 15 minutes
 
     def _get_limit(self, path: str) -> tuple:
         """Get rate limit for a path (exact match or path prefix with /).
@@ -262,7 +262,7 @@ class RateLimiter:
         if failure_count < self._account_lockout_threshold:
             return 0
         # How many times the threshold has been exceeded
-        multiplier = min(2 ** (failure_count // self._account_lockout_threshold - 1), 16)
+        multiplier = min(1 << (failure_count // self._account_lockout_threshold - 1), 16)
         return self._account_lockout_duration * multiplier
 
     def is_account_locked(self, email: str) -> bool:
@@ -284,7 +284,7 @@ class RateLimiter:
                 # Exponential backoff: check if lockout duration has elapsed
                 last_failure = redis_client.zrange(key, -1, -1, withscores=True)
                 if last_failure:
-                    last_ts = last_failure[0][1]
+                    last_ts = float(last_failure[0][1])
                     lockout_secs = self._get_lockout_duration(count)
                     return (now - last_ts) < lockout_secs
                 return True
@@ -655,7 +655,7 @@ class SessionManager:
         return True
 
     def rotate_session(
-        self, user_id: str, session_id: str | None, new_jti: str, ip_address: str = None
+        self, user_id: str, session_id: str | None, new_jti: str, ip_address: str | None = None
     ) -> str | None:
         """Move a live session onto a freshly minted access token (token refresh).
 
@@ -678,7 +678,7 @@ class SessionManager:
             if settings.enforce_session_ip_binding and ip_address:
                 if session["ip_address"] != ip_address:
                     return None
-            old_jti = session["jti"]
+            old_jti: str = session["jti"]
             session["jti"] = new_jti
             session["last_activity"] = now
             self._rewrite_session_file()
@@ -686,7 +686,11 @@ class SessionManager:
         return None
 
     def validate_session(
-        self, user_id: str, jti: str, ip_address: str = None, token_exp: datetime = None
+        self,
+        user_id: str,
+        jti: str,
+        ip_address: str | None = None,
+        token_exp: datetime | None = None,
     ) -> bool:
         """Validate a session is still valid."""
         now = datetime.now(UTC)

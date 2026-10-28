@@ -67,7 +67,10 @@ runs both Chromium and Firefox.
 # From project root (same commands CI runs)
 ruff check backend/app scripts
 ruff format backend/app --check
-mypy backend/app --ignore-missing-imports   # report-only in CI for now
+python scripts/mypy_ratchet.py              # mypy, blocking against backend/mypy-baseline.json
+# The baseline is a per-package ceiling on mypy errors: packages at zero stay
+# at zero and no package may regress. When your change lowers a count, run
+# `python scripts/mypy_ratchet.py --update` and commit the new baseline.
 cd frontend && npm run lint && npx tsc --noEmit
 ```
 

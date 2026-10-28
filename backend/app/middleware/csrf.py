@@ -19,7 +19,7 @@ import secrets
 
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 from app.config import settings
 
@@ -166,7 +166,7 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         except (ValueError, TypeError):
             return False
 
-    async def dispatch(self, request: Request, call_next) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         """Process request with CSRF validation."""
         path = request.url.path
         method = request.method.upper()

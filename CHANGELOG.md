@@ -11,6 +11,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - README: screenshots of Research, Knowledge Base, Contracts and Citation Check, captured from the real UI against mocked data by `frontend/e2e/screenshots.spec.ts` (run with `SCREENSHOTS=1`).
 - **iManage and NetDocuments connectors are experimental and off by default.** Both are implemented against the vendors' published APIs but have not been tested against a live tenant, so the shipped feature list no longer claims them: they are not registered unless `EXPERIMENTAL_CONNECTORS=true`, which means they are absent from `GET /connectors` and every route for them is refused (400, the same answer an unknown provider gets), and the startup log says they are disabled as experimental. With the flag on they behave as before and their entries in `GET /connectors` (and `GET /connectors/{type}/status`) carry `"experimental": true`; other connectors carry `false`. The code is unchanged otherwise. Anyone who tests them against a real tenant is welcome to report the result.
 
+### Internal
+- Routers raise domain exceptions (`app/exceptions.py`: `NotFoundError`, `ForbiddenError`, ...) handled by one handler that produces the same responses as before, instead of 181 hand-written `HTTPException`s.
+- The chat endpoint and the largest service functions (RAG answer generation, judge metrics, contract analysis, judge-intel building, citation validation, clause analysis) are split into single-purpose helpers; no function in those files exceeds about 80 lines. Behaviour, logging and audit calls are unchanged.
+- mypy is blocking in CI through `scripts/mypy_ratchet.py`: each package has a ceiling in `backend/mypy-baseline.json`, clean packages stay clean, and the baseline only goes down. `middleware`, `utils` (except SQLAlchemy `Column` typing) and the authority mapper are at zero.
+- Frontend: the `--gold-*` theme variables, which had been greys driven by the branding primary colour, are `--primary-*`; the CSS-module object components received through a prop named `s` is `styles`.
+
 ## [1.3.0] - 2026-10-28
 
 ### Security

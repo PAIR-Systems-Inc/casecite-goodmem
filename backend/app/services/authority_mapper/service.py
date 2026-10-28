@@ -23,12 +23,16 @@ import logging
 import re
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING, Any
 
 from app.config import settings
 from app.database import AsyncSessionLocal
 from app.models.authority_map import AuthorityMapping, AuthorityMapRun
 from app.services.courtlistener import courtlistener_service
 from app.services.llm_clients import make_openai, openai_chat, utility_model
+
+if TYPE_CHECKING:
+    from app.services.user_keys import UserAPIKeys
 
 logger = logging.getLogger(__name__)
 
@@ -93,9 +97,9 @@ def find_quote_offset(haystack: str, needle: str) -> tuple[int, int] | None:
 
 
 class AuthorityMapperService:
-    def _api_key(self, user_keys) -> str | None:
+    def _api_key(self, user_keys: UserAPIKeys | None) -> str | None:
         if user_keys and getattr(user_keys, "openai", None):
-            return user_keys.openai
+            return str(user_keys.openai)
         return settings.openai_api_key
 
     async def _extract_window_propositions(self, client, window: str, part: str) -> list[dict]:
@@ -233,7 +237,8 @@ class AuthorityMapperService:
             temperature=0.0,
             response_format={"type": "json_object"},
         )
-        return json.loads(resp.choices[0].message.content or "{}")
+        parsed: dict[Any, Any] = json.loads(resp.choices[0].message.content or "{}")
+        return parsed
 
     @staticmethod
     def _clean_reasoning(res: dict) -> dict | None:

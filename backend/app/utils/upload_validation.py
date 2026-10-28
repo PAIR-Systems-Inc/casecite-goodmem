@@ -11,13 +11,22 @@ from __future__ import annotations
 
 import logging
 import re
+from typing import TypedDict
 
 from fastapi import HTTPException, Request, UploadFile
 
 logger = logging.getLogger(__name__)
 
+
 # File validation configuration
-ALLOWED_MIME_TYPES = {
+class MimeRule(TypedDict):
+    """Size cap and accepted extensions for one MIME type."""
+
+    max_size: int
+    extensions: list[str]
+
+
+ALLOWED_MIME_TYPES: dict[str, MimeRule] = {
     "application/pdf": {"max_size": 50 * 1024 * 1024, "extensions": [".pdf"]},  # 50MB
     "application/msword": {
         "max_size": 25 * 1024 * 1024,
@@ -55,7 +64,7 @@ ALLOWED_MIME_TYPES = {
 # Kept for compatibility: the picker import path merges this over the main
 # allowlist. xlsx/pptx were promoted into ALLOWED_MIME_TYPES (direct upload
 # now accepts them too), so the entries here are identical duplicates.
-PICKER_EXTRA_MIME_TYPES = {
+PICKER_EXTRA_MIME_TYPES: dict[str, MimeRule] = {
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
         "max_size": 25 * 1024 * 1024,
         "extensions": [".xlsx"],

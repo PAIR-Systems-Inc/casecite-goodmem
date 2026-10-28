@@ -194,19 +194,15 @@ jobs:
         run: |
           pip install -r backend/requirements.lock
 
-      - name: Run MyPy (Python Type Check)
-        # Non-blocking: the codebase has several hundred pre-existing mypy
-        # findings. Report-only until that debt is burned down — the error
-        # count is written to the job summary so it is visible on every run;
-        # flip to blocking by removing continue-on-error.
-        continue-on-error: true
+      - name: Run MyPy (ratcheted, blocking)
+        # Blocking through scripts/mypy_ratchet.py: no package may exceed the
+        # error count recorded in backend/mypy-baseline.json, and packages at
+        # zero stay at zero. Lower the baseline with `--update` as debt is
+        # paid down; it never goes up. The totals land in the job summary.
         run: |
-          set +e
-          mypy backend/app --ignore-missing-imports | tee mypy.log
-          status=${PIPESTATUS[0]}
-          echo "### MyPy (non-blocking)" >> "$GITHUB_STEP_SUMMARY"
-          tail -n 1 mypy.log >> "$GITHUB_STEP_SUMMARY"
-          exit "$status"
+          python3 scripts/mypy_ratchet.py | tee mypy.log
+          echo "### MyPy ratchet" >> "$GITHUB_STEP_SUMMARY"
+          head -n 1 mypy.log >> "$GITHUB_STEP_SUMMARY"
 
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
