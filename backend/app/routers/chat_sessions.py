@@ -7,10 +7,11 @@ parameterized /{session_id} catch-alls.
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.exceptions import ForbiddenError, NotFoundError
 from app.models.schemas import (
     ChatSessionDetail,
     ChatSessionListResponse,
@@ -52,7 +53,7 @@ async def create_chat_session(
     if request.matter_id and not await matters_service.is_member(
         db, request.matter_id, current_user.user_id
     ):
-        raise HTTPException(status_code=403, detail="You are not a member of the specified matter.")
+        raise ForbiddenError("You are not a member of the specified matter.")
     return await chat_session_service.create_session(
         current_user.user_id, request.title, matter_id=request.matter_id
     )
@@ -70,7 +71,7 @@ async def get_chat_session(
         session_id, current_user.user_id, accessible_matter_ids=accessible_matters
     )
     if session is None:
-        raise HTTPException(status_code=404, detail="Chat session not found")
+        raise NotFoundError("Chat session not found")
     await audit_service.log_event(
         event_type=AuditEventType.DATA_ACCESS,
         user_id=current_user.user_id,
@@ -98,7 +99,7 @@ async def delete_chat_session(
         session_id, current_user.user_id, accessible_matter_ids=owned_matters
     )
     if not deleted:
-        raise HTTPException(status_code=404, detail="Chat session not found")
+        raise NotFoundError("Chat session not found")
     await audit_service.log_event(
         event_type=AuditEventType.DATA_DELETION,
         user_id=current_user.user_id,

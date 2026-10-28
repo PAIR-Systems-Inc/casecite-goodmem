@@ -16,6 +16,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.exceptions import NotFoundError
 from app.models.schemas import WorkspaceSessionCreate, WorkspaceSessionUpdate
 from app.models.tracking import WorkspaceSessionDB
 from app.routers._matter_deps import accessible_matter_ids
@@ -66,7 +67,7 @@ async def _get_own(
         )
     ).scalar_one_or_none()
     if row is None:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise NotFoundError("Session not found")
     return row
 
 

@@ -10,10 +10,11 @@ immediately (no restart). Resolution order: instance token (DB) -> .env -> anony
 import json
 import logging
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field, field_validator
 
 from app.config import settings
+from app.exceptions import BadRequestError, NotFoundError
 from app.services import connector_credentials, llm_clients
 from app.services.audit import AuditEventType, audit_service
 from app.services.auth import TokenData
@@ -143,11 +144,11 @@ async def set_connector_credentials(
     """Save a provider's credentials instance-wide and apply them immediately."""
     meta = connector_credentials.CONNECTOR_PROVIDERS.get(provider)
     if not meta:
-        raise HTTPException(status_code=404, detail="Unknown connector provider")
+        raise NotFoundError("Unknown connector provider")
     allowed = set(meta["fields"])
     provided = {k: (v or "").strip() for k, v in body.values.items() if k in allowed}
     if not provided:
-        raise HTTPException(status_code=400, detail="No credential values provided")
+        raise BadRequestError("No credential values provided")
     # Merge into what is already stored: a field the request leaves out keeps
     # its current value (the UI only sends the fields the admin edited); a
     # field sent as an empty string is cleared and falls back to .env.
@@ -186,7 +187,7 @@ async def clear_connector_credentials(
 ):
     """Clear the instance credentials and revert the provider to its .env values."""
     if provider not in connector_credentials.CONNECTOR_PROVIDERS:
-        raise HTTPException(status_code=404, detail="Unknown connector provider")
+        raise NotFoundError("Unknown connector provider")
     await delete_secret(connector_credentials.secret_name(provider))
     connector_credentials.revert_to_env(provider)
     await audit_service.log_event(

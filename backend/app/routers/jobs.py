@@ -7,8 +7,9 @@ async jobs submitted via the ?async=true query parameter.
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 
+from app.exceptions import NotFoundError
 from app.models.responses.jobs import (
     JobCancelledResponse,
     JobListResponse,
@@ -35,7 +36,7 @@ async def get_job_status(
     """
     data = job_manager.get_job(job_id, current_user.user_id)
     if data is None:
-        raise HTTPException(status_code=404, detail="Job not found")
+        raise NotFoundError("Job not found")
     return data
 
 
@@ -47,9 +48,8 @@ async def cancel_job(
     """Cancel a running or pending job."""
     success = await job_manager.cancel_job(job_id, current_user.user_id)
     if not success:
-        raise HTTPException(
-            status_code=404,
-            detail="Job not found or cannot be cancelled",
+        raise NotFoundError(
+            "Job not found or cannot be cancelled",
         )
     return {"status": "cancelled", "job_id": job_id}
 

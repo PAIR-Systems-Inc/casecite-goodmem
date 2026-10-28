@@ -12,9 +12,10 @@ import logging
 from collections.abc import Iterator
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, Query, Request
 from fastapi.responses import StreamingResponse
 
+from app.exceptions import BadRequestError
 from app.models.schemas import AuditLogListResponse, AuditVerifyResponse
 from app.services.audit import AuditEventType, audit_service
 from app.services.auth import TokenData
@@ -36,7 +37,7 @@ def _parse_event_type(raw: str | None) -> AuditEventType | None:
         return AuditEventType(raw)
     except ValueError:
         valid = sorted(e.value for e in AuditEventType)
-        raise HTTPException(status_code=400, detail=f"Unknown event_type. Valid values: {valid}")
+        raise BadRequestError(f"Unknown event_type. Valid values: {valid}")
 
 
 def _check_range(start_date: datetime | None, end_date: datetime | None) -> None:
@@ -46,7 +47,7 @@ def _check_range(start_date: datetime | None, end_date: datetime | None) -> None
     start = start_date if start_date.tzinfo else start_date.replace(tzinfo=UTC)
     end = end_date if end_date.tzinfo else end_date.replace(tzinfo=UTC)
     if start > end:
-        raise HTTPException(status_code=400, detail="start_date must not be after end_date")
+        raise BadRequestError("start_date must not be after end_date")
 
 
 @router.get("/logs", response_model=AuditLogListResponse)

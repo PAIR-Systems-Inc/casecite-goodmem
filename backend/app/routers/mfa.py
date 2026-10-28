@@ -11,11 +11,18 @@ import asyncio
 import logging
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.exceptions import (
+    BadRequestError,
+    ConflictError,
+    NotFoundError,
+    RateLimitedError,
+    UnauthorizedError,
+)
 from app.middleware.security import account_lockout
 from app.models.db_models import User as DBUser
 from app.models.responses.auth import LoginResponse
@@ -41,7 +48,7 @@ async def _load_user(db: AsyncSession, user_id: str) -> DBUser:
     result = await db.execute(select(DBUser).where(DBUser.id == user_id))
     user = result.scalar_one_or_none()
     if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise NotFoundError("User not found")
     return user
 
 
@@ -57,9 +64,8 @@ def _management_lockout_key(user: DBUser) -> str:
 
 def _refuse_if_management_locked(user: DBUser) -> None:
     if account_lockout.is_account_locked(_management_lockout_key(user)):
-        raise HTTPException(
-            status_code=429,
-            detail="Too many failed attempts. Try again later.",
+        raise RateLimitedError(
+            "Too many failed attempts. Try again later.",
         )
 
 
@@ -99,9 +105,8 @@ async def mfa_setup(
     if user.mfa_enabled:
         # Never let a session-only attacker reset/disable an active second factor.
         # Re-enrollment requires disabling first, which demands a valid code.
-        raise HTTPException(
-            status_code=409,
-            detail="MFA is already enabled. Disable it (requires a valid code) before re-enrolling.",
+        raise ConflictError(
+            "MFA is already enabled. Disable it (requires a valid code) before re-enrolling.",
         )
     secret = mfa_service.generate_secret()
     user.mfa_secret = mfa_service.encrypt_secret(secret)
@@ -124,15 +129,15 @@ async def mfa_enable(
     """Confirm enrollment with a code, enable MFA, and return recovery codes once."""
     user = await _load_user(db, current_user.user_id)
     if user.mfa_enabled:
-        raise HTTPException(status_code=409, detail="MFA is already enabled.")
+        raise ConflictError("MFA is already enabled.")
     if not user.mfa_secret:
-        raise HTTPException(status_code=400, detail="Start MFA setup first.")
+        raise BadRequestError("Start MFA setup first.")
     _refuse_if_management_locked(user)
 
     secret = mfa_service.decrypt_secret(user.mfa_secret)
     if not mfa_service.verify_totp(secret, body.code):
         await _record_management_failure(user, request, "enable")
-        raise HTTPException(status_code=400, detail="Invalid code. Try again.")
+        raise BadRequestError("Invalid code. Try again.")
 
     plaintext_codes, hashed_codes = mfa_service.generate_recovery_codes()
     user.mfa_enabled = True
@@ -171,12 +176,10 @@ async def mfa_disable(
 
     if user.password_hash:
         if not body.password:
-            raise HTTPException(
-                status_code=400, detail="Your current password is required to disable MFA."
-            )
+            raise BadRequestError("Your current password is required to disable MFA.")
         if not await asyncio.to_thread(verify_password, body.password, user.password_hash):
             await _record_management_failure(user, request, "disable_wrong_password")
-            raise HTTPException(status_code=400, detail="Invalid password or code.")
+            raise BadRequestError("Invalid password or code.")
 
     secret = mfa_service.decrypt_secret(user.mfa_secret)
     ok = mfa_service.verify_totp_once(user.id, secret, body.code)
@@ -187,7 +190,7 @@ async def mfa_disable(
         ok = consumed
     if not ok:
         await _record_management_failure(user, request, "disable_invalid_code")
-        raise HTTPException(status_code=400, detail="Invalid password or code.")
+        raise BadRequestError("Invalid password or code.")
 
     user.mfa_enabled = False
     user.mfa_secret = None
@@ -218,13 +221,13 @@ async def mfa_regenerate_recovery_codes(
     """
     user = await _load_user(db, current_user.user_id)
     if not user.mfa_enabled or not user.mfa_secret:
-        raise HTTPException(status_code=400, detail="MFA is not enabled.")
+        raise BadRequestError("MFA is not enabled.")
     _refuse_if_management_locked(user)
 
     secret = mfa_service.decrypt_secret(user.mfa_secret)
     if not mfa_service.verify_totp_once(user.id, secret, body.code):
         await _record_management_failure(user, request, "recovery_codes")
-        raise HTTPException(status_code=400, detail="Invalid code.")
+        raise BadRequestError("Invalid code.")
 
     plaintext_codes, hashed_codes = mfa_service.generate_recovery_codes()
     user.mfa_recovery_codes = hashed_codes
@@ -253,20 +256,19 @@ async def mfa_verify(
 
     user_id = mfa_service.verify_challenge_token(body.mfa_token)
     if not user_id:
-        raise HTTPException(status_code=401, detail="MFA session expired. Please sign in again.")
+        raise UnauthorizedError("MFA session expired. Please sign in again.")
 
     user_row = await _load_user(db, user_id)
     if not user_row.is_active or not user_row.mfa_enabled or not user_row.mfa_secret:
-        raise HTTPException(status_code=401, detail="MFA is not active for this account.")
+        raise UnauthorizedError("MFA is not active for this account.")
 
     # Per-account brute-force brake: failed second-factor attempts count toward
     # the same lockout as failed passwords, so a stolen password can't be paired
     # with distributed TOTP guessing across many IPs. /auth/login does not clear
     # this counter for MFA accounts — only a completed sign-in (below) does.
     if account_lockout.is_account_locked(user_row.email):
-        raise HTTPException(
-            status_code=429,
-            detail="Too many failed attempts. Try again later.",
+        raise RateLimitedError(
+            "Too many failed attempts. Try again later.",
         )
 
     secret = mfa_service.decrypt_secret(user_row.mfa_secret)
@@ -285,7 +287,7 @@ async def mfa_verify(
                 ip_address=get_client_ip(request),
                 success=False,
             )
-            raise HTTPException(status_code=401, detail="Invalid code.")
+            raise UnauthorizedError("Invalid code.")
         user_row.mfa_recovery_codes = remaining
         used_recovery = True
         await db.commit()
@@ -293,7 +295,7 @@ async def mfa_verify(
     # Spend the challenge now that the second factor is proven — a completed
     # challenge must not be replayable to mint a second set of tokens.
     if not mfa_service.consume_challenge_token(body.mfa_token):
-        raise HTTPException(status_code=401, detail="MFA session expired. Please sign in again.")
+        raise UnauthorizedError("MFA session expired. Please sign in again.")
 
     user_row.last_login = datetime.now(UTC).replace(tzinfo=None)
     await db.commit()

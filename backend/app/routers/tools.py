@@ -17,6 +17,7 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.exceptions import AppError, NotFoundError
 from app.services.auth import TokenData
 from app.services.courtlistener import courtlistener_service
 from app.services.courtlistener_errors import RESEARCH_ERRORS, courtlistener_http_error
@@ -156,9 +157,9 @@ async def get_case_detail(
         result = await legal_tools.get_case_detail(opinion_id, id_kind=kind)
         elapsed = time.time() - start_time
         if not result:
-            raise HTTPException(status_code=404, detail="Case not found")
+            raise NotFoundError("Case not found")
         return add_api_timing(result, elapsed)
-    except HTTPException:
+    except (HTTPException, AppError):
         raise
     except _TOOL_ERRORS as e:
         raise _tool_error(e, "Case detail error", "Failed to load case. Please try again.")
@@ -246,9 +247,9 @@ async def get_docket_detail(
         result = await legal_tools.get_docket_detail(docket_id)
         elapsed = time.time() - start_time
         if result is None:
-            raise HTTPException(status_code=404, detail="Docket not found")
+            raise NotFoundError("Docket not found")
         return add_api_timing(result, elapsed)
-    except HTTPException:
+    except (HTTPException, AppError):
         raise
     except _TOOL_ERRORS as e:
         raise _tool_error(e, "Docket detail error", "Failed to load docket. Please try again.")

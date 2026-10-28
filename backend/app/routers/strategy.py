@@ -8,8 +8,9 @@ contributes at least one passage. Consumed by the chat-style frontend.
 
 import logging
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Request
 
+from app.exceptions import BadRequestError, NotFoundError, ServiceUnavailableError, UpstreamError
 from app.models.schemas import StrategyBriefRequest
 from app.services.audit import AuditEventType, audit_service
 from app.services.auth import TokenData
@@ -46,13 +47,13 @@ async def strategy_brief(
             user_keys=user_keys,
         )
     except StrategyServiceUnavailable as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise ServiceUnavailableError(str(e))
     except StrategySynthesisError as e:
-        raise HTTPException(status_code=502, detail=str(e))
+        raise UpstreamError(str(e))
     except LookupError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise NotFoundError(str(e))
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise BadRequestError(str(e))
 
     await audit_service.log_event(
         event_type=AuditEventType.DATA_ACCESS,

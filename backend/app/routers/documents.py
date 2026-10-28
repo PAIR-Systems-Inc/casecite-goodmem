@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
+from app.exceptions import AppError, BadRequestError, ForbiddenError, NotFoundError, UpstreamError
 from app.models.responses.documents import (
     DocumentContentResponse,
     DocumentDeleteResponse,
@@ -63,7 +64,7 @@ async def upload_document(
     # Reject filing into a matter the caller is not a member of (no cross-matter
     # writes). None stays personal/owner-only.
     if matter_id and not await matters_service.is_member(db, matter_id, current_user.user_id):
-        raise HTTPException(status_code=403, detail="You are not a member of the specified matter.")
+        raise ForbiddenError("You are not a member of the specified matter.")
 
     user_keys = UserAPIKeys.from_request(request, user_id=current_user.user_id)
     safe_filename = sanitize_filename(file.filename)
@@ -122,7 +123,7 @@ async def upload_document(
             user_keys=user_keys,
             matter_id=matter_id,
         )
-    except HTTPException:
+    except (HTTPException, AppError):
         raise
     except Exception as e:  # surface a clean error, never a bare 500
         raise handle_service_error(e, "Failed to process document", logger)
@@ -206,7 +207,7 @@ async def create_folder(
     try:
         path = document_service.create_folder(current_user.user_id, body.name)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise BadRequestError(str(e))
     return {"path": path, "folders": document_service.list_folders(current_user.user_id)}
 
 
@@ -220,7 +221,7 @@ async def delete_folder(
     try:
         document_service.delete_folder(current_user.user_id, path)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise BadRequestError(str(e))
     # Folder names are client-identifying, so the entry records the action only.
     await audit_service.log_event(
         event_type=AuditEventType.DATA_MODIFICATION,
@@ -244,9 +245,9 @@ async def move_document(
     try:
         ok = document_service.move_document(document_id, current_user.user_id, body.folder_path)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise BadRequestError(str(e))
     if not ok:
-        raise HTTPException(status_code=404, detail="Document not found")
+        raise NotFoundError("Document not found")
     await audit_service.log_event(
         event_type=AuditEventType.DATA_MODIFICATION,
         user_id=current_user.user_id,
@@ -273,7 +274,7 @@ async def get_document_content(
         document_id, current_user.user_id, accessible_matter_ids=accessible_matters
     )
     if not doc:
-        raise HTTPException(status_code=404, detail="Document not found")
+        raise NotFoundError("Document not found")
 
     await audit_service.log_event(
         event_type=AuditEventType.DOCUMENT_VIEW,
@@ -300,9 +301,8 @@ async def get_document_content(
         file_path = legacy_file_path
 
     if not file_path:
-        raise HTTPException(
-            status_code=404,
-            detail="Document file not found on disk",
+        raise NotFoundError(
+            "Document file not found on disk",
         )
 
     try:
@@ -344,7 +344,7 @@ async def get_document_file(
         document_id, current_user.user_id, accessible_matter_ids=accessible_matters
     )
     if not doc:
-        raise HTTPException(status_code=404, detail="Document not found")
+        raise NotFoundError("Document not found")
 
     # Resolve the file under the OWNER's dir (doc.user_id) so a shared document
     # is served from the owner's storage.
@@ -362,7 +362,7 @@ async def get_document_file(
         file_path = legacy_file_path
 
     if not file_path:
-        raise HTTPException(status_code=404, detail="Document file not found on disk")
+        raise NotFoundError("Document file not found on disk")
 
     try:
         # Decrypts the at-rest encryption transparently (legacy plaintext passes through).
@@ -414,7 +414,7 @@ async def get_document(
         document_id, current_user.user_id, accessible_matter_ids=accessible_matters
     )
     if not doc:
-        raise HTTPException(status_code=404, detail="Document not found")
+        raise NotFoundError("Document not found")
     return doc
 
 
@@ -436,8 +436,8 @@ async def delete_document(
             document_id, current_user.user_id, accessible_matter_ids=owned_matters
         )
         if not success:
-            raise HTTPException(status_code=404, detail="Document not found")
-    except HTTPException:
+            raise NotFoundError("Document not found")
+    except (HTTPException, AppError):
         raise
     except DocumentDeletionError as e:
         # The search index (or the analyses derived from the document) could not
@@ -455,12 +455,8 @@ async def delete_document(
             success=False,
             error="search index cleanup failed",
         )
-        raise HTTPException(
-            status_code=502,
-            detail=(
-                "Could not remove the document from the search index; "
-                "it was not deleted. Try again."
-            ),
+        raise UpstreamError(
+            "Could not remove the document from the search index; it was not deleted. Try again."
         )
     except (ValueError, KeyError, OSError) as e:
         raise handle_service_error(e, "Failed to delete document", logger)

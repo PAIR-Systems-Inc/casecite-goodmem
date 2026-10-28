@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
+from app.exceptions import AppError, BadRequestError, ConflictError, NotFoundError
 from app.models.clause_intel import (
     ClauseDeviationFinding,
     ClauseTagFinding,
@@ -114,7 +115,7 @@ async def analyze_contract_full(
         try:
             eff_date = datetime.fromisoformat(request.effective_date)
         except ValueError as e:
-            raise HTTPException(status_code=400, detail=f"Invalid effective_date: {e}")
+            raise BadRequestError(f"Invalid effective_date: {e}")
 
     text = (request.document_text or "").strip()
     if request.document_id:
@@ -123,9 +124,9 @@ async def analyze_contract_full(
                 request.document_id, current_user.user_id
             )
         except LookupError as e:
-            raise HTTPException(status_code=404, detail=str(e))
+            raise NotFoundError(str(e))
     if not text:
-        raise HTTPException(status_code=400, detail="Provide document_id or document_text.")
+        raise BadRequestError("Provide document_id or document_text.")
 
     user_keys = UserAPIKeys.from_request(http_request, user_id=current_user.user_id)
     user_id = current_user.user_id
@@ -172,8 +173,8 @@ async def analyze_contract_full(
     try:
         return await do_work()
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except HTTPException:
+        raise BadRequestError(str(e))
+    except (HTTPException, AppError):
         raise
     except Exception as e:
         raise handle_service_error(e, "Analysis failed", logger)
@@ -187,10 +188,8 @@ def _llm_client(http_request: Request, user_id: str):
         async_=True,
     )
     if client is None:
-        raise HTTPException(
-            status_code=400,
-            detail="An OpenAI API key or a custom LLM endpoint is required. "
-            "Configure one in Settings.",
+        raise BadRequestError(
+            "An OpenAI API key or a custom LLM endpoint is required. Configure one in Settings.",
         )
     return client, user_keys
 
@@ -246,7 +245,7 @@ async def contract_chat(
                 request.document_id, current_user.user_id
             )
         except LookupError as e:
-            raise HTTPException(status_code=404, detail=str(e))
+            raise NotFoundError(str(e))
     elif request.draft_text:
         # The drafting workspace's current draft IS the document under
         # discussion — questions answer over it, draft mode revises it.
@@ -255,9 +254,8 @@ async def contract_chat(
         # Drafting from scratch — no reference document.
         text = ""
     else:
-        raise HTTPException(
-            status_code=400,
-            detail="Select a contract first — only drafting works without one.",
+        raise BadRequestError(
+            "Select a contract first — only drafting works without one.",
         )
 
     client, user_keys = _llm_client(http_request, current_user.user_id)
@@ -386,7 +384,7 @@ async def contract_chat(
     try:
         result = await answer_contract_question(client, text, request.message)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise BadRequestError(str(e))
     except Exception as e:
         raise handle_service_error(e, "Answer failed", logger)
     return {"type": "answer", **result}
@@ -452,7 +450,7 @@ async def generate_long_draft(
     try:
         plan = normalize_plan(request.plan)
     except RuntimeError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise BadRequestError(str(e))
     instructions = _standing_instructions(user_id, request.message)
     references = await _resolve_references(request.reference_document_ids, user_id)
 
@@ -534,7 +532,7 @@ async def get_full_analysis(
     ).scalar_one_or_none()
     if not run or not _run_accessible(run, current_user.user_id, accessible_matters):
         # Owner or a member of the run's matter; a null-owner run is nobody's.
-        raise HTTPException(status_code=404, detail="Analysis not found")
+        raise NotFoundError("Analysis not found")
     await _audit(
         http_request,
         current_user,
@@ -666,7 +664,7 @@ async def delete_analysis(
         await db.execute(select(ContractAnalysisRun).where(ContractAnalysisRun.id == analysis_id))
     ).scalar_one_or_none()
     if not run or not run.user_id or run.user_id != current_user.user_id:
-        raise HTTPException(status_code=404, detail="Analysis not found")
+        raise NotFoundError("Analysis not found")
 
     document_id = run.document_id
     # The child tables have no FK cascade to the run — delete them explicitly.
@@ -708,14 +706,14 @@ async def export_analysis(
     """Export a stored analysis as a downloadable report (Markdown or DOCX)."""
     fmt = (format or "").strip().lower()
     if fmt not in ("md", "docx"):
-        raise HTTPException(status_code=400, detail='Invalid format — use "md" or "docx".')
+        raise BadRequestError('Invalid format — use "md" or "docx".')
 
     run = (
         await db.execute(select(ContractAnalysisRun).where(ContractAnalysisRun.id == analysis_id))
     ).scalar_one_or_none()
     if not run or not _run_accessible(run, current_user.user_id, accessible_matters):
         # Owner or a member of the run's matter; a null-owner run is nobody's.
-        raise HTTPException(status_code=404, detail="Analysis not found")
+        raise NotFoundError("Analysis not found")
 
     parties = (
         (await db.execute(select(ContractParty).where(ContractParty.analysis_id == analysis_id)))
@@ -821,10 +819,8 @@ async def generate_practice_profile(
         async_=True,
     )
     if client is None:
-        raise HTTPException(
-            status_code=400,
-            detail="An OpenAI API key or a custom LLM endpoint is required. "
-            "Configure one in Settings.",
+        raise BadRequestError(
+            "An OpenAI API key or a custom LLM endpoint is required. Configure one in Settings.",
         )
 
     prompt = (
@@ -874,11 +870,11 @@ async def compare_documents(
         else None
     )
     if not doc_ids or len(doc_ids) < 2:
-        raise HTTPException(status_code=400, detail="Provide 2-4 document ids to compare.")
+        raise BadRequestError("Provide 2-4 document ids to compare.")
     # De-dupe while preserving order; the baseline is the first id.
     doc_ids = list(dict.fromkeys(doc_ids))[:4]
     if len(doc_ids) < 2:
-        raise HTTPException(status_code=400, detail="Provide at least two DIFFERENT documents.")
+        raise BadRequestError("Provide at least two DIFFERENT documents.")
 
     texts: list[str] = []
     labels: list[str] = []
@@ -887,7 +883,7 @@ async def compare_documents(
             texts.append(await contract_analysis_service.resolve_document_text(doc_id, user_id))
             labels.append(await contract_analysis_service.document_label(doc_id, user_id))
     except LookupError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise NotFoundError(str(e))
 
     user_keys = UserAPIKeys.from_request(http_request, user_id=user_id)
     client = make_openai(
@@ -895,10 +891,8 @@ async def compare_documents(
         async_=True,
     )
     if client is None:
-        raise HTTPException(
-            status_code=400,
-            detail="An OpenAI API key or a custom LLM endpoint is required. "
-            "Configure one in Settings.",
+        raise BadRequestError(
+            "An OpenAI API key or a custom LLM endpoint is required. Configure one in Settings.",
         )
 
     async def do_compare():
@@ -1023,16 +1017,15 @@ async def _export_redlines(
         await db.execute(select(ContractAnalysisRun).where(ContractAnalysisRun.id == analysis_id))
     ).scalar_one_or_none()
     if not run or run.user_id != current_user.user_id:
-        raise HTTPException(status_code=404, detail="Analysis not found")
+        raise NotFoundError("Analysis not found")
 
     summary = run.summary or {}
     edits = summary.get("redlines") or []
     if not edits:
-        raise HTTPException(status_code=404, detail="No redlines stored for this analysis.")
+        raise NotFoundError("No redlines stored for this analysis.")
     if not run.document_id:
-        raise HTTPException(
-            status_code=409,
-            detail="Redline export needs the original indexed document; this analysis "
+        raise ConflictError(
+            "Redline export needs the original indexed document; this analysis "
             "was run on pasted text.",
         )
     kept = [e for e in edits if e.get("ref") not in excluded]
@@ -1064,11 +1057,10 @@ async def _export_redlines(
                 run.document_id, current_user.user_id
             )
         except LookupError as e:
-            raise HTTPException(status_code=404, detail=str(e))
+            raise NotFoundError(str(e))
         if summary.get("redline_text_len") not in (None, len(text)):
-            raise HTTPException(
-                status_code=409,
-                detail="The document was re-indexed since these redlines were generated — "
+            raise ConflictError(
+                "The document was re-indexed since these redlines were generated — "
                 "run the redline again.",
             )
         located, omitted = kept, []

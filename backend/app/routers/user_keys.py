@@ -14,9 +14,10 @@ Security Features:
 import logging
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 
+from app.exceptions import BadRequestError, NotFoundError, ServiceUnavailableError
 from app.models.responses.user_keys import (
     KeyMaskedResponse,
     KeySaveResponse,
@@ -76,9 +77,8 @@ async def save_api_key(
     Only the current user can access their own keys.
     """
     if body.key_type not in ALLOWED_KEY_TYPES:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid key type. Allowed: {', '.join(ALLOWED_KEY_TYPES)}",
+        raise BadRequestError(
+            f"Invalid key type. Allowed: {', '.join(ALLOWED_KEY_TYPES)}",
         )
 
     # Clean common paste artifacts BEFORE validating: surrounding whitespace
@@ -90,15 +90,14 @@ async def save_api_key(
     cleaned_key = cleaned_key.replace("–", "-").replace("—", "-").replace("−", "-")
     if not cleaned_key.isascii():
         bad = ", ".join(sorted({repr(c) for c in cleaned_key if not c.isascii()})[:5])
-        raise HTTPException(
-            status_code=400,
-            detail=f"API key contains invalid characters ({bad}) — usually a "
+        raise BadRequestError(
+            f"API key contains invalid characters ({bad}) — usually a "
             "copy-paste artifact. Re-copy the key directly from the provider.",
         )
 
     # Basic validation
     if not cleaned_key or len(cleaned_key) < 10:
-        raise HTTPException(status_code=400, detail="Invalid API key format")
+        raise BadRequestError("Invalid API key format")
 
     # Get existing keys and update
     keys = get_user_keys(current_user.user_id)
@@ -107,7 +106,7 @@ async def save_api_key(
     try:
         save_user_keys(current_user.user_id, keys)
     except RuntimeError:
-        raise HTTPException(status_code=503, detail="Key storage temporarily unavailable")
+        raise ServiceUnavailableError("Key storage temporarily unavailable")
 
     # Audit log (don't log the actual key)
     await audit_service.log_event(
@@ -136,14 +135,13 @@ async def delete_api_key(
     deleting a key that is not stored returns 404 so the UI can tell.
     """
     if key_type not in ALLOWED_KEY_TYPES:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid key type. Allowed: {', '.join(ALLOWED_KEY_TYPES)}",
+        raise BadRequestError(
+            f"Invalid key type. Allowed: {', '.join(ALLOWED_KEY_TYPES)}",
         )
 
     keys = get_user_keys(current_user.user_id)
     if not keys.get(key_type):
-        raise HTTPException(status_code=404, detail="No stored key of that type")
+        raise NotFoundError("No stored key of that type")
 
     del keys[key_type]
     try:
@@ -154,7 +152,7 @@ async def delete_api_key(
             # Last key removed — drop the user's record entirely.
             delete_user_keys(current_user.user_id)
     except RuntimeError:
-        raise HTTPException(status_code=503, detail="Key storage temporarily unavailable")
+        raise ServiceUnavailableError("Key storage temporarily unavailable")
 
     await audit_service.log_event(
         event_type=AuditEventType.API_KEY_DELETED,

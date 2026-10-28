@@ -18,6 +18,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from fastapi.responses import StreamingResponse
 
 from app.config import settings
+from app.exceptions import AppError, BadRequestError, UnprocessableError
 from app.services.auth import TokenData, get_current_user
 from app.services.courts import get_all_courts
 from app.services.permissions import require_any_permission
@@ -51,7 +52,7 @@ async def _extract(content: bytes, filename: str):
 
     result = await text_extraction_service.extract_async(file_content=content, filename=filename)
     if result.error and not result.text.strip():
-        raise HTTPException(status_code=422, detail=result.error)
+        raise UnprocessableError(result.error)
     return result
 
 
@@ -88,13 +89,12 @@ async def extract_text_from_file(
             "truncated": result.truncated,
             "warnings": result.warnings,
         }
-    except HTTPException:
+    except (HTTPException, AppError):
         raise
     except (ValueError, OSError, UnicodeDecodeError) as e:
         logger.error(f"Failed to extract text: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=400,
-            detail="Failed to extract text. Please upload a valid PDF, DOCX, TXT, or Markdown file.",
+        raise BadRequestError(
+            "Failed to extract text. Please upload a valid PDF, DOCX, TXT, or Markdown file.",
         )
 
 
@@ -196,8 +196,8 @@ async def convert_to_pdf(
         blocks = [(line, False) for line in text.split("\n")]
         return _pdf_response(await asyncio.to_thread(_render_pdf, blocks))
 
-    except HTTPException:
+    except (HTTPException, AppError):
         raise
     except (ValueError, OSError, UnicodeDecodeError) as e:
         logger.error(f"Failed to convert to PDF: {e}", exc_info=True)
-        raise HTTPException(status_code=400, detail="Failed to convert file to PDF.")
+        raise BadRequestError("Failed to convert file to PDF.")

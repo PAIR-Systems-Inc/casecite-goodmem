@@ -2,6 +2,7 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.exceptions import UpstreamError
 from app.models.responses.settings import ClearResponse, PromptDefaultsResponse
 from app.models.schemas import RAGSettings
 from app.services.audit import AuditEventType, audit_service
@@ -121,12 +122,9 @@ async def clear_index(current_user: TokenData = require_permission("documents.de
     failed = result.get("failed_documents", 0)
     if failed and not cleared:
         # Nothing could be removed: that is a failure, not a "cleared" response.
-        raise HTTPException(
-            status_code=502,
-            detail=(
-                f"None of your {failed} document(s) could be removed from the search "
-                "index. Nothing was deleted; try again."
-            ),
+        raise UpstreamError(
+            f"None of your {failed} document(s) could be removed from the search "
+            "index. Nothing was deleted; try again."
         )
     if failed:
         return {

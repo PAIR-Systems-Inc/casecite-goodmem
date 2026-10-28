@@ -2,8 +2,8 @@
 Error Handlers
 
 Registers all exception handlers on the FastAPI application:
-validation errors, HTTP exceptions, value errors, permission errors,
-and a general catch-all handler.
+validation errors, HTTP exceptions, the domain errors in ``app.exceptions``,
+value errors, permission errors, and a general catch-all handler.
 
 Exception MESSAGES are never copied into the audit trail and, outside DEBUG,
 never into the application log: they can carry SQL parameters, document or
@@ -22,6 +22,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.config import settings
+from app.exceptions import AppError
 from app.services.audit import AuditEventType, audit_service
 from app.utils.ip_resolution import get_client_ip
 
@@ -114,9 +115,12 @@ def register_error_handlers(app: FastAPI) -> None:
             },
         )
 
-    @app.exception_handler(HTTPException)
-    async def http_exception_handler(request: Request, exc: HTTPException):
-        """Handle HTTP exceptions with logging."""
+    async def _http_error_response(request: Request, exc: HTTPException | AppError):
+        """The response for any error that carries ``status_code`` and ``detail``.
+
+        Shared by ``HTTPException`` and the domain ``AppError`` family so that
+        both produce the same body, status, headers, logging and auditing.
+        """
         error_ref = _generate_error_reference()
 
         # Log security-relevant errors
@@ -159,6 +163,16 @@ def register_error_handlers(app: FastAPI) -> None:
             content=content,
             headers=getattr(exc, "headers", None),
         )
+
+    @app.exception_handler(HTTPException)
+    async def http_exception_handler(request: Request, exc: HTTPException):
+        """Handle HTTP exceptions with logging."""
+        return await _http_error_response(request, exc)
+
+    @app.exception_handler(AppError)
+    async def app_error_handler(request: Request, exc: AppError):
+        """Handle the domain errors in app.exceptions exactly like HTTPException."""
+        return await _http_error_response(request, exc)
 
     @app.exception_handler(ValueError)
     async def value_error_handler(request: Request, exc: ValueError):

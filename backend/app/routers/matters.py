@@ -15,11 +15,12 @@ defined before the parameterized /{matter_id} catch-alls.
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.exceptions import BadRequestError, NotFoundError
 from app.models.auth import User as DBUser
 from app.models.matters import Matter
 from app.models.schemas import (
@@ -108,7 +109,7 @@ async def _require_owned_matter(db: AsyncSession, matter_id: str, caller_id: str
     """Return the matter only if the caller is its owner; else 404 (no existence leak)."""
     matter = await matters_service.get_matter(db, matter_id)
     if matter is None or matter.owner_id != caller_id:
-        raise HTTPException(status_code=404, detail="Matter not found")
+        raise NotFoundError("Matter not found")
     return matter
 
 
@@ -187,7 +188,7 @@ async def get_matter(
 ) -> MatterDetailResponse:
     """A matter with its members. Only accessible to members (else 404)."""
     if not await matters_service.is_member(db, matter_id, current_user.user_id):
-        raise HTTPException(status_code=404, detail="Matter not found")
+        raise NotFoundError("Matter not found")
     matter = await matters_service.get_matter(db, matter_id)
     base = await _to_response(db, matter, current_user.user_id)
     return MatterDetailResponse(
@@ -207,7 +208,7 @@ async def add_matter_member(
     """Invite a colleague (by email) to a matter. Owner only."""
     matter = await _require_owned_matter(db, matter_id, current_user.user_id)
     if matter.is_personal:
-        raise HTTPException(status_code=400, detail="A personal matter cannot be shared.")
+        raise BadRequestError("A personal matter cannot be shared.")
 
     email = body.email.lower().strip()
     invitee = (
@@ -225,12 +226,12 @@ async def add_matter_member(
             {"action": "matter_member_add_failed"},
             success=False,
         )
-        raise HTTPException(status_code=400, detail=_ADD_MEMBER_FAILED)
+        raise BadRequestError(_ADD_MEMBER_FAILED)
 
     try:
         await matters_service.add_member(db, matter_id, invitee.id, added_by=current_user.user_id)
     except matters_service.MatterAccessError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise BadRequestError(str(e))
     await db.commit()
     await _audit(
         request,
@@ -260,9 +261,9 @@ async def remove_matter_member(
     try:
         removed = await matters_service.remove_member(db, matter_id, user_id)
     except matters_service.MatterAccessError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise BadRequestError(str(e))
     if not removed:
-        raise HTTPException(status_code=404, detail="That user is not a member of this matter.")
+        raise NotFoundError("That user is not a member of this matter.")
     await db.commit()
     await _audit(
         request,
@@ -293,7 +294,7 @@ async def delete_matter(
     """
     matter = await _require_owned_matter(db, matter_id, current_user.user_id)
     if matter.is_personal:
-        raise HTTPException(status_code=400, detail="A personal matter cannot be deleted.")
+        raise BadRequestError("A personal matter cannot be deleted.")
     await db.delete(matter)  # memberships cascade via MatterMember.matter_id FK
     await db.commit()
     await _audit(

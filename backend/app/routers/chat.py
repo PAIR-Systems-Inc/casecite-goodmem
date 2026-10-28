@@ -1,6 +1,8 @@
 import logging
 import uuid
+from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import NoReturn
 
 import anthropic
 import httpx
@@ -10,7 +12,8 @@ from fastapi.responses import JSONResponse, Response
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.config import settings
-from app.models.schemas import ChatRequest, ChatResponse, ConversationExportRequest
+from app.exceptions import ServiceUnavailableError, UpstreamError
+from app.models.schemas import ChatRequest, ChatResponse, ConversationExportRequest, RAGSettings
 from app.routers._matter_deps import accessible_matter_ids as _accessible_matter_ids
 from app.services import chat_sessions as chat_session_service
 from app.services import conversation_export
@@ -115,36 +118,45 @@ async def export_conversation(
     )
 
 
-@router.post("", response_model=ChatResponse)
-async def chat(
+@dataclass
+class _ChatContext:
+    """Everything a chat message needs from the request, captured eagerly.
+
+    Built before any background execution (``?async=true``) so the job never
+    touches the request object or the caller's session after the 202.
+    """
+
+    user_id: str
+    user_email: str | None
+    user_keys: UserAPIKeys
+    user_settings: RAGSettings
+    client_ip: str | None
+    accessible_matters: set[str]
+    # Matters the caller belongs to: documents shared through them are part of
+    # what chat may search and read, alongside the caller's own files.
+    matter_ids: list[str] | None
+    # None means "no scope — search everything the user can see". A list is an
+    # explicit scope and stays one even when EMPTY (a folder with nothing
+    # indexed yet): downstream code answers "nothing in that scope" rather
+    # than widening the search to the rest of the knowledge base.
+    document_ids: list[str] | None
+
+
+async def _chat_context(
     request: ChatRequest,
     http_request: Request,
-    current_user: TokenData = require_permission("chat.use"),
-    async_mode: bool = Query(False, alias="async"),
-    accessible_matters: set[str] = Depends(_accessible_matter_ids),
-) -> ChatResponse:
-    """Send a message and get a RAG-powered response with case law integration. Requires authentication."""
-    if rag_service is None:
-        raise HTTPException(
-            status_code=503,
-            detail="RAG service is temporarily unavailable. Please try again later.",
-        )
-
+    current_user: TokenData,
+    accessible_matters: set[str],
+) -> _ChatContext:
+    """Capture the caller's context and resolve the document scope."""
     # Eagerly capture context before potential background execution
     user_keys = UserAPIKeys.from_request(http_request, user_id=current_user.user_id)
     user_settings = load_user_settings(current_user.user_id)
     client_ip = get_client_ip(http_request)
     user_id = current_user.user_id
-    user_email = current_user.email
-    # Matters the caller belongs to: documents shared through them are part of
-    # what chat may search and read, alongside the caller's own files.
     matter_ids = sorted(accessible_matters) or None
 
     # Pre-resolve document IDs (requires await, must happen before returning 202).
-    # None means "no scope — search everything the user can see". A list is an
-    # explicit scope and stays one even when EMPTY (a folder with nothing
-    # indexed yet): downstream code answers "nothing in that scope" rather
-    # than widening the search to the rest of the knowledge base.
     document_ids = None
     if request.document_filter and request.include_documents:
         if not request.document_filter.search_all:
@@ -158,366 +170,511 @@ async def chat(
                 accessible_matter_ids=accessible_matters,
             )
 
-    def _brief_citation(c: dict, idx: int) -> dict:
-        # Map a strategy-brief citation into the full Citation model shape.
-        conf = float(c.get("confidence") or 0)
-        return {
-            "id": c.get("id") or f"strat-{idx}",
-            "source": c.get("source") or f"Source {idx + 1}",
-            "type": c.get("type") or "document",
-            "confidence": conf,
-            "similarity": conf / 100 if conf > 1 else conf,
-            "relevance_rank": idx + 1,
-            "chunk_index": idx,
-            "token_count": 0,
-            "passage": c.get("passage") or "",
-            # Strategy authorities carry the judge's one-line explanation of
-            # how a lawyer would use them — surface it as the case summary.
-            "case_summary": c.get("explanation"),
-            "reasoning": [],
-            "logic": {
-                "query_intent": "",
-                "matching_criteria": "Strategy brief coverage retrieval",
-                "application": "",
+    return _ChatContext(
+        user_id=user_id,
+        user_email=current_user.email,
+        user_keys=user_keys,
+        user_settings=user_settings,
+        client_ip=client_ip,
+        accessible_matters=accessible_matters,
+        matter_ids=matter_ids,
+        document_ids=document_ids,
+    )
+
+
+def _brief_citation(c: dict, idx: int) -> dict:
+    # Map a strategy-brief citation into the full Citation model shape.
+    conf = float(c.get("confidence") or 0)
+    return {
+        "id": c.get("id") or f"strat-{idx}",
+        "source": c.get("source") or f"Source {idx + 1}",
+        "type": c.get("type") or "document",
+        "confidence": conf,
+        "similarity": conf / 100 if conf > 1 else conf,
+        "relevance_rank": idx + 1,
+        "chunk_index": idx,
+        "token_count": 0,
+        "passage": c.get("passage") or "",
+        # Strategy authorities carry the judge's one-line explanation of
+        # how a lawyer would use them — surface it as the case summary.
+        "case_summary": c.get("explanation"),
+        "reasoning": [],
+        "logic": {
+            "query_intent": "",
+            "matching_criteria": "Strategy brief coverage retrieval",
+            "application": "",
+        },
+        "document_id": c.get("document_id"),
+        "url": c.get("url"),
+        # Verification state and CourtListener ids must survive the
+        # mapping: they drive the Verified badge and "Verify in Source
+        # Opinion" in the UI.
+        "opinion_id": _opt_str(c.get("opinion_id") or c.get("opinionId")),
+        "cluster_id": _opt_str(c.get("cluster_id")),
+        "verified": c.get("verified"),
+        "was_cited_by_ai": True,
+    }
+
+
+async def _run_authority_map(ids: tuple[str, ...], ctx: _ChatContext) -> dict:
+    """Map the authority of every scoped file in full; the body of the job."""
+    files = []
+    for doc_id in ids:
+        loaded = await document_service.get_document_text(
+            doc_id, ctx.user_id, ctx.accessible_matters
+        )
+        if not loaded:
+            continue
+        filename, text = loaded
+        if not text.strip():
+            continue
+        res = await authority_mapper_service.analyze(
+            text=text,
+            document_name=filename,
+            document_id=doc_id,
+            jurisdiction=None,
+            user_id=ctx.user_id,
+            user_keys=ctx.user_keys,
+        )
+        files.append({"document_id": doc_id, **res})
+    return {
+        "files": files,
+        "totals": {
+            "files": len(files),
+            "propositions": sum(f["summary"]["propositions"] for f in files),
+            "authorities": sum(f["summary"]["authorities"] for f in files),
+            "verified": sum(f["summary"]["verified"] for f in files),
+        },
+        # What the mapper's bounds left out, per file — empty
+        # when every file was covered in full.
+        "coverage_notes": _authority_map_coverage_notes(files),
+    }
+
+
+async def _record_authority_map(map_link: dict, completion: dict, ctx: _ChatContext) -> None:
+    """Persist the job's outcome on the chat message (best-effort).
+
+    The runs themselves are already stored by the mapper; this
+    writes their ids and totals onto the message so a reopened
+    session can show and reopen the map.
+    """
+    map_link["completion"] = completion
+    message_id = map_link["message_id"]
+    if not message_id:
+        return  # _persist_exchange stores it when the message is written
+    try:
+        await chat_session_service.set_message_authority_map(
+            message_id,
+            ctx.user_id,
+            {**map_link["base"], **completion},
+            accessible_matter_ids=ctx.accessible_matters,
+        )
+    except (LookupError, ValueError, SQLAlchemyError, OSError, RuntimeError) as e:
+        logger.warning(f"Authority map persistence failed (non-fatal): {e}")
+
+
+async def _submit_authority_map(scoped_ids: list[str], map_link: dict, ctx: _ChatContext) -> str:
+    """Queue the exhaustive map as a background job and return its job id."""
+
+    async def _map_all(ids=tuple(scoped_ids)):
+        try:
+            result = await _run_authority_map(ids, ctx)
+        except Exception as e:
+            await _record_authority_map(
+                map_link, {"status": "failed", "error": type(e).__name__}, ctx
+            )
+            raise
+        await _record_authority_map(map_link, _authority_map_completion(result), ctx)
+        return result
+
+    return await job_manager.submit(
+        _map_all,
+        user_id=ctx.user_id,
+        endpoint="authority_map",
+        retry_policy=RETRY_POLICIES["ai_analysis"],
+    )
+
+
+async def _authority_map_answer(ctx: _ChatContext) -> tuple[dict, dict | None, dict | None]:
+    """Kick off the exhaustive per-proposition audit of the scoped files.
+
+    "Give me ALL the case law for this file / these files / this folder": run
+    the authority mapper over the full text of every scoped file as a
+    background job the client polls via /jobs/{job_id}. Requires a limited
+    scope — the whole knowledge base is never audited in one pass.
+
+    Returns ``(result, authority_map_job, map_link)``; the last two are None
+    when the scope was unusable and ``result`` only explains why.
+    """
+    authority_map_job = None
+    map_link = None
+    scoped_ids = list(ctx.document_ids or [])
+    if not scoped_ids:
+        content = (
+            "To map all supporting case law, first scope this chat to a "
+            "folder or specific files (pick them in the workspace or the "
+            "scope selector above the composer), then ask again."
+        )
+    elif len(scoped_ids) > AUTHORITY_MAP_MAX_FILES:
+        content = (
+            f"That scope covers {len(scoped_ids)} files — the exhaustive "
+            f"authority map runs on up to {AUTHORITY_MAP_MAX_FILES} files "
+            "at a time. Narrow the selection and ask again."
+        )
+    else:
+        docs_meta = []
+        for doc_id in scoped_ids:
+            doc = await document_service.get_document(doc_id, ctx.user_id, ctx.accessible_matters)
+            if doc:
+                docs_meta.append({"id": doc_id, "name": doc.filename})
+
+        # Links the background job to the persisted assistant message
+        # so the finished map is saved with the session (see
+        # _persist_exchange). ``message_id`` is set once the message
+        # exists; ``completion`` holds the job's record if it finished first.
+        map_link = {"message_id": None, "completion": None, "base": {}}
+
+        map_job_id = await _submit_authority_map(scoped_ids, map_link, ctx)
+        authority_map_job = {"job_id": map_job_id, "documents": docs_meta}
+        map_link["base"] = {**authority_map_job, "status": "running"}
+        names = ", ".join(d["name"] for d in docs_meta) or "the selected files"
+        content = (
+            f"Mapping supporting case law across "
+            f"{len(docs_meta)} file{'s' if len(docs_meta) != 1 else ''} "
+            f"({names}) — extracting legal propositions from each file and "
+            "checking authority for them against the real opinions. The "
+            "analysis is bounded; anything it leaves out of a long file is "
+            "listed with the results."
+        )
+    result = {
+        "content": content,
+        "citations": [],
+        "stats": {
+            "docs_searched": len(scoped_ids),
+            "chunks_retrieved": 0,
+            "processing_time": "",
+            "case_law_searched": 0,
+            "case_law_included": 0,
+            "query_intent": "authority_map",
+        },
+    }
+    return result, authority_map_job, map_link
+
+
+async def _research_answer(request: ChatRequest, case_law_query, ctx: _ChatContext) -> dict:
+    """Pure legal-research lookup ("find me case law on DWI"): outside authority only.
+
+    The user's documents are irrelevant here and must not be dragged into the
+    answer. Research questions get the deep engine automatically — candidate
+    opinions are read in full and only quote-verified authorities are cited.
+    """
+    return await rag_service.generate_response(
+        query=request.query,
+        mode=request.mode,
+        top_k=ctx.user_settings.top_k,
+        similarity_threshold=ctx.user_settings.similarity_threshold,
+        include_documents=False,
+        include_case_law=(
+            request.include_case_law if request.include_case_law is not None else True
+        ),
+        case_law_limit=request.case_law_limit,
+        case_law_query=case_law_query,
+        deep_case_law=True,
+        user_keys=ctx.user_keys,
+        document_ids=None,
+        user_id=ctx.user_id,
+        rag_settings=ctx.user_settings,
+        matter_ids=ctx.matter_ids,
+    )
+
+
+async def _strategy_answer(
+    request: ChatRequest, include_case_law: bool, ctx: _ChatContext
+) -> tuple[dict | None, dict | None]:
+    """Answer with a strategy brief; ``(None, None)`` when the brief fails.
+
+    Returns ``(strategy_payload, result)``.
+    """
+    try:
+        brief_folder_paths = None
+        brief_document_ids = None
+        if request.document_filter and not request.document_filter.search_all:
+            # All selected folders scope the brief, not only the first.
+            brief_folder_paths = request.document_filter.folder_paths or None
+            brief_document_ids = request.document_filter.document_ids
+        brief = await strategy_service.generate_brief(
+            question=request.query,
+            folder_paths=brief_folder_paths,
+            document_ids=brief_document_ids,
+            include_case_law=include_case_law,
+            user_id=ctx.user_id,
+            user_keys=ctx.user_keys,
+        )
+        result = {
+            "content": brief.get("position") or "Strategy brief generated.",
+            "citations": [
+                _brief_citation(c, i) for i, c in enumerate(brief.get("citations") or [])
+            ],
+            "stats": {
+                "docs_searched": brief.get("scope", {}).get("documents_considered", 0),
+                "chunks_retrieved": len(brief.get("citations") or []),
+                "processing_time": "",
+                "case_law_searched": 0,
+                "case_law_included": sum(
+                    1 for c in (brief.get("citations") or []) if c.get("type") == "case_law"
+                ),
+                "query_intent": "strategy",
             },
-            "document_id": c.get("document_id"),
-            "url": c.get("url"),
-            # Verification state and CourtListener ids must survive the
-            # mapping: they drive the Verified badge and "Verify in Source
-            # Opinion" in the UI.
-            "opinion_id": _opt_str(c.get("opinion_id") or c.get("opinionId")),
-            "cluster_id": _opt_str(c.get("cluster_id")),
-            "verified": c.get("verified"),
-            "was_cited_by_ai": True,
         }
+        return brief, result
+    except Exception as e:  # strategy routing must never kill chat
+        logger.warning(f"Strategy routing failed, answering normally: {e}")
+        return None, None
+
+
+async def _per_file_answer(request: ChatRequest, ctx: _ChatContext) -> dict | None:
+    """Per-file map-reduce over the scoped files; None when it fails."""
+    try:
+        return await per_file_answer(
+            query=request.query,
+            document_ids=ctx.document_ids,
+            user_id=ctx.user_id,
+            user_keys=ctx.user_keys,
+            model=ctx.user_settings.llm_model,
+        )
+    except Exception as e:  # per-file must never kill chat
+        logger.warning(f"Per-file answering failed, answering normally: {e}")
+        return None
+
+
+async def _pooled_answer(
+    request: ChatRequest, include_case_law: bool, case_law_query, ctx: _ChatContext
+) -> dict:
+    """The ordinary pooled RAG answer over the scoped documents and case law."""
+    return await rag_service.generate_response(
+        query=request.query,
+        mode=request.mode,
+        top_k=ctx.user_settings.top_k,
+        similarity_threshold=ctx.user_settings.similarity_threshold,
+        include_documents=request.include_documents,
+        include_case_law=include_case_law,
+        case_law_limit=request.case_law_limit,
+        case_law_query=case_law_query,
+        user_keys=ctx.user_keys,
+        document_ids=ctx.document_ids,
+        user_id=ctx.user_id,
+        rag_settings=ctx.user_settings,
+        matter_ids=ctx.matter_ids,
+    )
+
+
+async def _retrieve_answer(
+    request: ChatRequest, ctx: _ChatContext
+) -> tuple[dict, dict | None, dict | None, dict | None]:
+    """Route the message and produce its answer.
+
+    Returns ``(result, strategy_payload, authority_map_job, map_link)``.
+    """
+    # Zero-controls composer: decide per message whether this is a grounded
+    # question or a strategy ask, and whether authority would help. An
+    # explicit include_case_law from the client always wins. The router
+    # also distills the case-law SEARCH TERM — the raw message ("find me
+    # case law for a dwi") is never a usable keyword query.
+    intent, wants_authority, case_law_query, per_file = await route_query(
+        request.query, ctx.user_keys, model=ctx.user_settings.llm_model
+    )
+    include_case_law = (
+        request.include_case_law if request.include_case_law is not None else wants_authority
+    )
+
+    strategy_payload = None
+    authority_map_job = None
+    map_link = None
+    result = None
+    if intent == "authority_map" and request.include_documents:
+        result, authority_map_job, map_link = await _authority_map_answer(ctx)
+    elif intent == "research":
+        result = await _research_answer(request, case_law_query, ctx)
+    # The strategy brief reads the documents by design — never route to it
+    # when the client explicitly asked for a documents-off answer.
+    elif intent == "strategy" and request.include_documents:
+        strategy_payload, result = await _strategy_answer(request, include_case_law, ctx)
+
+    # Per-file map-reduce: the question is about the scoped files
+    # individually/comparatively and the scope is a small multi-file set —
+    # give every file its own context window, then synthesize. Any failure
+    # falls back to the pooled RAG answer below.
+    if (
+        result is None
+        and intent == "ask"
+        and per_file
+        and request.include_documents
+        and ctx.document_ids
+        and 2 <= len(ctx.document_ids) <= PER_FILE_MAX_FILES
+    ):
+        result = await _per_file_answer(request, ctx)
+
+    if result is None:
+        result = await _pooled_answer(request, include_case_law, case_law_query, ctx)
+
+    return result, strategy_payload, authority_map_job, map_link
+
+
+async def _audit_chat_query(
+    request: ChatRequest, response_id: str, result: dict, ctx: _ChatContext
+) -> None:
+    await audit_service.log_event(
+        event_type=AuditEventType.CHAT_QUERY,
+        user_id=ctx.user_id,
+        user_email=ctx.user_email,
+        resource_type="chat",
+        resource_id=response_id,
+        ip_address=ctx.client_ip,
+        details={
+            "mode": request.mode.value if request.mode else "research",
+            "include_documents": request.include_documents,
+            "include_case_law": request.include_case_law,
+            "query_length": len(request.query),
+            "citations_count": len(result["citations"]),
+        },
+    )
+
+
+def _response_payload(
+    request: ChatRequest,
+    response_id: str,
+    result: dict,
+    strategy_payload: dict | None,
+    authority_map_job: dict | None,
+) -> dict:
+    return ChatResponse(
+        id=response_id,
+        content=result["content"],
+        citations=result["citations"] if request.include_citations else [],
+        stats=result["stats"],
+        mode=request.mode,
+        timestamp=datetime.now(UTC),
+        strategy=strategy_payload,
+        authority_map_job=authority_map_job,
+    ).model_dump(mode="json")
+
+
+async def _persist_exchange(
+    request: ChatRequest,
+    response_payload: dict,
+    authority_map_job: dict | None,
+    map_link: dict | None,
+    ctx: _ChatContext,
+) -> str | None:
+    """Persist the exchange to a chat session so conversations survive reloads.
+
+    Best-effort: storage problems must never fail the response. Returns the
+    session id, or None when persistence failed.
+    """
+    session_id = request.session_id
+    try:
+        if session_id is None:
+            created = await chat_session_service.create_session(
+                user_id=ctx.user_id, title=request.query.strip()[:60]
+            )
+            session_id = created["id"]
+        await chat_session_service.append_message(
+            session_id, ctx.user_id, role="user", content=request.query
+        )
+        map_record = None
+        if authority_map_job:
+            # Saved with the message so the map can be reopened later; the
+            # job fills in the run ids and totals when it finishes.
+            map_record = {**map_link["base"], **(map_link["completion"] or {})}
+        saved = await chat_session_service.append_message(
+            session_id,
+            ctx.user_id,
+            role="assistant",
+            content=response_payload["content"],
+            citations=response_payload["citations"],
+            strategy=response_payload.get("strategy"),
+            stats=response_payload["stats"],
+            authority_map=map_record,
+        )
+        if authority_map_job:
+            # From here on the job writes its completion to this message.
+            map_link["message_id"] = saved["id"]
+    except (
+        LookupError,
+        ValueError,
+        KeyError,
+        SQLAlchemyError,
+        ConnectionError,
+        TimeoutError,
+        OSError,
+        RuntimeError,
+    ) as persist_err:
+        logger.warning(f"Chat session persistence failed (non-fatal): {persist_err}")
+        session_id = None
+    return session_id
+
+
+async def _answer_chat(request: ChatRequest, ctx: _ChatContext) -> dict:
+    """One chat message end to end: route, answer, audit, persist, assemble."""
+    # Query text is client-confidential: log its size, never its content.
+    logger.debug(f"Chat query from user {ctx.user_id} ({len(request.query)} chars)")
+
+    result, strategy_payload, authority_map_job, map_link = await _retrieve_answer(request, ctx)
+
+    response_id = str(uuid.uuid4())
+    await _audit_chat_query(request, response_id, result, ctx)
+    response_payload = _response_payload(
+        request, response_id, result, strategy_payload, authority_map_job
+    )
+    response_payload["session_id"] = await _persist_exchange(
+        request, response_payload, authority_map_job, map_link, ctx
+    )
+    return response_payload
+
+
+def _raise_chat_error(e: Exception, user_id: str) -> NoReturn:
+    """Map a failure that escaped the per-stage handling to the client response."""
+    if isinstance(e, openai.OpenAIError | anthropic.AnthropicError | httpx.HTTPError):
+        # A provider/network failure that escaped the per-stage handling: say
+        # what happened instead of a bare 500 (the upstream body is only logged).
+        logger.error(f"Chat provider error for user {user_id}: {type(e).__name__}: {e}")
+        raise UpstreamError(describe_llm_failure(e))
+    # Outside DEBUG log only the exception type: a parse or validation
+    # error can quote the input it rejected, and chat input is privileged
+    # text that must not land in long-retained logs (see error_handlers.py).
+    if settings.debug:
+        logger.error(f"Chat error for user {user_id}: {e}", exc_info=True)
+    else:
+        logger.error(f"Chat error for user {user_id}: {type(e).__name__}")
+    raise HTTPException(
+        status_code=500,
+        detail="An error occurred processing your request. Please try again.",
+    )
+
+
+@router.post("", response_model=ChatResponse)
+async def chat(
+    request: ChatRequest,
+    http_request: Request,
+    current_user: TokenData = require_permission("chat.use"),
+    async_mode: bool = Query(False, alias="async"),
+    accessible_matters: set[str] = Depends(_accessible_matter_ids),
+) -> ChatResponse:
+    """Send a message and get a RAG-powered response with case law integration. Requires authentication."""
+    if rag_service is None:
+        raise ServiceUnavailableError(
+            "RAG service is temporarily unavailable. Please try again later.",
+        )
+
+    ctx = await _chat_context(request, http_request, current_user, accessible_matters)
 
     async def do_work():
-        # Query text is client-confidential: log its size, never its content.
-        logger.debug(f"Chat query from user {user_id} ({len(request.query)} chars)")
-
-        # Zero-controls composer: decide per message whether this is a grounded
-        # question or a strategy ask, and whether authority would help. An
-        # explicit include_case_law from the client always wins. The router
-        # also distills the case-law SEARCH TERM — the raw message ("find me
-        # case law for a dwi") is never a usable keyword query.
-        intent, wants_authority, case_law_query, per_file = await route_query(
-            request.query, user_keys, model=user_settings.llm_model
-        )
-        include_case_law = (
-            request.include_case_law if request.include_case_law is not None else wants_authority
-        )
-
-        strategy_payload = None
-        authority_map_job = None
-        result = None
-        if intent == "authority_map" and request.include_documents:
-            # Exhaustive per-proposition audit ("give me ALL the case law for
-            # this file / these files / this folder"): run the authority mapper
-            # over the full text of every scoped file as a background job the
-            # client polls via /jobs/{job_id}. Requires a limited scope — the
-            # whole knowledge base is never audited in one pass.
-            scoped_ids = list(document_ids or [])
-            if not scoped_ids:
-                content = (
-                    "To map all supporting case law, first scope this chat to a "
-                    "folder or specific files (pick them in the workspace or the "
-                    "scope selector above the composer), then ask again."
-                )
-            elif len(scoped_ids) > AUTHORITY_MAP_MAX_FILES:
-                content = (
-                    f"That scope covers {len(scoped_ids)} files — the exhaustive "
-                    f"authority map runs on up to {AUTHORITY_MAP_MAX_FILES} files "
-                    "at a time. Narrow the selection and ask again."
-                )
-            else:
-                docs_meta = []
-                for doc_id in scoped_ids:
-                    doc = await document_service.get_document(doc_id, user_id, accessible_matters)
-                    if doc:
-                        docs_meta.append({"id": doc_id, "name": doc.filename})
-
-                # Links the background job to the persisted assistant message
-                # so the finished map is saved with the session (see below).
-                # ``message_id`` is set once the message exists; ``completion``
-                # holds the job's record if it finished first.
-                map_link: dict = {"message_id": None, "completion": None, "base": {}}
-
-                async def _map_all(ids=tuple(scoped_ids)):
-                    try:
-                        result = await _run_authority_map(ids)
-                    except Exception as e:
-                        await _record_authority_map({"status": "failed", "error": type(e).__name__})
-                        raise
-                    await _record_authority_map(_authority_map_completion(result))
-                    return result
-
-                async def _run_authority_map(ids):
-                    files = []
-                    for doc_id in ids:
-                        loaded = await document_service.get_document_text(
-                            doc_id, user_id, accessible_matters
-                        )
-                        if not loaded:
-                            continue
-                        filename, text = loaded
-                        if not text.strip():
-                            continue
-                        res = await authority_mapper_service.analyze(
-                            text=text,
-                            document_name=filename,
-                            document_id=doc_id,
-                            jurisdiction=None,
-                            user_id=user_id,
-                            user_keys=user_keys,
-                        )
-                        files.append({"document_id": doc_id, **res})
-                    return {
-                        "files": files,
-                        "totals": {
-                            "files": len(files),
-                            "propositions": sum(f["summary"]["propositions"] for f in files),
-                            "authorities": sum(f["summary"]["authorities"] for f in files),
-                            "verified": sum(f["summary"]["verified"] for f in files),
-                        },
-                        # What the mapper's bounds left out, per file — empty
-                        # when every file was covered in full.
-                        "coverage_notes": _authority_map_coverage_notes(files),
-                    }
-
-                async def _record_authority_map(completion: dict) -> None:
-                    """Persist the job's outcome on the chat message (best-effort).
-
-                    The runs themselves are already stored by the mapper; this
-                    writes their ids and totals onto the message so a reopened
-                    session can show and reopen the map.
-                    """
-                    map_link["completion"] = completion
-                    message_id = map_link["message_id"]
-                    if not message_id:
-                        return  # do_work stores it when the message is written
-                    try:
-                        await chat_session_service.set_message_authority_map(
-                            message_id,
-                            user_id,
-                            {**map_link["base"], **completion},
-                            accessible_matter_ids=accessible_matters,
-                        )
-                    except (LookupError, ValueError, SQLAlchemyError, OSError, RuntimeError) as e:
-                        logger.warning(f"Authority map persistence failed (non-fatal): {e}")
-
-                map_job_id = await job_manager.submit(
-                    _map_all,
-                    user_id=user_id,
-                    endpoint="authority_map",
-                    retry_policy=RETRY_POLICIES["ai_analysis"],
-                )
-                authority_map_job = {"job_id": map_job_id, "documents": docs_meta}
-                map_link["base"] = {**authority_map_job, "status": "running"}
-                names = ", ".join(d["name"] for d in docs_meta) or "the selected files"
-                content = (
-                    f"Mapping supporting case law across "
-                    f"{len(docs_meta)} file{'s' if len(docs_meta) != 1 else ''} "
-                    f"({names}) — extracting legal propositions from each file and "
-                    "checking authority for them against the real opinions. The "
-                    "analysis is bounded; anything it leaves out of a long file is "
-                    "listed with the results."
-                )
-            result = {
-                "content": content,
-                "citations": [],
-                "stats": {
-                    "docs_searched": len(scoped_ids),
-                    "chunks_retrieved": 0,
-                    "processing_time": "",
-                    "case_law_searched": 0,
-                    "case_law_included": 0,
-                    "query_intent": "authority_map",
-                },
-            }
-        elif intent == "research":
-            # Pure legal-research lookup ("find me case law on DWI"): outside
-            # authority only. The user's documents are irrelevant here and
-            # must not be dragged into the answer. Research questions get the
-            # deep engine automatically — candidate opinions are read in full
-            # and only quote-verified authorities are cited.
-            result = await rag_service.generate_response(
-                query=request.query,
-                mode=request.mode,
-                top_k=user_settings.top_k,
-                similarity_threshold=user_settings.similarity_threshold,
-                include_documents=False,
-                include_case_law=(
-                    request.include_case_law if request.include_case_law is not None else True
-                ),
-                case_law_limit=request.case_law_limit,
-                case_law_query=case_law_query,
-                deep_case_law=True,
-                user_keys=user_keys,
-                document_ids=None,
-                user_id=user_id,
-                rag_settings=user_settings,
-                matter_ids=matter_ids,
-            )
-        # The strategy brief reads the documents by design — never route to it
-        # when the client explicitly asked for a documents-off answer.
-        elif intent == "strategy" and request.include_documents:
-            try:
-                brief_folder_paths = None
-                brief_document_ids = None
-                if request.document_filter and not request.document_filter.search_all:
-                    # All selected folders scope the brief, not only the first.
-                    brief_folder_paths = request.document_filter.folder_paths or None
-                    brief_document_ids = request.document_filter.document_ids
-                brief = await strategy_service.generate_brief(
-                    question=request.query,
-                    folder_paths=brief_folder_paths,
-                    document_ids=brief_document_ids,
-                    include_case_law=include_case_law,
-                    user_id=user_id,
-                    user_keys=user_keys,
-                )
-                strategy_payload = brief
-                result = {
-                    "content": brief.get("position") or "Strategy brief generated.",
-                    "citations": [
-                        _brief_citation(c, i) for i, c in enumerate(brief.get("citations") or [])
-                    ],
-                    "stats": {
-                        "docs_searched": brief.get("scope", {}).get("documents_considered", 0),
-                        "chunks_retrieved": len(brief.get("citations") or []),
-                        "processing_time": "",
-                        "case_law_searched": 0,
-                        "case_law_included": sum(
-                            1 for c in (brief.get("citations") or []) if c.get("type") == "case_law"
-                        ),
-                        "query_intent": "strategy",
-                    },
-                }
-            except Exception as e:  # strategy routing must never kill chat
-                logger.warning(f"Strategy routing failed, answering normally: {e}")
-                strategy_payload = None
-                result = None
-
-        # Per-file map-reduce: the question is about the scoped files
-        # individually/comparatively and the scope is a small multi-file set —
-        # give every file its own context window, then synthesize. Any failure
-        # falls back to the pooled RAG answer below.
-        if (
-            result is None
-            and intent == "ask"
-            and per_file
-            and request.include_documents
-            and document_ids
-            and 2 <= len(document_ids) <= PER_FILE_MAX_FILES
-        ):
-            try:
-                result = await per_file_answer(
-                    query=request.query,
-                    document_ids=document_ids,
-                    user_id=user_id,
-                    user_keys=user_keys,
-                    model=user_settings.llm_model,
-                )
-            except Exception as e:  # per-file must never kill chat
-                logger.warning(f"Per-file answering failed, answering normally: {e}")
-                result = None
-
-        if result is None:
-            result = await rag_service.generate_response(
-                query=request.query,
-                mode=request.mode,
-                top_k=user_settings.top_k,
-                similarity_threshold=user_settings.similarity_threshold,
-                include_documents=request.include_documents,
-                include_case_law=include_case_law,
-                case_law_limit=request.case_law_limit,
-                case_law_query=case_law_query,
-                user_keys=user_keys,
-                document_ids=document_ids,
-                user_id=user_id,
-                rag_settings=user_settings,
-                matter_ids=matter_ids,
-            )
-
-        response_id = str(uuid.uuid4())
-
-        await audit_service.log_event(
-            event_type=AuditEventType.CHAT_QUERY,
-            user_id=user_id,
-            user_email=user_email,
-            resource_type="chat",
-            resource_id=response_id,
-            ip_address=client_ip,
-            details={
-                "mode": request.mode.value if request.mode else "research",
-                "include_documents": request.include_documents,
-                "include_case_law": request.include_case_law,
-                "query_length": len(request.query),
-                "citations_count": len(result["citations"]),
-            },
-        )
-
-        response_payload = ChatResponse(
-            id=response_id,
-            content=result["content"],
-            citations=result["citations"] if request.include_citations else [],
-            stats=result["stats"],
-            mode=request.mode,
-            timestamp=datetime.now(UTC),
-            strategy=strategy_payload,
-            authority_map_job=authority_map_job,
-        ).model_dump(mode="json")
-
-        # Persist the exchange to a chat session so conversations survive
-        # reloads. Best-effort: storage problems must never fail the response.
-        session_id = request.session_id
-        try:
-            if session_id is None:
-                created = await chat_session_service.create_session(
-                    user_id=user_id, title=request.query.strip()[:60]
-                )
-                session_id = created["id"]
-            await chat_session_service.append_message(
-                session_id, user_id, role="user", content=request.query
-            )
-            map_record = None
-            if authority_map_job:
-                # Saved with the message so the map can be reopened later; the
-                # job fills in the run ids and totals when it finishes.
-                map_record = {**map_link["base"], **(map_link["completion"] or {})}
-            saved = await chat_session_service.append_message(
-                session_id,
-                user_id,
-                role="assistant",
-                content=response_payload["content"],
-                citations=response_payload["citations"],
-                strategy=response_payload.get("strategy"),
-                stats=response_payload["stats"],
-                authority_map=map_record,
-            )
-            if authority_map_job:
-                # From here on the job writes its completion to this message.
-                map_link["message_id"] = saved["id"]
-        except (
-            LookupError,
-            ValueError,
-            KeyError,
-            SQLAlchemyError,
-            ConnectionError,
-            TimeoutError,
-            OSError,
-            RuntimeError,
-        ) as persist_err:
-            logger.warning(f"Chat session persistence failed (non-fatal): {persist_err}")
-            session_id = None
-        response_payload["session_id"] = session_id
-
-        return response_payload
+        return await _answer_chat(request, ctx)
 
     if async_mode:
         job_id = await job_manager.submit(
             do_work,
-            user_id=user_id,
+            user_id=ctx.user_id,
             endpoint="/chat",
             retry_policy=RETRY_POLICIES["ai_analysis"],
         )
@@ -531,19 +688,6 @@ async def chat(
         result_data = await do_work()
         return result_data
     except (openai.OpenAIError, anthropic.AnthropicError, httpx.HTTPError) as e:
-        # A provider/network failure that escaped the per-stage handling: say
-        # what happened instead of a bare 500 (the upstream body is only logged).
-        logger.error(f"Chat provider error for user {user_id}: {type(e).__name__}: {e}")
-        raise HTTPException(status_code=502, detail=describe_llm_failure(e))
+        _raise_chat_error(e, ctx.user_id)
     except (ValueError, KeyError, ConnectionError, TimeoutError, OSError, RuntimeError) as e:
-        # Outside DEBUG log only the exception type: a parse or validation
-        # error can quote the input it rejected, and chat input is privileged
-        # text that must not land in long-retained logs (see error_handlers.py).
-        if settings.debug:
-            logger.error(f"Chat error for user {user_id}: {e}", exc_info=True)
-        else:
-            logger.error(f"Chat error for user {user_id}: {type(e).__name__}")
-        raise HTTPException(
-            status_code=500,
-            detail="An error occurred processing your request. Please try again.",
-        )
+        _raise_chat_error(e, ctx.user_id)

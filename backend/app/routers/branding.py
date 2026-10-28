@@ -12,9 +12,10 @@ Delegates all persistence to the branding service.
 import logging
 import re
 
-from fastapi import APIRouter, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, File, Request, UploadFile
 from fastapi.responses import FileResponse
 
+from app.exceptions import BadRequestError, NotFoundError
 from app.models.responses.branding import BrandingLogoResponse
 from app.models.schemas import BrandingResponse, BrandingUpdate
 from app.services.audit import AuditEventType, audit_service
@@ -131,7 +132,7 @@ async def get_branding_asset(filename: str) -> FileResponse:
     """
     path = resolve_asset_path(filename)
     if path is None:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise NotFoundError("Not found")
     return FileResponse(
         path,
         media_type=ASSET_MEDIA_TYPES[path.suffix],
@@ -177,22 +178,22 @@ async def update_branding(
 def _validate_logo_bytes(content_type: str, contents: bytes) -> None:
     """Verify uploaded logo bytes match the declared type; sanitize SVG.
 
-    Raises HTTPException(400) on a magic-byte mismatch or a script-bearing SVG.
+    Raises BadRequestError on a magic-byte mismatch or a script-bearing SVG.
     """
     if content_type == "image/png" and not contents.startswith(b"\x89PNG\r\n\x1a\n"):
-        raise HTTPException(status_code=400, detail="File is not a valid PNG image.")
+        raise BadRequestError("File is not a valid PNG image.")
     if content_type == "image/jpeg" and not contents.startswith(b"\xff\xd8\xff"):
-        raise HTTPException(status_code=400, detail="File is not a valid JPEG image.")
+        raise BadRequestError("File is not a valid JPEG image.")
     if content_type == "image/webp" and not (contents[:4] == b"RIFF" and contents[8:12] == b"WEBP"):
-        raise HTTPException(status_code=400, detail="File is not a valid WebP image.")
+        raise BadRequestError("File is not a valid WebP image.")
     if content_type == "image/svg+xml":
         try:
             text = contents.decode("utf-8")
         except UnicodeDecodeError:
-            raise HTTPException(status_code=400, detail="SVG must be valid UTF-8 text.")
+            raise BadRequestError("SVG must be valid UTF-8 text.")
         low = text.lower()
         if "<svg" not in low:
-            raise HTTPException(status_code=400, detail="File is not a valid SVG image.")
+            raise BadRequestError("File is not a valid SVG image.")
         # Reject active content that would execute in the app origin.
         forbidden = (
             "<script",
@@ -213,9 +214,8 @@ def _validate_logo_bytes(content_type: str, contents: bytes) -> None:
             "onactivate=",
         )
         if any(tok in low for tok in forbidden):
-            raise HTTPException(
-                status_code=400,
-                detail="SVG contains disallowed active content (scripts/handlers).",
+            raise BadRequestError(
+                "SVG contains disallowed active content (scripts/handlers).",
             )
 
 
@@ -232,9 +232,8 @@ async def upload_logo(
     """
     allowed_types = {"image/png", "image/jpeg", "image/svg+xml", "image/webp"}
     if file.content_type not in allowed_types:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid file type '{file.content_type}'. Allowed: PNG, JPEG, SVG, WebP.",
+        raise BadRequestError(
+            f"Invalid file type '{file.content_type}'. Allowed: PNG, JPEG, SVG, WebP.",
         )
 
     # 2 MB logo cap, enforced pre-read (Content-Length) and during a chunked

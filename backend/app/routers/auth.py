@@ -22,6 +22,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
+from app.exceptions import (
+    AppError,
+    BadRequestError,
+    ConflictError,
+    ForbiddenError,
+    RateLimitedError,
+    ServiceUnavailableError,
+    UnauthorizedError,
+)
 from app.middleware.csrf import cookie_secure
 from app.middleware.security import account_lockout, session_manager
 from app.models.db_models import User as DBUser
@@ -201,7 +210,7 @@ async def dev_login(request: Request, response: Response, body: DemoLoginRequest
             ip_address=get_client_ip(request),
             success=False,
         )
-        raise HTTPException(status_code=403, detail="Dev login is disabled")
+        raise ForbiddenError("Dev login is disabled")
 
     logger.warning("DEV LOGIN (DEBUG=true only) used from IP %s", get_client_ip(request))
 
@@ -224,7 +233,7 @@ async def dev_login(request: Request, response: Response, body: DemoLoginRequest
             ip_address=get_client_ip(request),
             success=False,
         )
-        raise HTTPException(status_code=401, detail="Invalid dev credentials")
+        raise UnauthorizedError("Invalid dev credentials")
 
     user = User(
         id=account["id"],
@@ -315,21 +324,17 @@ async def register(
             # account. Checked BEFORE the duplicate-email lookup so a closed
             # instance does not reveal which addresses have accounts.
             if not (settings.allow_registration or settings.debug):
-                raise HTTPException(
-                    status_code=403,
-                    detail="Self-service registration is disabled. Ask an administrator "
-                    "for an invite.",
+                raise ForbiddenError(
+                    "Self-service registration is disabled. Ask an administrator for an invite.",
                 )
 
         existing = await db.execute(select(DBUser).where(DBUser.email == email))
         if existing.scalar_one_or_none() is not None:
-            raise HTTPException(
-                status_code=409, detail="An account with this email already exists."
-            )
+            raise ConflictError("An account with this email already exists.")
 
         pw_errors = validate_password(body.password)
         if pw_errors:
-            raise HTTPException(status_code=400, detail="; ".join(pw_errors))
+            raise BadRequestError("; ".join(pw_errors))
 
         initial_roles = ["admin"] if user_count == 0 else ["attorney"]
 
@@ -396,9 +401,8 @@ async def email_login(
             ip_address=get_client_ip(request),
             success=False,
         )
-        raise HTTPException(
-            status_code=429,
-            detail="Account temporarily locked due to too many failed attempts. Try again in 15 minutes.",
+        raise RateLimitedError(
+            "Account temporarily locked due to too many failed attempts. Try again in 15 minutes.",
         )
 
     try:
@@ -418,7 +422,7 @@ async def email_login(
                 ip_address=get_client_ip(request),
                 success=False,
             )
-            raise HTTPException(status_code=401, detail="Invalid email or password")
+            raise UnauthorizedError("Invalid email or password")
 
         if not await asyncio.to_thread(verify_password, body.password, db_user.password_hash):
             account_lockout.record_login_failure(body.email)
@@ -429,7 +433,7 @@ async def email_login(
                 ip_address=get_client_ip(request),
                 success=False,
             )
-            raise HTTPException(status_code=401, detail="Invalid email or password")
+            raise UnauthorizedError("Invalid email or password")
 
         if not db_user.is_active:
             await audit_service.log_event(
@@ -440,7 +444,7 @@ async def email_login(
                 ip_address=get_client_ip(request),
                 success=False,
             )
-            raise HTTPException(status_code=403, detail="Account is disabled")
+            raise ForbiddenError("Account is disabled")
 
         # If MFA is enabled, the password is only the first factor. Return a
         # short-lived challenge instead of tokens; /auth/mfa/verify completes it.
@@ -487,7 +491,7 @@ async def email_login(
             expires_in=int(auth_service.access_token_expire.total_seconds()),
             user=user_info(user, db_user),
         )
-    except HTTPException:
+    except (HTTPException, AppError):
         raise
     except (ValueError, KeyError, OSError, RuntimeError) as e:
         logger.debug(f"Login error details: {e}", exc_info=True)
@@ -573,9 +577,8 @@ async def login_with_azure(
                         details={"method": "azure_ad", "reason": "sso_email_link_refused"},
                         success=False,
                     )
-                    raise HTTPException(
-                        status_code=403,
-                        detail="An account with this email already exists and cannot be "
+                    raise ForbiddenError(
+                        "An account with this email already exists and cannot be "
                         "linked to single sign-on automatically. Ask an administrator.",
                     )
                 # From now on this row is an SSO account: the temporary password
@@ -594,7 +597,7 @@ async def login_with_azure(
                     details={"method": "azure_ad", "reason": "account_disabled"},
                     success=False,
                 )
-                raise HTTPException(status_code=403, detail="Account is disabled")
+                raise ForbiddenError("Account is disabled")
             if not db_user.azure_oid:
                 db_user.azure_oid = oid
                 db_user.tenant_id = identity["tenant_id"]
@@ -609,9 +612,8 @@ async def login_with_azure(
                     details={"method": "azure_ad", "reason": "not_provisioned"},
                     success=False,
                 )
-                raise HTTPException(
-                    status_code=403,
-                    detail="No CaseCite account exists for this identity. "
+                raise ForbiddenError(
+                    "No CaseCite account exists for this identity. "
                     "Ask an administrator to invite you.",
                 )
             # A fresh local id, not the Azure object id: a deleted account's id
@@ -672,7 +674,7 @@ async def login_with_azure(
             user=user_info(user, db_user),
         )
 
-    except HTTPException:
+    except (HTTPException, AppError):
         raise
     except (ValueError, KeyError, OSError, RuntimeError) as e:
         await audit_service.log_event(
@@ -681,7 +683,7 @@ async def login_with_azure(
             details={"error_type": type(e).__name__, "method": "azure_ad"},
             success=False,
         )
-        raise HTTPException(status_code=401, detail="Authentication failed. Please try again.")
+        raise UnauthorizedError("Authentication failed. Please try again.")
 
 
 def _azure_default_role() -> UserRole:
@@ -721,7 +723,7 @@ async def refresh_token(
     try:
         raw_token = request.cookies.get("refresh_token")
         if not raw_token:
-            raise HTTPException(status_code=401, detail="No refresh token provided")
+            raise UnauthorizedError("No refresh token provided")
 
         # Verify signature/expiry. Revocation is decided below by
         # claim_refresh_token, which also detects replay of a rotated token.
@@ -729,23 +731,23 @@ async def refresh_token(
 
         # Enforce refresh token type — reject access tokens
         if token_data.token_type != "refresh":
-            raise HTTPException(status_code=401, detail="Invalid token type")
+            raise UnauthorizedError("Invalid token type")
 
         # Verify user still exists and is active in the database
         result = await db.execute(select(DBUser).where(DBUser.id == token_data.user_id))
         db_user = result.scalar_one_or_none()
         if not db_user or not db_user.is_active:
-            raise HTTPException(status_code=401, detail="Account disabled or deleted")
+            raise UnauthorizedError("Account disabled or deleted")
 
         # Reject refresh tokens issued before the last password change so a reset
         # invalidates outstanding refresh tokens too (not just access tokens).
         pwc = db_user.password_changed_at
         if pwc is not None and _token_predates_password_change(token_data.iat, pwc):
-            raise HTTPException(status_code=401, detail="Session expired, please sign in again")
+            raise UnauthorizedError("Session expired, please sign in again")
 
         # Reject tokens minted before "log out everywhere" / force sign-out.
         if token_data.token_version != int(db_user.token_version or 0):
-            raise HTTPException(status_code=401, detail="Session expired, please sign in again")
+            raise UnauthorizedError("Session expired, please sign in again")
 
         # Rotate: spend the presented refresh token (atomically) and mint a
         # fresh pair, so each refresh token is single-use.
@@ -764,9 +766,9 @@ async def refresh_token(
                 details={"reason": "refresh_token_reuse", "sessions_revoked": ended},
                 success=False,
             )
-            raise HTTPException(status_code=401, detail="Session expired, please sign in again")
+            raise UnauthorizedError("Session expired, please sign in again")
         if claim != "ok":
-            raise HTTPException(status_code=401, detail="Token has been revoked")
+            raise UnauthorizedError("Token has been revoked")
 
         # Create user object from DB (authoritative source) instead of token claims
         user = user_from_row(db_user)
@@ -781,7 +783,7 @@ async def refresh_token(
         if replaced_jti is None:
             # No live session behind this refresh token: it was signed out,
             # evicted, idle too long, or is past its absolute lifetime.
-            raise HTTPException(status_code=401, detail="Session expired, please sign in again")
+            raise UnauthorizedError("Session expired, please sign in again")
         new_refresh_token = auth_service.create_refresh_token(
             user, session_id=token_data.session_id
         )
@@ -802,10 +804,10 @@ async def refresh_token(
             "expires_in": int(auth_service.access_token_expire.total_seconds()),
         }
 
-    except HTTPException:
+    except (HTTPException, AppError):
         raise
     except (JWTError, ValueError, KeyError):
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
+        raise UnauthorizedError("Invalid refresh token")
 
 
 @router.post("/logout", response_model=StatusResponse)
@@ -824,7 +826,7 @@ async def logout(
             refresh_data = auth_service.verify_token(raw_refresh)
             if refresh_data.token_type == "refresh":
                 auth_service.revoke_token(refresh_data.jti)
-        except (HTTPException, JWTError, ValueError, KeyError):
+        except (HTTPException, AppError, JWTError, ValueError, KeyError):
             pass  # already invalid/expired — nothing to revoke
 
     # Terminate session
@@ -924,7 +926,7 @@ async def get_azure_config() -> AzureConfigResponse:
     Frontend uses this to initiate Azure login.
     """
     if not settings.microsoft_client_id:
-        raise HTTPException(status_code=503, detail="Azure AD not configured")
+        raise ServiceUnavailableError("Azure AD not configured")
 
     tenant = settings.microsoft_tenant_id or "common"
 
@@ -961,9 +963,7 @@ async def change_password(
     result = await db.execute(select(DBUser).where(DBUser.id == current_user.user_id))
     db_user = result.scalar_one_or_none()
     if not db_user or not db_user.password_hash:
-        raise HTTPException(
-            status_code=400, detail="Password change is not available for this account."
-        )
+        raise BadRequestError("Password change is not available for this account.")
 
     if not await asyncio.to_thread(verify_password, body.current_password, db_user.password_hash):
         await audit_service.log_event(
@@ -974,16 +974,14 @@ async def change_password(
             ip_address=get_client_ip(request),
             success=False,
         )
-        raise HTTPException(status_code=400, detail="Current password is incorrect.")
+        raise BadRequestError("Current password is incorrect.")
 
     if secrets.compare_digest(body.new_password, body.current_password):
-        raise HTTPException(
-            status_code=400, detail="The new password must be different from the current one."
-        )
+        raise BadRequestError("The new password must be different from the current one.")
 
     pw_errors = validate_password(body.new_password)
     if pw_errors:
-        raise HTTPException(status_code=400, detail="; ".join(pw_errors))
+        raise BadRequestError("; ".join(pw_errors))
 
     db_user.password_hash = await asyncio.to_thread(hash_password, body.new_password)
     db_user.password_changed_at = datetime.now(UTC).replace(tzinfo=None)
@@ -1113,12 +1111,12 @@ async def reset_password(
             details={"action": "invalid_reset_token"},
             success=False,
         )
-        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+        raise BadRequestError("Invalid or expired reset token")
 
     # Validate password strength
     password_errors = validate_password(body.new_password)
     if password_errors:
-        raise HTTPException(status_code=400, detail="; ".join(password_errors))
+        raise BadRequestError("; ".join(password_errors))
 
     # Hash the new password
     password_hash = await asyncio.to_thread(hash_password, body.new_password)
@@ -1139,7 +1137,7 @@ async def reset_password(
                 details={"action": "password_reset_refused"},
                 success=False,
             )
-            raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+            raise BadRequestError("Invalid or expired reset token")
 
         user.password_hash = password_hash
         user.password_changed_at = datetime.now(UTC).replace(tzinfo=None)
@@ -1168,7 +1166,7 @@ async def reset_password(
 
         return {"message": "Password reset successfully. You can now log in."}
 
-    except HTTPException:
+    except (HTTPException, AppError):
         raise
     except (ValueError, KeyError, OSError, RuntimeError) as e:
         await audit_service.log_event(

@@ -20,6 +20,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app import __version__
 from app.config import settings
+from app.exceptions import AppError, ForbiddenError, ServiceUnavailableError
 from app.models.responses.system import (
     HealthResponse,
     MetricsResponse,
@@ -178,7 +179,15 @@ async def health_check(request: Request) -> dict:
             is_admin = _is_admin(await _authenticate(request))
         # A probe carrying a stale token (401) — or arriving while the database
         # the auth check needs is down — must still get its 200, minus details.
-        except (HTTPException, SQLAlchemyError, OSError, ValueError, KeyError, AttributeError):
+        except (
+            HTTPException,
+            AppError,
+            SQLAlchemyError,
+            OSError,
+            ValueError,
+            KeyError,
+            AttributeError,
+        ):
             is_admin = False
 
     # --- Build response ---
@@ -285,9 +294,9 @@ async def metrics(request: Request) -> dict:
             token_data = await _authenticate(request)
         except (SQLAlchemyError, OSError) as e:
             logger.warning("Metrics auth check failed — database unavailable: %s", e)
-            raise HTTPException(status_code=503, detail="Service temporarily unavailable")
+            raise ServiceUnavailableError("Service temporarily unavailable")
         if not _is_admin(token_data):
-            raise HTTPException(status_code=403, detail="Admin access required")
+            raise ForbiddenError("Admin access required")
 
     from app.services.documents import document_service
     from app.services.vectordb import get_vector_db

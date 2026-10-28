@@ -15,11 +15,12 @@ import string
 import uuid
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.exceptions import BadRequestError, ConflictError, NotFoundError, ServiceUnavailableError
 from app.models.db_models import User as DBUser
 from app.models.schemas import (
     AdminUserItem,
@@ -90,7 +91,7 @@ async def _end_all_sessions(db: AsyncSession, target: DBUser) -> int:
 async def _get_target(db: AsyncSession, user_id: str) -> DBUser:
     target = (await db.execute(select(DBUser).where(DBUser.id == user_id))).scalar_one_or_none()
     if target is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise NotFoundError("User not found")
     return target
 
 
@@ -122,14 +123,12 @@ async def invite_user(
     from app.services.passwords import hash_password
 
     if body.role not in _VALID_ROLES:
-        raise HTTPException(
-            status_code=400, detail=f"Invalid role. Must be one of: {sorted(_VALID_ROLES)}"
-        )
+        raise BadRequestError(f"Invalid role. Must be one of: {sorted(_VALID_ROLES)}")
 
     email = body.email.lower().strip()
     existing = await db.execute(select(DBUser).where(DBUser.email == email))
     if existing.scalar_one_or_none() is not None:
-        raise HTTPException(status_code=409, detail="An account with this email already exists.")
+        raise ConflictError("An account with this email already exists.")
 
     temp_password = _generate_temp_password()
     # PBKDF2 (600k iterations) is CPU-bound — run it off the event loop.
@@ -206,7 +205,7 @@ async def update_role_permissions(
     try:
         await perm.set_role_permissions(role, body.permissions)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise BadRequestError(str(e))
 
     await audit_service.log_event(
         event_type=AuditEventType.SETTINGS_CHANGE,
@@ -255,14 +254,12 @@ async def update_user_role(
 ) -> AdminUserItem:
     """Change a user's role. Prevents removing the last remaining admin."""
     if body.role not in _VALID_ROLES:
-        raise HTTPException(
-            status_code=400, detail=f"Invalid role. Must be one of: {sorted(_VALID_ROLES)}"
-        )
+        raise BadRequestError(f"Invalid role. Must be one of: {sorted(_VALID_ROLES)}")
 
     result = await db.execute(select(DBUser).where(DBUser.id == user_id))
     target = result.scalar_one_or_none()
     if target is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise NotFoundError("User not found")
 
     current_roles = target.roles if isinstance(target.roles, list) else []
     was_admin = UserRole.ADMIN.value in current_roles
@@ -279,7 +276,7 @@ async def update_user_role(
             if u.is_active and isinstance(u.roles, list) and UserRole.ADMIN.value in u.roles
         )
         if active_admin_count <= 1:
-            raise HTTPException(status_code=400, detail="Cannot remove the last remaining admin.")
+            raise BadRequestError("Cannot remove the last remaining admin.")
 
     target.roles = [body.role]
     # Revoke the user's sessions so tokens carrying the OLD role stop working
@@ -317,11 +314,11 @@ async def set_user_active(
     result = await db.execute(select(DBUser).where(DBUser.id == user_id))
     target = result.scalar_one_or_none()
     if target is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise NotFoundError("User not found")
 
     if not body.is_active:
         if target.id == current_user.user_id:
-            raise HTTPException(status_code=400, detail="You cannot deactivate your own account.")
+            raise BadRequestError("You cannot deactivate your own account.")
         # Don't allow disabling the last remaining admin.
         target_is_admin = isinstance(target.roles, list) and UserRole.ADMIN.value in target.roles
         if target_is_admin:
@@ -332,9 +329,7 @@ async def set_user_active(
                 if u.is_active and isinstance(u.roles, list) and UserRole.ADMIN.value in u.roles
             )
             if active_admins <= 1:
-                raise HTTPException(
-                    status_code=400, detail="Cannot deactivate the last remaining admin."
-                )
+                raise BadRequestError("Cannot deactivate the last remaining admin.")
 
     target.is_active = body.is_active
     if body.is_active:
@@ -402,9 +397,8 @@ async def reset_user_mfa(
     """
     target = await _get_target(db, user_id)
     if target.id == current_user.user_id:
-        raise HTTPException(
-            status_code=400,
-            detail="Use your own security settings to disable MFA on your account.",
+        raise BadRequestError(
+            "Use your own security settings to disable MFA on your account.",
         )
 
     had_mfa = bool(target.mfa_enabled)
@@ -473,7 +467,7 @@ async def export_user_data(
 
     target = (await db.execute(select(DBUser).where(DBUser.id == user_id))).scalar_one_or_none()
     if target is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise NotFoundError("User not found")
 
     async def _rows(model, *where) -> list:
         return list((await db.execute(select(model).where(*where))).scalars().all())
@@ -573,10 +567,10 @@ async def delete_user(
 
     target = (await db.execute(select(DBUser).where(DBUser.id == user_id))).scalar_one_or_none()
     if target is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise NotFoundError("User not found")
 
     if target.id == current_user.user_id:
-        raise HTTPException(status_code=400, detail="You cannot delete your own account.")
+        raise BadRequestError("You cannot delete your own account.")
 
     if target.is_active and isinstance(target.roles, list) and UserRole.ADMIN.value in target.roles:
         # Count ACTIVE admins only — an inactive admin row must not satisfy the
@@ -589,7 +583,7 @@ async def delete_user(
             if u.is_active and isinstance(u.roles, list) and UserRole.ADMIN.value in u.roles
         )
         if active_admin_count <= 1:
-            raise HTTPException(status_code=400, detail="Cannot delete the last remaining admin.")
+            raise BadRequestError("Cannot delete the last remaining admin.")
 
     target_email = target.email
 
@@ -600,12 +594,9 @@ async def delete_user(
         delete_user_keys(user_id)
     except RuntimeError:
         logger.error(f"User {user_id} not deleted: the API key store could not be updated")
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                "The user's stored API keys could not be removed, so the account "
-                "was not deleted. Nothing was changed; check the data volume and try again."
-            ),
+        raise ServiceUnavailableError(
+            "The user's stored API keys could not be removed, so the account "
+            "was not deleted. Nothing was changed; check the data volume and try again."
         )
 
     # Revoke sessions/tokens next so access stops immediately.

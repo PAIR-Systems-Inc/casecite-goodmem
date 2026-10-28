@@ -16,9 +16,10 @@ import logging
 from urllib.parse import quote, urlencode
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Request
 
 from app.config import settings
+from app.exceptions import BadRequestError, ConflictError, UpstreamError
 from app.models.schemas import (
     BoxPickerFile,
     BoxPickerTokenResponse,
@@ -131,18 +132,17 @@ async def get_box_picker_token(
     connector = get_connector(ConnectorType.BOX)
 
     if not connector.is_configured:
-        raise HTTPException(status_code=400, detail="Box is not configured on this server.")
+        raise BadRequestError("Box is not configured on this server.")
     if not connector.is_connected:
-        raise HTTPException(
-            status_code=409,
-            detail="Box account not connected. Connect Box before using the picker.",
+        raise ConflictError(
+            "Box account not connected. Connect Box before using the picker.",
         )
 
     try:
         token = await connector.get_downscoped_token()
     except (httpx.HTTPError, KeyError):
         logger.error("Box token downscope failed", exc_info=True)
-        raise HTTPException(status_code=502, detail="Could not obtain a Box picker token.")
+        raise UpstreamError("Could not obtain a Box picker token.")
 
     return BoxPickerTokenResponse(**token)
 

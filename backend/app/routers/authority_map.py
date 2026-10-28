@@ -9,12 +9,13 @@ then fetches the stored result.
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.exceptions import BadRequestError, NotFoundError
 from app.models.authority_map import AuthorityMapping, AuthorityMapRun
 from app.routers._matter_deps import accessible_matter_ids
 from app.services.audit import AuditEventType, audit_service
@@ -49,7 +50,7 @@ async def analyze_authority_map(
 ):
     """Submit an authority-mapping job. Returns a job_id to poll via /jobs/{id}."""
     if not request.document_text.strip():
-        raise HTTPException(status_code=400, detail="document_text is required")
+        raise BadRequestError("document_text is required")
 
     # document_id is stored on the run and later shown as its source: it must
     # name a document the caller can actually read (own, or shared through a
@@ -59,7 +60,7 @@ async def analyze_authority_map(
             request.document_id, current_user.user_id, accessible_matters
         )
         if doc is None:
-            raise HTTPException(status_code=404, detail="Document not found")
+            raise NotFoundError("Document not found")
 
     user_keys = UserAPIKeys.from_request(http_request, user_id=current_user.user_id)
     user_id = current_user.user_id
@@ -105,7 +106,7 @@ async def get_authority_map(
         run and accessible_matters and run.matter_id and run.matter_id in accessible_matters
     )
     if not run or not (owner_ok or member_ok):
-        raise HTTPException(status_code=404, detail="Authority map not found")
+        raise NotFoundError("Authority map not found")
 
     await audit_service.log_event(
         event_type=AuditEventType.DATA_ACCESS,
@@ -169,7 +170,7 @@ async def delete_authority_map(
         await db.execute(select(AuthorityMapRun).where(AuthorityMapRun.id == run_id))
     ).scalar_one_or_none()
     if not run or not run.user_id or run.user_id != current_user.user_id:
-        raise HTTPException(status_code=404, detail="Authority map not found")
+        raise NotFoundError("Authority map not found")
 
     # No FK cascade from mappings to their run — delete the children explicitly.
     await db.execute(delete(AuthorityMapping).where(AuthorityMapping.run_id == run_id))

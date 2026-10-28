@@ -4,10 +4,11 @@ import uuid
 from datetime import UTC, datetime
 
 import httpx
-from fastapi import APIRouter, HTTPException, Query, Request, Response
+from fastapi import APIRouter, Query, Request, Response
 from pydantic import BaseModel, Field
 
 from app.config import settings
+from app.exceptions import BadRequestError, ForbiddenError, NotFoundError
 from app.middleware.csrf import cookie_secure
 from app.models.responses.common import StatusResponse
 from app.models.responses.connectors import (
@@ -24,7 +25,7 @@ from app.models.schemas import (
 )
 from app.services.audit import AuditEventType, audit_service
 from app.services.auth import TokenData
-from app.services.connectors import get_all_connector_statuses, get_connector
+from app.services.connectors import get_all_connector_statuses, get_connector, is_experimental
 from app.services.connectors.base import (
     BaseConnector,
     ConnectorError,
@@ -114,7 +115,7 @@ async def _is_connector_admin(current_user: TokenData) -> bool:
 async def _require_connector_access(connector: BaseConnector, current_user: TokenData) -> None:
     """Refuse firm-wide-credential connectors to anyone but an administrator."""
     if connector.requires_admin and not await _is_connector_admin(current_user):
-        raise HTTPException(status_code=403, detail=_ADMIN_ONLY_DETAIL)
+        raise ForbiddenError(_ADMIN_ONLY_DETAIL)
 
 
 @router.get("", response_model=ConnectorListResponse)
@@ -139,9 +140,13 @@ async def get_connector_status(
     """Get status of a specific connector. Requires authentication."""
     BaseConnector.set_current_user(current_user.user_id)
     connector = get_connector(connector_type)
+    experimental = is_experimental(connector_type)
     if connector.requires_admin and not await _is_connector_admin(current_user):
         return ConnectorStatus(
-            type=connector_type, connected=False, configured=connector.is_configured
+            type=connector_type,
+            connected=False,
+            configured=connector.is_configured,
+            experimental=experimental,
         )
     status = await connector.get_status()
     return ConnectorStatus(
@@ -152,6 +157,7 @@ async def get_connector_status(
         account_email=status.get("account_email"),
         docs_indexed=status.get("docs_indexed", 0),
         last_sync=status.get("last_sync"),
+        experimental=experimental,
     )
 
 
@@ -169,9 +175,8 @@ async def get_auth_url(
 
     # Check if connector has required credentials configured
     if not connector.is_configured:
-        raise HTTPException(
-            status_code=400,
-            detail=f"{connector_type.value} is not configured. An administrator needs to set up OAuth credentials for this connector.",
+        raise BadRequestError(
+            f"{connector_type.value} is not configured. An administrator needs to set up OAuth credentials for this connector.",
         )
 
     state = str(uuid.uuid4())
@@ -227,9 +232,8 @@ async def handle_callback(
             },
             success=False,
         )
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid or expired OAuth state. Please try connecting again.",
+        raise BadRequestError(
+            "Invalid or expired OAuth state. Please try connecting again.",
         )
 
     # The state is consumed either way; a mismatch burns it rather than
@@ -246,9 +250,8 @@ async def handle_callback(
             },
             success=False,
         )
-        raise HTTPException(
-            status_code=403,
-            detail="This connection was started from a different browser session. "
+        raise ForbiddenError(
+            "This connection was started from a different browser session. "
             "Please try connecting again.",
         )
     response.delete_cookie(OAUTH_BINDING_COOKIE, path=_oauth_cookie_path())
@@ -265,7 +268,7 @@ async def handle_callback(
         logger.error(
             "Connector callback failed for %s: %s", connector_type.value, _describe_error(e)
         )
-        raise HTTPException(status_code=400, detail="Failed to connect. Please try again.")
+        raise BadRequestError("Failed to connect. Please try again.")
 
     # Log the connection with user attribution
     await audit_service.log_event(
@@ -326,24 +329,22 @@ async def start_sync(
     await _require_connector_access(connector, current_user)
 
     if not connector.is_connected:
-        raise HTTPException(status_code=400, detail="Connector not connected")
+        raise BadRequestError("Connector not connected")
 
     folder_id = (body.folder_id if body else None) or folder_id or None
     sync_all = sync_all or bool(body and body.sync_all)
 
     if folder_id:
         if _CONTROL_CHARS.search(folder_id):
-            raise HTTPException(status_code=400, detail="Invalid folder_id")
+            raise BadRequestError("Invalid folder_id")
         if not connector.supports_folder_sync:
-            raise HTTPException(
-                status_code=400,
-                detail=f"{connector_type.value} cannot sync a single folder. "
+            raise BadRequestError(
+                f"{connector_type.value} cannot sync a single folder. "
                 "Request a full-account sync with sync_all=true instead.",
             )
     elif not sync_all:
-        raise HTTPException(
-            status_code=400,
-            detail="Choose a folder to sync (folder_id), or set sync_all=true to "
+        raise BadRequestError(
+            "Choose a folder to sync (folder_id), or set sync_all=true to "
             "import every document in the connected account.",
         )
 
@@ -393,7 +394,7 @@ async def get_sync_status_endpoint(
     """Get status of a sync operation. Requires authentication and ownership."""
     job_data = job_manager.get_job(sync_id, current_user.user_id)
     if not job_data:
-        raise HTTPException(status_code=404, detail="Sync not found")
+        raise NotFoundError("Sync not found")
     return job_data
 
 

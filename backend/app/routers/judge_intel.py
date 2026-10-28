@@ -13,6 +13,7 @@ import logging
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
 
+from app.exceptions import AppError, NotFoundError
 from app.models.responses.judge_intel import (
     JudgeBuildResponse,
     JudgeDeleteResponse,
@@ -115,8 +116,8 @@ async def build_judge_intel(
         if "token" in str(e).lower():
             raise courtlistener_http_error(e, f"Build intel error for judge {judge_id}", "")
         logger.warning(f"Judge not found for build: {e}")
-        raise HTTPException(status_code=404, detail="Judge not found")
-    except HTTPException:
+        raise NotFoundError("Judge not found")
+    except (HTTPException, AppError):
         raise
     except RESEARCH_ERRORS as e:
         raise courtlistener_http_error(
@@ -132,12 +133,11 @@ async def get_judge_profile(
     try:
         profile = await judge_intel.get_judge_profile(judge_id)
         if not profile:
-            raise HTTPException(
-                status_code=404,
-                detail="Judge not found in local database. Use /build first.",
+            raise NotFoundError(
+                "Judge not found in local database. Use /build first.",
             )
         return profile
-    except HTTPException:
+    except (HTTPException, AppError):
         raise
     except RESEARCH_ERRORS as e:
         raise courtlistener_http_error(
@@ -186,9 +186,9 @@ async def get_opinion_full_text(
     try:
         opinion = await judge_intel.get_opinion_full_text(judge_id, opinion_id)
         if not opinion:
-            raise HTTPException(status_code=404, detail="Opinion not found")
+            raise NotFoundError("Opinion not found")
         return opinion
-    except HTTPException:
+    except (HTTPException, AppError):
         raise
     except RESEARCH_ERRORS as e:
         raise courtlistener_http_error(
@@ -243,12 +243,11 @@ async def get_advanced_metrics(
     try:
         metrics = await judge_intel.get_judge_metrics_with_explanations(judge_id, force_recompute)
         if not metrics:
-            raise HTTPException(
-                status_code=404,
-                detail="Judge not found in local database. Use /build first.",
+            raise NotFoundError(
+                "Judge not found in local database. Use /build first.",
             )
         return metrics
-    except HTTPException:
+    except (HTTPException, AppError):
         raise
     except RESEARCH_ERRORS as e:
         raise courtlistener_http_error(
