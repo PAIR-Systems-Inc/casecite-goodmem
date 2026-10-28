@@ -2,7 +2,7 @@
 name = "casecite"
 version = "1.3.0"
 description = "Enterprise Legal Research RAG Platform"
-license = "Elastic-2.0"
+license = "Apache-2.0"
 requires-python = ">=3.11"
 
 [tool.ruff]

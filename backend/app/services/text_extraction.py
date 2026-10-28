@@ -68,7 +68,7 @@ except ImportError:
         "OCR disabled: PyMuPDF and/or pytesseract not installed — scanned-PDF "
         "pages will be indexed without OCR. Install PyMuPDF to enable it "
         "(`pip install PyMuPDF`); it is AGPL-licensed and therefore not "
-        "bundled with this ELv2-licensed product."
+        "bundled with this Apache-2.0-licensed product."
     )
 
 # DOCX support

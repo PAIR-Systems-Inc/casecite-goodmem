@@ -102,8 +102,8 @@ Code Owners" and "require status checks" switched on.
 
 ## Developer Certificate of Origin
 
-CaseCite is distributed under the Elastic License 2.0, and contributions are
-accepted under the same terms. To keep the licensing of the codebase clean, we
+CaseCite is distributed under the Apache License 2.0, and contributions are
+accepted under the same terms (including its patent grant, section 3). To keep the licensing of the codebase clean, we
 use the [Developer Certificate of Origin](https://developercertificate.org/)
 (DCO) rather than a CLA: by signing off a commit you certify that you wrote the
 change or otherwise have the right to submit it under the project license.
@@ -122,8 +122,11 @@ asked to add it (`git commit --amend -s` / `git rebase --signoff`).
 Do not vendor third-party source into the tree. Add dependencies to
 `backend/requirements.txt` (and regenerate `requirements.lock`) or
 `frontend/package.json`, and check the license is compatible with
-redistribution under ELv2 — permissive licenses (MIT, BSD, Apache-2.0, ISC,
-MPL-2.0) are fine; GPL/AGPL/SSPL are not.
+redistribution under the Apache License 2.0 — permissive licenses (MIT, BSD,
+Apache-2.0, ISC, MPL-2.0) are fine, and LGPL is acceptable for a library used
+unmodified as a dynamically linked dependency; GPL, AGPL, SSPL, BUSL,
+"Commons Clause" and non-commercial-only licenses are not.
+`scripts/generate_notice.py --check` (run by CI) refuses those.
 
 After changing a Python dependency, regenerate the lock (the command is in the
 header of `backend/requirements.lock`):

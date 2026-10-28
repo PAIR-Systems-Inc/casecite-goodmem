@@ -1,7 +1,7 @@
 """
 Legal-document support endpoints still used by the live UI.
 
-Only the endpoints the source-available build actually calls are kept here:
+Only the endpoints the self-hosted build actually calls are kept here:
 - GET  /legal-docs/courts        — court list for jurisdiction pickers (Contracts)
 - POST /legal-docs/extract-text  — text extraction from an uploaded file
 - POST /legal-docs/convert-to-pdf — render an uploaded doc to PDF for the viewer

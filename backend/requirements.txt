@@ -84,7 +84,7 @@ sendgrid==6.11.0
 
 # OCR page rasterization (optional, NOT installed by default): PyMuPDF renders
 # scanned PDF pages to images for pytesseract. PyMuPDF is AGPL-3.0-licensed,
-# which we do not bundle inside this ELv2-licensed product — install it
+# which cannot be bundled inside this Apache-2.0 product — install it
 # yourself to enable OCR of scanned PDFs:  pip install PyMuPDF
 # app/services/text_extraction.py degrades gracefully (no OCR) when absent.
 

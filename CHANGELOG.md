@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- **License: Apache License 2.0**, replacing the Elastic License 2.0 from this version on (1.3.0 and earlier remain under ELv2). CaseCite is now OSI open source with an explicit patent grant; hosting it for others no longer needs a separate agreement. `NOTICE.md` carries the project copyright line Apache expects, and the NOTICE generator's compatibility check additionally refuses BUSL, Commons Clause and non-commercial terms. The Settings dialog footer links to the source repository.
+- README: screenshots of Research, Knowledge Base, Contracts and Citation Check, captured from the real UI against mocked data by `frontend/e2e/screenshots.spec.ts` (run with `SCREENSHOTS=1`).
+
 ## [1.3.0] - 2026-10-28
 
 ### Security

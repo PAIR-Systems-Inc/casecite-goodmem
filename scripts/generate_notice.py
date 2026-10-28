@@ -26,8 +26,20 @@ LOCK = ROOT / "backend" / "requirements.lock"
 PACKAGE_LOCK = ROOT / "frontend" / "package-lock.json"
 NOTICE = ROOT / "NOTICE.md"
 
-# Licences that may not be bundled with an Elastic License 2.0 distribution.
-FORBIDDEN = ("AGPL", "SSPL", "GPL")
+# Licences that cannot be redistributed inside an Apache-2.0 program: copyleft
+# that would impose its own terms on the combination, and source-available or
+# non-commercial-only terms.
+FORBIDDEN = (
+    "AGPL",
+    "GPL",
+    "SSPL",
+    "BUSL",
+    "BSL-1",
+    "COMMONS CLAUSE",
+    "NONCOMMERCIAL",
+    "NON-COMMERCIAL",
+    "-NC",
+)
 # ...except these, which contain "GPL" but are acceptable: LGPL libraries used
 # unmodified as dynamically linked dependencies.
 ALLOWED_GPL_FAMILY = ("LGPL",)
@@ -40,7 +52,10 @@ LICENSE_OVERRIDES = {
 
 HEADER = """# Third-party notices
 
-CaseCite is licensed under the Elastic License 2.0 (see `LICENSE`). It is built
+CaseCite
+Copyright 2026 Thomas Unise
+
+CaseCite is licensed under the Apache License 2.0 (see `LICENSE`). It is built
 on the open-source packages below, each distributed under its own license.
 This file lists every package and its license; it does not reproduce the
 license texts. Those ship with the packages themselves: inside the Docker
@@ -54,9 +69,10 @@ This file is generated — do not edit it by hand. Regenerate it whenever
 python3 scripts/generate_notice.py
 ```
 
-No dependency is distributed under GPL, AGPL or SSPL. `psycopg2-binary` is LGPL
-and is used unmodified as a dynamically linked library. PyMuPDF (AGPL) is
-deliberately not a dependency (see `backend/requirements.txt`).
+No dependency is distributed under GPL, AGPL, SSPL, BUSL, Commons Clause or
+non-commercial terms. `psycopg2-binary` is LGPL and is used unmodified as a
+dynamically linked library. PyMuPDF (AGPL) is deliberately not a dependency
+(see `backend/requirements.txt`).
 """
 
 FOOTER = """
@@ -187,7 +203,7 @@ def main() -> None:
 
     text, bad = build()
     if bad:
-        print("ERROR: dependencies with a license that cannot ship under ELv2:")
+        print("ERROR: dependencies with a license that cannot ship inside an Apache-2.0 program:")
         for entry in bad:
             print(f"  - {entry}")
         sys.exit(1)

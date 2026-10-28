@@ -4,7 +4,7 @@ Revision ID: 003
 Revises: 002
 Create Date: 2026-05-03 00:00:00.000000
 
-Strips Stripe billing and trial-abuse-prevention tables from the source-available
+Strips Stripe billing and trial-abuse-prevention tables from the self-hosted
 build. The SaaS version retains them in a separate repo.
 
 Sanitized 2026-08: migration 001 no longer creates these tables, so the drops
@@ -45,7 +45,7 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     # Deliberate no-op: the Stripe billing / fingerprinting schema is not part
-    # of the source-available product and is never recreated on downgrade.
+    # of the self-hosted product and is never recreated on downgrade.
     # Migration 001 no longer creates (or drops) these tables either, so the
     # downgrade path stays consistent end to end.
     pass

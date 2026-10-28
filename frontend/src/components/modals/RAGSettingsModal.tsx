@@ -167,6 +167,16 @@ export const RAGSettingsModal = ({ isOpen, onClose, settings, onSave }: RAGSetti
         </div>
 
         <div className={s.modalFooter}>
+          {/* Open source: point users at the code and license from inside the
+              product. Forks should point this at their own repository. */}
+          <a
+            className={s.helpText}
+            href="https://github.com/thomasunise/casecite"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            CaseCite source code (Apache-2.0)
+          </a>
           {!serverSettingsLoaded && (
             <span className={s.helpText} role="status">
               {serverSettingsError

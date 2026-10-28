@@ -1,6 +1,9 @@
 # Third-party notices
 
-CaseCite is licensed under the Elastic License 2.0 (see `LICENSE`). It is built
+CaseCite
+Copyright 2026 Thomas Unise
+
+CaseCite is licensed under the Apache License 2.0 (see `LICENSE`). It is built
 on the open-source packages below, each distributed under its own license.
 This file lists every package and its license; it does not reproduce the
 license texts. Those ship with the packages themselves: inside the Docker
@@ -14,9 +17,10 @@ This file is generated — do not edit it by hand. Regenerate it whenever
 python3 scripts/generate_notice.py
 ```
 
-No dependency is distributed under GPL, AGPL or SSPL. `psycopg2-binary` is LGPL
-and is used unmodified as a dynamically linked library. PyMuPDF (AGPL) is
-deliberately not a dependency (see `backend/requirements.txt`).
+No dependency is distributed under GPL, AGPL, SSPL, BUSL, Commons Clause or
+non-commercial terms. `psycopg2-binary` is LGPL and is used unmodified as a
+dynamically linked library. PyMuPDF (AGPL) is deliberately not a dependency
+(see `backend/requirements.txt`).
 
 ## Python (backend image)
 

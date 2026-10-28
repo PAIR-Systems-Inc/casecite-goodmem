@@ -1,4 +1,4 @@
-// Source-available build: focused on RAG over private documents and
+// Self-hosted build: focused on RAG over private documents and
 // CourtListener-backed case/judge lookups. The knowledge base (documents +
 // import sources) is not an analysis mode — it lives in its own Documents
 // section in the sidebar and routes to /documents.

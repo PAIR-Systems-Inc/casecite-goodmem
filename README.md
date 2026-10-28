@@ -1,8 +1,8 @@
 # CaseCite — Private Legal RAG
 
-[![License: ELv2](https://img.shields.io/badge/License-Elastic_v2-005571.svg)](LICENSE)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-CaseCite is a **source-available, self-hosted** legal research platform. Upload your firm's documents, ask questions, and research cases & judges — on infrastructure you control. Documents, the search index and chat history are stored on your own servers. AI features send your questions and the relevant document text to the AI providers **you** configure, under your own API keys (BYOK); nothing is sent to the CaseCite maintainers, and there is no telemetry. See [What leaves your infrastructure](#what-leaves-your-infrastructure).
+CaseCite is an **open-source, self-hosted** legal research platform. Upload your firm's documents, ask questions, and research cases & judges — on infrastructure you control. Documents, the search index and chat history are stored on your own servers. AI features send your questions and the relevant document text to the AI providers **you** configure, under your own API keys (BYOK); nothing is sent to the CaseCite maintainers, and there is no telemetry. See [What leaves your infrastructure](#what-leaves-your-infrastructure).
 
 ## What it does
 
@@ -18,6 +18,19 @@ Eight tools behind one login, all reading from the same document corpus.
 | **Authority map** (`/case-citations`) | Map the authorities cited across documents you select. |
 | **Judge intel** (`/judge-intel`) | Judge analytics from CourtListener. |
 | **Legal tools** (`/tools`) | Case lookup, citation check (a scan of citing opinions for negative-treatment language — not a Shepard's/KeyCite substitute), precedents, dockets, oral arguments, and case-law trends. |
+
+### Screenshots
+
+Captured from the real UI against a mocked API with fictional firm, matter and
+case data (`frontend/e2e/screenshots.spec.ts`). No real client or case appears.
+
+| Research over the firm's documents | Knowledge Base |
+|---|---|
+| ![Research view: a question about a liability cap answered with inline citations to three source documents and the AI-review notice](docs/screenshots/research.png) | ![Knowledge Base: indexed documents grouped in matter folders with chunk counts](docs/screenshots/knowledge-base.png) |
+
+| Contract analysis | Citation check |
+|---|---|
+| ![Contracts view: analysis card with parties, executive summary and verified key terms over the contract text](docs/screenshots/contracts.png) | ![Citation check: result card with a negative-treatment badge, citing opinions and the AI-review notice](docs/screenshots/citation-check.png) |
 
 **Practice profile.** Nothing about any practice area is baked into the product.
 You state what you practice, CaseCite drafts a profile of what matters in that
@@ -48,16 +61,23 @@ and how to restrict them, is in [docs/subprocessors.md](docs/subprocessors.md).
 
 ## License & use
 
-CaseCite is licensed under the **Elastic License 2.0** ([LICENSE](LICENSE)). In plain terms:
+Copyright 2026 Thomas Unise. CaseCite is open source under the
+**Apache License 2.0** ([LICENSE](LICENSE)), an OSI-approved permissive
+license. In plain terms:
 
-- ✅ Free to **self-host** for your firm's internal use.
-- ✅ Free to **modify** for your own deployment.
-- ❌ Not permitted to offer CaseCite to third parties as a hosted/managed service.
-- ❌ Not permitted to alter or remove licensing or copyright notices.
+- ✅ Free to **self-host**, for internal use or for others, modified or not.
+- ✅ Free to **modify, fork, redistribute and sell**, including inside
+  proprietary products, as long as you keep the copyright and license notices
+  and the [NOTICE.md](NOTICE.md) attributions, and state what you changed.
+- ✅ Contributors grant an explicit **patent license** for their contributions,
+  which the MIT license does not.
+- Your documents, prompts and outputs are yours. The license covers the
+  CaseCite code, not what you put through it.
 
-For paid private installs, support contracts, or hosted-SaaS licensing, contact the maintainer, [@thomasunise](https://github.com/thomasunise), through GitHub. See [SUPPORT.md](SUPPORT.md).
-
-> "Source-available," not OSI "open source." See [LICENSE](LICENSE) for the full terms.
+Commercial support and private installs are available from the maintainer,
+[@thomasunise](https://github.com/thomasunise). See [SUPPORT.md](SUPPORT.md).
+Versions up to 1.3.0 were released under the Elastic License 2.0; that license
+continues to apply to those versions.
 
 ## Quick start
 
@@ -293,4 +313,4 @@ explains how to report a vulnerability; known gaps are listed in
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). PRs welcome for the source-available product. Note that contributions are licensed under ELv2.
+See [CONTRIBUTING.md](CONTRIBUTING.md). PRs welcome. Contributions are accepted under the Apache License 2.0 with a Developer Certificate of Origin sign-off (`git commit -s`).

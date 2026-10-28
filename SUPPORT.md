@@ -11,7 +11,7 @@ question goes.
 | A feature request | [Open an issue](https://github.com/thomasunise/casecite/issues/new/choose). Check [ROADMAP.md](ROADMAP.md) first. |
 | A question about deploying or operating an instance | Read [docs/deployment.md](docs/deployment.md), [docs/secret-rotation.md](docs/secret-rotation.md) and [docs/subprocessors.md](docs/subprocessors.md); if the docs don't answer it, open an issue — an unclear doc is a bug. |
 | A code-of-conduct concern | See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). |
-| A licensing question, a paid private install, a support contract, or hosting CaseCite for others | Contact the maintainer, [@thomasunise](https://github.com/thomasunise), through GitHub. The [license](LICENSE) (Elastic License 2.0) does not permit offering CaseCite to third parties as a managed service without a separate agreement. |
+| A licensing question, a paid private install, a support contract, or hosting CaseCite for others | Contact the maintainer, [@thomasunise](https://github.com/thomasunise), through GitHub. The [license](LICENSE) is the Apache License 2.0, so hosting CaseCite for others needs no separate agreement; the maintainer offers support and private installs commercially. |
 
 ## What to expect
 

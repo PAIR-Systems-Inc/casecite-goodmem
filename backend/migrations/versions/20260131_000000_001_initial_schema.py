@@ -13,7 +13,7 @@ This migration creates all initial tables for the CaseCite platform:
 
 Note (2026-08 sanitization): the SaaS-era tables this migration originally
 created (subscriptions, purchases, fingerprints, etag_tracking, ip_velocity,
-blocked_fingerprints) were removed from it — the source-available product never
+blocked_fingerprints) were removed from it — the self-hosted product never
 uses them. Migration 003 drops them with inspector guards, so brownfield
 databases built by the pre-sanitization chain are still cleaned up.
 """
