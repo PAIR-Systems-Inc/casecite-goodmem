@@ -190,7 +190,12 @@ reason, in addition to whatever `ALLOWED_HOSTS` lists.
 start when `UVICORN_WORKERS` is set to anything other than `1` (or unset),
 whatever `VECTOR_DB` is, and the same constraint applies to running more than
 one container replica behind a single URL. Switching the vector database to
-Pinecone does **not** lift it.
+Pinecone does **not** lift it. Since 1.3.0 the running process also holds an
+exclusive lock on `data/.instance.lock`; a second process pointed at the same
+data directory (gunicorn, `uvicorn --workers 2`, a second replica sharing the
+volume) exits with a message naming the lock instead of corrupting the stores
+below. If a container was killed without a clean shutdown the kernel releases
+the lock with it; the file itself can be deleted safely while nothing is running.
 
 Three stores are process-local and are not safe to share between workers or
 replicas:

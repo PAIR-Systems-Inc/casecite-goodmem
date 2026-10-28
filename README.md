@@ -147,7 +147,7 @@ The stack fails closed on startup if any of these are missing or left as placeho
 |----------|-------------|
 | `SECRET_KEY` | JWT/CSRF signing key and root of at-rest encryption — `openssl rand -hex 32` (**never change after first run**) |
 | `ENCRYPTION_SALT` | At-rest encryption salt — `openssl rand -hex 16` (**never change after first run** except via the rotation procedure) |
-| `AUDIT_HMAC_KEY` | Audit-log chain key — `openssl rand -hex 32` |
+| `AUDIT_HMAC_KEY` | Audit-log chain key, at least 32 characters — `openssl rand -hex 32` |
 | `POSTGRES_PASSWORD` | Password for the bundled Postgres |
 | `REDIS_PASSWORD` | Password for the bundled Redis |
 | `DOMAIN` | Public hostname (or `localhost`); `CORS_ORIGINS` + `ALLOWED_HOSTS` default from it |
@@ -204,8 +204,9 @@ engine all read from [CourtListener](https://www.courtlistener.com). CourtListen
 the app. The app starts without a token, but the case-law half of the product
 is not usable without one:
 
-- **Citation check hard-fails without it** — the service raises
-  `CourtListener API token required` (`backend/app/services/courtlistener.py`).
+- **Citation check hard-fails without it** — `validate_citation` refuses to run
+  and returns a "token required" error that names where to set the token
+  (`_check_token` in `backend/app/services/courtlistener_client.py`).
 - Every other CourtListener call falls back to anonymous access, which is
   rate-limited hard enough that research features become unusable under any
   real load.

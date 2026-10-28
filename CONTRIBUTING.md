@@ -31,7 +31,8 @@ npm install
 npm run dev  # Starts Vite dev server on port 3000
 ```
 
-The Vite dev server proxies `/api` requests to `localhost:8000`.
+In development the frontend calls the API at `http://localhost:8000/api/v1`
+directly (`src/api/client.ts`), so the backend must be running on 8000.
 
 ### Running Tests
 
@@ -47,6 +48,18 @@ python -m pytest tests/ --cov=app --cov-branch --cov-report=term-missing --cov-f
 The suite writes to a throwaway data directory, uses dummy provider keys and
 blocks outbound network access (`backend/tests/conftest.py`), so it never
 touches `backend/data` or a real API key. Tests must not need either.
+
+```bash
+cd frontend
+npx vitest run                       # unit and component tests
+npx playwright install chromium      # once
+npx playwright test --project=chromium
+```
+
+The Playwright specs start the Vite dev server themselves and answer every API
+call from mocks (`e2e/helpers/auth.ts`), so they need no backend. If port 3000
+is taken on your machine, set `PLAYWRIGHT_PORT=3100` (or any free port). CI
+runs both Chromium and Firefox.
 
 ### Linting
 
