@@ -105,8 +105,8 @@ export async function installApiMocks(page: Page, options: MockApiOptions = {}):
     if (path === '/csrf-token') return fulfillJson(route, 200, { csrf_token: 'test-csrf' });
     if (path === '/branding') {
       return fulfillJson(route, 200, {
-        firm_name: 'CaseCite', logo_url: null, primary_color: '#1B2A4A',
-        secondary_color: '#C9A227', accent_color: '#2E5C8A', favicon_url: null, updated_at: null,
+        firm_name: 'CaseCite', logo_url: null, primary_color: '#E5E5E5',
+        secondary_color: '#0A0A0A', accent_color: '#737373', favicon_url: null, updated_at: null,
       });
     }
 
