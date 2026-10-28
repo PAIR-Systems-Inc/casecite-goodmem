@@ -17,7 +17,7 @@ DB seeding runs on the TestClient's own event loop (``client.portal``).
 
 import uuid
 from datetime import UTC, datetime, timedelta
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from app.config import settings
@@ -727,3 +727,35 @@ def test_auth_service_refresh_token_is_bound_to_a_session():
     assert data.token_type == "refresh"
     assert data.session_id == "sid-123"
     assert data.token_version == 0
+
+
+class TestDeletedUserToken:
+    """A token survives the deletion of its user row only in DEBUG (the
+    row-less dev account). In production a missing row is a dead account:
+    hand-deleted users and backups restored from before an account was
+    created must not leave a working bearer token behind."""
+
+    def test_token_for_missing_row_is_rejected_outside_debug(self, client, users):
+        uid, email = users.create()
+        login = _login(client, email)
+        headers = _bearer(login)
+        client.cookies.delete("access_token")
+        assert client.get("/api/v1/auth/me", headers=headers).status_code == 200
+
+        client.portal.call(_delete_coro, (uid,))
+
+        from app.services import auth as auth_module
+
+        prod_like = MagicMock(wraps=auth_module.settings)
+        prod_like.debug = False
+        with patch("app.services.auth.settings", prod_like):
+            resp = client.get("/api/v1/auth/me", headers=headers)
+        assert resp.status_code == 401
+
+    def test_token_for_missing_row_still_passes_in_debug(self, client, users):
+        uid, email = users.create()
+        headers = _bearer(_login(client, email))
+        client.cookies.delete("access_token")
+        client.portal.call(_delete_coro, (uid,))
+        # DEBUG is true for the suite: the dev-account path stays open.
+        assert client.get("/api/v1/auth/me", headers=headers).status_code != 401

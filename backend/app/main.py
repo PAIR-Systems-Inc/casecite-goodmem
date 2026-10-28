@@ -121,6 +121,62 @@ def check_single_process_deployment(workers: str | None = None) -> None:
     )
 
 
+# Open handle on the instance lock file; held for the life of the process so
+# the kernel releases the lock if the process dies without a clean shutdown.
+_instance_lock_handle = None
+
+
+def acquire_instance_lock(data_dir: "str | os.PathLike[str] | None" = None) -> None:
+    """Hold an exclusive advisory lock on ``<data>/.instance.lock``.
+
+    ``check_single_process_deployment`` only inspects the UVICORN_WORKERS
+    variable. ``uvicorn --workers 2``, gunicorn, or a second container replica
+    pointed at the same data volume never set it and would corrupt the same
+    process-local stores. A file lock in the data directory makes the second
+    process refuse to start instead of silently splitting the session store,
+    document registry and connector caches.
+
+    POSIX only (``fcntl``); on Windows development machines the check is
+    skipped. Re-entrant within a process so a test harness that starts the app
+    more than once does not lock itself out. Raises RuntimeError when another
+    process already holds the lock.
+    """
+    global _instance_lock_handle
+    if _instance_lock_handle is not None:
+        return
+    try:
+        import fcntl
+    except ImportError:  # Windows: no advisory file locks of this kind
+        return
+    from pathlib import Path
+
+    directory = Path(data_dir) if data_dir is not None else Path(settings.upload_dir).parent
+    directory.mkdir(parents=True, exist_ok=True)
+    lock_path = directory / ".instance.lock"
+    handle = open(lock_path, "a+")  # noqa: SIM115 - deliberately kept open
+    try:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        handle.close()
+        raise RuntimeError(
+            f"Another CaseCite process already holds {lock_path}. Only one worker "
+            "process / container replica may serve a data directory: the session "
+            "store, document registry and connector credential caches are "
+            "process-local (see check_single_process_deployment). Stop the other "
+            "instance, or if it crashed without releasing the lock, remove the "
+            "file and start again."
+        ) from None
+    _instance_lock_handle = handle
+
+
+def release_instance_lock() -> None:
+    """Release the lock taken by ``acquire_instance_lock`` (clean shutdown)."""
+    global _instance_lock_handle
+    handle, _instance_lock_handle = _instance_lock_handle, None
+    if handle is not None:
+        handle.close()  # closing the descriptor drops the flock
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
@@ -158,8 +214,10 @@ async def lifespan(app: FastAPI):
     except OSError as _vol_err:
         logger.error("Could not verify data-volume persistence: %s", _vol_err)
 
-    # SPLIT-BRAIN GUARD: refuse to run with more than one worker process.
+    # SPLIT-BRAIN GUARD: refuse to run with more than one worker process, and
+    # refuse to run beside another process already serving this data dir.
     check_single_process_deployment()
+    acquire_instance_lock()
 
     # Ensure required directories exist
     os.makedirs(settings.upload_dir, exist_ok=True)
@@ -326,6 +384,7 @@ async def lifespan(app: FastAPI):
         await retention_task
     await job_manager.graceful_shutdown()
     await close_sqlalchemy_db()
+    release_instance_lock()
 
 
 app = FastAPI(

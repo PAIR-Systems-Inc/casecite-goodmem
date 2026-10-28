@@ -112,6 +112,29 @@ class TestAuthentication:
         ):
             Settings()
 
+    def test_audit_hmac_key_minimum_length(self):
+        """The audit chain uses the first 32 bytes of AUDIT_HMAC_KEY; shorter
+        values silently weaken the tamper evidence and are refused."""
+        from app.config import Settings
+
+        with (
+            pytest.raises(ValueError, match="AUDIT_HMAC_KEY must be at least 32"),
+            patch.dict(
+                "os.environ",
+                {
+                    "DEBUG": "false",
+                    "SECRET_KEY": "a" * 64,
+                    "ENCRYPTION_SALT": "b" * 32,
+                    "AUDIT_HMAC_KEY": "audit",
+                    "REDIS_URL": "redis://localhost:6379/0",
+                    "DATABASE_URL": "postgresql+asyncpg://user:pass@localhost/db",
+                    "OPENAI_API_KEY": "sk-test",
+                    "DISK_ENCRYPTION_ACKNOWLEDGED": "true",
+                },
+            ),
+        ):
+            Settings()
+
     def test_database_required_in_production(self):
         """DATABASE_URL must be set in production."""
         from app.config import Settings
@@ -496,6 +519,67 @@ class TestMultiWorkerGuard:
         env = {k: v for k, v in os.environ.items() if k != "UVICORN_WORKERS"}
         with patch.dict(os.environ, env, clear=True):
             check_single_process_deployment()
+
+
+class TestInstanceLock:
+    """acquire_instance_lock refuses a second process on the same data dir
+    (the UVICORN_WORKERS check cannot see gunicorn or a second replica)."""
+
+    @pytest.fixture(autouse=True)
+    def _release(self):
+        from app import main
+
+        main.release_instance_lock()
+        yield
+        main.release_instance_lock()
+
+    def test_first_holder_acquires_and_is_reentrant(self, tmp_path):
+        from app import main
+
+        main.acquire_instance_lock(tmp_path)
+        main.acquire_instance_lock(tmp_path)  # same process: no error
+        main.release_instance_lock()
+        assert main._instance_lock_handle is None
+
+    def test_second_process_is_refused(self, tmp_path):
+        pytest.importorskip("fcntl", reason="advisory file locks are POSIX-only")
+        import subprocess
+        import sys
+        import textwrap
+
+        from app import main
+
+        lock_path = tmp_path / ".instance.lock"
+        # Another process takes the lock and holds it until stdin closes.
+        holder = subprocess.Popen(  # noqa: S603 - fixed interpreter and script
+            [
+                sys.executable,
+                "-c",
+                textwrap.dedent(
+                    f"""
+                    import fcntl, sys
+                    fh = open({str(lock_path)!r}, "a+")
+                    fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    print("locked", flush=True)
+                    sys.stdin.read()
+                    """
+                ),
+            ],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            text=True,
+        )
+        try:
+            assert holder.stdout.readline().strip() == "locked"
+            with pytest.raises(RuntimeError, match="already holds"):
+                main.acquire_instance_lock(tmp_path)
+            assert main._instance_lock_handle is None
+        finally:
+            holder.stdin.close()
+            holder.wait(timeout=10)
+
+        # Once the other process is gone the lock is free again.
+        main.acquire_instance_lock(tmp_path)
 
 
 class TestRateLimitBuckets:

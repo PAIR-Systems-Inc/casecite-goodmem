@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.config import settings
 from app.models.schemas import ChatRequest, ChatResponse, ConversationExportRequest
 from app.routers._matter_deps import accessible_matter_ids as _accessible_matter_ids
 from app.services import chat_sessions as chat_session_service
@@ -535,7 +536,13 @@ async def chat(
         logger.error(f"Chat provider error for user {user_id}: {type(e).__name__}: {e}")
         raise HTTPException(status_code=502, detail=describe_llm_failure(e))
     except (ValueError, KeyError, ConnectionError, TimeoutError, OSError, RuntimeError) as e:
-        logger.error(f"Chat error for user {user_id}: {e}", exc_info=True)
+        # Outside DEBUG log only the exception type: a parse or validation
+        # error can quote the input it rejected, and chat input is privileged
+        # text that must not land in long-retained logs (see error_handlers.py).
+        if settings.debug:
+            logger.error(f"Chat error for user {user_id}: {e}", exc_info=True)
+        else:
+            logger.error(f"Chat error for user {user_id}: {type(e).__name__}")
         raise HTTPException(
             status_code=500,
             detail="An error occurred processing your request. Please try again.",

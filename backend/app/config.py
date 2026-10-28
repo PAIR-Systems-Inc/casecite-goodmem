@@ -260,6 +260,22 @@ class Settings(BaseSettings):
                 "SECURITY ERROR: AUDIT_HMAC_KEY must be set for production. "
                 "Generate one with: openssl rand -hex 32"
             )
+        elif len(self.audit_hmac_key) < 32:
+            # The audit chain uses the first 32 bytes of this value as its HMAC
+            # key; a short value silently weakens the tamper-evidence the log
+            # is relied on for.
+            raise ValueError(
+                "SECURITY ERROR: AUDIT_HMAC_KEY must be at least 32 characters. "
+                "Generate one with: openssl rand -hex 32"
+            )
+
+        if self.sendgrid_api_key and self.noreply_email == "noreply@casecite.com":
+            logger.warning(
+                "SENDGRID_API_KEY is set but NOREPLY_EMAIL still has the default "
+                "sender (noreply@casecite.com), a domain you do not control. "
+                "Password-reset and invitation mail will fail SPF/DMARC checks "
+                "until NOREPLY_EMAIL is an address on a domain verified in SendGrid."
+            )
 
         # Enforce Redis for production
         if not self.redis_url and not self.debug:

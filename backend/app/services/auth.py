@@ -680,8 +680,12 @@ async def get_current_user(
             ).where(DBUser.id == token_data.user_id)
         )
         row = result.one_or_none()
-    # If user not found in DB (e.g. the DEBUG-only dev account), skip the
-    # DB-backed checks.
+    # A token whose user row is gone (deleted by hand, database restored from
+    # a backup that predates the account) must die with the row, not keep
+    # working for its remaining lifetime. Only the DEBUG-only dev account,
+    # which has no row by design, may pass without one.
+    if row is None and not settings.debug:
+        raise HTTPException(status_code=401, detail="Account disabled or deleted")
     must_change_password = False
     needs_mfa_enrollment = False
     if row is not None:
