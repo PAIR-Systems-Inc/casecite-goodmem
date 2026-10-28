@@ -226,3 +226,31 @@ class TestDocumentAuditTrail:
         assert actions == ["document_moved", "folder_deleted"]
         assert audit_events[0]["resource_id"] == doc_id
         assert "Smith" not in str(audit_events)  # folder names are client-identifying
+
+
+class TestDocumentListTotal:
+    """GET /documents reports the full match count so the client can page."""
+
+    def test_total_spans_every_page_and_shared_matters(self, client):
+        from tests.helpers import make_shared_matter
+
+        owner = make_user("page-owner")
+        colleague = make_user("page-colleague")
+        matter_id = make_shared_matter(colleague, owner)
+        ids = [register_document(owner, filename=f"f{i}.pdf") for i in range(3)]
+        ids.append(register_document(colleague, filename="shared.pdf", matter_id=matter_id))
+        ids.append(register_document(colleague, filename="private.pdf"))
+        try:
+            page = client.get("/api/v1/documents?limit=2&offset=0", headers=headers(owner)).json()
+            assert page["count"] == 2
+            assert len(page["documents"]) == 2
+            # 3 own + 1 shared; the colleague's private file is not counted.
+            assert page["total"] == 4
+            assert page["limit"] == 2 and page["offset"] == 0
+
+            last = client.get("/api/v1/documents?limit=2&offset=2", headers=headers(owner)).json()
+            assert last["count"] == 2
+            assert last["total"] == 4
+        finally:
+            for doc_id in ids:
+                document_service.documents.pop(doc_id, None)

@@ -9,6 +9,22 @@ from app.models.schemas import ConnectorType
 from app.services import connector_credentials
 from app.services.connectors.base import BaseConnector, ConnectorError, FileInfo
 
+# Google-native types and the Office type (+ extension) Drive exports them as.
+GOOGLE_EXPORT_TYPES: dict[str, tuple[str, str]] = {
+    "application/vnd.google-apps.document": (
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ".docx",
+    ),
+    "application/vnd.google-apps.spreadsheet": (
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ".xlsx",
+    ),
+    "application/vnd.google-apps.presentation": (
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        ".pptx",
+    ),
+}
+
 
 class GoogleDriveConnector(BaseConnector):
     """Google Drive connector using OAuth 2.0.
@@ -147,6 +163,10 @@ class GoogleDriveConnector(BaseConnector):
             "q": " and ".join(query_parts),
             "fields": "nextPageToken, files(id, name, mimeType, size, modifiedTime, parents)",
             "pageSize": 100,
+            # Without these, Drive silently omits every item that lives in a
+            # Shared Drive — a Shared Drive folder sync found 0 files.
+            "supportsAllDrives": "true",
+            "includeItemsFromAllDrives": "true",
         }
         if page_token:
             params["pageToken"] = page_token
@@ -162,11 +182,21 @@ class GoogleDriveConnector(BaseConnector):
 
             files = []
             for item in data.get("files", []):
+                # Google-native documents are exported (download_file) as
+                # Office files: list them under the exported type and name so
+                # the crawl's allowlist and the import validation see a .docx.
+                mime_type = item["mimeType"]
+                name = item["name"]
+                exported = GOOGLE_EXPORT_TYPES.get(mime_type)
+                if exported:
+                    mime_type, ext = exported
+                    if not name.lower().endswith(ext):
+                        name += ext
                 files.append(
                     FileInfo(
                         id=item["id"],
-                        name=item["name"],
-                        mime_type=item["mimeType"],
+                        name=name,
+                        mime_type=mime_type,
                         size=int(item.get("size", 0)),
                         modified_at=datetime.fromisoformat(
                             item["modifiedTime"].replace("Z", "+00:00")
@@ -186,30 +216,28 @@ class GoogleDriveConnector(BaseConnector):
             response = await client.get(
                 f"https://www.googleapis.com/drive/v3/files/{quote(file_id, safe='')}",
                 headers={"Authorization": f"Bearer {self.credentials['access_token']}"},
-                params={"fields": "mimeType"},
+                params={"fields": "mimeType", "supportsAllDrives": "true"},
             )
             response.raise_for_status()
             mime_type = response.json().get("mimeType", "")
 
-            # Google Docs need to be exported
-            export_map = {
-                "application/vnd.google-apps.document": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "application/vnd.google-apps.spreadsheet": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "application/vnd.google-apps.presentation": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            }
-
             base = f"https://www.googleapis.com/drive/v3/files/{quote(file_id, safe='')}"
             headers = {"Authorization": f"Bearer {self.credentials['access_token']}"}
-            if mime_type in export_map:
+            # Google Docs need to be exported
+            if mime_type in GOOGLE_EXPORT_TYPES:
                 return await self._download_capped(
                     client,
                     "GET",
                     f"{base}/export",
                     headers=headers,
-                    params={"mimeType": export_map[mime_type]},
+                    params={"mimeType": GOOGLE_EXPORT_TYPES[mime_type][0]},
                 )
             return await self._download_capped(
-                client, "GET", base, headers=headers, params={"alt": "media"}
+                client,
+                "GET",
+                base,
+                headers=headers,
+                params={"alt": "media", "supportsAllDrives": "true"},
             )
 
 

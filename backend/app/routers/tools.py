@@ -13,7 +13,7 @@ Provides endpoints for:
 import logging
 import time
 from datetime import date
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Query
 
@@ -140,6 +140,11 @@ async def search_cases(
 @router.get("/cases/{opinion_id}")
 async def get_case_detail(
     opinion_id: int,
+    kind: Literal["cluster", "opinion"] | None = Query(
+        None,
+        description="What the id is: 'cluster' (search result id) or 'opinion' "
+        "(a citation's opinion_id). Omitted: cluster first, then opinion.",
+    ),
     current_user: TokenData = require_permission("tools.research"),
 ) -> dict:
     """
@@ -148,7 +153,7 @@ async def get_case_detail(
     """
     try:
         start_time = time.time()
-        result = await legal_tools.get_case_detail(opinion_id)
+        result = await legal_tools.get_case_detail(opinion_id, id_kind=kind)
         elapsed = time.time() - start_time
         if not result:
             raise HTTPException(status_code=404, detail="Case not found")

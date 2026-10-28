@@ -428,6 +428,10 @@ async def search_case_law(
                     "date_filed": str(opinion.date_filed) if opinion.date_filed else None,
                     "citation": citation_str,
                     "url": opinion.absolute_url,
+                    # Both ids travel with the citation so the UI opens the
+                    # exact opinion that was read, not a same-numbered cluster.
+                    "opinion_id": opinion.id,
+                    "cluster_id": opinion.cluster_id,
                     "chunk_index": 0,
                     "raw_score": raw_score,
                     "case_name": opinion.case_name,

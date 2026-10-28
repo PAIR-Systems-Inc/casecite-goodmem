@@ -1,12 +1,14 @@
+import asyncio
 import contextvars
 import json
 import logging
 import os
 import re
 from abc import ABC, abstractmethod
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from dataclasses import dataclass
 from datetime import datetime
+from email.utils import parsedate_to_datetime
 from typing import Any
 
 import httpx
@@ -15,8 +17,72 @@ from cryptography.exceptions import InvalidTag
 from app.config import settings
 from app.models.schemas import ConnectorType
 from app.services.encryption import encryption_service
+from app.utils.upload_validation import ALLOWED_MIME_TYPES
 
 logger = logging.getLogger(__name__)
+
+# Throttling responses worth waiting out: 429 (rate limited) and 503 (busy).
+_THROTTLE_STATUSES = (429, 503)
+# A provider's Retry-After is honoured up to this many seconds per attempt;
+# anything longer (or absent) falls back to a short backoff.
+RETRY_AFTER_MAX_WAIT = 30.0
+RETRY_AFTER_ATTEMPTS = 3
+
+# Folder markers returned by providers' listings (recursed into, never imported).
+_FOLDER_MIME_TYPES = ("application/vnd.google-apps.folder", "folder")
+
+
+def retry_after_seconds(response: httpx.Response | None) -> float | None:
+    """Seconds a 429/503 asked us to wait (delta-seconds or HTTP-date), or None."""
+    if response is None:
+        return None
+    raw = response.headers.get("retry-after")
+    if not raw:
+        return None
+    raw = raw.strip()
+    if raw.isdigit():
+        return float(raw)
+    try:
+        when = parsedate_to_datetime(raw)
+    except (TypeError, ValueError, IndexError):
+        return None
+    if when.tzinfo is None:
+        return None
+    return max(0.0, (when - datetime.now(when.tzinfo)).total_seconds())
+
+
+async def call_with_retry_after(
+    operation: Callable[[], Awaitable[Any]],
+    *,
+    attempts: int = RETRY_AFTER_ATTEMPTS,
+    max_wait: float = RETRY_AFTER_MAX_WAIT,
+) -> Any:
+    """Run ``operation``, waiting out a 429/503 as the provider asks (bounded).
+
+    Honours ``Retry-After`` up to ``max_wait`` seconds per attempt (a short
+    backoff when the header is missing) for at most ``attempts`` tries, then
+    re-raises so the caller records the failure. Other errors are not retried.
+    """
+    for attempt in range(1, attempts + 1):
+        try:
+            return await operation()
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code not in _THROTTLE_STATUSES or attempt == attempts:
+                raise
+            wait = retry_after_seconds(e.response)
+            if wait is None:
+                wait = min(2.0 * attempt, max_wait)
+            wait = min(max(wait, 0.0), max_wait)
+            logger.info(
+                "Provider returned HTTP %s; retrying in %.1fs (attempt %d/%d)",
+                e.response.status_code,
+                wait,
+                attempt,
+                attempts,
+            )
+            await asyncio.sleep(wait)
+    raise AssertionError("unreachable")  # pragma: no cover
+
 
 # Context variable for current user_id (async-safe, request-scoped)
 _connector_user_ctx: contextvars.ContextVar[str | None] = contextvars.ContextVar(
@@ -306,44 +372,77 @@ class BaseConnector(ABC):
             return bytes(chunks)
 
     async def crawl_all_files(
-        self, supported_types: list[str] = None, folder_id: str | None = None
+        self,
+        supported_types: list[str] = None,
+        folder_id: str | None = None,
+        errors: list[dict[str, str]] | None = None,
     ) -> AsyncGenerator[FileInfo, None]:
-        """Crawl files recursively, starting at *folder_id* (root when None)."""
+        """Crawl files recursively, starting at *folder_id* (root when None).
+
+        ``supported_types`` defaults to every type the upload endpoint accepts
+        (one allowlist for uploads, picker imports and syncs). A subfolder
+        whose listing fails (403 on a restricted folder, 429 past the bounded
+        retry) is recorded in ``errors`` as ``{"name", "reason"}`` and skipped
+        instead of aborting the whole crawl; a failing START folder still
+        raises, since then nothing could be synced at all.
+        """
         if folder_id and not self.supports_folder_sync:
             raise ConnectorError(
                 f"{self.connector_type.value} cannot sync a single folder; "
                 "only a full-account sync is available."
             )
         if supported_types is None:
-            supported_types = [
-                "application/pdf",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "application/msword",
-                "text/plain",
-            ]
+            supported_types = list(ALLOWED_MIME_TYPES)
 
-        async for file_info in self._crawl_folder(folder_id, supported_types):
+        async for file_info in self._crawl_folder(
+            folder_id, supported_types, errors if errors is not None else [], is_start=True
+        ):
             yield file_info
 
     async def _crawl_folder(
-        self, folder_id: str | None, supported_types: list[str]
+        self,
+        folder_id: str | None,
+        supported_types: list[str],
+        errors: list[dict[str, str]],
+        *,
+        is_start: bool = False,
+        folder_name: str | None = None,
     ) -> AsyncGenerator[FileInfo, None]:
         """Recursively crawl a folder."""
         page_token = None
 
         while True:
-            files, next_token = await self.list_files(folder_id, page_token)
+            try:
+                files, next_token = await call_with_retry_after(
+                    lambda: self.list_files(folder_id, page_token)
+                )
+            except httpx.HTTPStatusError as e:
+                if is_start:
+                    raise
+                # One unreadable subfolder must not take the whole sync down.
+                label = folder_name or folder_id or "folder"
+                logger.warning(
+                    "Skipping folder %s: provider returned HTTP %s",
+                    label,
+                    e.response.status_code,
+                )
+                errors.append(
+                    {
+                        "name": f"{label}/",
+                        "reason": f"folder skipped: provider returned HTTP {e.response.status_code}",
+                    }
+                )
+                return
 
             for file_info in files:
                 # Check if it's a supported file type
                 if file_info.mime_type in supported_types:
                     yield file_info
                 # If it's a folder, recurse into it
-                elif file_info.mime_type in [
-                    "application/vnd.google-apps.folder",
-                    "folder",
-                ]:
-                    async for sub_file in self._crawl_folder(file_info.id, supported_types):
+                elif file_info.mime_type in _FOLDER_MIME_TYPES:
+                    async for sub_file in self._crawl_folder(
+                        file_info.id, supported_types, errors, folder_name=file_info.name
+                    ):
                         yield sub_file
 
             if not next_token:

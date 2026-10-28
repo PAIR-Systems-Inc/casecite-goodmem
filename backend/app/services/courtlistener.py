@@ -67,6 +67,8 @@ class Opinion(BaseModel):
     """Court opinion/case from CourtListener"""
 
     id: int
+    # The cluster (case) this opinion belongs to; v4 search results carry it.
+    cluster_id: int | None = None
     absolute_url: str
     case_name: str
     case_name_short: str | None = None
@@ -260,6 +262,7 @@ class CourtListenerService(CourtListenerClientBase):
             opinions.append(
                 Opinion(
                     id=opinion_id,
+                    cluster_id=result.get("cluster_id") or None,
                     absolute_url=f"https://www.courtlistener.com{result.get('absolute_url', '')}",
                     case_name=result.get("caseName", "Unknown"),
                     case_name_short=result.get("caseNameShort"),
@@ -309,8 +312,11 @@ class CourtListenerService(CourtListenerClientBase):
                 f"CourtListener opinion {data.get('id')} has no usable text in any format field"
             )
 
+        # The opinion record points at its cluster by URL (".../clusters/123/").
+        cluster_match = re.search(r"/clusters/(\d+)/?$", str(data.get("cluster") or ""))
         return Opinion(
             id=data.get("id"),
+            cluster_id=int(cluster_match.group(1)) if cluster_match else None,
             absolute_url=f"https://www.courtlistener.com{data.get('absolute_url', '')}",
             case_name=data.get("case_name", "Unknown"),
             case_name_short=data.get("case_name_short"),

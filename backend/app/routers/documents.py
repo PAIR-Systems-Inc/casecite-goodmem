@@ -162,9 +162,20 @@ async def list_documents(
         offset=offset,
         accessible_matter_ids=accessible_matters,
     )
+    # ``total`` is the full match count across pages (what the pager needs);
+    # ``count`` stays the page length for compatibility.
+    total = await document_service.count_documents(
+        user_id=current_user.user_id,
+        source=source,
+        status=status,
+        accessible_matter_ids=accessible_matters,
+    )
     return DocumentList(
         documents=docs,
         count=len(docs),
+        total=total,
+        limit=limit,
+        offset=offset,
     )
 
 

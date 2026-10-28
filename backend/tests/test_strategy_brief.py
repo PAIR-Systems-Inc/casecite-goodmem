@@ -310,6 +310,20 @@ class TestGenerateBrief:
         assert beta["confidence"] == 0
 
     @pytest.mark.asyncio
+    async def test_every_selected_folder_scopes_the_brief(self):
+        """Several selected folders are a union — not just the first one."""
+        patches = self._patches(
+            doc_ids=["a", "b"],
+            search_results=[_chunk("a", "alpha passage", 0.9), _chunk("b", "beta passage", 0.5)],
+        )
+        by_filter = next(p.new for p in patches if p.attribute == "get_documents_by_filter")
+        result = await self._run(patches, folder_paths=["/Cases/Smith/", "/Cases/Jones/"])
+
+        assert by_filter.await_args.kwargs["folder_paths"] == ["/Cases/Smith/", "/Cases/Jones/"]
+        assert result["scope"]["folder_paths"] == ["/Cases/Smith/", "/Cases/Jones/"]
+        assert result["scope"]["folder_path"] == "/Cases/Smith/"
+
+    @pytest.mark.asyncio
     async def test_response_shape_and_unknown_ref_dropping(self):
         patches = self._patches(
             doc_ids=["a", "b"],

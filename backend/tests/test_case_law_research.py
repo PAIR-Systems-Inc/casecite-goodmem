@@ -378,3 +378,48 @@ class TestKnownPartyCaptions:
         assert "Doe v. Acme" in clean
         assert "123 F.3d 456" not in clean
         assert removed == ["123 F.3d 456"]
+
+
+class TestCitationIdentifiers:
+    """Case-law citations keep the CourtListener ids and verification state the
+    UI needs for the Verified badge and "Verify in Source Opinion"."""
+
+    def test_verified_deep_result_carries_ids_and_verified(self):
+        from app.services.rag.citations import build_case_law_citations
+
+        result = {
+            "id": "courtlistener_123",
+            "text": "the quoted holding",
+            "similarity": 0.9,
+            "rank": 1,
+            "metadata": {
+                "filename": "Roe v. Wade (410 U.S. 113)",
+                "source": "courtlistener",
+                "doc_type": "case_law",
+                "case_name": "Roe v. Wade",
+                "citation": "410 U.S. 113",
+                "url": "https://www.courtlistener.com/opinion/108713/roe-v-wade/",
+                "opinion_id": 123,
+                "cluster_id": 108713,
+                "quote_verified": True,
+            },
+        }
+        [citation] = build_case_law_citations([result], [], 0, "abortion rights")
+        assert citation.opinion_id == "123"
+        assert citation.cluster_id == "108713"
+        assert citation.verified is True
+
+    def test_unscreened_keyword_hit_is_not_marked_verified(self):
+        from app.services.rag.citations import build_case_law_citations
+
+        result = {
+            "id": "courtlistener_5",
+            "text": "",
+            "similarity": 0.0,
+            "rank": 1,
+            "metadata": {"case_name": "A v. B", "citation": "1 F.3d 1", "opinion_id": 5},
+        }
+        [citation] = build_case_law_citations([result], [], 0, "q")
+        assert citation.opinion_id == "5"
+        assert citation.cluster_id is None
+        assert citation.verified is None  # unknown, never "false"

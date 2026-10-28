@@ -5,11 +5,12 @@ from datetime import UTC, datetime
 import anthropic
 import httpx
 import openai
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.models.schemas import ChatRequest, ChatResponse, ConversationExportRequest
+from app.routers._matter_deps import accessible_matter_ids as _accessible_matter_ids
 from app.services import chat_sessions as chat_session_service
 from app.services import conversation_export
 from app.services.audit import AuditEventType, audit_service
@@ -33,6 +34,32 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 # The exhaustive authority map fans out to CourtListener per proposition, per
 # file — cap how many files one chat message can audit at once.
 AUTHORITY_MAP_MAX_FILES = 8
+
+
+def _opt_str(value) -> str | None:
+    return str(value) if value not in (None, "") else None
+
+
+def _authority_map_completion(result: dict) -> dict:
+    """The compact record of a finished chat authority map, for the session.
+
+    Mappings live under their run ids (GET /authority-map/{run_id}); the
+    message keeps the per-file run ids, summaries and totals only.
+    """
+    return {
+        "status": "completed",
+        "runs": [
+            {
+                "document_id": f.get("document_id"),
+                "document_name": f.get("document_name"),
+                "run_id": f.get("run_id"),
+                "summary": f.get("summary") or {},
+            }
+            for f in result.get("files") or []
+        ],
+        "totals": result.get("totals") or {},
+        "coverage_notes": result.get("coverage_notes") or [],
+    }
 
 
 def _authority_map_coverage_notes(files: list[dict]) -> list[str]:
@@ -93,6 +120,7 @@ async def chat(
     http_request: Request,
     current_user: TokenData = require_permission("chat.use"),
     async_mode: bool = Query(False, alias="async"),
+    accessible_matters: set[str] = Depends(_accessible_matter_ids),
 ) -> ChatResponse:
     """Send a message and get a RAG-powered response with case law integration. Requires authentication."""
     if rag_service is None:
@@ -107,6 +135,9 @@ async def chat(
     client_ip = get_client_ip(http_request)
     user_id = current_user.user_id
     user_email = current_user.email
+    # Matters the caller belongs to: documents shared through them are part of
+    # what chat may search and read, alongside the caller's own files.
+    matter_ids = sorted(accessible_matters) or None
 
     # Pre-resolve document IDs (requires await, must happen before returning 202).
     # None means "no scope — search everything the user can see". A list is an
@@ -123,6 +154,7 @@ async def chat(
                 sources=request.document_filter.sources,
                 doc_types=request.document_filter.doc_types,
                 include_subfolders=request.document_filter.include_subfolders,
+                accessible_matter_ids=accessible_matters,
             )
 
     def _brief_citation(c: dict, idx: int) -> dict:
@@ -149,6 +181,12 @@ async def chat(
             },
             "document_id": c.get("document_id"),
             "url": c.get("url"),
+            # Verification state and CourtListener ids must survive the
+            # mapping: they drive the Verified badge and "Verify in Source
+            # Opinion" in the UI.
+            "opinion_id": _opt_str(c.get("opinion_id") or c.get("opinionId")),
+            "cluster_id": _opt_str(c.get("cluster_id")),
+            "verified": c.get("verified"),
             "was_cited_by_ai": True,
         }
 
@@ -193,14 +231,31 @@ async def chat(
             else:
                 docs_meta = []
                 for doc_id in scoped_ids:
-                    doc = await document_service.get_document(doc_id, user_id)
+                    doc = await document_service.get_document(doc_id, user_id, accessible_matters)
                     if doc:
                         docs_meta.append({"id": doc_id, "name": doc.filename})
 
+                # Links the background job to the persisted assistant message
+                # so the finished map is saved with the session (see below).
+                # ``message_id`` is set once the message exists; ``completion``
+                # holds the job's record if it finished first.
+                map_link: dict = {"message_id": None, "completion": None, "base": {}}
+
                 async def _map_all(ids=tuple(scoped_ids)):
+                    try:
+                        result = await _run_authority_map(ids)
+                    except Exception as e:
+                        await _record_authority_map({"status": "failed", "error": type(e).__name__})
+                        raise
+                    await _record_authority_map(_authority_map_completion(result))
+                    return result
+
+                async def _run_authority_map(ids):
                     files = []
                     for doc_id in ids:
-                        loaded = await document_service.get_document_text(doc_id, user_id)
+                        loaded = await document_service.get_document_text(
+                            doc_id, user_id, accessible_matters
+                        )
                         if not loaded:
                             continue
                         filename, text = loaded
@@ -228,6 +283,27 @@ async def chat(
                         "coverage_notes": _authority_map_coverage_notes(files),
                     }
 
+                async def _record_authority_map(completion: dict) -> None:
+                    """Persist the job's outcome on the chat message (best-effort).
+
+                    The runs themselves are already stored by the mapper; this
+                    writes their ids and totals onto the message so a reopened
+                    session can show and reopen the map.
+                    """
+                    map_link["completion"] = completion
+                    message_id = map_link["message_id"]
+                    if not message_id:
+                        return  # do_work stores it when the message is written
+                    try:
+                        await chat_session_service.set_message_authority_map(
+                            message_id,
+                            user_id,
+                            {**map_link["base"], **completion},
+                            accessible_matter_ids=accessible_matters,
+                        )
+                    except (LookupError, ValueError, SQLAlchemyError, OSError, RuntimeError) as e:
+                        logger.warning(f"Authority map persistence failed (non-fatal): {e}")
+
                 map_job_id = await job_manager.submit(
                     _map_all,
                     user_id=user_id,
@@ -235,6 +311,7 @@ async def chat(
                     retry_policy=RETRY_POLICIES["ai_analysis"],
                 )
                 authority_map_job = {"job_id": map_job_id, "documents": docs_meta}
+                map_link["base"] = {**authority_map_job, "status": "running"}
                 names = ", ".join(d["name"] for d in docs_meta) or "the selected files"
                 content = (
                     f"Mapping supporting case law across "
@@ -278,20 +355,21 @@ async def chat(
                 document_ids=None,
                 user_id=user_id,
                 rag_settings=user_settings,
+                matter_ids=matter_ids,
             )
         # The strategy brief reads the documents by design — never route to it
         # when the client explicitly asked for a documents-off answer.
         elif intent == "strategy" and request.include_documents:
             try:
-                folder_path = None
+                brief_folder_paths = None
                 brief_document_ids = None
                 if request.document_filter and not request.document_filter.search_all:
-                    folder_paths = request.document_filter.folder_paths or []
-                    folder_path = folder_paths[0] if folder_paths else None
+                    # All selected folders scope the brief, not only the first.
+                    brief_folder_paths = request.document_filter.folder_paths or None
                     brief_document_ids = request.document_filter.document_ids
                 brief = await strategy_service.generate_brief(
                     question=request.query,
-                    folder_path=folder_path,
+                    folder_paths=brief_folder_paths,
                     document_ids=brief_document_ids,
                     include_case_law=include_case_law,
                     user_id=user_id,
@@ -357,6 +435,7 @@ async def chat(
                 document_ids=document_ids,
                 user_id=user_id,
                 rag_settings=user_settings,
+                matter_ids=matter_ids,
             )
 
         response_id = str(uuid.uuid4())
@@ -400,7 +479,12 @@ async def chat(
             await chat_session_service.append_message(
                 session_id, user_id, role="user", content=request.query
             )
-            await chat_session_service.append_message(
+            map_record = None
+            if authority_map_job:
+                # Saved with the message so the map can be reopened later; the
+                # job fills in the run ids and totals when it finishes.
+                map_record = {**map_link["base"], **(map_link["completion"] or {})}
+            saved = await chat_session_service.append_message(
                 session_id,
                 user_id,
                 role="assistant",
@@ -408,7 +492,11 @@ async def chat(
                 citations=response_payload["citations"],
                 strategy=response_payload.get("strategy"),
                 stats=response_payload["stats"],
+                authority_map=map_record,
             )
+            if authority_map_job:
+                # From here on the job writes its completion to this message.
+                map_link["message_id"] = saved["id"]
         except (
             LookupError,
             ValueError,

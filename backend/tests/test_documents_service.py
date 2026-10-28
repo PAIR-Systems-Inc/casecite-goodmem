@@ -501,3 +501,51 @@ class TestDocumentService:
         assert doc.status.value == "failed"
         # The reason is recorded so the UI can say why, not just "failed".
         assert "scanned" in doc.metadata["error"]
+
+
+class TestCountAndSharedScope:
+    """count_documents reports the full match count; filters may span shared matters."""
+
+    def _service_with(self, docs):
+        svc = TestDocumentService()._make_service()
+        svc.documents = {d.id: d for d in docs}
+        return svc
+
+    @pytest.mark.asyncio
+    async def test_count_matches_filters_across_all_pages(self):
+        from app.models.schemas import ConnectorType
+
+        own = [_make_mock_document(doc_id=f"d{i}", user_id="user-1") for i in range(5)]
+        own[0].source = ConnectorType.BOX
+        shared = _make_mock_document(doc_id="shared", user_id="user-2")
+        shared.matter_id = "matter-1"
+        other = _make_mock_document(doc_id="other", user_id="user-2")
+        other.matter_id = None
+        svc = self._service_with([*own, shared, other])
+
+        page = await svc.list_documents(
+            "user-1", limit=2, offset=0, accessible_matter_ids={"matter-1"}
+        )
+        assert len(page) == 2
+        assert await svc.count_documents("user-1", accessible_matter_ids={"matter-1"}) == 6
+        assert await svc.count_documents("user-1") == 5  # owner-only without matters
+        assert await svc.count_documents("user-1", source=ConnectorType.BOX) == 1
+        # Same filters as list_documents: the paged list and the total agree.
+        listed = await svc.list_documents("user-1", limit=500, accessible_matter_ids={"matter-1"})
+        assert len(listed) == await svc.count_documents(
+            "user-1", accessible_matter_ids={"matter-1"}
+        )
+
+    @pytest.mark.asyncio
+    async def test_filter_reaches_shared_matter_documents_when_asked(self):
+        shared = _make_mock_document(doc_id="shared", user_id="user-2")
+        shared.matter_id = "matter-1"
+        own = _make_mock_document(doc_id="own", user_id="user-1")
+        foreign = _make_mock_document(doc_id="foreign", user_id="user-2")
+        foreign.matter_id = "matter-9"
+        svc = self._service_with([shared, own, foreign])
+
+        assert sorted(await svc.get_documents_by_filter("user-1")) == ["own"]
+        assert sorted(
+            await svc.get_documents_by_filter("user-1", accessible_matter_ids={"matter-1"})
+        ) == ["own", "shared"]

@@ -1283,3 +1283,56 @@ class TestPerFileCaseLawGuard:
         )
         assert "Hendricks v. Pemberton Holdings" in content
         assert "could not be verified" not in content
+
+
+class TestSharedMatterRetrieval:
+    @pytest.mark.asyncio
+    async def test_matter_ids_reach_the_search_scope(self):
+        """Chat passes the caller's matters; retrieval must search them too."""
+        service = _service(openai=_llm_client())
+
+        with (
+            patch(
+                "app.services.rag.service.search_documents", AsyncMock(return_value=RETRIEVED)
+            ) as search,
+            _quiet_post_processing(),
+        ):
+            await service.generate_response(
+                query="What happens if rent is late?",
+                include_case_law=False,
+                user_id="user-1",
+                matter_ids=["matter-1", "matter-2"],
+                rag_settings=RAGSettings(query_expansion=False),
+            )
+
+        assert search.call_args.kwargs["user_id"] == "user-1"
+        assert search.call_args.kwargs["matter_ids"] == ["matter-1", "matter-2"]
+
+    @pytest.mark.asyncio
+    async def test_shared_matter_chunks_are_found_only_with_the_matter(
+        self, store, fake_embeddings
+    ):
+        """Against the store: a colleague's chunk tagged with a shared matter is
+        retrievable through that matter and invisible without it."""
+        await store.add_documents(
+            [
+                chunk(
+                    "colleague-lease",
+                    0,
+                    "Rent is paid monthly; a late payment incurs a fee after five days.",
+                    user_id="user-2",
+                    matter_id="matter-1",
+                )
+            ]
+        )
+
+        def _doc_ids(results):
+            return {(r.get("metadata") or {}).get("document_id") for r in results}
+
+        alone = await search_documents(store, "late rent payment fee", user_id="user-1")
+        assert "colleague-lease" not in _doc_ids(alone)
+
+        shared = await search_documents(
+            store, "late rent payment fee", user_id="user-1", matter_ids=["matter-1"]
+        )
+        assert "colleague-lease" in _doc_ids(shared)

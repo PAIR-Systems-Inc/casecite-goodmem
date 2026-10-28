@@ -30,6 +30,7 @@ from app.services.connectors.base import (
     ConnectorError,
     FileInfo,
     FileTooLargeError,
+    call_with_retry_after,
 )
 from app.services.connectors.sync_state import (
     OAUTH_BINDING_COOKIE,
@@ -64,6 +65,9 @@ _PROVIDER_ERRORS = (
 # Stop a sync once this many files in a row have failed: the grant was most
 # likely revoked or the provider is throttling, and hammering on helps nobody.
 _MAX_CONSECUTIVE_FAILURES = 10
+
+# Per-file errors reported back (the count is always complete).
+MAX_REPORTED_ERRORS = 20
 
 _FOLDER_ID_MAX_LENGTH = 1024
 _CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]")
@@ -446,7 +450,8 @@ async def run_sync(
 
     processed = 0
     skipped = 0
-    errors: list[str] = []
+    # Per-file (and per-skipped-folder) failures: {"name", "reason"}.
+    errors: list[dict[str, str]] = []
 
     try:
         # The user's stored BYOK keys, so embeddings work on BYOK-only instances.
@@ -454,7 +459,7 @@ async def run_sync(
         already = _already_imported(user_id, connector_type)
 
         files = []
-        async for file_info in connector.crawl_all_files(folder_id=folder_id):
+        async for file_info in connector.crawl_all_files(folder_id=folder_id, errors=errors):
             files.append(file_info)
 
         logger.info(f"Sync: Found {len(files)} files to process")
@@ -473,7 +478,10 @@ async def run_sync(
                     )
 
                 # Size-capped while streaming, in case the listing under-reported.
-                content = await connector.download_file(file_info.id)
+                # A 429 is waited out as the provider asks (bounded), not failed.
+                content = await call_with_retry_after(
+                    lambda file_id=file_info.id: connector.download_file(file_id)
+                )
 
                 # Same allowlist + magic-byte validation as the direct upload route.
                 filename, content_type = validate_import_file(
@@ -493,7 +501,7 @@ async def run_sync(
                 )
             except _PROVIDER_ERRORS as e:
                 logger.warning(f"Sync: Error processing {display_name}: {_describe_error(e)}")
-                errors.append(f"{display_name}: {_describe_error(e)}")
+                errors.append({"name": display_name, "reason": _describe_error(e)})
                 consecutive_failures += 1
                 if consecutive_failures >= _MAX_CONSECUTIVE_FAILURES:
                     raise ConnectorError(
@@ -506,7 +514,7 @@ async def run_sync(
 
             if doc.status == DocumentStatus.FAILED:
                 reason = doc.metadata.get("error") or "could not be indexed"
-                errors.append(f"{display_name}: {reason}")
+                errors.append({"name": display_name, "reason": reason})
                 continue
 
             processed += 1
@@ -553,7 +561,8 @@ async def run_sync(
             "docs_skipped": skipped,
             "docs_total": len(files),
             "errors_count": len(errors),
-            "errors": errors[:20],  # Cap error list for serialisation
+            # First 20 {"name", "reason"} entries; errors_count is the full tally.
+            "errors": errors[:MAX_REPORTED_ERRORS],
         }
 
     except Exception as e:

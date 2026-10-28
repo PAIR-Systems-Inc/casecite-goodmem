@@ -83,7 +83,13 @@ class TestCourtListener:
                 f"{BASE}/courtlistener", json={"api_token": f"  {token}  "}, headers=headers(admin)
             )
         assert resp.status_code == 200
-        assert resp.json()["status"] == "saved"
+        body = resp.json()
+        assert body["status"] == "saved"
+        # The save response carries the same status fields as GET, so the UI
+        # can show "configured" straight away instead of "not configured".
+        assert body["configured"] is True
+        assert body["source"] == "instance"
+        assert body["masked"].startswith("cl-t") and body["masked"].endswith("6789")
         assert token not in resp.text
         set_secret.assert_awaited_once_with("courtlistener_api_token", token)
         apply.assert_called_once_with(token)
@@ -104,11 +110,21 @@ class TestCourtListener:
     def test_clear_deletes_and_audits(self, client, admin, audit_events):
         with (
             patch(f"{ROUTER}.delete_secret", new_callable=AsyncMock) as delete_secret,
+            patch(f"{ROUTER}.get_secret", new_callable=AsyncMock, return_value=None),
             patch(f"{ROUTER}.apply_courtlistener_token"),
+            patch(
+                f"{ROUTER}.settings", settings.model_copy(update={"courtlistener_api_token": None})
+            ),
         ):
             resp = client.delete(f"{BASE}/courtlistener", headers=headers(admin))
         assert resp.status_code == 200
-        assert resp.json() == {"status": "cleared"}
+        # After clearing, the response states the effective (now empty) status.
+        assert resp.json() == {
+            "status": "cleared",
+            "configured": False,
+            "source": "none",
+            "masked": None,
+        }
         delete_secret.assert_awaited_once_with("courtlistener_api_token")
         assert [e["details"]["action"] for e in audit_events] == ["courtlistener_token_cleared"]
 
@@ -180,22 +196,22 @@ class TestConnectorCredentials:
                 )
                 assert first.status_code == 200, first.text
 
-                second = save({"google_api_key": "api-key-0987654321"})
+                second = save({"google_api_key": "fake-picker-key"})
                 assert second.status_code == 200, second.text
                 assert json.loads(store["connector_credentials_google"]) == {
                     "google_client_id": "client-id-1234567890",
                     "google_client_secret": "secret-value-0123456789",
-                    "google_api_key": "api-key-0987654321",
+                    "google_api_key": "fake-picker-key",
                 }
                 assert connector_credentials.get("google_client_id") == "client-id-1234567890"
-                assert connector_credentials.get("google_api_key") == "api-key-0987654321"
+                assert connector_credentials.get("google_api_key") == "fake-picker-key"
                 assert second.json()["masked"]["google_client_id"].startswith("clie")
 
                 third = save({"google_client_secret": ""})
                 assert third.status_code == 200, third.text
                 assert json.loads(store["connector_credentials_google"]) == {
                     "google_client_id": "client-id-1234567890",
-                    "google_api_key": "api-key-0987654321",
+                    "google_api_key": "fake-picker-key",
                 }
                 assert connector_credentials.get(
                     "google_client_secret"
@@ -222,6 +238,33 @@ class TestLocalLLM:
             base_url="http://localhost:11434/v1", chat_model="llama3", utility_model="llama3"
         )
         assert [e["details"]["action"] for e in audit_events] == ["local_llm_set"]
+
+    def test_set_response_reports_configured_like_status(self, client, admin):
+        """Right after saving, the response says the endpoint is configured — the
+        same fields GET /local-llm returns, read from the applied runtime."""
+        with patch(f"{ROUTER}.set_secret", new_callable=AsyncMock):
+            try:
+                resp = client.post(
+                    f"{BASE}/local-llm",
+                    json={"base_url": "http://localhost:11434/v1", "chat_model": "llama3"},
+                    headers=headers(admin),
+                )
+                assert resp.status_code == 200
+                body = resp.json()
+                assert body["status"] == "saved"
+                assert body["configured"] is True
+                assert body["base_url"] == "http://localhost:11434/v1"
+                assert body["chat_model"] == "llama3"
+                status = client.get(f"{BASE}/local-llm", headers=headers(admin)).json()
+                assert {k: body[k] for k in status} == status
+            finally:
+                from app.services import llm_clients
+
+                llm_clients.set_runtime(
+                    base_url=settings.openai_base_url or "",
+                    chat_model=settings.openai_chat_model,
+                    utility_model=settings.openai_utility_model,
+                )
 
     @pytest.mark.parametrize(
         ("env_base_url", "expected"),

@@ -169,6 +169,12 @@ class Citation(BaseModel):
     reviewed_at: datetime | None = None
     document_id: str | None = None
     url: str | None = None  # Link to source (e.g., CourtListener URL)
+    # CourtListener identifiers (case-law citations only). ``opinion_id`` is the
+    # id of the opinion text that was read/verified; ``cluster_id`` the case it
+    # belongs to. Carried so the UI can open the source opinion by the right
+    # kind of id (see GET /tools/cases/{id}?kind=opinion).
+    opinion_id: str | None = None
+    cluster_id: str | None = None
     was_cited_by_ai: bool = False  # Whether AI actually referenced this in response
     # Claim-grounded citations: whether the quote verified verbatim against
     # the source file, and where it sits (char span) so the UI can anchor it
@@ -295,6 +301,12 @@ class ChatSessionMessage(BaseModel):
     citations: list[dict] = []
     strategy: dict | None = None
     stats: dict | None = None
+    # Present on an assistant message that ran the exhaustive authority map:
+    # {"job_id", "documents": [{id, name}], "status": "running"|"completed"|
+    # "failed", and when completed "runs": [{document_id, document_name,
+    # run_id, summary}], "totals", "coverage_notes"} — run_id opens the stored
+    # map via GET /authority-map/{run_id}.
+    authority_map: dict | None = None
     created_at: datetime
 
 
@@ -339,7 +351,12 @@ class Document(BaseModel):
 
 class DocumentList(BaseModel):
     documents: list[Document]
-    count: int
+    count: int  # length of this page
+    # Documents matching the filters across ALL pages, plus the page window
+    # that produced this response — what the client needs to page.
+    total: int = 0
+    limit: int | None = None
+    offset: int = 0
 
 
 # Connector Models
@@ -852,6 +869,12 @@ class PickerConfig(BaseModel):
     """Configuration for client-side file pickers."""
 
     google_enabled: bool = False
+    # False when the Google Picker cannot open; ``google_missing`` names the
+    # settings fields that are absent (e.g. ["google_api_key"]) so the UI can
+    # explain instead of showing a picker that fails to load.
+    google_configured: bool = False
+    google_missing: list[str] = []
+    # The Picker developer key (a browser-side, referrer-restricted API key).
     google_api_key: str | None = None
     google_client_id: str | None = None
     google_app_id: str | None = None
@@ -921,9 +944,18 @@ class BoxPickerTokenResponse(BaseModel):
     expires_in: int
 
 
+class ImportFileError(BaseModel):
+    """Why one file of an import or sync was not indexed."""
+
+    name: str
+    reason: str
+
+
 class PickerImportResponse(BaseModel):
     """Response from file import."""
 
     imported: int
     failed: int
-    errors: list[str]
+    # One entry per failed file (bounded to the first 20); ``failed`` is the
+    # full count.
+    errors: list[ImportFileError]

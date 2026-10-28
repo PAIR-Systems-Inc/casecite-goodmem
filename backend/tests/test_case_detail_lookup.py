@@ -83,7 +83,10 @@ async def test_get_case_detail_falls_back_to_opinion_id():
         "/clusters/55/": _Resp(404, {}),
         "/opinions/55/": _Resp(
             200,
-            {"plain_text": "Op text", "cluster": "https://www.courtlistener.com/api/rest/v4/clusters/77/"},
+            {
+                "plain_text": "Op text",
+                "cluster": "https://www.courtlistener.com/api/rest/v4/clusters/77/",
+            },
         ),
         "/clusters/77/": _Resp(200, {"case_name": "Baz v. Qux"}),
     }
@@ -101,3 +104,67 @@ async def test_get_case_detail_returns_none_when_truly_absent():
     with _patch_client(routes):
         result = await svc.get_case_detail(1)
     assert result is None
+
+
+# ---------------------------------------------------------------------------
+# Explicit id kind: an opinion id that is also some cluster's id must open the
+# opinion's own case, not the same-numbered cluster.
+# ---------------------------------------------------------------------------
+
+_AMBIGUOUS_ROUTES = {
+    "/clusters/55/": _Resp(200, {"id": 55, "case_name": "Wrong Cluster v. Same Number"}),
+    "/opinions/55/": _Resp(
+        200,
+        {
+            "id": 55,
+            "plain_text": "Right opinion text",
+            "cluster": "https://www.courtlistener.com/api/rest/v4/clusters/77/",
+        },
+    ),
+    "/clusters/77/": _Resp(200, {"id": 77, "case_name": "Right v. Case"}),
+}
+
+
+async def test_opinion_kind_reads_the_opinion_first():
+    svc = LegalToolsService()
+    svc.api_token = "test-token"
+    with _patch_client(_AMBIGUOUS_ROUTES):
+        result = await svc.get_case_detail(55, id_kind="opinion")
+    assert result["case_name"] == "Right v. Case"
+    assert result["resolved_as"] == "opinion"
+    assert result["opinion_id"] == 55
+    assert result["cluster_id"] == 77
+    assert "Right opinion text" in result["opinion_text"]
+
+
+async def test_cluster_kind_and_bare_id_keep_the_cluster_first_order():
+    svc = LegalToolsService()
+    svc.api_token = "test-token"
+    with _patch_client(_AMBIGUOUS_ROUTES):
+        explicit = await svc.get_case_detail(55, id_kind="cluster")
+        bare = await svc.get_case_detail(55)
+    assert explicit["case_name"] == "Wrong Cluster v. Same Number"
+    assert explicit["resolved_as"] == "cluster"
+    assert bare["case_name"] == "Wrong Cluster v. Same Number"  # historical behaviour
+
+
+async def test_opinion_kind_falls_back_to_the_cluster_when_no_such_opinion():
+    svc = LegalToolsService()
+    svc.api_token = "test-token"
+    routes = {
+        "/opinions/9/": _Resp(404, {}),
+        "/clusters/9/": _Resp(200, {"id": 9, "case_name": "Only a Cluster"}),
+    }
+    with _patch_client(routes):
+        result = await svc.get_case_detail(9, id_kind="opinion")
+    assert result["case_name"] == "Only a Cluster"
+    assert result["resolved_as"] == "cluster"
+
+
+async def test_unknown_kind_is_rejected():
+    import pytest
+
+    svc = LegalToolsService()
+    svc.api_token = "test-token"
+    with pytest.raises(ValueError):
+        await svc.get_case_detail(1, id_kind="docket")

@@ -574,6 +574,19 @@ class TestRateLimitBuckets:
                 continue
             assert any(p == pattern or p.startswith(pattern + "/") for p in paths), pattern
 
+    def test_job_polling_has_its_own_generous_bucket(self):
+        """The client polls every 2 s per tab and the limit is per IP: two tabs
+        or an office behind one NAT must not be throttled into "job failed"."""
+        limiter = self._limiter()
+        limit, window = limiter._get_limit("/api/v1/jobs/0123456789abcdef0123")
+        assert (limit, window) == (300, 60)
+        # Five tabs polling for a full minute from one address all get through.
+        for _ in range(5 * 30):
+            ok, _info = limiter.is_allowed("203.0.113.20", "/api/v1/jobs/0123456789abcdef0123")
+            assert ok is True
+        # Everything else keeps its own, stricter rule.
+        assert limiter._get_limit("/api/v1/chat") == (20, 60)
+
     def test_mfa_management_endpoints_are_tightly_limited(self):
         limiter = self._limiter()
         for path in (

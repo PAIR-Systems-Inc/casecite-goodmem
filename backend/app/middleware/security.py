@@ -79,8 +79,11 @@ class RateLimiter:
             # Expensive AI / extraction operations — stricter limits to prevent cost abuse
             "/api/v1/legal-docs": (20, 60),  # 20 per min (text extraction, PDF render)
             "/api/v1/strategy/brief": (5, 60),  # 5 per min
-            # Job polling
-            "/api/v1/jobs": (30, 60),  # 30 per min (polling)
+            # Job polling: the client polls every 2 s (30/min per tab) and the
+            # limit is per IP, so an office NAT or a second tab must not push
+            # a running job into "failed". Cheap in-memory reads — a dedicated
+            # bucket well above one tab's rate, still bounded.
+            "/api/v1/jobs": (300, 60),  # 300 per min (polling)
             # Key management — prevent brute-force key enumeration
             "/api/v1/user/keys/save": (5, 60),  # 5 per min
         }

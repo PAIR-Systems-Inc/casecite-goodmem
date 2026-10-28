@@ -117,49 +117,81 @@ class CaseLookupMixin:
             "has_prev": bool(data.get("previous")),
         }
 
-    async def get_case_detail(self, case_id: int) -> dict[str, Any] | None:
+    async def _resolve_as_cluster(
+        self, client, case_id: int
+    ) -> tuple[dict[str, Any], list[dict[str, Any]]] | None:
+        """Read ``case_id`` as a CLUSTER id: the cluster plus its sub-opinions.
+
+        None when no such cluster exists.
+        """
+        cluster_resp = await client.get(
+            f"{self.BASE_URL}/clusters/{case_id}/", headers=self.headers
+        )
+        if cluster_resp.status_code == 403:
+            raise ValueError("CourtListener API access denied. Check your API token.")
+        if cluster_resp.status_code != 200:
+            return None
+        cluster_data = cluster_resp.json()
+        opinions_raw: list[dict[str, Any]] = []
+        for sub_url in (cluster_data.get("sub_opinions") or [])[:MAX_SUB_OPINIONS]:
+            op_resp = await client.get(sub_url, headers=self.headers)
+            if op_resp.status_code == 200:
+                opinions_raw.append(op_resp.json())
+        return cluster_data, opinions_raw
+
+    async def _resolve_as_opinion(
+        self, client, case_id: int
+    ) -> tuple[dict[str, Any], list[dict[str, Any]]] | None:
+        """Read ``case_id`` as an OPINION id: that opinion first, then its cluster.
+
+        None when no such opinion exists.
+        """
+        op_resp = await client.get(f"{self.BASE_URL}/opinions/{case_id}/", headers=self.headers)
+        if op_resp.status_code == 404:
+            return None
+        if op_resp.status_code == 403:
+            raise ValueError("CourtListener API access denied. Check your API token.")
+        op_resp.raise_for_status()
+        opinions_raw = [op_resp.json()]
+        cluster_data: dict[str, Any] = {}
+        cluster_url = opinions_raw[0].get("cluster")
+        if cluster_url:
+            c_resp = await client.get(cluster_url, headers=self.headers)
+            if c_resp.status_code == 200:
+                cluster_data = c_resp.json()
+        return cluster_data, opinions_raw
+
+    async def get_case_detail(
+        self, case_id: int, id_kind: str | None = None
+    ) -> dict[str, Any] | None:
         """
         Get full case details including opinion text.
 
-        ``case_id`` is the CLUSTER id that search_cases returns (V4 search
-        exposes cluster_id). We resolve the cluster, then every sub-opinion
-        (lead, concurrences, dissents) for the readable text. For robustness
-        we fall back to treating the id as an opinion id (older links / direct
-        opinion ids) and follow its cluster.
+        ``id_kind`` says what ``case_id`` is: ``"cluster"`` (what search_cases
+        returns as ``id``) or ``"opinion"`` (what a citation's ``opinion_id``
+        carries). Cluster and opinion ids are separate sequences, so a valid
+        opinion id can also be some unrelated cluster's id — the caller's kind
+        is tried first and the other only as a fallback. Without a kind the
+        historical order applies: cluster, then opinion.
         """
         self._check_token()
+        if id_kind not in (None, "cluster", "opinion"):
+            raise ValueError("id_kind must be 'cluster' or 'opinion'")
+        order = ("opinion", "cluster") if id_kind == "opinion" else ("cluster", "opinion")
 
         async with cl_client(timeout=180.0) as client:
-            # Primary path: treat the id as a cluster id (what search returns).
             cluster_data: dict[str, Any] = {}
             opinions_raw: list[dict[str, Any]] = []
-            cluster_resp = await client.get(
-                f"{self.BASE_URL}/clusters/{case_id}/", headers=self.headers
-            )
-            if cluster_resp.status_code == 403:
-                raise ValueError("CourtListener API access denied. Check your API token.")
-            if cluster_resp.status_code == 200:
-                cluster_data = cluster_resp.json()
-                for sub_url in (cluster_data.get("sub_opinions") or [])[:MAX_SUB_OPINIONS]:
-                    op_resp = await client.get(sub_url, headers=self.headers)
-                    if op_resp.status_code == 200:
-                        opinions_raw.append(op_resp.json())
-            else:
-                # Fallback: maybe it's an opinion id — fetch it and its cluster.
-                op_resp = await client.get(
-                    f"{self.BASE_URL}/opinions/{case_id}/", headers=self.headers
+            resolved_as: str | None = None
+            for kind in order:
+                resolver = (
+                    self._resolve_as_opinion if kind == "opinion" else self._resolve_as_cluster
                 )
-                if op_resp.status_code == 404:
-                    return None
-                if op_resp.status_code == 403:
-                    raise ValueError("CourtListener API access denied. Check your API token.")
-                op_resp.raise_for_status()
-                opinions_raw.append(op_resp.json())
-                cluster_url = opinions_raw[0].get("cluster")
-                if cluster_url:
-                    c_resp = await client.get(cluster_url, headers=self.headers)
-                    if c_resp.status_code == 200:
-                        cluster_data = c_resp.json()
+                found = await resolver(client, case_id)
+                if found is not None:
+                    cluster_data, opinions_raw = found
+                    resolved_as = kind
+                    break
 
             if not cluster_data and not opinions_raw:
                 return None
@@ -220,6 +252,11 @@ class CaseLookupMixin:
 
         return {
             "id": case_id,
+            # How the id was read, and both real ids, so a client can re-open
+            # the same case unambiguously.
+            "resolved_as": resolved_as,
+            "cluster_id": cluster_data.get("id"),
+            "opinion_id": lead_raw.get("id"),
             "case_name": cluster_data.get("case_name", "Unknown"),
             "case_name_short": cluster_data.get("case_name_short"),
             "case_name_full": cluster_data.get("case_name_full"),

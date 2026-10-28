@@ -41,9 +41,9 @@ def _mask(token: str | None) -> str | None:
     return token[:4] + "•" * 8 + token[-4:]
 
 
-@router.get("/courtlistener")
-async def courtlistener_status(current_user: TokenData = require_permission("admin.settings")):
-    """Report whether a CourtListener token is configured, and where it comes from."""
+async def _courtlistener_status() -> dict:
+    """configured / source / masked — the same shape from GET, POST and DELETE,
+    so the UI can render the saved state straight from the save response."""
     instance_token = await get_secret(CL_SECRET)
     env_token = (settings.courtlistener_api_token or "").strip() or None
     if instance_token:
@@ -51,6 +51,12 @@ async def courtlistener_status(current_user: TokenData = require_permission("adm
     if env_token:
         return {"configured": True, "source": "env", "masked": _mask(env_token)}
     return {"configured": False, "source": "none", "masked": None}
+
+
+@router.get("/courtlistener")
+async def courtlistener_status(current_user: TokenData = require_permission("admin.settings")):
+    """Report whether a CourtListener token is configured, and where it comes from."""
+    return await _courtlistener_status()
 
 
 @router.post("/courtlistener")
@@ -72,7 +78,7 @@ async def set_courtlistener_token(
         ip_address=get_client_ip(request),
         details={"action": "courtlistener_token_set"},
     )
-    return {"status": "saved", "source": "instance", "masked": _mask(token)}
+    return {"status": "saved", "configured": True, "source": "instance", "masked": _mask(token)}
 
 
 @router.delete("/courtlistener")
@@ -92,7 +98,8 @@ async def clear_courtlistener_token(
         ip_address=get_client_ip(request),
         details={"action": "courtlistener_token_cleared"},
     )
-    return {"status": "cleared"}
+    # After clearing, the effective state is whatever .env provides (or none).
+    return {"status": "cleared", **(await _courtlistener_status())}
 
 
 # ----- Connector (file picker) credentials: Google Drive / OneDrive+SharePoint / Box / Dropbox -----
@@ -213,9 +220,8 @@ class LocalLLMRequest(BaseModel):
         return v
 
 
-@router.get("/local-llm")
-async def local_llm_status(current_user: TokenData = require_permission("admin.settings")):
-    """Current effective model endpoint config (custom endpoint or OpenAI default)."""
+def _local_llm_status() -> dict:
+    """Effective endpoint config — one shape for GET, POST and DELETE."""
     cfg = llm_clients.get_runtime()
     return {
         "configured": bool(cfg.get("base_url")),
@@ -223,6 +229,12 @@ async def local_llm_status(current_user: TokenData = require_permission("admin.s
         "chat_model": cfg.get("chat_model"),
         "utility_model": cfg.get("utility_model"),
     }
+
+
+@router.get("/local-llm")
+async def local_llm_status(current_user: TokenData = require_permission("admin.settings")):
+    """Current effective model endpoint config (custom endpoint or OpenAI default)."""
+    return _local_llm_status()
 
 
 @router.post("/local-llm")
@@ -248,7 +260,9 @@ async def set_local_llm(
         ip_address=get_client_ip(request),
         details={"action": "local_llm_set", "base_url": payload["base_url"]},
     )
-    return {"status": "saved", **payload}
+    # Same fields as GET /local-llm (configured + the applied values), so the
+    # UI shows "configured" right after saving instead of "not configured".
+    return {"status": "saved", "configured": True, **payload}
 
 
 @router.delete("/local-llm")
@@ -275,4 +289,4 @@ async def clear_local_llm(
         ip_address=get_client_ip(request),
         details={"action": "local_llm_cleared"},
     )
-    return {"status": "cleared"}
+    return {"status": "cleared", **_local_llm_status()}

@@ -398,3 +398,285 @@ class TestUnvalidatedConnectorsAreLabelled:
 
         for cls in (IManageConnector, NetDocumentsConnector):
             assert "NOT VALIDATED AGAINST A LIVE TENANT" in cls.__doc__
+
+
+class TestRetryAfter:
+    """Throttling (429/503) is waited out as the provider asks, within bounds."""
+
+    @staticmethod
+    def _throttled(status: int, retry_after: str | None = None) -> httpx.HTTPStatusError:
+        request = httpx.Request("GET", "https://provider.test/x")
+        headers = {"Retry-After": retry_after} if retry_after is not None else {}
+        return httpx.HTTPStatusError(
+            "throttled", request=request, response=httpx.Response(status, headers=headers)
+        )
+
+    def test_retry_after_parses_seconds_and_http_dates(self):
+        from email.utils import format_datetime
+
+        from app.services.connectors.base import retry_after_seconds
+
+        assert retry_after_seconds(httpx.Response(429, headers={"Retry-After": "12"})) == 12.0
+        assert retry_after_seconds(httpx.Response(429)) is None
+        soon = datetime.now(UTC).replace(microsecond=0)
+        soon = soon.replace(second=soon.second)  # whole seconds, as HTTP dates are
+        parsed = retry_after_seconds(
+            httpx.Response(429, headers={"Retry-After": format_datetime(soon, usegmt=True)})
+        )
+        assert parsed is not None and 0.0 <= parsed <= 1.0
+        assert retry_after_seconds(httpx.Response(429, headers={"Retry-After": "soon"})) is None
+
+    async def test_429_is_retried_after_the_requested_wait(self):
+        from app.services.connectors.base import call_with_retry_after
+
+        calls = {"n": 0}
+
+        async def op():
+            calls["n"] += 1
+            if calls["n"] < 3:
+                raise self._throttled(429, "5")
+            return "ok"
+
+        with patch("app.services.connectors.base.asyncio.sleep", new=AsyncMock()) as sleep:
+            assert await call_with_retry_after(op) == "ok"
+        assert calls["n"] == 3
+        assert [c.args[0] for c in sleep.await_args_list] == [5.0, 5.0]
+
+    async def test_wait_is_capped_and_attempts_are_bounded(self):
+        from app.services.connectors.base import call_with_retry_after
+
+        calls = {"n": 0}
+
+        async def op():
+            calls["n"] += 1
+            raise self._throttled(429, "3600")
+
+        with (
+            patch("app.services.connectors.base.asyncio.sleep", new=AsyncMock()) as sleep,
+            pytest.raises(httpx.HTTPStatusError),
+        ):
+            await call_with_retry_after(op, attempts=3, max_wait=30.0)
+        assert calls["n"] == 3
+        assert [c.args[0] for c in sleep.await_args_list] == [30.0, 30.0]
+
+    async def test_other_errors_are_not_retried(self):
+        from app.services.connectors.base import call_with_retry_after
+
+        calls = {"n": 0}
+
+        async def op():
+            calls["n"] += 1
+            raise self._throttled(403)
+
+        with (
+            patch("app.services.connectors.base.asyncio.sleep", new=AsyncMock()) as sleep,
+            pytest.raises(httpx.HTTPStatusError),
+        ):
+            await call_with_retry_after(op)
+        assert calls["n"] == 1
+        sleep.assert_not_awaited()
+
+
+class _FailingTreeConnector(ClioConnector):
+    """Folder tree where one subfolder's listing fails."""
+
+    supports_folder_sync = True
+    TREE = {
+        None: [
+            ("root.pdf", "application/pdf"),
+            ("Restricted", "folder"),
+            ("Open", "folder"),
+            ("notes.md", "text/markdown"),
+            ("sheet.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+            ("photo.png", "image/png"),
+        ],
+        "Open": [("open.pdf", "application/pdf")],
+    }
+    FAIL = {"Restricted": 403}
+
+    def __init__(self):
+        super().__init__()
+        self.listings: list[str | None] = []
+
+    async def list_files(self, folder_id=None, page_token=None):
+        self.listings.append(folder_id)
+        if folder_id in self.FAIL:
+            request = httpx.Request("GET", f"https://provider.test/{folder_id}")
+            raise httpx.HTTPStatusError(
+                "denied", request=request, response=httpx.Response(self.FAIL[folder_id])
+            )
+        return [
+            FileInfo(id=name, name=name, mime_type=mime, size=1, modified_at=datetime.now(UTC))
+            for name, mime in self.TREE[folder_id]
+        ], None
+
+
+class TestCrawlRobustness:
+    async def test_default_types_are_the_upload_allowlist(self):
+        """Markdown, spreadsheets, ... sync like they upload; images still do not."""
+        connector = _FailingTreeConnector()
+        connector.FAIL = {}
+        connector.TREE = {**connector.TREE, "Restricted": []}
+        names = [f.name async for f in connector.crawl_all_files()]
+        assert names == ["root.pdf", "open.pdf", "notes.md", "sheet.xlsx"]
+
+    async def test_unreadable_subfolder_is_skipped_and_reported(self):
+        connector = _FailingTreeConnector()
+        errors: list[dict] = []
+        names = [f.name async for f in connector.crawl_all_files(errors=errors)]
+        assert names == ["root.pdf", "open.pdf", "notes.md", "sheet.xlsx"]
+        assert errors == [
+            {"name": "Restricted/", "reason": "folder skipped: provider returned HTTP 403"}
+        ]
+
+    async def test_unreadable_start_folder_still_raises(self):
+        connector = _FailingTreeConnector()
+        with pytest.raises(httpx.HTTPStatusError):
+            async for _ in connector.crawl_all_files(folder_id="Restricted"):
+                pass
+
+    async def test_throttled_listing_is_retried(self):
+        connector = _FailingTreeConnector()
+        connector.FAIL = {"Open": 429}
+        connector.TREE = {**connector.TREE, "Restricted": []}
+        original = connector.list_files
+
+        async def once_throttled(folder_id=None, page_token=None):
+            if folder_id == "Open" and connector.listings.count("Open") == 0:
+                return await original(folder_id, page_token)  # raises the 429 once
+            connector.FAIL = {}
+            return await original(folder_id, page_token)
+
+        connector.list_files = once_throttled
+        with patch("app.services.connectors.base.asyncio.sleep", new=AsyncMock()):
+            names = [f.name async for f in connector.crawl_all_files()]
+        assert "open.pdf" in names
+
+
+class TestBoxMarkerPaging:
+    async def test_listing_uses_markers_not_offsets(self):
+        """Offset paging dies at 10k items; markers page through everything."""
+        from app.services.connectors.box import BoxConnector
+
+        seen: list[dict] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(dict(request.url.params))
+            marker = request.url.params.get("marker")
+            if marker is None:
+                return httpx.Response(
+                    200,
+                    json={
+                        "entries": [{"id": "1", "name": "a.pdf", "type": "file", "size": 3}],
+                        "next_marker": "m2",
+                    },
+                )
+            return httpx.Response(
+                200,
+                json={
+                    "entries": [{"id": "2", "name": "b.pdf", "type": "file", "size": 3}],
+                    "next_marker": "",
+                },
+            )
+
+        connector = BoxConnector()
+        with (
+            patch.object(BoxConnector, "_ensure_valid_token", AsyncMock()),
+            patch.object(
+                BoxConnector,
+                "credentials",
+                new_callable=PropertyMock,
+                return_value={"access_token": "tok"},
+            ),
+            _mock_transport(handler),
+        ):
+            first, token = await connector.list_files("0")
+            second, end = await connector.list_files("0", page_token=token)
+
+        assert [f.name for f in first] == ["a.pdf"] and token == "m2"
+        assert [f.name for f in second] == ["b.pdf"] and end is None
+        assert seen[0]["usemarker"] == "true" and "offset" not in seen[0]
+        assert seen[1]["marker"] == "m2"
+
+    def test_mime_inference_matches_the_upload_route(self):
+        from app.services.connectors.box import BoxConnector
+
+        assert BoxConnector()._get_mime_type("Notes.MD") == "text/markdown"
+        assert BoxConnector()._get_mime_type("deck.pptx").endswith("presentationml.presentation")
+
+
+class TestGoogleSharedDrives:
+    @staticmethod
+    def _patched(handler):
+        from app.services.connectors.google_drive import GoogleDriveConnector
+
+        return (
+            patch.object(GoogleDriveConnector, "_ensure_valid_token", AsyncMock()),
+            patch.object(
+                GoogleDriveConnector,
+                "credentials",
+                new_callable=PropertyMock,
+                return_value={"access_token": "tok"},
+            ),
+            _mock_transport(handler),
+        )
+
+    async def test_listing_includes_shared_drive_items(self):
+        """Shared Drive folders synced 0 files: Drive omits them without these flags."""
+        from app.services.connectors.google_drive import GoogleDriveConnector
+
+        seen = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.update(request.url.params)
+            return httpx.Response(
+                200,
+                json={
+                    "files": [
+                        {
+                            "id": "g1",
+                            "name": "Memo",
+                            "mimeType": "application/vnd.google-apps.document",
+                            "modifiedTime": "2026-09-01T12:00:00Z",
+                        },
+                        {
+                            "id": "g2",
+                            "name": "scan.pdf",
+                            "mimeType": "application/pdf",
+                            "size": "10",
+                            "modifiedTime": "2026-09-01T12:00:00Z",
+                        },
+                    ]
+                },
+            )
+
+        p1, p2, p3 = self._patched(handler)
+        with p1, p2, p3:
+            files, _ = await GoogleDriveConnector().list_files("shared-drive-folder")
+
+        assert seen["supportsAllDrives"] == "true"
+        assert seen["includeItemsFromAllDrives"] == "true"
+        # A native Google Doc is listed as the .docx it will be exported as, so
+        # the crawl's allowlist and the import validation accept it.
+        memo, scan = files
+        assert memo.name == "Memo.docx"
+        assert memo.mime_type.endswith("wordprocessingml.document")
+        assert scan.mime_type == "application/pdf"
+
+    async def test_download_supports_all_drives(self):
+        from app.services.connectors.google_drive import GoogleDriveConnector
+
+        seen: list[dict] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(dict(request.url.params))
+            if request.url.params.get("fields") == "mimeType":
+                return httpx.Response(200, json={"mimeType": "application/pdf"})
+            return httpx.Response(200, content=b"%PDF")
+
+        p1, p2, p3 = self._patched(handler)
+        with p1, p2, p3:
+            assert await GoogleDriveConnector().download_file("f1") == b"%PDF"
+
+        assert all(params.get("supportsAllDrives") == "true" for params in seen)
+        assert seen[1]["alt"] == "media"

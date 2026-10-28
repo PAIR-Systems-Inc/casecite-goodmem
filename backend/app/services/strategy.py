@@ -338,6 +338,7 @@ class StrategyService:
             "source": opinion.case_name,
             "reference": opinion.citation[0] if opinion.citation else None,
             "opinionId": str(opinion.id),
+            "cluster_id": str(opinion.cluster_id) if getattr(opinion, "cluster_id", None) else None,
             "url": opinion.absolute_url,
             "passage": verdict.quote[:600],
             "explanation": explanation,
@@ -523,6 +524,7 @@ class StrategyService:
         *,
         question: str,
         folder_path: str | None = None,
+        folder_paths: list[str] | None = None,
         document_ids: list[str] | None = None,
         include_case_law: bool = False,
         user_id: str,
@@ -534,10 +536,15 @@ class StrategyService:
                 "An OpenAI API key or a custom LLM endpoint is required. Configure one in Settings."
             )
 
+        # Every selected folder restricts the scope — a multi-folder selection
+        # is their union, never just the first one. ``folder_path`` stays as
+        # the single-folder form for existing callers.
+        scope_folders = [p for p in [folder_path, *(folder_paths or [])] if p]
+        scope_folders = list(dict.fromkeys(scope_folders)) or None
         matched_ids = await document_service.get_documents_by_filter(
             user_id=user_id,
             document_ids=document_ids,
-            folder_paths=[folder_path] if folder_path else None,
+            folder_paths=scope_folders,
         )
         documents_total = len(matched_ids)
         if documents_total == 0:
@@ -621,7 +628,8 @@ class StrategyService:
         return {
             "question": question,
             "scope": {
-                "folder_path": folder_path,
+                "folder_path": scope_folders[0] if scope_folders else None,
+                "folder_paths": scope_folders or [],
                 "documents_considered": len(docs),
                 "documents_total": documents_total,
                 # What the synthesis actually read: the most relevant passages

@@ -265,6 +265,7 @@ class TestCourtListenerService:
 
         assert len(results) == 1
         assert results[0].id == 901260
+        assert results[0].cluster_id == 901260
         assert results[0].snippet == "The court held..."
         assert results[0].score == 31.23
 

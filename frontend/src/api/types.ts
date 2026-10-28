@@ -78,6 +78,17 @@ interface Citation {
   source: string;
   page?: number;
   score?: number;
+  document_id?: string | null;
+  url?: string | null;
+  /** CourtListener opinion id (case-law citations): open the source opinion
+      with GET /tools/cases/{opinion_id}?kind=opinion. */
+  opinion_id?: string | null;
+  /** CourtListener cluster (case) id the opinion belongs to. */
+  cluster_id?: string | null;
+  /** True when the quoted passage was verified verbatim against the source;
+      null/undefined when unknown (never false). */
+  verified?: boolean | null;
+  [key: string]: unknown;
 }
 
 interface ChatStats {
@@ -116,6 +127,28 @@ export interface ChatSessionListResponse {
   sessions: ChatSessionSummary[];
 }
 
+/** One file's stored authority-map run, saved on the chat message that launched it. */
+export interface ChatAuthorityMapRun {
+  document_id: string | null;
+  document_name: string | null;
+  /** Open the full map with GET /authority-map/{run_id}. */
+  run_id: string | null;
+  summary: AuthorityMapResult['summary'];
+}
+
+/** The chat-triggered authority map as persisted on an assistant message. */
+export interface ChatAuthorityMapRecord {
+  job_id: string;
+  documents: { id: string; name: string }[];
+  status: 'running' | 'completed' | 'failed' | string;
+  /** Present once the job completed. */
+  runs?: ChatAuthorityMapRun[];
+  totals?: { files: number; propositions: number; authorities: number; verified: number };
+  coverage_notes?: string[];
+  /** Exception type when status is "failed". */
+  error?: string;
+}
+
 export interface ChatSessionMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -123,6 +156,8 @@ export interface ChatSessionMessage {
   citations: Record<string, unknown>[];
   strategy: StrategyBriefResponse | null;
   stats: Record<string, unknown> | null;
+  /** Set on an assistant message that ran the exhaustive authority map. */
+  authority_map?: ChatAuthorityMapRecord | null;
   created_at: string;
 }
 
@@ -204,10 +239,27 @@ export interface SyncStartResult {
   status: string;
 }
 
+/** Why one file of a sync or picker import was not indexed. */
+export interface ImportFileError {
+  name: string;
+  reason: string;
+}
+
+/** The completed job result of POST /connectors/{type}/sync. */
+export interface SyncResult {
+  status: string;
+  docs_processed: number;
+  docs_skipped: number;
+  docs_total: number;
+  /** Full tally of failures; `errors` lists at most the first 20. */
+  errors_count: number;
+  errors: ImportFileError[];
+}
+
 export interface SyncStatusResult {
   status: string;
   progress?: number;
-  result?: unknown;
+  result?: SyncResult | null;
   error?: string;
   [key: string]: unknown;
 }
@@ -226,6 +278,8 @@ export interface ConnectorDataResponse {
 export interface ImportResponse {
   imported: number;
   failed: number;
+  /** One entry per failed file (first 20); `failed` is the full count. */
+  errors: ImportFileError[];
   message?: string;
   [key: string]: unknown;
 }
@@ -236,10 +290,16 @@ export interface PickerConfig {
   clientId?: string;
   appKey?: string;
   google_enabled: boolean;
+  /** False when the Google Picker cannot open; `google_missing` names the
+      absent settings fields (e.g. ["google_api_key"]) so the UI can explain. */
+  google_configured?: boolean;
+  google_missing?: string[];
   microsoft_enabled: boolean;
   box_enabled?: boolean;
   dropbox_enabled?: boolean;
   google_client_id?: string;
+  /** The Picker developer key (browser-side, referrer-restricted API key);
+      absent/null when not configured. */
   google_api_key?: string;
   google_app_id?: string;
   microsoft_client_id?: string;
@@ -276,6 +336,8 @@ interface StrategyBriefCitation {
   confidence?: number;
   reference?: string | null;
   opinionId?: string | null;
+  /** CourtListener cluster (case) id the opinion belongs to. */
+  cluster_id?: string | null;
   url?: string | null;
   /** How this authority supports the point it is attached to (case_law only). */
   explanation?: string | null;
@@ -286,7 +348,10 @@ interface StrategyBriefCitation {
 export interface StrategyBriefResponse {
   question: string;
   scope: {
+    /** First selected folder (legacy single-folder field). */
     folder_path?: string | null;
+    /** Every folder the brief was scoped to (their union). */
+    folder_paths?: string[];
     documents_considered: number;
     documents_total: number;
     /** Passages the synthesis actually read (the most relevant per document). */
@@ -359,7 +424,12 @@ interface RagDocumentItem {
 
 export interface DocumentListResponse {
   documents: RagDocumentItem[];
-  total?: number;
+  /** Length of this page. */
+  count: number;
+  /** Documents matching the filters across ALL pages (for paging). */
+  total: number;
+  limit?: number | null;
+  offset?: number;
   [key: string]: unknown;
 }
 
@@ -566,6 +636,21 @@ export interface AuthorityMapChatJob {
   status: string; // pending | processing | completed | failed | cancelled
   result?: AuthorityMapChatResult | null;
   error?: string | null;
+}
+
+/** GET /tools/cases/{id} — a case with its readable opinion text. */
+export interface CaseDetail {
+  /** The id as requested. */
+  id: number;
+  /** How the id was read: as a 'cluster' or as an 'opinion'. */
+  resolved_as?: 'cluster' | 'opinion' | null;
+  cluster_id?: number | null;
+  /** The lead opinion's id. */
+  opinion_id?: number | null;
+  case_name?: string;
+  opinion_text?: string;
+  syllabus?: string;
+  [k: string]: unknown;
 }
 
 export interface AuthorityMapPayload {
@@ -944,14 +1029,18 @@ export interface ApiClient {
 
   // Admin Integrations (admin-only)
   getCourtListenerStatus(): Promise<CourtListenerStatus>;
-  setCourtListenerToken(apiToken: string): Promise<CourtListenerStatus>;
-  clearCourtListenerToken(): Promise<{ status: string }>;
+  /** Response carries `status: "saved"` plus the same fields as the status GET. */
+  setCourtListenerToken(apiToken: string): Promise<CourtListenerStatus & { status: string }>;
+  /** Response carries `status: "cleared"` plus the effective (post-clear) status. */
+  clearCourtListenerToken(): Promise<CourtListenerStatus & { status: string }>;
   getConnectorCredentials(): Promise<{ providers: ConnectorCredentialStatus[] }>;
   setConnectorCredentials(provider: string, values: Record<string, string>): Promise<ConnectorCredentialStatus>;
   clearConnectorCredentials(provider: string): Promise<ConnectorCredentialStatus>;
   getLocalLlmStatus(): Promise<LocalLlmStatus>;
-  setLocalLlm(config: LocalLlmConfig): Promise<LocalLlmStatus>;
-  clearLocalLlm(): Promise<{ status: string }>;
+  /** Response carries `status: "saved"` plus the same fields as the status GET (`configured: true`). */
+  setLocalLlm(config: LocalLlmConfig): Promise<LocalLlmStatus & { status: string }>;
+  /** Response carries `status: "cleared"` plus the effective (post-clear) status. */
+  clearLocalLlm(): Promise<LocalLlmStatus & { status: string }>;
 
   // Universal History (workspace sessions)
   listWorkspaceSessions(): Promise<{ sessions: WorkspaceSessionSummary[] }>;
@@ -1011,7 +1100,9 @@ export interface ApiClient {
   submitAuthorityMap(payload: AuthorityMapPayload): Promise<{ job_id: string }>;
   getAuthorityMapJob(jobId: string): Promise<AuthorityMapJob>;
   getChatAuthorityMapJob(jobId: string): Promise<AuthorityMapChatJob>;
-  getCaseOpinion(opinionId: string): Promise<{ case_name?: string; opinion_text?: string; syllabus?: string; [k: string]: unknown }>;
+  /** GET /tools/cases/{id}?kind= — pass 'opinion' for a citation's opinion_id,
+      'cluster' for a search result id; omitted = cluster first, then opinion. */
+  getCaseOpinion(opinionId: string, kind?: 'opinion' | 'cluster'): Promise<CaseDetail>;
   /** Delete a stored authority-map run and its mappings (owner only). */
   deleteAuthorityMap(runId: string): Promise<{ status: string; id: string }>;
 

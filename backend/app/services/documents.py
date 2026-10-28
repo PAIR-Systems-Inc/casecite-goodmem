@@ -678,16 +678,14 @@ class DocumentService:
         text = await self.extract_text(file_path, doc.content_type)
         return doc.filename, text
 
-    async def list_documents(
+    def _matching_documents(
         self,
         user_id: str,
         source: ConnectorType | None = None,
         status: DocumentStatus | None = None,
-        limit: int = 100,
-        offset: int = 0,
         accessible_matter_ids: set[str] | None = None,
     ) -> list[Document]:
-        """List documents scoped to the caller's tenant (owner + member matters)."""
+        """Every document the caller may see that matches the filters (unpaged)."""
         docs = [
             d
             for d in self.documents.values()
@@ -698,6 +696,30 @@ class DocumentService:
             docs = [d for d in docs if d.source == source]
         if status:
             docs = [d for d in docs if d.status == status]
+        return docs
+
+    async def count_documents(
+        self,
+        user_id: str,
+        source: ConnectorType | None = None,
+        status: DocumentStatus | None = None,
+        accessible_matter_ids: set[str] | None = None,
+    ) -> int:
+        """Total documents matching the same filters ``list_documents`` applies,
+        across every page — what a pager needs, as opposed to the page length."""
+        return len(self._matching_documents(user_id, source, status, accessible_matter_ids))
+
+    async def list_documents(
+        self,
+        user_id: str,
+        source: ConnectorType | None = None,
+        status: DocumentStatus | None = None,
+        limit: int = 100,
+        offset: int = 0,
+        accessible_matter_ids: set[str] | None = None,
+    ) -> list[Document]:
+        """List documents scoped to the caller's tenant (owner + member matters)."""
+        docs = self._matching_documents(user_id, source, status, accessible_matter_ids)
 
         # Sort by created_at descending
         docs.sort(key=lambda d: d.created_at, reverse=True)
@@ -1091,9 +1113,18 @@ class DocumentService:
         sources: list[ConnectorType] | None = None,
         doc_types: list[str] | None = None,
         include_subfolders: bool = True,
+        accessible_matter_ids: set[str] | None = None,
     ) -> list[str]:
-        """Get document IDs matching the given filters, scoped to user."""
-        user_docs = self._get_user_documents(user_id)
+        """Get document IDs matching the given filters, scoped to the caller.
+
+        Owner-only by default; ``accessible_matter_ids`` widens the scope to
+        documents filed under matters the caller belongs to.
+        """
+        user_docs = {
+            doc_id: doc
+            for doc_id, doc in self.documents.items()
+            if self._can_access(doc, user_id, accessible_matter_ids)
+        }
         logger.debug(f"[DocFilter Debug] Total docs for user {user_id}: {len(user_docs)}")
         logger.debug(
             f"[DocFilter Debug] Filter params: doc_ids={document_ids}, folders={folder_paths}"

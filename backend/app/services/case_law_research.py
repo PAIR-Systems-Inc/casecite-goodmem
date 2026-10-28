@@ -402,6 +402,8 @@ async def _read_and_judge(
             "date_filed": str(date_filed) if date_filed else None,
             "citation": citation_str,
             "url": getattr(opinion, "absolute_url", None),
+            "opinion_id": opinion.id,
+            "cluster_id": getattr(opinion, "cluster_id", None),
             "chunk_index": 0,
             "case_name": opinion.case_name,
             # The judge's reason this case matters — surfaced in the

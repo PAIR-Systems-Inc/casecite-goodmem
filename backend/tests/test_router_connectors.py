@@ -66,7 +66,7 @@ class _FakeConnector:
         self.credentials: dict = {}
         self.saved = False
 
-    async def crawl_all_files(self, folder_id=None):
+    async def crawl_all_files(self, folder_id=None, errors=None):
         self.crawled_folder = folder_id
         if self.crawl_error:
             raise self.crawl_error
@@ -163,8 +163,71 @@ class TestRunSync:
         assert result["docs_processed"] == 2
         assert result["errors_count"] == 1
         assert connector.downloaded == ["a", "b", "c"]
-        # The reason is reported without the provider URL or its signature.
-        assert result["errors"] == ["b.pdf: provider returned HTTP 403"]
+        # The reason is reported per file, without the provider URL or its signature.
+        assert result["errors"] == [{"name": "b.pdf", "reason": "provider returned HTTP 403"}]
+
+    async def test_rate_limited_download_waits_out_retry_after(self, sync_env):
+        """A 429 with Retry-After is retried after the (bounded) wait, not failed."""
+        throttled = _http_error(429)
+        throttled.response.headers["Retry-After"] = "7"
+        connector = _FakeConnector([_file("a")], failing={"a": throttled})
+        attempts = {"n": 0}
+        original = connector.download_file
+
+        async def flaky(file_id):
+            attempts["n"] += 1
+            if attempts["n"] == 1:
+                return await original(file_id)  # raises the 429 once
+            return PDF
+
+        connector.download_file = flaky
+        with patch("app.services.connectors.base.asyncio.sleep", new=AsyncMock()) as sleep:
+            result = await self._run(connector)
+
+        assert result["docs_processed"] == 1
+        assert result["errors_count"] == 0
+        assert attempts["n"] == 2
+        sleep.assert_awaited_once_with(7.0)
+
+    async def test_retry_after_is_bounded_and_eventually_reported(self, sync_env):
+        """An absurd Retry-After is capped; a file still throttled after the
+        bounded retries is recorded as that file's error — the sync goes on."""
+        throttled = _http_error(429)
+        throttled.response.headers["Retry-After"] = "86400"
+        connector = _FakeConnector([_file("a"), _file("b")], failing={"a": throttled})
+        with patch("app.services.connectors.base.asyncio.sleep", new=AsyncMock()) as sleep:
+            result = await self._run(connector)
+
+        assert all(call.args[0] <= 30.0 for call in sleep.await_args_list)
+        assert result["docs_processed"] == 1
+        assert result["errors"] == [{"name": "a.pdf", "reason": "provider returned HTTP 429"}]
+
+    async def test_error_list_is_capped_but_count_is_complete(self, sync_env):
+        files = [_file(f"f{i}") for i in range(25)]
+        # Alternate failures so the consecutive-failure brake never trips.
+        failing = {f.id: _http_error(404) for i, f in enumerate(files) if i % 2 == 0}
+        ok = [_file(f"g{i}") for i in range(25)]
+        interleaved = [x for pair in zip(files, ok, strict=True) for x in pair]
+        connector = _FakeConnector(interleaved, failing=failing)
+        result = await self._run(connector)
+
+        assert result["errors_count"] == 13
+        assert len(result["errors"]) == 13
+        assert result["errors"][0] == {"name": "f0.pdf", "reason": "provider returned HTTP 404"}
+
+    async def test_skipped_subfolder_errors_from_the_crawl_are_reported(self, sync_env):
+        """The crawl appends {"name", "reason"} for folders it could not list."""
+
+        class _CrawlWithFolderError(_FakeConnector):
+            async def crawl_all_files(self, folder_id=None, errors=None):
+                errors.append({"name": "Restricted/", "reason": "folder skipped: HTTP 403"})
+                for file_info in self.files:
+                    yield file_info
+
+        result = await self._run(_CrawlWithFolderError([_file("a")]))
+        assert result["docs_processed"] == 1
+        assert result["errors_count"] == 1
+        assert result["errors"] == [{"name": "Restricted/", "reason": "folder skipped: HTTP 403"}]
 
     async def test_disallowed_content_is_rejected_per_file(self, sync_env):
         """Same magic-byte validation as a direct upload: a mislabelled file is skipped."""
@@ -189,7 +252,8 @@ class TestRunSync:
 
         assert connector.downloaded == ["a"]
         assert result["docs_processed"] == 1
-        assert "upload limit" in result["errors"][0]
+        assert result["errors"][0]["name"] == "big.pdf"
+        assert "upload limit" in result["errors"][0]["reason"]
 
     async def test_unchanged_files_are_skipped_on_rerun(self, sync_env):
         """A retried or repeated sync does not re-download finished files."""
@@ -222,7 +286,7 @@ class TestRunSync:
         result = await self._run(_FakeConnector([_file("a")]))
 
         assert result["docs_processed"] == 0
-        assert result["errors"] == ["a.pdf: No embedding key"]
+        assert result["errors"] == [{"name": "a.pdf", "reason": "No embedding key"}]
         assert _events(sync_env.audit, AuditEventType.DOCUMENT_UPLOAD) == []
 
     async def test_crawl_failure_is_audited_and_raised(self, sync_env):
@@ -246,10 +310,14 @@ class TestRunSync:
     async def test_repeated_failures_stop_the_sync(self, sync_env):
         files = [_file(f"f{i}") for i in range(15)]
         connector = _FakeConnector(files, failing={f.id: _http_error(429) for f in files})
-        with pytest.raises(ConnectorError, match="consecutive failures"):
+        with (
+            patch("app.services.connectors.base.asyncio.sleep", new=AsyncMock()),
+            pytest.raises(ConnectorError, match="consecutive failures"),
+        ):
             await self._run(connector)
 
-        assert len(connector.downloaded) == 10
+        # Ten distinct files were attempted (each a bounded number of times).
+        assert len(dict.fromkeys(connector.downloaded)) == 10
         assert len(_events(sync_env.audit, AuditEventType.CONNECTOR_SYNC_FAILURE)) == 1
 
 

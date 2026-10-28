@@ -26,6 +26,7 @@ from app.models.schemas import (
     DocumentStatus,
     DropboxChooserFile,
     GooglePickerFile,
+    ImportFileError,
     OneDrivePickerFile,
     PickerConfig,
     PickerImportResponse,
@@ -58,6 +59,13 @@ _GOOGLE_HOSTS = ("googleapis.com", "googleusercontent.com")
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/pickers", tags=["file-pickers"])
 
+# Per-file errors returned to the client (``failed`` is always the full count).
+MAX_REPORTED_ERRORS = 20
+
+
+def _file_error(name: str, reason: str) -> ImportFileError:
+    return ImportFileError(name=name, reason=reason or "import failed")
+
 
 # ============================================
 # Configuration Endpoint
@@ -68,16 +76,24 @@ router = APIRouter(prefix="/pickers", tags=["file-pickers"])
 async def get_picker_config(current_user: TokenData = Depends(get_current_user)) -> PickerConfig:
     """
     Get picker configuration for frontend. Requires authentication.
-    Returns only client IDs and enabled flags - no sensitive API keys.
-    Actual API keys are stored server-side only.
+
+    Returns the browser-side identifiers each picker needs: client/app ids and
+    app keys, plus the Google Picker *developer key*. That key is a Google API
+    key made for browser use (``gapi.picker.setDeveloperKey``, restricted by
+    HTTP referrer in the Cloud Console) — without it the Picker never opens.
+    OAuth client secrets are never returned.
     """
+    google_missing = [
+        field
+        for field in ("google_client_id", "google_api_key")
+        if not connector_credentials.get(field)
+    ]
     return PickerConfig(
-        # Google Picker - only return client ID, not API key
-        google_enabled=bool(
-            connector_credentials.get("google_api_key")
-            and connector_credentials.get("google_client_id")
-        ),
-        google_api_key=None,  # Don't expose API key to client
+        # Google Picker: client id for the OAuth token, API key as developerKey.
+        google_enabled=not google_missing,
+        google_configured=not google_missing,
+        google_missing=google_missing,
+        google_api_key=connector_credentials.get("google_api_key") or None,
         google_client_id=connector_credentials.get("google_client_id"),
         google_app_id=connector_credentials.get("google_app_id"),
         # Microsoft OneDrive Picker
@@ -150,7 +166,7 @@ async def import_from_google_picker(
     """
     imported = 0
     failed = 0
-    errors = []
+    errors: list[ImportFileError] = []
     document_ids: list[str] = []
     # BYOK: embed with the user's own keys (headers, else their stored keys).
     user_keys = UserAPIKeys.from_request(request, user_id=current_user.user_id)
@@ -213,7 +229,7 @@ async def import_from_google_picker(
             if doc.status == DocumentStatus.FAILED:
                 # Stored but not searchable (e.g. no embedding key): say so.
                 reason = doc.metadata.get("error") or "could not be indexed"
-                errors.append(f"{file.name}: {reason}")
+                errors.append(_file_error(file.name, reason))
                 failed += 1
                 continue
             document_ids.append(doc.id)
@@ -221,11 +237,11 @@ async def import_from_google_picker(
 
         except UnsafeURLError as e:
             logger.warning(f"Blocked unsafe Google import URL for {file.name}: {e}")
-            errors.append(f"{file.name}: download URL rejected")
+            errors.append(_file_error(file.name, "download URL rejected"))
             failed += 1
         except (ValueError, KeyError, ConnectionError, TimeoutError, OSError, httpx.HTTPError) as e:
             logger.error(f"Failed to import Google file {file.name}: {e}")
-            errors.append(f"{file.name}: {str(e)}")
+            errors.append(_file_error(file.name, str(e)))
             failed += 1
 
     # Audit log
@@ -244,7 +260,9 @@ async def import_from_google_picker(
         },
     )
 
-    return PickerImportResponse(imported=imported, failed=failed, errors=errors)
+    return PickerImportResponse(
+        imported=imported, failed=failed, errors=errors[:MAX_REPORTED_ERRORS]
+    )
 
 
 # ============================================
@@ -266,7 +284,7 @@ async def import_from_onedrive_picker(
     """
     imported = 0
     failed = 0
-    errors = []
+    errors: list[ImportFileError] = []
     document_ids: list[str] = []
     # BYOK: embed with the user's own keys (headers, else their stored keys).
     user_keys = UserAPIKeys.from_request(request, user_id=current_user.user_id)
@@ -316,7 +334,7 @@ async def import_from_onedrive_picker(
             if doc.status == DocumentStatus.FAILED:
                 # Stored but not searchable (e.g. no embedding key): say so.
                 reason = doc.metadata.get("error") or "could not be indexed"
-                errors.append(f"{file.name}: {reason}")
+                errors.append(_file_error(file.name, reason))
                 failed += 1
                 continue
             document_ids.append(doc.id)
@@ -324,11 +342,11 @@ async def import_from_onedrive_picker(
 
         except UnsafeURLError as e:
             logger.warning(f"Blocked unsafe OneDrive import URL for {file.name}: {e}")
-            errors.append(f"{file.name}: download URL rejected")
+            errors.append(_file_error(file.name, "download URL rejected"))
             failed += 1
         except (ValueError, KeyError, ConnectionError, TimeoutError, OSError, httpx.HTTPError) as e:
             logger.error(f"Failed to import OneDrive file {file.name}: {e}")
-            errors.append(f"{file.name}: {str(e)}")
+            errors.append(_file_error(file.name, str(e)))
             failed += 1
 
     # Audit log
@@ -347,7 +365,9 @@ async def import_from_onedrive_picker(
         },
     )
 
-    return PickerImportResponse(imported=imported, failed=failed, errors=errors)
+    return PickerImportResponse(
+        imported=imported, failed=failed, errors=errors[:MAX_REPORTED_ERRORS]
+    )
 
 
 # ============================================
@@ -366,7 +386,7 @@ async def import_from_box_picker(
     """
     imported = 0
     failed = 0
-    errors = []
+    errors: list[ImportFileError] = []
     document_ids: list[str] = []
     # BYOK: embed with the user's own keys (headers, else their stored keys).
     user_keys = UserAPIKeys.from_request(request, user_id=current_user.user_id)
@@ -400,7 +420,7 @@ async def import_from_box_picker(
             if doc.status == DocumentStatus.FAILED:
                 # Stored but not searchable (e.g. no embedding key): say so.
                 reason = doc.metadata.get("error") or "could not be indexed"
-                errors.append(f"{file.name}: {reason}")
+                errors.append(_file_error(file.name, reason))
                 failed += 1
                 continue
             document_ids.append(doc.id)
@@ -408,11 +428,11 @@ async def import_from_box_picker(
 
         except UnsafeURLError as e:
             logger.warning(f"Blocked unsafe Box import URL for {file.name}: {e}")
-            errors.append(f"{file.name}: download URL rejected")
+            errors.append(_file_error(file.name, "download URL rejected"))
             failed += 1
         except (ValueError, KeyError, ConnectionError, TimeoutError, OSError, httpx.HTTPError) as e:
             logger.error(f"Failed to import Box file {file.name}: {e}")
-            errors.append(f"{file.name}: {str(e)}")
+            errors.append(_file_error(file.name, str(e)))
             failed += 1
 
     await audit_service.log_event(
@@ -430,7 +450,9 @@ async def import_from_box_picker(
         },
     )
 
-    return PickerImportResponse(imported=imported, failed=failed, errors=errors)
+    return PickerImportResponse(
+        imported=imported, failed=failed, errors=errors[:MAX_REPORTED_ERRORS]
+    )
 
 
 # ============================================
@@ -452,7 +474,7 @@ async def import_from_dropbox_chooser(
     """
     imported = 0
     failed = 0
-    errors = []
+    errors: list[ImportFileError] = []
     document_ids: list[str] = []
     # BYOK: embed with the user's own keys (headers, else their stored keys).
     user_keys = UserAPIKeys.from_request(request, user_id=current_user.user_id)
@@ -484,7 +506,7 @@ async def import_from_dropbox_chooser(
             if doc.status == DocumentStatus.FAILED:
                 # Stored but not searchable (e.g. no embedding key): say so.
                 reason = doc.metadata.get("error") or "could not be indexed"
-                errors.append(f"{file.name}: {reason}")
+                errors.append(_file_error(file.name, reason))
                 failed += 1
                 continue
             document_ids.append(doc.id)
@@ -492,11 +514,11 @@ async def import_from_dropbox_chooser(
 
         except UnsafeURLError as e:
             logger.warning(f"Blocked unsafe Dropbox import URL for {file.name}: {e}")
-            errors.append(f"{file.name}: download URL rejected")
+            errors.append(_file_error(file.name, "download URL rejected"))
             failed += 1
         except (ValueError, KeyError, ConnectionError, TimeoutError, OSError, httpx.HTTPError) as e:
             logger.error(f"Failed to import Dropbox file {file.name}: {e}")
-            errors.append(f"{file.name}: {str(e)}")
+            errors.append(_file_error(file.name, str(e)))
             failed += 1
 
     await audit_service.log_event(
@@ -514,7 +536,9 @@ async def import_from_dropbox_chooser(
         },
     )
 
-    return PickerImportResponse(imported=imported, failed=failed, errors=errors)
+    return PickerImportResponse(
+        imported=imported, failed=failed, errors=errors[:MAX_REPORTED_ERRORS]
+    )
 
 
 # ============================================

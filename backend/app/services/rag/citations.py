@@ -19,6 +19,11 @@ from app.services.rag.prompts import get_mode_focus
 logger = logging.getLogger(__name__)
 
 
+def _opt_str(value: Any) -> str | None:
+    """CourtListener ids as strings for the API (ints upstream), None when absent."""
+    return str(value) if value not in (None, "") else None
+
+
 def extract_cited_cases(
     content: str, case_law_results: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
@@ -301,6 +306,11 @@ def build_case_law_citations(
             document_id=None,
             notes=f"CourtListener URL: {metadata.get('url', '')}",
             url=metadata.get("url", ""),
+            opinion_id=_opt_str(metadata.get("opinion_id")),
+            cluster_id=_opt_str(metadata.get("cluster_id")),
+            # A quote checked verbatim against the opinion is a verified
+            # citation; anything else is unknown (None), never "false".
+            verified=True if quote_verified else None,
         )
         # Mark if this case was actually cited by the AI in its response
         if case_name.lower() in cited_case_names:

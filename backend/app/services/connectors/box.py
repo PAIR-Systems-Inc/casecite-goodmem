@@ -8,6 +8,7 @@ from app.config import settings
 from app.models.schemas import ConnectorType
 from app.services import connector_credentials
 from app.services.connectors.base import BaseConnector, ConnectorError, FileInfo
+from app.utils.upload_validation import EXTENSION_TO_MIME
 
 
 class BoxConnector(BaseConnector):
@@ -113,17 +114,28 @@ class BoxConnector(BaseConnector):
     async def list_files(
         self, folder_id: str | None = None, page_token: str | None = None
     ) -> tuple[list[FileInfo], str | None]:
-        """List files in Box."""
+        """List files in Box.
+
+        Marker-based paging (``usemarker=true``): offset paging stops at
+        10,000 items per folder, markers have no such ceiling. ``page_token``
+        is the ``next_marker`` of the previous page.
+        """
         await self._ensure_valid_token()
 
         folder_id = folder_id or "0"  # 0 is root folder
-        offset = int(page_token) if page_token else 0
+        params: dict[str, Any] = {
+            "fields": "id,name,type,size,modified_at",
+            "limit": 100,
+            "usemarker": "true",
+        }
+        if page_token:
+            params["marker"] = page_token
 
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"https://api.box.com/2.0/folders/{quote(folder_id, safe='')}/items",
                 headers={"Authorization": f"Bearer {self.credentials['access_token']}"},
-                params={"fields": "id,name,type,size,modified_at", "limit": 100, "offset": offset},
+                params=params,
             )
             response.raise_for_status()
             data = response.json()
@@ -151,26 +163,13 @@ class BoxConnector(BaseConnector):
                     )
                 )
 
-            # Calculate next offset
-            total = data.get("total_count", 0)
-            next_offset = offset + len(data.get("entries", []))
-            next_token = str(next_offset) if next_offset < total else None
-
-            return files, next_token
+            # Box returns next_marker only while more items remain.
+            return files, data.get("next_marker") or None
 
     def _get_mime_type(self, filename: str) -> str:
-        """Infer MIME type from filename."""
+        """Infer MIME type from filename (same extension map as the upload route)."""
         ext = filename.lower().split(".")[-1] if "." in filename else ""
-        mime_map = {
-            "pdf": "application/pdf",
-            "doc": "application/msword",
-            "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "txt": "text/plain",
-            "rtf": "application/rtf",
-            "xls": "application/vnd.ms-excel",
-            "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        }
-        return mime_map.get(ext, "application/octet-stream")
+        return EXTENSION_TO_MIME.get(ext, "application/octet-stream")
 
     async def download_file(self, file_id: str) -> bytes:
         """Download a file from Box."""

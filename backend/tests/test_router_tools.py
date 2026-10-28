@@ -277,3 +277,34 @@ class TestAuthGating:
             resp = client.get("/api/v1/legal-docs/courts", headers=auth_headers)
             assert resp.status_code == 200
             assert resp.json()["count"] == 0
+
+
+class TestCaseDetailKind:
+    """GET /tools/cases/{id}?kind= tells the service what the id is."""
+
+    def test_kind_is_passed_to_the_lookup(self, client, auth_headers):
+        with patch(
+            "app.routers.tools.legal_tools.get_case_detail",
+            new_callable=AsyncMock,
+            return_value={"id": 55, "case_name": "Right v. Case", "resolved_as": "opinion"},
+        ) as lookup:
+            resp = client.get(
+                "/api/v1/tools/cases/55", params={"kind": "opinion"}, headers=auth_headers
+            )
+        assert resp.status_code == 200
+        assert resp.json()["resolved_as"] == "opinion"
+        lookup.assert_awaited_once_with(55, id_kind="opinion")
+
+    def test_bare_id_keeps_the_default_order(self, client, auth_headers):
+        with patch(
+            "app.routers.tools.legal_tools.get_case_detail",
+            new_callable=AsyncMock,
+            return_value={"id": 55, "case_name": "x"},
+        ) as lookup:
+            resp = client.get("/api/v1/tools/cases/55", headers=auth_headers)
+        assert resp.status_code == 200
+        lookup.assert_awaited_once_with(55, id_kind=None)
+
+    def test_unknown_kind_is_a_validation_error(self, client, auth_headers):
+        resp = client.get("/api/v1/tools/cases/55", params={"kind": "docket"}, headers=auth_headers)
+        assert resp.status_code == 422

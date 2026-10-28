@@ -40,8 +40,43 @@ class TestPickersRouter:
         assert "microsoft_enabled" in data
         assert "box_enabled" in data
         assert "dropbox_enabled" in data
-        # API key should never be exposed
-        assert data.get("google_api_key") is None
+
+    def test_google_picker_reports_what_is_missing(self, client, auth_headers):
+        """Without the developer key the picker cannot open: say so by name."""
+        from app.services import connector_credentials
+
+        with patch.dict(
+            connector_credentials._runtime,
+            {"google_client_id": "client-id", "google_api_key": None},
+        ):
+            data = client.get("/api/v1/pickers/config", headers=auth_headers).json()
+        assert data["google_enabled"] is False
+        assert data["google_configured"] is False
+        assert data["google_missing"] == ["google_api_key"]
+        assert data["google_api_key"] is None
+
+    def test_google_picker_config_carries_the_developer_key(self, client, auth_headers):
+        """The Picker's developerKey is a browser-side key; the config must return it
+        (an empty key made the picker fail to load). Client secrets never appear."""
+        from app.services import connector_credentials
+
+        with patch.dict(
+            connector_credentials._runtime,
+            {
+                "google_client_id": "client-id",
+                "google_api_key": "fake-picker-key",
+                "google_client_secret": "fake-client-secret",
+                "google_app_id": "12345",
+            },
+        ):
+            resp = client.get("/api/v1/pickers/config", headers=auth_headers)
+        data = resp.json()
+        assert data["google_enabled"] is True
+        assert data["google_configured"] is True
+        assert data["google_missing"] == []
+        assert data["google_api_key"] == "fake-picker-key"
+        assert data["google_app_id"] == "12345"
+        assert "fake-client-secret" not in resp.text
 
     # ==================== Google Picker Import ====================
 
@@ -415,7 +450,7 @@ class TestPickerImportHardening:
         data = resp.json()
         assert data["imported"] == 0
         assert data["failed"] == 1
-        assert data["errors"] == ["filing.pdf: No embedding key"]
+        assert data["errors"] == [{"name": "filing.pdf", "reason": "No embedding key"}]
         assert audit.call_args.kwargs["details"]["document_ids"] == []
 
     def test_audit_records_imported_document_ids(self, client, auth_headers):

@@ -333,8 +333,14 @@ class RAGService:
         document_ids: list[str] | None = None,
         user_id: str = "",
         rag_settings: Any | None = None,
+        matter_ids: list[str] | None = None,
     ) -> dict[str, Any]:
-        """Generate a RAG response with citations from documents and case law."""
+        """Generate a RAG response with citations from documents and case law.
+
+        ``matter_ids`` are the shared matters the caller belongs to: retrieval
+        then spans the caller's own documents OR documents filed under those
+        matters (see ``tenant_scope``), so matter-shared files are searchable.
+        """
         start_time = time.time()
 
         # Get LLM clients - prefer user keys (BYOK), fall back to server keys
@@ -395,6 +401,7 @@ class RAGService:
                 effective_settings=effective_settings,
                 user_keys=user_keys,
                 user_id=user_id,
+                matter_ids=matter_ids,
                 openai_client=openai_client,
                 anthropic_client=anthropic_client,
                 gemini_model=gemini_model,
@@ -491,6 +498,7 @@ class RAGService:
                     use_reranking=False,
                     user_keys=user_keys,
                     user_id=user_id,
+                    matter_ids=matter_ids,
                 )
             except SearchUnavailableError:
                 probe = []
@@ -702,6 +710,7 @@ class RAGService:
         anthropic_client,
         gemini_model,
         model,
+        matter_ids=None,
     ) -> list[dict[str, Any]]:
         """Retrieve the passages most relevant to the query.
 
@@ -743,6 +752,7 @@ class RAGService:
                     user_keys=user_keys,
                     document_ids=document_ids,
                     user_id=user_id,
+                    matter_ids=matter_ids,
                 )
             )
         return (
