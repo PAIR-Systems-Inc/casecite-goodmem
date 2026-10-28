@@ -138,10 +138,22 @@ async def set_connector_credentials(
     if not meta:
         raise HTTPException(status_code=404, detail="Unknown connector provider")
     allowed = set(meta["fields"])
-    values = {k: v.strip() for k, v in body.values.items() if k in allowed and v and v.strip()}
-    if not values:
+    provided = {k: (v or "").strip() for k, v in body.values.items() if k in allowed}
+    if not provided:
         raise HTTPException(status_code=400, detail="No credential values provided")
-    await set_secret(connector_credentials.secret_name(provider), json.dumps(values))
+    # Merge into what is already stored: a field the request leaves out keeps
+    # its current value (the UI only sends the fields the admin edited); a
+    # field sent as an empty string is cleared and falls back to .env.
+    values = await connector_credentials.stored_values(provider)
+    for field, value in provided.items():
+        if value:
+            values[field] = value
+        else:
+            values.pop(field, None)
+    if values:
+        await set_secret(connector_credentials.secret_name(provider), json.dumps(values))
+    else:
+        await delete_secret(connector_credentials.secret_name(provider))
     connector_credentials.apply_values(provider, values)
     await audit_service.log_event(
         event_type=AuditEventType.SETTINGS_CHANGE,
@@ -150,7 +162,11 @@ async def set_connector_credentials(
         resource_type="integration",
         resource_id=f"connector_{provider}",
         ip_address=get_client_ip(request),
-        details={"action": "connector_credentials_set", "fields": sorted(values)},
+        details={
+            "action": "connector_credentials_set",
+            "fields": sorted(k for k, v in provided.items() if v),
+            "cleared": sorted(k for k, v in provided.items() if not v),
+        },
     )
     return await connector_credentials.provider_status(provider)
 

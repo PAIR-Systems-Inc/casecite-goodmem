@@ -6,6 +6,8 @@ Uses Redis with in-memory fallback. Sync progress is tracked by the job
 manager (services/job_queue.py), not here.
 """
 
+import hashlib
+import hmac
 import json
 import logging
 from datetime import UTC, datetime, timedelta
@@ -17,6 +19,35 @@ logger = logging.getLogger(__name__)
 
 # In-memory fallback (used when Redis is unavailable)
 _oauth_states_memory: dict = {}
+
+# Cookie that ties an OAuth state to the browser that started the flow. The
+# provider's redirect back to the callback carries no bearer token, so this is
+# how the callback knows the browser redeeming the state is the one whose
+# signed-in user began it.
+OAUTH_BINDING_COOKIE = "connector_oauth_binding"
+
+_BINDING_KEY_CACHE: bytes | None = None
+
+
+def _binding_key() -> bytes:
+    global _BINDING_KEY_CACHE
+    if _BINDING_KEY_CACHE is None:
+        from app.utils.keys import derive_subkey
+
+        _BINDING_KEY_CACHE = derive_subkey("connector-oauth-binding")
+    return _BINDING_KEY_CACHE
+
+
+def oauth_binding_token(state: str, user_id: str) -> str:
+    """Signed cookie value binding *state* to *user_id* (HMAC-SHA256, hex)."""
+    return hmac.new(_binding_key(), f"{state}:{user_id}".encode(), hashlib.sha256).hexdigest()
+
+
+def oauth_binding_matches(cookie_value: str | None, state: str, user_id: str) -> bool:
+    """Whether the browser's binding cookie was issued for this state and user."""
+    if not cookie_value:
+        return False
+    return hmac.compare_digest(cookie_value, oauth_binding_token(state, user_id))
 
 
 def store_oauth_state(

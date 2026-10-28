@@ -527,7 +527,9 @@ class AuthService:
         payload = await self.verify_azure_token(azure_token)
         return {
             "id": payload.get("oid") or payload["sub"],
-            "email": payload.get("email") or payload.get("preferred_username") or "",
+            "email": (payload.get("email") or payload.get("preferred_username") or "")
+            .lower()
+            .strip(),
             "name": payload.get("name") or "",
             "azure_oid": payload.get("oid"),
             "tenant_id": payload.get("tid"),

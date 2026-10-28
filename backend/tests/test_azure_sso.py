@@ -126,9 +126,11 @@ class TestRolesComeFromTheDatabase:
         db.track(uid)
         resp = sso(_identity(uid, f"{uid}@firm.example"))
         assert resp.status_code == 200, resp.text
+        new_id = resp.json()["user"]["id"]
+        db.track(new_id)
         assert _token_roles(resp.json()["access_token"]) == ["viewer"]
         assert resp.json()["user"]["roles"] == ["viewer"]
-        assert db.roles(uid) == ["viewer"]
+        assert db.roles(new_id) == ["viewer"]
 
     def test_existing_admin_gets_admin_token(self, sso, db):
         uid = _uid("sso-admin")
@@ -207,6 +209,50 @@ class TestLifecycle:
             resp = client.post("/api/v1/auth/azure/login", json={"token": "nope"})
         assert resp.status_code == 401
 
+    def test_provisioned_email_is_normalised(self, client, sso, db):
+        """Stored lower-cased and trimmed, like password-login and invite
+        emails, so the person can be added to matters by address and a
+        differently-cased claim later cannot mint a second account."""
+        uid = _uid("sso-case")
+        db.track(uid)
+        resp = sso(_identity(uid, f"  {uid.upper()}@Firm.EXAMPLE "))
+        assert resp.status_code == 200, resp.text
+        new_id = resp.json()["user"]["id"]
+        db.track(new_id)
+        assert resp.json()["user"]["email"] == f"{uid}@firm.example"
+        assert client.portal.call(_row_coro, new_id).email == f"{uid}@firm.example"
+
+    def test_deleted_user_who_signs_in_again_is_not_locked_out(self, client, sso, db):
+        """Deleting an account tombstones its id for the token lifetime. The
+        same person re-provisioned by SSO must get a fresh id — not the
+        tombstoned one, which would reject every token for a week."""
+        oid = _uid("sso-again")
+        email = f"{oid}@firm.example"
+        db.track(oid)
+        first = sso(_identity(oid, email))
+        assert first.status_code == 200, first.text
+        first_id = first.json()["user"]["id"]
+        db.track(first_id)
+
+        # What DELETE /admin/users/{id} does: tombstone the id, drop the row.
+        auth_service.revoke_user(first_id)
+        client.portal.call(_cleanup_coro, (first_id,))
+
+        second = sso(_identity(oid, email))
+        assert second.status_code == 200, second.text
+        second_id = second.json()["user"]["id"]
+        db.track(second_id)
+        assert second_id != first_id
+        assert auth_service._is_user_revoked(second_id) is False
+        assert client.portal.call(_row_coro, second_id).azure_oid == oid
+
+        me = client.get(
+            "/api/v1/auth/me",
+            headers={"Authorization": f"Bearer {second.json()['access_token']}"},
+        )
+        assert me.status_code == 200, me.text
+        assert me.json()["id"] == second_id
+
 
 class TestDefaultRoleConfig:
     @pytest.mark.parametrize(
@@ -263,6 +309,17 @@ class TestIdentityService:
             "tenant_id": "t",
         }
         assert "roles" not in identity
+
+    async def test_identity_email_is_normalised(self):
+        with patch.object(
+            auth_service,
+            "verify_azure_token",
+            AsyncMock(
+                return_value={"oid": "oid-2", "sub": "sub-2", "preferred_username": " A@B.C "}
+            ),
+        ):
+            identity = await auth_service.verify_azure_identity("tok")
+        assert identity["email"] == "a@b.c"
 
 
 async def _seed_local_coro(uid: str, email: str, **fields) -> None:
@@ -362,5 +419,10 @@ class TestEmailLinking:
     def test_auto_provisioned_user_stores_the_oid(self, client, sso, db):
         uid = _uid("sso-new")
         db.track(uid)
-        assert sso(_identity(uid, f"{uid}@firm.example")).status_code == 200
-        assert client.portal.call(_row_coro, uid).azure_oid == uid
+        resp = sso(_identity(uid, f"{uid}@firm.example"))
+        assert resp.status_code == 200
+        new_id = resp.json()["user"]["id"]
+        db.track(new_id)
+        # The object id is kept for matching; the local id is minted fresh.
+        assert new_id != uid
+        assert client.portal.call(_row_coro, new_id).azure_oid == uid

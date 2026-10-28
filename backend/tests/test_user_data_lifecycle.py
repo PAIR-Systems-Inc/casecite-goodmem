@@ -138,6 +138,97 @@ class TestDeleteUserCredentials:
             "Authorization": "Bearer d-access"
         }
 
+    def _dropbox_env(self, tmp_path, refresh_status: int, revoke_status: int = 200):
+        """HTTP stand-in that answers the Dropbox token endpoint with
+        *refresh_status* (and a fresh token) and the revoke endpoint with
+        *revoke_status*; the Dropbox app is configured."""
+        from app.services import connector_credentials
+
+        def _resp(status, body=None):
+            r = MagicMock()
+            r.status_code = status
+            r.is_success = 200 <= status < 300
+            r.json = MagicMock(return_value=body or {})
+            return r
+
+        async def post(url, **kwargs):
+            if url == "https://api.dropboxapi.com/oauth2/token":
+                return _resp(refresh_status, {"access_token": "d-fresh"})
+            return _resp(revoke_status)
+
+        factory, http = _mock_http(200)
+        http.post = AsyncMock(side_effect=post)
+        patches = (
+            patch.object(connectors_base, "settings", SimpleNamespace(upload_dir=str(tmp_path))),
+            patch.object(connectors_base.httpx, "AsyncClient", factory),
+            patch.dict(
+                connector_credentials._runtime,
+                {"dropbox_app_key": "app-key", "dropbox_app_secret": "app-secret"},
+            ),
+        )
+        return patches, http
+
+    @pytest.mark.asyncio
+    async def test_dropbox_revokes_a_freshly_minted_token(self, tmp_path):
+        """Dropbox access tokens expire in hours; revoking the stale one with
+        the refresh token still on file would leave the grant alive. A fresh
+        access token is minted from the refresh token and that one is revoked."""
+        patches, http = self._dropbox_env(tmp_path, refresh_status=200)
+        with patches[0], patches[1], patches[2]:
+            d = _write_credentials(
+                str(tmp_path),
+                ConnectorType.DROPBOX,
+                "u4",
+                {"access_token": "d-stale", "refresh_token": "d-refresh"},
+            )
+            result = await delete_user_credentials("u4")
+
+        assert result == {"connector_credentials_deleted": 1, "connector_tokens_revoked": 1}
+        assert not os.path.exists(d)
+        calls = {c.args[0]: c.kwargs for c in http.post.call_args_list}
+        assert calls["https://api.dropboxapi.com/oauth2/token"]["data"] == {
+            "client_id": "app-key",
+            "client_secret": "app-secret",
+            "refresh_token": "d-refresh",
+            "grant_type": "refresh_token",
+        }
+        assert calls["https://api.dropboxapi.com/2/auth/token/revoke"]["headers"] == {
+            "Authorization": "Bearer d-fresh"
+        }
+
+    @pytest.mark.asyncio
+    async def test_dropbox_falls_back_to_the_stored_token_when_refresh_fails(self, tmp_path):
+        patches, http = self._dropbox_env(tmp_path, refresh_status=400)
+        with patches[0], patches[1], patches[2]:
+            d = _write_credentials(
+                str(tmp_path),
+                ConnectorType.DROPBOX,
+                "u5",
+                {"access_token": "d-stale", "refresh_token": "d-refresh"},
+            )
+            result = await delete_user_credentials("u5")
+
+        assert result == {"connector_credentials_deleted": 1, "connector_tokens_revoked": 1}
+        assert not os.path.exists(d)
+        calls = {c.args[0]: c.kwargs for c in http.post.call_args_list}
+        assert calls["https://api.dropboxapi.com/2/auth/token/revoke"]["headers"] == {
+            "Authorization": "Bearer d-stale"
+        }
+
+    @pytest.mark.asyncio
+    async def test_dropbox_refresh_and_revoke_failures_never_block_deletion(self, tmp_path):
+        patches, _http = self._dropbox_env(tmp_path, refresh_status=500, revoke_status=401)
+        with patches[0], patches[1], patches[2]:
+            d = _write_credentials(
+                str(tmp_path),
+                ConnectorType.DROPBOX,
+                "u6",
+                {"access_token": "d-stale", "refresh_token": "d-refresh"},
+            )
+            result = await delete_user_credentials("u6")
+        assert result == {"connector_credentials_deleted": 1, "connector_tokens_revoked": 0}
+        assert not os.path.exists(d)
+
     @pytest.mark.asyncio
     async def test_revocation_failure_still_deletes_file(self, tmp_path):
         user = "u2"

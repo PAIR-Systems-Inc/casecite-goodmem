@@ -10,7 +10,7 @@ DB seeding runs on the TestClient's own event loop (``client.portal``).
 
 import uuid
 from datetime import UTC, datetime
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from app.database import AsyncSessionLocal
@@ -218,6 +218,36 @@ class TestInvite:
         )
         # The temporary password is never written to the audit trail.
         assert resp.json()["temporary_password"] not in str(audit_events)
+
+    def test_unwritable_audit_trail_refuses_the_invite_without_creating_the_account(
+        self, client, auth_headers, users
+    ):
+        """With AUDIT_FAIL_CLOSED the audit write happens before the commit: a
+        failure must leave no account behind (whose one-time temporary
+        password the admin would never have seen)."""
+        from app.services.audit import AuditWriteError
+
+        from tests.helpers import db_count
+
+        email = f"invite-{uuid.uuid4().hex[:8]}@example.com"
+        failing = AsyncMock(side_effect=AuditWriteError("audit trail unwritable"))
+        with patch("app.routers.users.audit_service.log_event", new=failing):
+            try:
+                resp = client.post(
+                    f"{BASE}/invite",
+                    json={"email": email, "name": "New Hire", "role": "paralegal"},
+                    headers=auth_headers,
+                )
+            except AuditWriteError:
+                resp = None  # the test client re-raises server errors
+        assert resp is None or resp.status_code >= 500
+        # audit_service is shared, so other request-path events hit the mock
+        # too; the invite event itself must have been attempted and failed.
+        assert any(
+            c.kwargs.get("details", {}).get("action") == "invite_user"
+            for c in failing.await_args_list
+        )
+        assert db_count(DBUser, DBUser.email == email) == 0
 
 
 class TestRoleChange:

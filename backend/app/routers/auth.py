@@ -542,6 +542,9 @@ async def login_with_azure(
     try:
         identity = await auth_service.verify_azure_identity(body.token)
         oid = identity["azure_oid"] or identity["id"]
+        # Normalised exactly like password login and invites, so one person
+        # cannot end up with two accounts and can be added to matters by email.
+        email = (identity.get("email") or "").lower().strip()
 
         # Resolve the local account row FIRST — it is the source of roles and
         # of the is_active / tombstone lifecycle shared with password users.
@@ -549,17 +552,16 @@ async def login_with_azure(
             await db.execute(select(DBUser).where(DBUser.azure_oid == oid))
         ).scalar_one_or_none()
         if db_user is None:
+            # Rows provisioned before ids were decoupled from the object id.
             db_user = (
                 await db.execute(select(DBUser).where(DBUser.id == identity["id"]))
             ).scalar_one_or_none()
-        if db_user is None and identity["email"]:
+        if db_user is None and email:
             # An admin may have invited this person by email before their
             # first SSO login; adopt that row rather than creating a second —
             # but never take over an account that is in local use.
             candidate = (
-                await db.execute(
-                    select(DBUser).where(func.lower(DBUser.email) == identity["email"].lower())
-                )
+                await db.execute(select(DBUser).where(func.lower(DBUser.email) == email))
             ).scalar_one_or_none()
             if candidate is not None:
                 if not _may_link_by_email(candidate):
@@ -602,7 +604,7 @@ async def login_with_azure(
             if not settings.azure_sso_auto_provision:
                 await audit_service.log_event(
                     event_type=AuditEventType.LOGIN_FAILURE,
-                    user_email=identity["email"],
+                    user_email=email,
                     ip_address=get_client_ip(request),
                     details={"method": "azure_ad", "reason": "not_provisioned"},
                     success=False,
@@ -612,9 +614,14 @@ async def login_with_azure(
                     detail="No CaseCite account exists for this identity. "
                     "Ask an administrator to invite you.",
                 )
+            # A fresh local id, not the Azure object id: a deleted account's id
+            # is tombstoned for the token lifetime (auth_service.revoke_user),
+            # so reusing it would lock a re-provisioned person out for days.
+            # The object id is kept in azure_oid, which is what later logins
+            # match on.
             db_user = DBUser(
-                id=identity["id"],
-                email=identity["email"],
+                id=str(uuid.uuid4()),
+                email=email,
                 name=identity["name"],
                 password_hash=None,  # SSO account — no local password
                 roles=[_azure_default_role().value],

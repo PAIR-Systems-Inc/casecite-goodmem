@@ -141,6 +141,69 @@ class TestConnectorCredentials:
         )
         assert resp.status_code == 422
 
+    def test_saving_one_field_keeps_the_others(self, client, admin):
+        """The UI sends only the fields the admin edited. A later save of one
+        field must not wipe the stored (and live) values of the others; an
+        explicit empty string clears just that field."""
+        import json
+
+        import app.services.instance_settings as inst
+        from app.services import connector_credentials
+
+        store: dict[str, str] = {}
+
+        async def get_secret(name):
+            return store.get(name)
+
+        async def set_secret(name, value):
+            store[name] = value
+
+        async def delete_secret(name):
+            store.pop(name, None)
+
+        def save(values):
+            return client.post(
+                f"{BASE}/connectors/google", json={"values": values}, headers=headers(admin)
+            )
+
+        with (
+            patch(f"{ROUTER}.set_secret", set_secret),
+            patch(f"{ROUTER}.delete_secret", delete_secret),
+            patch.object(inst, "get_secret", get_secret),
+        ):
+            try:
+                first = save(
+                    {
+                        "google_client_id": "client-id-1234567890",
+                        "google_client_secret": "secret-value-0123456789",
+                    }
+                )
+                assert first.status_code == 200, first.text
+
+                second = save({"google_api_key": "api-key-0987654321"})
+                assert second.status_code == 200, second.text
+                assert json.loads(store["connector_credentials_google"]) == {
+                    "google_client_id": "client-id-1234567890",
+                    "google_client_secret": "secret-value-0123456789",
+                    "google_api_key": "api-key-0987654321",
+                }
+                assert connector_credentials.get("google_client_id") == "client-id-1234567890"
+                assert connector_credentials.get("google_api_key") == "api-key-0987654321"
+                assert second.json()["masked"]["google_client_id"].startswith("clie")
+
+                third = save({"google_client_secret": ""})
+                assert third.status_code == 200, third.text
+                assert json.loads(store["connector_credentials_google"]) == {
+                    "google_client_id": "client-id-1234567890",
+                    "google_api_key": "api-key-0987654321",
+                }
+                assert connector_credentials.get(
+                    "google_client_secret"
+                ) == connector_credentials._ENV_DEFAULTS.get("google_client_secret")
+                assert connector_credentials.get("google_client_id") == "client-id-1234567890"
+            finally:
+                connector_credentials.revert_to_env("google")
+
 
 class TestLocalLLM:
     def test_set_applies_and_audits(self, client, admin, audit_events):

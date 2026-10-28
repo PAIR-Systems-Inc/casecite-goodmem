@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 
 from fastapi import Depends, HTTPException
 
@@ -132,33 +133,56 @@ DEFAULT_ROLE_PERMISSIONS: dict[str, set[str]] = {
 # copy until restarted.
 _overrides: dict[str, set[str]] | None = None
 _loaded = False
+# When the store could not be read: the shipped defaults are served for this
+# long without re-querying, then the load is retried. A failed load is never
+# cached as if it were the stored matrix.
+_FAILED_LOAD_RETRY_SECONDS = 5.0
+_failed_load_at: float | None = None
 
 
 def invalidate_cache() -> None:
-    global _overrides, _loaded
+    global _overrides, _loaded, _failed_load_at
     _overrides = None
     _loaded = False
+    _failed_load_at = None
 
 
 async def _load_overrides() -> dict[str, set[str]]:
-    global _overrides, _loaded
+    global _overrides, _loaded, _failed_load_at
     if _loaded:
         return _overrides or {}
+    now = time.monotonic()
+    if _failed_load_at is not None and now - _failed_load_at < _FAILED_LOAD_RETRY_SECONDS:
+        return {}
     from app.services.instance_settings import get_secret
+
+    try:
+        raw = await get_secret(_SECRET_NAME)
+    except Exception as e:
+        # The store is unreachable (DB down, key unavailable). Serve the
+        # defaults for now — no more than any role is granted out of the box —
+        # but do not cache them: the next call after the back-off retries, and
+        # a successful load replaces them for the rest of the process.
+        _failed_load_at = now
+        logger.error(
+            "Failed to load role permission overrides; serving defaults until the next retry: %s",
+            e,
+        )
+        return {}
 
     overrides: dict[str, set[str]] = {}
     try:
-        raw = await get_secret(_SECRET_NAME)
         if raw:
             parsed = json.loads(raw)
             if isinstance(parsed, dict):
                 for role, keys in parsed.items():
                     if role in ROLES and isinstance(keys, list):
                         overrides[role] = {k for k in keys if k in _ALL_KEYS}
-    except Exception as e:  # a bad row must not break auth
-        logger.warning("Failed to load role permission overrides: %s", e)
+    except (ValueError, TypeError) as e:  # a bad row must not break auth
+        logger.warning("Failed to parse role permission overrides: %s", e)
     _overrides = overrides
     _loaded = True
+    _failed_load_at = None
     return overrides
 
 

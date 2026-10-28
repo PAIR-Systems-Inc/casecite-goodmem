@@ -462,20 +462,33 @@ class TestFilevineAdminGate:
 
 
 class TestOAuthCallback:
-    """The callback turns provider failures into a clean 400."""
+    """The callback turns provider failures into a clean 400, and only the
+    browser that started the flow may complete it."""
+
+    CALLBACK = "/api/v1/connectors/box/callback"
+
+    def _bind(self, client, state="state-xyz", user_id="test-user-123", cookie_user=None):
+        """Issue *state* for *user_id* and give the client the binding cookie
+        (for *cookie_user*, defaulting to the same user)."""
+        from app.services.connectors.sync_state import (
+            OAUTH_BINDING_COOKIE,
+            oauth_binding_token,
+            store_oauth_state,
+        )
+
+        store_oauth_state(state, user_id, ConnectorType.BOX)
+        client.cookies.clear()
+        client.cookies.set(OAUTH_BINDING_COOKIE, oauth_binding_token(state, cookie_user or user_id))
 
     def _callback(self, client, error):
         from app.services.connectors.box import BoxConnector
-        from app.services.connectors.sync_state import store_oauth_state
 
-        store_oauth_state("state-xyz", "test-user-123", ConnectorType.BOX)
+        self._bind(client)
         with (
             patch.object(BoxConnector, "handle_callback", new=AsyncMock(side_effect=error)),
             patch("app.routers.connectors.audit_service.log_event", new=AsyncMock()) as audit,
         ):
-            response = client.get(
-                "/api/v1/connectors/box/callback", params={"code": "c", "state": "state-xyz"}
-            )
+            response = client.get(self.CALLBACK, params={"code": "c", "state": "state-xyz"})
         return response, audit
 
     def test_provider_http_error_is_a_400(self, client):
@@ -489,7 +502,77 @@ class TestOAuthCallback:
         assert response.status_code == 400
 
     def test_invalid_state_is_a_400(self, client):
-        response = client.get(
-            "/api/v1/connectors/box/callback", params={"code": "c", "state": "never-issued"}
-        )
+        response = client.get(self.CALLBACK, params={"code": "c", "state": "never-issued"})
         assert response.status_code == 400
+
+    def _complete(self, client, state):
+        from app.services.connectors.box import BoxConnector
+
+        with (
+            patch.object(
+                BoxConnector,
+                "handle_callback",
+                new=AsyncMock(return_value={"email": "box@example.com"}),
+            ) as handle,
+            patch("app.routers.connectors.audit_service.log_event", new=AsyncMock()) as audit,
+        ):
+            response = client.get(self.CALLBACK, params={"code": "c", "state": state})
+        return response, handle, audit
+
+    def test_missing_binding_cookie_is_403(self, client):
+        """A state redeemed by a browser that never started the flow (the
+        attacker handed the victim's — or their own — state to it) is refused
+        before any token is exchanged or stored."""
+        from app.services.connectors.sync_state import store_oauth_state
+
+        store_oauth_state("state-unbound", "test-user-123", ConnectorType.BOX)
+        client.cookies.clear()
+        response, handle, audit = self._complete(client, "state-unbound")
+        assert response.status_code == 403
+        handle.assert_not_awaited()
+        alerts = _events(audit, AuditEventType.SECURITY_ALERT)
+        assert [a["details"]["action"] for a in alerts] == ["oauth_callback_browser_mismatch"]
+        assert alerts[0]["user_id"] == "test-user-123"
+        # The state was consumed: it cannot be retried from the right browser either.
+        from app.services.connectors.sync_state import OAUTH_BINDING_COOKIE, oauth_binding_token
+
+        client.cookies.set(
+            OAUTH_BINDING_COOKIE, oauth_binding_token("state-unbound", "test-user-123")
+        )
+        assert self._complete(client, "state-unbound")[0].status_code == 400
+
+    def test_binding_cookie_of_another_user_is_403(self, client):
+        """User B's browser cannot complete a state issued to user A: the
+        grant would otherwise be stored under A."""
+        self._bind(client, state="state-a", user_id="user-a", cookie_user="user-b")
+        response, handle, _ = self._complete(client, "state-a")
+        assert response.status_code == 403
+        handle.assert_not_awaited()
+
+    def test_browser_that_started_the_flow_completes_it(self, client, auth_headers):
+        """End to end: /auth sets the HttpOnly Lax cookie and the callback from
+        the same browser is accepted and clears it."""
+        from app.services.connectors.box import BoxConnector
+        from app.services.connectors.sync_state import OAUTH_BINDING_COOKIE
+
+        client.cookies.clear()
+        with patch.object(
+            BoxConnector, "is_configured", new_callable=PropertyMock, return_value=True
+        ):
+            start = client.get("/api/v1/connectors/box/auth", headers=auth_headers)
+        assert start.status_code == 200, start.text
+        state = start.json()["state"]
+        set_cookie = start.headers["set-cookie"]
+        assert set_cookie.startswith(f"{OAUTH_BINDING_COOKIE}=")
+        assert "HttpOnly" in set_cookie
+        assert "SameSite=lax" in set_cookie
+        assert "Path=/api/v1/connectors" in set_cookie
+        assert client.cookies.get(OAUTH_BINDING_COOKIE)
+
+        response, handle, audit = self._complete(client, state)
+        assert response.status_code == 200, response.text
+        assert response.json()["status"] == "connected"
+        handle.assert_awaited_once()
+        assert len(_events(audit, AuditEventType.CONNECTOR_CONNECT)) == 1
+        # Single use: the binding cookie is cleared with the state.
+        assert 'connector_oauth_binding=""' in response.headers["set-cookie"]

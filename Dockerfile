@@ -94,8 +94,12 @@ RUN grep -q '/assets/' /var/www/html/index.html && \
 # Copy logo asset for favicon/branding
 COPY --chown=appuser:appuser frontend/logo.webp /var/www/html/logo.webp
 
-# Copy nginx config
-COPY --chown=appuser:appuser nginx.unified.conf /etc/nginx/sites-enabled/default
+# Copy nginx config. Root-owned and read-only for everyone else: the root
+# master process reads it, and appuser (the workers and the application) must
+# not be able to rewrite what nginx serves or proxies to.
+COPY nginx.unified.conf /etc/nginx/sites-enabled/default
+RUN chown root:root /etc/nginx/sites-enabled/default \
+    && chmod 0644 /etc/nginx/sites-enabled/default
 
 # Create data directories with broad permissions (Coolify may run as non-root)
 RUN mkdir -p /app/data/chroma /app/data/uploads /app/data/audit_logs /app/data/user_settings \

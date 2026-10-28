@@ -20,6 +20,7 @@ from app.routers._matter_deps import accessible_matter_ids
 from app.services.audit import AuditEventType, audit_service
 from app.services.auth import TokenData
 from app.services.authority_mapper import authority_mapper_service
+from app.services.documents import document_service
 from app.services.job_queue import job_manager
 from app.services.permissions import require_permission
 from app.services.user_keys import UserAPIKeys
@@ -44,10 +45,21 @@ async def analyze_authority_map(
     request: AuthorityMapRequest,
     http_request: Request,
     current_user: TokenData = require_permission("authority_map.use"),
+    accessible_matters: set[str] = Depends(accessible_matter_ids),
 ):
     """Submit an authority-mapping job. Returns a job_id to poll via /jobs/{id}."""
     if not request.document_text.strip():
         raise HTTPException(status_code=400, detail="document_text is required")
+
+    # document_id is stored on the run and later shown as its source: it must
+    # name a document the caller can actually read (own, or shared through a
+    # matter), not an arbitrary id. Uniform 404, as for every document read.
+    if request.document_id:
+        doc = await document_service.get_document(
+            request.document_id, current_user.user_id, accessible_matters
+        )
+        if doc is None:
+            raise HTTPException(status_code=404, detail="Document not found")
 
     user_keys = UserAPIKeys.from_request(http_request, user_id=current_user.user_id)
     user_id = current_user.user_id

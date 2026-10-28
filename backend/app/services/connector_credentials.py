@@ -75,10 +75,15 @@ def secret_name(provider: str) -> str:
 
 
 def apply_values(provider: str, values: dict[str, str | None]) -> None:
-    """Write credential values into the live runtime config for a provider."""
+    """Write credential values into the live runtime config for a provider.
+
+    ``values`` is the provider's complete instance override. A field it does
+    not carry falls back to its .env value (resolution order: instance ->
+    .env), rather than being blanked.
+    """
     for field in CONNECTOR_PROVIDERS[provider]["fields"]:
         value = (values.get(field) or "").strip() if values.get(field) else None
-        _runtime[field] = value or None
+        _runtime[field] = value or _ENV_DEFAULTS.get(field)
 
 
 def revert_to_env(provider: str) -> None:
@@ -118,19 +123,26 @@ def mask(value: str | None, *, full: bool) -> str | None:
     return value[:4] + "•" * 8 + value[-4:]
 
 
-async def provider_status(provider: str) -> dict:
-    """Configured / source / masked values for one provider."""
+async def stored_values(provider: str) -> dict[str, str]:
+    """The provider's stored instance override ({} when none or unreadable)."""
     from app.services.instance_settings import get_secret
 
-    meta = CONNECTOR_PROVIDERS[provider]
     raw = await get_secret(secret_name(provider))
-    instance_values: dict | None = None
-    if raw:
-        try:
-            parsed = json.loads(raw)
-            instance_values = parsed if isinstance(parsed, dict) else None
-        except (ValueError, TypeError):
-            instance_values = None
+    if not raw:
+        return {}
+    try:
+        parsed = json.loads(raw)
+    except (ValueError, TypeError):
+        return {}
+    if not isinstance(parsed, dict):
+        return {}
+    return {k: v for k, v in parsed.items() if isinstance(k, str) and isinstance(v, str)}
+
+
+async def provider_status(provider: str) -> dict:
+    """Configured / source / masked values for one provider."""
+    meta = CONNECTOR_PROVIDERS[provider]
+    instance_values = await stored_values(provider)
 
     if instance_values and any((instance_values.get(f) or "").strip() for f in meta["fields"]):
         source = "instance"

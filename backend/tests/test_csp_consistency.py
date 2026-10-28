@@ -2,6 +2,8 @@
 The Content-Security-Policy is declared in three places — the FastAPI security
 middleware and the two bundled proxies (Caddyfile, nginx.unified.conf). A
 browser enforces every policy it receives, so they must say the same thing.
+
+Also checks how the image installs the bundled nginx config.
 """
 
 import re
@@ -47,3 +49,19 @@ class TestCspConsistency:
             "https://onedrive.live.com",
             "https://*.sharepoint.com",
         ]
+
+
+class TestNginxConfigInImage:
+    def test_site_config_is_root_owned_and_not_writable_by_appuser(self):
+        """The root nginx master reads the site config. appuser runs the
+        workers and the application, so it must not own — or be able to
+        rewrite — what nginx serves and where it proxies to."""
+        text = (REPO_ROOT / "Dockerfile").read_text(encoding="utf-8")
+        copies = [
+            line.strip()
+            for line in text.splitlines()
+            if line.startswith("COPY") and "nginx.unified.conf" in line
+        ]
+        assert copies == ["COPY nginx.unified.conf /etc/nginx/sites-enabled/default"]
+        assert "chown root:root /etc/nginx/sites-enabled/default" in text
+        assert "chmod 0644 /etc/nginx/sites-enabled/default" in text

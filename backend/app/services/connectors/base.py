@@ -425,13 +425,52 @@ def _read_credentials_at(path: str) -> dict[str, Any]:
         return {}
 
 
+async def _fresh_dropbox_access_token(creds: dict[str, Any]) -> str | None:
+    """Mint a new Dropbox access token from the stored refresh token, for revocation.
+
+    None when there is no refresh token, the app is not configured, or Dropbox
+    refuses — the caller then falls back to the stored access token.
+    """
+    from app.services import connector_credentials
+
+    refresh_token = creds.get("refresh_token")
+    app_key = connector_credentials.get("dropbox_app_key")
+    app_secret = connector_credentials.get("dropbox_app_secret")
+    if not (refresh_token and app_key and app_secret):
+        return None
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(
+                "https://api.dropboxapi.com/oauth2/token",
+                data={
+                    "client_id": app_key,
+                    "client_secret": app_secret,
+                    "refresh_token": refresh_token,
+                    "grant_type": "refresh_token",
+                },
+            )
+        if not resp.is_success:
+            logger.warning(
+                "Dropbox token refresh before revocation returned HTTP %s", resp.status_code
+            )
+            return None
+        token = resp.json().get("access_token")
+        return token if isinstance(token, str) and token else None
+    except (httpx.HTTPError, OSError, ValueError, AttributeError) as e:
+        logger.warning("Dropbox token refresh before revocation failed: %s", e)
+        return None
+
+
 async def _revoke_token_best_effort(connector_type: ConnectorType, creds: dict[str, Any]) -> bool:
     """Invalidate the provider-side OAuth grant where a cheap endpoint exists.
 
     Google: POST oauth2.googleapis.com/revoke with the refresh token (falls back
     to the access token); revoking either invalidates the whole grant.
-    Dropbox: POST /2/auth/token/revoke with the bearer access token, which also
-    disables the paired refresh token.
+    Dropbox: POST /2/auth/token/revoke with a bearer access token, which also
+    disables the paired refresh token — but only if that access token is still
+    valid. Dropbox access tokens live four hours, so a stored one is usually
+    expired and the refresh token would survive; when a refresh token is on
+    file a fresh access token is minted first and that one is revoked.
     Box: POST api.box.com/oauth2/revoke with the app's client credentials and
     the refresh token (falls back to the access token); revoking either
     invalidates the pair. Other providers have no comparably cheap endpoint
@@ -448,7 +487,7 @@ async def _revoke_token_best_effort(connector_type: ConnectorType, creds: dict[s
                     "https://oauth2.googleapis.com/revoke", data={"token": token}
                 )
         elif connector_type == ConnectorType.DROPBOX:
-            token = creds.get("access_token")
+            token = await _fresh_dropbox_access_token(creds) or creds.get("access_token")
             if not token:
                 return False
             async with httpx.AsyncClient(timeout=10.0) as client:

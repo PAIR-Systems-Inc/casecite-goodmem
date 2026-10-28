@@ -7,7 +7,14 @@ import pytest
 from app.models.authority_map import AuthorityMapping, AuthorityMapRun
 from app.services.audit import AuditEventType
 
-from tests.helpers import db_add, db_count, headers, make_user
+from tests.helpers import (
+    db_add,
+    db_count,
+    headers,
+    make_shared_matter,
+    make_user,
+    register_document,
+)
 
 pytestmark = pytest.mark.usefixtures("no_rate_limit")
 
@@ -73,6 +80,53 @@ class TestAnalyze:
             f"{BASE}/analyze", json={"document_text": "x" * 2_000_001}, headers=headers(owner)
         )
         assert resp.status_code == 422
+
+    def _analyze_with_document(self, client, user, document_id):
+        from app.services.documents import document_service
+
+        with patch(
+            "app.routers.authority_map.job_manager.submit",
+            new_callable=AsyncMock,
+            return_value="job-456",
+        ) as submit:
+            try:
+                resp = client.post(
+                    f"{BASE}/analyze",
+                    json={"document_text": "The court should grant.", "document_id": document_id},
+                    headers=headers(user),
+                )
+            finally:
+                document_service.documents.pop(document_id, None)
+        return resp, submit
+
+    def test_unknown_document_id_is_404(self, client):
+        """document_id is stored on the run as its source: it must be a
+        document the caller can read, not an arbitrary client-supplied id."""
+        owner = make_user("am-owner")
+        resp, submit = self._analyze_with_document(client, owner, "doc-does-not-exist")
+        assert resp.status_code == 404
+        submit.assert_not_awaited()
+
+    def test_another_users_document_id_is_404(self, client):
+        owner, stranger = make_user("am-owner"), make_user("am-stranger")
+        doc_id = register_document(owner)
+        resp, submit = self._analyze_with_document(client, stranger, doc_id)
+        assert resp.status_code == 404
+        submit.assert_not_awaited()
+
+    def test_own_document_id_is_accepted(self, client):
+        owner = make_user("am-owner")
+        doc_id = register_document(owner)
+        resp, submit = self._analyze_with_document(client, owner, doc_id)
+        assert resp.status_code == 200, resp.text
+        submit.assert_awaited_once()
+
+    def test_document_shared_through_a_matter_is_accepted(self, client):
+        owner, member = make_user("am-owner"), make_user("am-member")
+        matter_id = make_shared_matter(owner, member)
+        doc_id = register_document(owner, matter_id=matter_id)
+        resp, _ = self._analyze_with_document(client, member, doc_id)
+        assert resp.status_code == 200, resp.text
 
 
 class TestReadAndDelete:

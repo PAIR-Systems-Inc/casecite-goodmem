@@ -4,10 +4,11 @@ import uuid
 from datetime import UTC, datetime
 
 import httpx
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field
 
 from app.config import settings
+from app.middleware.csrf import cookie_secure
 from app.models.responses.common import StatusResponse
 from app.models.responses.connectors import (
     ConnectorCallbackResponse,
@@ -30,7 +31,13 @@ from app.services.connectors.base import (
     FileInfo,
     FileTooLargeError,
 )
-from app.services.connectors.sync_state import store_oauth_state, validate_oauth_state
+from app.services.connectors.sync_state import (
+    OAUTH_BINDING_COOKIE,
+    oauth_binding_matches,
+    oauth_binding_token,
+    store_oauth_state,
+    validate_oauth_state,
+)
 from app.services.documents import document_service
 from app.services.job_queue import RETRY_POLICIES, job_manager
 from app.services.permissions import effective_permissions, require_permission
@@ -64,6 +71,13 @@ _CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]")
 _ADMIN_ONLY_DETAIL = (
     "This connector uses a firm-wide credential and can only be used by an administrator."
 )
+
+# The OAuth state lives 10 minutes (store_oauth_state); so does its cookie.
+_OAUTH_STATE_TTL_SECONDS = 600
+
+
+def _oauth_cookie_path() -> str:
+    return f"{settings.api_prefix}/connectors"
 
 
 class SyncRequest(BaseModel):
@@ -139,7 +153,10 @@ async def get_connector_status(
 
 @router.get("/{connector_type}/auth", response_model=ConnectorAuthUrl)
 async def get_auth_url(
-    connector_type: ConnectorType, current_user: TokenData = require_permission("connectors.manage")
+    connector_type: ConnectorType,
+    request: Request,
+    response: Response,
+    current_user: TokenData = require_permission("connectors.manage"),
 ) -> ConnectorAuthUrl:
     """Get OAuth authorization URL for a connector. Requires authentication."""
     BaseConnector.set_current_user(current_user.user_id)
@@ -158,6 +175,21 @@ async def get_auth_url(
     # Store state with user binding and expiry for validation in callback
     store_oauth_state(state, current_user.user_id, connector_type)
 
+    # Bind the state to this browser as well: the provider's redirect to the
+    # callback is unauthenticated, so without this a state handed to another
+    # browser would store that browser's grant under this user. Lax, not
+    # Strict — the redirect back from the provider is a cross-site top-level
+    # GET, which is exactly what Lax still sends the cookie on.
+    response.set_cookie(
+        OAUTH_BINDING_COOKIE,
+        oauth_binding_token(state, current_user.user_id),
+        httponly=True,
+        secure=cookie_secure(request),
+        samesite="lax",
+        max_age=_OAUTH_STATE_TTL_SECONDS,
+        path=_oauth_cookie_path(),
+    )
+
     auth_url = connector.get_auth_url(state)
 
     return ConnectorAuthUrl(auth_url=auth_url, state=state)
@@ -165,7 +197,7 @@ async def get_auth_url(
 
 @router.get("/{connector_type}/callback", response_model=ConnectorCallbackResponse)
 async def handle_callback(
-    connector_type: ConnectorType, code: str, state: str, request: Request
+    connector_type: ConnectorType, code: str, state: str, request: Request, response: Response
 ) -> ConnectorCallbackResponse:
     """Handle OAuth callback from connector.
 
@@ -173,6 +205,9 @@ async def handle_callback(
     - Validates state exists and is not expired
     - Validates state matches the connector type
     - State is single-use (deleted after validation to prevent replay)
+    - The browser must present the signed binding cookie issued when the
+      flow started, so only the browser of the user who began the flow can
+      complete it
     - Credentials stored under the user who initiated the OAuth flow
     """
     # Validate OAuth state (provides CSRF protection and user binding)
@@ -192,6 +227,27 @@ async def handle_callback(
             status_code=400,
             detail="Invalid or expired OAuth state. Please try connecting again.",
         )
+
+    # The state is consumed either way; a mismatch burns it rather than
+    # leaving it redeemable from the right browser later.
+    if not oauth_binding_matches(request.cookies.get(OAUTH_BINDING_COOKIE), state, user_id):
+        await audit_service.log_event(
+            event_type=AuditEventType.SECURITY_ALERT,
+            user_id=user_id,
+            ip_address=get_client_ip(request),
+            details={
+                "action": "oauth_callback_browser_mismatch",
+                "connector_type": connector_type.value,
+                "reason": "binding_cookie_missing_or_for_another_user",
+            },
+            success=False,
+        )
+        raise HTTPException(
+            status_code=403,
+            detail="This connection was started from a different browser session. "
+            "Please try connecting again.",
+        )
+    response.delete_cookie(OAUTH_BINDING_COOKIE, path=_oauth_cookie_path())
 
     # Set user context so credentials are stored for the correct user
     BaseConnector.set_current_user(user_id)

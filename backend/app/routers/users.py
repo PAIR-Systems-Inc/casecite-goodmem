@@ -146,9 +146,11 @@ async def invite_user(
         password_changed_at=datetime.now(UTC).replace(tzinfo=None),
     )
     db.add(db_user)
-    await db.commit()
-    await db.refresh(db_user)
+    await db.flush()
 
+    # Audit BEFORE the commit. With AUDIT_FAIL_CLOSED an unwritable trail must
+    # refuse the invite outright — not create the account and then fail the
+    # response, which would lose the one-time temporary password.
     await audit_service.log_event(
         event_type=AuditEventType.USER_CREATE,
         user_id=current_user.user_id,
@@ -158,6 +160,9 @@ async def invite_user(
         ip_address=get_client_ip(request),
         details={"action": "invite_user", "invited_email": email, "role": body.role},
     )
+
+    await db.commit()
+    await db.refresh(db_user)
 
     return InviteUserResponse(user=_to_item(db_user), temporary_password=temp_password)
 
