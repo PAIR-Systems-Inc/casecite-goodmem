@@ -170,7 +170,7 @@ universal, so it includes a few packages that install only on some platforms.
 
 ## JavaScript (frontend bundle)
 
-48 production packages in `frontend/package-lock.json`.
+45 production packages in `frontend/package-lock.json`.
 
 | Package | Version | License |
 |---|---|---|
@@ -179,8 +179,6 @@ universal, so it includes a few packages that install only on some platforms.
 | [@fontsource/inter](https://www.npmjs.com/package/@fontsource/inter) | 5.3.0 | OFL-1.1 |
 | [@fontsource/jetbrains-mono](https://www.npmjs.com/package/@fontsource/jetbrains-mono) | 5.3.0 | OFL-1.1 |
 | [@fontsource/source-serif-4](https://www.npmjs.com/package/@fontsource/source-serif-4) | 5.3.0 | OFL-1.1 |
-| [@types/prop-types](https://www.npmjs.com/package/@types/prop-types) | 15.7.15 | MIT |
-| [@types/react](https://www.npmjs.com/package/@types/react) | 18.3.31 | MIT |
 | [ansi-regex](https://www.npmjs.com/package/ansi-regex) | 5.0.1 | MIT |
 | [ansi-styles](https://www.npmjs.com/package/ansi-styles) | 4.3.0 | MIT |
 | [camelcase](https://www.npmjs.com/package/camelcase) | 5.3.1 | MIT |
@@ -188,7 +186,6 @@ universal, so it includes a few packages that install only on some platforms.
 | [color-convert](https://www.npmjs.com/package/color-convert) | 2.0.1 | MIT |
 | [color-name](https://www.npmjs.com/package/color-name) | 1.1.4 | MIT |
 | [cookie](https://www.npmjs.com/package/cookie) | 1.1.1 | MIT |
-| [csstype](https://www.npmjs.com/package/csstype) | 3.2.3 | MIT |
 | [decamelize](https://www.npmjs.com/package/decamelize) | 1.2.0 | MIT |
 | [dijkstrajs](https://www.npmjs.com/package/dijkstrajs) | 1.0.3 | MIT |
 | [emoji-regex](https://www.npmjs.com/package/emoji-regex) | 8.0.0 | MIT |
@@ -207,13 +204,13 @@ universal, so it includes a few packages that install only on some platforms.
 | [qrcode](https://www.npmjs.com/package/qrcode) | 1.5.4 | MIT |
 | [react](https://www.npmjs.com/package/react) | 18.3.1 | MIT |
 | [react-dom](https://www.npmjs.com/package/react-dom) | 18.3.1 | MIT |
-| [react-router](https://www.npmjs.com/package/react-router) | 7.18.2 | MIT |
-| [react-router-dom](https://www.npmjs.com/package/react-router-dom) | 7.18.2 | MIT |
+| [react-router](https://www.npmjs.com/package/react-router) | 7.18.4 | MIT |
+| [react-router-dom](https://www.npmjs.com/package/react-router-dom) | 7.18.4 | MIT |
 | [require-directory](https://www.npmjs.com/package/require-directory) | 2.1.1 | MIT |
 | [require-main-filename](https://www.npmjs.com/package/require-main-filename) | 2.0.0 | ISC |
 | [scheduler](https://www.npmjs.com/package/scheduler) | 0.23.2 | MIT |
 | [set-blocking](https://www.npmjs.com/package/set-blocking) | 2.0.0 | ISC |
-| [set-cookie-parser](https://www.npmjs.com/package/set-cookie-parser) | 2.7.2 | MIT |
+| [set-cookie-parser](https://www.npmjs.com/package/set-cookie-parser) | 2.7.3 | MIT |
 | [string-width](https://www.npmjs.com/package/string-width) | 4.2.3 | MIT |
 | [strip-ansi](https://www.npmjs.com/package/strip-ansi) | 6.0.1 | MIT |
 | [which-module](https://www.npmjs.com/package/which-module) | 2.0.1 | ISC |
