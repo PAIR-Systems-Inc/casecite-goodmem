@@ -8,7 +8,7 @@ evaluating the product — what does **not** exist yet.
 - Contract analysis, redlining as native Word tracked changes, and long-document drafting
 - Strategy briefs with quote-verified authorities (API only)
 - Judge intelligence, citation check, and case-law tools backed by CourtListener
-- Matter-scoped sharing of documents and chats (API only)
+- Matters: a workspace per client engagement (`/matters`) with the documents, chats, analyses, members and activity filed under it; an active-matter selector that scopes Research, Contracts and Drafting; bulk filing of documents between matters; ownership transfer for offboarding
 - HMAC-chained audit log with startup and on-demand verification, viewable and exportable by admins
 - BYOK provider keys and uploaded originals encrypted at rest (AES-256-GCM)
 - TOTP MFA (optionally mandatory), password reset and change, session lifetime and idle timeout
@@ -16,10 +16,9 @@ evaluating the product — what does **not** exist yet.
 - OpenAI, Anthropic and Gemini for chat; OpenAI, Voyage, Cohere or a self-hosted server for embeddings
 
 ## Next
-- Matters UI (the API scopes documents and chats; there is no screen for it yet)
 - Connector folder picker (the sync API takes a folder; the UI can only import a whole connected account)
 - Azure AD SSO sign-in flow in the frontend (the backend token exchange is complete)
-- Ownership transfer when a user is offboarded (today, deleting a user deletes their documents and the matters they own; deactivate instead to keep them)
+- Ownership transfer of documents when a user is offboarded (matters can be handed over today; deleting a user still deletes their documents, so transfer their matters and deactivate instead)
 - Ethical walls: admin-managed matter access and deny-lists (today, access is by matter membership only)
 - Retention policies and legal hold for documents and chats (today, only audit logs have retention)
 - In-place `SECRET_KEY` rotation with re-encryption of stored documents

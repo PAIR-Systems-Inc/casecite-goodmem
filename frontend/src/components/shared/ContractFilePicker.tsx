@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useId, useCallback } from 'react';
+import React, { useState, useEffect, useId, useCallback, useMemo } from 'react';
 import { Icon } from './Icon';
 import { ModalShell } from './ModalShell';
 import { formatFileSize } from '../../utils';
@@ -32,14 +32,39 @@ interface ContractFilePickerProps {
   subtitle?: string;
   confirmLabel?: (count: number) => string;
   multiHint?: string;
+  /** When set, only these documents are offered (the active matter's); folders left empty are hidden. */
+  allowedIds?: string[] | null;
 }
 
 const MAX_SELECT = 4;
 
+/** Keep only files in `allowed` (and folders that still hold one), recounting folders. */
+function pruneTree(items: TreeItem[], allowed: Set<string>): TreeItem[] {
+  const out: TreeItem[] = [];
+  for (const item of items) {
+    if (item.type === 'file') {
+      if (item.id && allowed.has(item.id)) out.push(item);
+      continue;
+    }
+    const children = pruneTree(item.children || [], allowed);
+    if (children.length === 0) continue;
+    const count = children.reduce((n, c) => n + (c.type === 'file' ? 1 : c.document_count || 0), 0);
+    out.push({ ...item, children, document_count: count });
+  }
+  return out;
+}
+
 export const ContractFilePicker = ({
-  isOpen, onClose, onSelect, loading, subtitle, confirmLabel, multiHint,
+  isOpen, onClose, onSelect, loading, subtitle, confirmLabel, multiHint, allowedIds,
 }: ContractFilePickerProps) => {
-  const [tree, setTree] = useState<DocumentTree | null>(null);
+  const [rawTree, setTree] = useState<DocumentTree | null>(null);
+  const allowedKey = allowedIds ? allowedIds.join(',') : null;
+  const tree = useMemo<DocumentTree | null>(() => {
+    if (!rawTree || allowedKey === null) return rawTree;
+    const pruned = pruneTree(rawTree.tree || [], new Set(allowedKey ? allowedKey.split(',') : []));
+    const total = pruned.reduce((n, c) => n + (c.type === 'file' ? 1 : c.document_count || 0), 0);
+    return { ...rawTree, tree: pruned, total_documents: total };
+  }, [rawTree, allowedKey]);
   const [treeLoading, setTreeLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedFolders, setExpandedFolders] = useState(new Set<string>());

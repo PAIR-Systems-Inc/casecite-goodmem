@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContractsStore } from '../stores/contractsStore';
 import { useRagDocsStore } from '../stores/ragDocsStore';
+import { useMattersStore, documentInMatter } from '../stores/mattersStore';
 import { useUIStore } from '../stores/uiStore';
 import {
   Icon, ContractAnalysisMessage, ContractCitedAnswer, ContractTextViewer,
@@ -30,6 +31,7 @@ function ContractsView() {
   const setRightSidebarCollapsed = useUIStore((st) => st.setRightSidebarCollapsed);
   const ragDocs = useRagDocsStore((st) => st.ragDocs);
   const ragInit = useRagDocsStore((st) => st.init);
+  const activeMatter = useMattersStore((st) => st.matters.find((m) => m.id === st.activeMatterId) || null);
 
   // Minimal local UI state only: composer text, past-analyses panel toggle,
   // compare-dropdown toggle, drag-over highlight, the file input ref, and
@@ -57,7 +59,10 @@ function ContractsView() {
     lastMsgRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [messages.length, sending, analyzing]);
 
-  const indexedDocs = ragDocs.filter((d) => d.status === 'indexed');
+  // The header's active matter narrows the contracts on offer; "All matters" shows every indexed document.
+  const indexedDocs = ragDocs.filter(
+    (d) => d.status === 'indexed' && (!activeMatter || documentInMatter(d, activeMatter)),
+  );
   const selectedDoc = indexedDocs.find((d) => d.id === selectedDocumentId);
   const activeRedlines = getActiveRedlines();
   const activeDecisions: Record<string, 'accepted' | 'rejected'> = {};

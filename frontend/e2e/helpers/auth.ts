@@ -131,6 +131,7 @@ export async function installApiMocks(page: Page, options: MockApiOptions = {}):
     if (path === '/connectors') return fulfillJson(route, 200, { connectors: [] });
     if (path === '/pickers/config') return fulfillJson(route, 200, {});
     if (path === '/chat/sessions') return fulfillJson(route, 200, { sessions: [] });
+    if (path === '/matters' && method === 'GET') return fulfillJson(route, 200, { matters: [] });
     if (path === '/workspace-sessions' && method === 'GET') return fulfillJson(route, 200, { sessions: [] });
     if (path === '/workspace-sessions' && method === 'POST') {
       return fulfillJson(route, 200, { id: 'ws-1', surface: 'tool', title: 'session', updated_at: new Date().toISOString() });

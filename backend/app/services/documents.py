@@ -53,6 +53,12 @@ class DocumentDeletionError(RuntimeError):
     registry, so the caller can retry; the message is safe to show the user."""
 
 
+class DocumentMoveError(RuntimeError):
+    """A document's vectors could not be re-tagged for its new matter, so the
+    registry was left pointing at the old matter for that document (the two
+    must never disagree about who may search it). Safe to show the user."""
+
+
 class DocumentService:
     def __init__(self):
         self.documents: dict[str, Document] = {}
@@ -203,6 +209,59 @@ class DocumentService:
             doc.folder_path = None
         self._save_index()
         return True
+
+    def documents_in_matter(
+        self, matter_id: str, personal_owner_id: str | None = None
+    ) -> list[Document]:
+        """Every document filed under a matter, newest first.
+
+        Pass ``personal_owner_id`` for a personal matter: documents in the
+        personal scope carry no matter_id (the historical owner-only layout),
+        so that owner's untagged documents belong to it too. The caller has
+        already checked membership of the matter.
+        """
+        docs = [
+            d
+            for d in self.documents.values()
+            if d.matter_id == matter_id
+            or (
+                personal_owner_id is not None and d.user_id == personal_owner_id and not d.matter_id
+            )
+        ]
+        docs.sort(key=lambda d: d.created_at, reverse=True)
+        return docs
+
+    async def move_documents_to_matter(
+        self, docs: list[Document], target_matter_id: str | None
+    ) -> list[str]:
+        """File documents under another matter (None = the owner's personal scope).
+
+        The vector chunks are re-tagged BEFORE the registry changes, document
+        by document: a document whose vectors could not be updated keeps its
+        old matter, the ones already moved stay moved, and DocumentMoveError
+        names the document that stopped the run. Returns the ids moved.
+        """
+        from app.services.vectordb import get_vector_db
+
+        vector_db = get_vector_db()
+        moved: list[str] = []
+        try:
+            for doc in docs:
+                if (doc.matter_id or None) == (target_matter_id or None):
+                    continue
+                if vector_db is not None and not await vector_db.update_document_matter(
+                    doc.id, target_matter_id
+                ):
+                    raise DocumentMoveError(
+                        f"'{doc.filename}' could not be moved: its search index entries "
+                        "could not be updated. Nothing else changed for that document."
+                    )
+                doc.matter_id = target_matter_id
+                moved.append(doc.id)
+        finally:
+            if moved:
+                self._save_index()
+        return moved
 
     async def read_file(self, file_path: str) -> bytes:
         """Read an uploaded file from disk, decrypting it if encrypted at rest."""

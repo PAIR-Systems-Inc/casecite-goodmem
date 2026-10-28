@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.matters import (
@@ -86,6 +86,71 @@ async def create_matter(
         )
     )
     await session.flush()
+    return matter
+
+
+async def update_matter(
+    session: AsyncSession,
+    matter: Matter,
+    *,
+    name: str | None = None,
+    client_name: str | None = None,
+) -> Matter:
+    """Rename a matter and/or change its client name. ``None`` keeps a field.
+
+    An empty client name clears it. Personal matters keep their fixed name.
+    """
+    if matter.is_personal:
+        raise MatterAccessError("A personal matter cannot be renamed")
+    values: dict[str, str | None] = {}
+    if name is not None:
+        cleaned = name.strip()
+        if not cleaned:
+            raise MatterAccessError("A matter needs a name")
+        values["name"] = cleaned
+    if client_name is not None:
+        values["client_name"] = client_name.strip() or None
+    if values:
+        await session.execute(update(Matter).where(Matter.id == matter.id).values(**values))
+        await session.refresh(matter)
+    return matter
+
+
+async def transfer_ownership(session: AsyncSession, matter: Matter, new_owner_id: str) -> Matter:
+    """Make an existing member the owner; the previous owner stays as a member.
+
+    Ownership decides who may share, rename, transfer and delete the matter
+    and who may delete content filed under it, so the new owner must already
+    be a member (added through the normal invite flow, which is audited and
+    refuses deactivated accounts).
+    """
+    if matter.is_personal:
+        raise MatterAccessError("A personal matter cannot be transferred")
+    if new_owner_id == matter.owner_id:
+        raise MatterAccessError("That user already owns this matter")
+    member_ids = set(
+        (
+            await session.execute(
+                select(MatterMember.user_id).where(MatterMember.matter_id == matter.id)
+            )
+        ).scalars()
+    )
+    if new_owner_id not in member_ids:
+        raise MatterAccessError("The new owner must already be a member of this matter")
+    await session.execute(
+        update(MatterMember)
+        .where(MatterMember.matter_id == matter.id, MatterMember.user_id == matter.owner_id)
+        .values(role=MATTER_ROLE_MEMBER)
+    )
+    await session.execute(
+        update(MatterMember)
+        .where(MatterMember.matter_id == matter.id, MatterMember.user_id == new_owner_id)
+        .values(role=MATTER_ROLE_OWNER)
+    )
+    await session.execute(
+        update(Matter).where(Matter.id == matter.id).values(owner_id=new_owner_id)
+    )
+    await session.refresh(matter)
     return matter
 
 

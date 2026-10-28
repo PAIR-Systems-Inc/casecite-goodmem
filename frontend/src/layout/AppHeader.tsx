@@ -1,7 +1,7 @@
 import { useSettingsStore } from '../stores/settingsStore';
 import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
-import { Icon } from '../components';
+import { Icon, MatterSelector } from '../components';
 import s from './AppHeader.module.css';
 
 export function AppHeader() {
@@ -31,6 +31,9 @@ export function AppHeader() {
         </div>
       </div>
       <div className={s.headerRight}>
+        {/* The active matter scopes Research, Contracts and Drafting; it only
+            means something once signed in. */}
+        {isAuthenticated && <MatterSelector />}
         {/* Settings is gated behind sign-in as a whole — don't offer a button
             that would open nothing. */}
         {isAuthenticated && (

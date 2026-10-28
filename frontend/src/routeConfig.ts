@@ -9,6 +9,7 @@ const ROUTE_TO_MODE: Record<string, string> = {
   '/contracts': 'contracts',
   '/drafting': 'drafting',
   '/case': 'case',
+  '/matters': 'matters',
 };
 
 export const MODE_TO_ROUTE: Record<string, string> = {
@@ -19,6 +20,7 @@ export const MODE_TO_ROUTE: Record<string, string> = {
   'contracts': '/contracts',
   'drafting': '/drafting',
   'case': '/case',
+  'matters': '/matters',
 };
 
 /**
@@ -27,5 +29,7 @@ export const MODE_TO_ROUTE: Record<string, string> = {
 export function modeFromPath(pathname: string): string {
   // /case and /case/:id — but not /case-citations, which has its own entry.
   if (pathname === '/case' || pathname.startsWith('/case/')) return 'case';
+  // /matters and /matters/:id share the Matters mode.
+  if (pathname === '/matters' || pathname.startsWith('/matters/')) return 'matters';
   return ROUTE_TO_MODE[pathname] || 'research';
 }

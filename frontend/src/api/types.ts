@@ -121,6 +121,9 @@ export interface ChatSessionSummary {
   created_at: string;
   updated_at: string;
   message_count: number;
+  /** Who started the thread (a matter workspace lists colleagues' threads too). */
+  user_id?: string | null;
+  matter_id?: string | null;
 }
 
 export interface ChatSessionListResponse {
@@ -422,6 +425,57 @@ interface RagDocumentItem {
   indexed_at?: string | null;
   metadata?: Record<string, unknown>;
   folder_path?: string | null;
+  /** Owner of the document (a matter member may see colleagues' documents). */
+  user_id?: string;
+  /** Matter the document is filed under; null = the owner's personal scope. */
+  matter_id?: string | null;
+}
+
+// ==================== Matter (workspace / sharing) Types ====================
+
+export interface MatterMember {
+  user_id: string;
+  email: string | null;
+  name: string | null;
+  role: 'owner' | 'member' | string;
+}
+
+export interface Matter {
+  id: string;
+  name: string;
+  client_name: string | null;
+  is_personal: boolean;
+  owner_id: string;
+  /** The caller's own role in this matter. */
+  role: 'owner' | 'member' | 'none' | string;
+  member_count: number;
+  created_at: string;
+}
+
+export interface MatterDetail extends Matter {
+  members: MatterMember[];
+}
+
+export interface MatterAnalysisItem {
+  analysis_id: string;
+  document_id: string | null;
+  filename: string | null;
+  contract_type: string | null;
+  created_at: string | null;
+  issues: number;
+  user_id: string | null;
+}
+
+export interface MatterActivityEvent {
+  id: number;
+  timestamp: string;
+  event_type: string;
+  action: string | null;
+  user_id: string | null;
+  user_email: string | null;
+  resource_type: string | null;
+  resource_id: string | null;
+  success: boolean;
 }
 
 export interface DocumentListResponse {
@@ -1082,6 +1136,22 @@ export interface ApiClient {
   createFolder(name: string): Promise<{ path: string; folders: string[] }>;
   deleteFolder(path: string): Promise<{ status: string; folders: string[] }>;
   moveDocument(documentId: string, folderPath: string | null): Promise<{ status: string }>;
+
+  // Matters (workspace / sharing)
+  listMatters(): Promise<{ matters: Matter[] }>;
+  createMatter(name: string, clientName?: string | null): Promise<Matter>;
+  getMatter(matterId: string): Promise<MatterDetail>;
+  updateMatter(matterId: string, changes: { name?: string; client_name?: string | null }): Promise<Matter>;
+  deleteMatter(matterId: string): Promise<{ status: string; id: string }>;
+  addMatterMember(matterId: string, email: string): Promise<MatterDetail>;
+  removeMatterMember(matterId: string, userId: string): Promise<MatterDetail>;
+  transferMatter(matterId: string, newOwnerId: string): Promise<MatterDetail>;
+  getMatterDocuments(matterId: string): Promise<DocumentListResponse>;
+  /** File documents under `matterId` (the caller's own, or ones filed under a matter they own). */
+  moveDocumentsToMatter(matterId: string, documentIds: string[]): Promise<{ status: string; matter_id: string; moved: string[] }>;
+  getMatterChats(matterId: string): Promise<ChatSessionListResponse>;
+  getMatterAnalyses(matterId: string): Promise<{ analyses: MatterAnalysisItem[] }>;
+  getMatterActivity(matterId: string, limit?: number): Promise<{ events: MatterActivityEvent[] }>;
 
   // Connectors
   getConnectors(): Promise<ConnectorDataResponse>;

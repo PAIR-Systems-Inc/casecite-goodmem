@@ -11,6 +11,10 @@ export interface RagDocument {
   indexed_at?: string | null;
   metadata?: Record<string, unknown>;
   folder_path?: string | null;
+  /** Owner of the document (a matter member may see colleagues' documents). */
+  user_id?: string;
+  /** Matter the document is filed under; null = the owner's personal scope. */
+  matter_id?: string | null;
 }
 
 export interface DocumentFilter {

@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useDraftingStore, WORDS_PER_PAGE } from '../stores/draftingStore';
+import { useRagDocsStore } from '../stores/ragDocsStore';
+import { useMattersStore, documentInMatter } from '../stores/mattersStore';
 import {
   Icon, ContractTextViewer, ContractFilePicker, FloatingChatDock, AssistantAvatar, MessageMarkdown, AiNotice,
 } from '../components';
@@ -34,6 +36,15 @@ function DraftingView() {
   const [refPickerOpen, setRefPickerOpen] = useState(false);
   const [planExtrasOpen, setPlanExtrasOpen] = useState(false);
   const lastMsgRef = useRef<HTMLDivElement | null>(null);
+
+  // The header's active matter narrows the reference picker to that matter's documents.
+  const ragDocs = useRagDocsStore((st) => st.ragDocs);
+  const ragInit = useRagDocsStore((st) => st.init);
+  const activeMatter = useMattersStore((st) => st.matters.find((m) => m.id === st.activeMatterId) || null);
+  useEffect(() => { ragInit(); }, [ragInit]);
+  const referenceIds = activeMatter
+    ? ragDocs.filter((d) => documentInMatter(d, activeMatter)).map((d) => d.id)
+    : null;
 
   useEffect(() => {
     if (messages.length > 0) setChatOpen(true);
@@ -377,6 +388,7 @@ function DraftingView() {
       {/* Reference picker — the Knowledge Base, not the local disk */}
       <ContractFilePicker
         isOpen={refPickerOpen}
+        allowedIds={referenceIds}
         onClose={() => setRefPickerOpen(false)}
         onSelect={(docs) => { setRefPickerOpen(false); attachDraftReferences(docs); }}
         subtitle="Pick up to 4 documents the draft should be based on"

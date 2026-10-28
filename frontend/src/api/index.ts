@@ -7,6 +7,7 @@ import './chat';
 import './chatSessions';
 import './workspaceSessions';
 import './documents';
+import './matters';
 import './settings';
 import './connectors';
 import './pickers';

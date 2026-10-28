@@ -248,6 +248,10 @@ class ChatSessionSummary(BaseModel):
     created_at: datetime
     updated_at: datetime
     message_count: int = 0
+    # Who started the thread — a matter workspace lists colleagues' sessions
+    # beside the caller's own, so the UI can label them.
+    user_id: str | None = None
+    matter_id: str | None = None
 
 
 # ---- Matters (collaboration / sharing) ----
@@ -290,6 +294,65 @@ class MatterListResponse(BaseModel):
 
 class MatterDetailResponse(MatterResponse):
     members: list[MatterMemberResponse]
+
+
+class UpdateMatterRequest(BaseModel):
+    """Rename a matter or change its client name. Omitted fields keep their value."""
+
+    name: str | None = Field(None, min_length=1, max_length=300)
+    client_name: str | None = Field(None, max_length=300)
+
+
+class TransferMatterRequest(BaseModel):
+    """Hand a matter to another member, who becomes its owner."""
+
+    new_owner_id: str = Field(..., min_length=1, max_length=36)
+
+
+class MoveMatterDocumentsRequest(BaseModel):
+    """File documents under the matter in the URL (bulk move between matters)."""
+
+    document_ids: list[str] = Field(..., min_length=1, max_length=500)
+
+
+class MoveMatterDocumentsResponse(BaseModel):
+    status: str = "moved"
+    matter_id: str
+    moved: list[str]
+
+
+class MatterAnalysisItem(BaseModel):
+    """A contract analysis filed under a matter (the workspace Analyses tab)."""
+
+    analysis_id: str
+    document_id: str | None = None
+    filename: str | None = None
+    contract_type: str | None = None
+    created_at: datetime | None = None
+    issues: int = 0
+    user_id: str | None = None
+
+
+class MatterAnalysesResponse(BaseModel):
+    analyses: list[MatterAnalysisItem]
+
+
+class MatterActivityEvent(BaseModel):
+    """One audit entry about a matter or something filed under it."""
+
+    id: int
+    timestamp: datetime
+    event_type: str
+    action: str | None = None
+    user_id: str | None = None
+    user_email: str | None = None
+    resource_type: str | None = None
+    resource_id: str | None = None
+    success: bool = True
+
+
+class MatterActivityResponse(BaseModel):
+    events: list[MatterActivityEvent]
 
 
 class ChatSessionMessage(BaseModel):

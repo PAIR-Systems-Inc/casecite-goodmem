@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { api } from '../api';
 import { useUIStore } from '../stores/uiStore';
+import { useMattersStore, documentInMatter } from '../stores/mattersStore';
+import { useRagDocsStore } from '../stores/ragDocsStore';
 import { registerReset } from '../stores/resetRegistry';
 import { generateId, parseUtcDate, mappingToCitation, fetchDocumentPdfUrl } from '../utils';
 import { parseCitations } from '../utils/citationParser';
@@ -11,6 +13,24 @@ import type { DocAnnotation } from '../components/shared/AnnotatedDocument';
 import { setCitationsSink } from '../utils/citationsBridge';
 import { conversationTitle, downloadConversation } from '../utils/conversationExport';
 import type { ConversationExportFormat, ConversationExportMessage } from '../api/types';
+
+/**
+ * The scope a question is asked over. An explicit pick in the file workspace
+ * wins; otherwise the header's active matter narrows retrieval to the
+ * documents filed under it (an empty matter asks over nothing, which is the
+ * honest answer). With no active matter the question goes to everything.
+ */
+function effectiveDocFilter(picked: DocumentFilter | null): DocumentFilter | null {
+  if (picked) return picked;
+  const matter = useMattersStore.getState().activeMatter();
+  if (!matter) return null;
+  const docs = useRagDocsStore.getState().ragDocs;
+  if (docs.length === 0) return null; // the list has not loaded yet: nothing to narrow by
+  return {
+    document_ids: docs.filter((d) => d.status === 'indexed' && documentInMatter(d, matter)).map((d) => d.id),
+    include_subfolders: true,
+  };
+}
 
 /** Flatten a Matter Strategy message (brief / authority map included) for export. */
 function researchMessageToExport(msg: ChatMessage): ConversationExportMessage {
@@ -329,7 +349,7 @@ export function useResearchState({ addToast, activeMode, setActiveMode }: { addT
     try {
       const response = await api.query(query, activeMode, {
         includeDocuments: true,
-        documentFilter: mainDocFilter as unknown as string | null,
+        documentFilter: effectiveDocFilter(mainDocFilter) as unknown as string | null,
         sessionId: currentSessionId,
       }, controller.signal);
 

@@ -1,0 +1,416 @@
+/* MatterWorkspaceView styles (shared with the Matter*Tab components via the styles prop) */
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--gray-50);
+  overflow: auto;
+}
+
+.content {
+  padding: 20px 32px 32px;
+  max-width: 1100px;
+  width: 100%;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-600);
+  cursor: pointer;
+}
+
+.backBtn:hover {
+  color: var(--gray-900);
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.headerMain {
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.titleIcon {
+  color: var(--gray-600);
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--navy-800);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.primaryBtn,
+.secondaryBtn,
+.dangerBtn,
+.toolBtn,
+.toolBtnPrimary,
+.toolBtnDanger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.primaryBtn,
+.secondaryBtn,
+.dangerBtn {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.toolBtn,
+.toolBtnPrimary,
+.toolBtnDanger {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.primaryBtn,
+.toolBtnPrimary {
+  background: var(--navy-700);
+  color: var(--on-secondary);
+  border: none;
+}
+
+.secondaryBtn,
+.toolBtn {
+  background: white;
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+}
+
+.secondaryBtn:hover,
+.toolBtn:hover {
+  background: var(--gray-100);
+}
+
+.activeBtn {
+  background: var(--navy-700);
+  border-color: var(--navy-700);
+  color: var(--on-secondary);
+}
+
+.dangerBtn,
+.toolBtnDanger {
+  background: white;
+  color: var(--red-600);
+  border: 1px solid var(--red-100);
+}
+
+.dangerBtn:hover,
+.toolBtnDanger:hover {
+  background: var(--red-50);
+}
+
+.primaryBtn:disabled,
+.toolBtnPrimary:disabled,
+.toolBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.renameForm,
+.inviteForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+}
+
+.input {
+  flex: 1 1 220px;
+  padding: 8px 10px;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--gray-900);
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.roleBadge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  flex-shrink: 0;
+}
+
+.roleOwner {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--gray-200);
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-600);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--gray-900);
+}
+
+.tabActive {
+  color: var(--navy-800);
+  border-bottom-color: var(--navy-800);
+}
+
+.tabCountBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--gray-100);
+  color: var(--gray-600);
+}
+
+.tabPanel {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.tabToolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px 10px;
+}
+
+.tabCount {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.picker {
+  margin-bottom: 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  background: var(--gray-50);
+}
+
+.pickerHead {
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--gray-600);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.pickerList {
+  max-height: 260px;
+  overflow: auto;
+}
+
+.pickerRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.pickerRow:hover {
+  background: white;
+}
+
+.pickerActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px;
+  border-top: 1px solid var(--gray-100);
+}
+
+.row:first-child {
+  border-top: none;
+}
+
+.rowFailed {
+  background: var(--red-50);
+}
+
+.rowIcon {
+  color: var(--gray-500);
+  flex-shrink: 0;
+}
+
+.rowIconError {
+  color: var(--red-500);
+  flex-shrink: 0;
+}
+
+.rowBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowMeta {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+.ownerBadge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  flex-shrink: 0;
+}
+
+.ownerBadgeMine {
+  background: var(--blue-100);
+  color: var(--blue-600);
+}
+
+.failedBadge {
+  margin-left: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--red-600);
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--primary-50);
+  color: var(--gray-700);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px;
+  color: var(--gray-500);
+  font-size: 13px;
+  text-align: center;
+}
+
+.empty p {
+  margin: 0;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

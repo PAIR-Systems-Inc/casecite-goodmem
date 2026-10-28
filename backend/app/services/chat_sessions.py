@@ -52,6 +52,8 @@ def _serialize_session(row: ChatSessionDB, message_count: int = 0) -> dict:
         "created_at": row.created_at,
         "updated_at": row.updated_at,
         "message_count": message_count,
+        "user_id": row.user_id,
+        "matter_id": row.matter_id,
     }
 
 
@@ -177,6 +179,37 @@ async def list_sessions(
             select(ChatSessionDB, func.count(ChatMessageDB.id))
             .outerjoin(ChatMessageDB, ChatMessageDB.session_id == ChatSessionDB.id)
             .where(_access_clause(user_id, accessible_matter_ids))
+            .group_by(ChatSessionDB.id)
+            .order_by(ChatSessionDB.updated_at.desc())
+            .limit(limit)
+        )
+        result = await db.execute(stmt)
+        return [_serialize_session(row, count) for row, count in result.all()]
+
+
+async def list_sessions_for_matter(
+    matter_id: str,
+    personal_owner_id: str | None = None,
+    limit: int = DEFAULT_SESSION_LIMIT,
+) -> list[dict]:
+    """Every session filed under one matter, newest first (the matter workspace).
+
+    The caller has already been checked as a member of the matter. For a
+    personal matter pass its owner: sessions that predate matters carry no
+    matter_id and belong to the personal scope of their owner.
+    """
+    if personal_owner_id:
+        where = or_(
+            ChatSessionDB.matter_id == matter_id,
+            (ChatSessionDB.user_id == personal_owner_id) & ChatSessionDB.matter_id.is_(None),
+        )
+    else:
+        where = ChatSessionDB.matter_id == matter_id
+    async with get_db_context() as db:
+        stmt = (
+            select(ChatSessionDB, func.count(ChatMessageDB.id))
+            .outerjoin(ChatMessageDB, ChatMessageDB.session_id == ChatSessionDB.id)
+            .where(where)
             .group_by(ChatSessionDB.id)
             .order_by(ChatSessionDB.updated_at.desc())
             .limit(limit)

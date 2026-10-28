@@ -4,6 +4,7 @@ import shutil
 import sqlite3
 import uuid
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import Any
 
@@ -76,6 +77,18 @@ class VectorDBBase(ABC):
     @abstractmethod
     async def get_stats(self) -> dict[str, Any]:
         pass
+
+    async def update_document_matter(self, document_id: str, matter_id: str | None) -> bool:
+        """Re-tag every chunk of a document with a new matter (or none).
+
+        The matter tag is what lets a matter's members retrieve a shared
+        document, so moving a document between matters must rewrite it on the
+        vectors too — a stale tag would keep the old matter's members in the
+        search scope. ``None`` clears the tag (owner-only). Returns False when
+        the store could not be updated; the caller must then not record the
+        move. Default: unsupported.
+        """
+        return False
 
 
 def _has_tenant_scope(filter: dict | None) -> bool:
@@ -322,6 +335,36 @@ class ChromaDB(VectorDBBase):
         except (chromadb.errors.ChromaError, ValueError):
             return False
 
+    async def update_document_matter(self, document_id: str, matter_id: str | None) -> bool:
+        """Rewrite the matter tag on every chunk of a document (see base class)."""
+        try:
+            existing = self.collection.get(
+                where={"document_id": document_id}, include=["metadatas"]
+            )
+            ids = list((existing or {}).get("ids") or [])
+            if not ids:
+                return True  # nothing indexed — nothing to re-tag
+            metadatas: list[Mapping[str, Any]] = []
+            for meta in existing.get("metadatas") or [{}] * len(ids):
+                updated: dict[str, Any] = dict(meta or {})
+                # Chroma rejects None values, and an update merges keys rather
+                # than dropping them, so "none" is the empty string: it matches
+                # no matter id, leaving the chunk owner-scoped.
+                updated["matter_id"] = matter_id or ""
+                metadatas.append(updated)
+            self.collection.update(ids=ids, metadatas=metadatas)
+            return True
+        except (
+            chromadb.errors.ChromaError,
+            ValueError,
+            KeyError,
+            RuntimeError,
+            OSError,
+            sqlite3.Error,
+        ) as e:
+            logger.error(f"Could not re-tag chunks of document {document_id}: {e}")
+            return False
+
     async def get_stats(self) -> dict[str, Any]:
         """Get collection statistics."""
         count = self.collection.count()
@@ -531,6 +574,24 @@ class PineconeDB(VectorDBBase):
             self.index.delete(filter={"document_id": document_id})
             return True
         except (PineconeException, ConnectionError, ValueError):
+            return False
+
+    async def update_document_matter(self, document_id: str, matter_id: str | None) -> bool:
+        """Rewrite the matter tag on every chunk of a document (see base class)."""
+        try:
+            results = self.index.query(
+                vector=self._probe_vector(),
+                top_k=10_000,  # Pinecone's ceiling; a single document is far smaller
+                filter={"document_id": document_id},
+                include_metadata=False,
+            )
+            for match in results.matches:
+                # set_metadata merges, so the tag is overwritten in place; the
+                # empty string matches no matter id (owner-only), as in Chroma.
+                self.index.update(id=match.id, set_metadata={"matter_id": matter_id or ""})
+            return True
+        except (PineconeException, ConnectionError, ValueError, AttributeError) as e:
+            logger.error(f"Could not re-tag chunks of document {document_id}: {e}")
             return False
 
     async def get_stats(self) -> dict[str, Any]:

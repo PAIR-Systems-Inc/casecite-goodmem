@@ -177,10 +177,34 @@ function LeftSidebar() {
           </div>
         </div>
 
-        {/* Documents — Knowledge Base entry sits above the upload box */}
+        {/* Documents — Matters and the Knowledge Base sit above the upload box */}
         <div className={s.modeSection}>
           {!collapsed && <div className={s.sectionLabel}>Documents</div>}
           <div className={`${s.modeList} ${collapsed ? s.modeListCollapsed : ''}`}>
+            <button
+              className={`${s.modeBtn} ${activeMode === 'matters' ? s.modeBtnActive : ''} ${collapsed ? s.modeBtnCollapsed : ''} ${!isAuthenticated ? s.modeBtnLocked : ''}`}
+              onClick={() => {
+                if (!isAuthenticated) { setShowSignupModal(true); return; }
+                setActiveMode('matters');
+              }}
+              title={collapsed ? 'Matters' : undefined}
+            >
+              {!isAuthenticated && !collapsed && (
+                <Icon name="Lock" size={10} className={`${s.iconGold500} ${s.lockIconExpanded}`} />
+              )}
+              {!isAuthenticated && collapsed && (
+                <Icon name="Lock" size={8} className={`${s.iconGold500} ${s.lockIconCollapsed}`} />
+              )}
+              <div className={`${s.modeIcon} ${activeMode === 'matters' ? s.modeIconActive : ''}`}>
+                <Icon name="Briefcase" size={16} />
+              </div>
+              {!collapsed && (
+                <div className={s.modeContent}>
+                  <span className={s.modeTitle}>Matters</span>
+                  <span className={s.modeDesc}>Client engagements &amp; sharing</span>
+                </div>
+              )}
+            </button>
             <button
               className={`${s.modeBtn} ${activeMode === 'rag-docs' ? s.modeBtnActive : ''} ${collapsed ? s.modeBtnCollapsed : ''} ${!isAuthenticated ? s.modeBtnLocked : ''}`}
               onClick={() => {
