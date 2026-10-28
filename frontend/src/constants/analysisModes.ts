@@ -11,4 +11,5 @@ export const ANALYSIS_MODES = [
   { id: 'contracts', title: 'Contracts', icon: 'FileText', desc: 'Review, redline & compare contracts' },
   { id: 'drafting', title: 'Drafting', icon: 'PenLine', desc: 'Draft contracts, letters & documents' },
   { id: 'review-tables', title: 'Tabular Review', icon: 'Table2', desc: 'Extract cited fields across many contracts' },
+  { id: 'workflows', title: 'Workflows', icon: 'Workflow', desc: 'Save and re-run multi-step review processes' },
 ] as const;

@@ -46,6 +46,7 @@ from app.routers import (
     tools,
     user_keys,
     users,
+    workflows,
     workspace_sessions,
 )
 from app.routers import settings as settings_router
@@ -444,6 +445,7 @@ app.include_router(chat.router, prefix=settings.api_prefix)
 app.include_router(matters.router, prefix=settings.api_prefix)
 app.include_router(review_tables.router, prefix=settings.api_prefix)
 app.include_router(deep_research.router, prefix=settings.api_prefix)
+app.include_router(workflows.router, prefix=settings.api_prefix)
 app.include_router(strategy.router, prefix=settings.api_prefix)
 app.include_router(documents.router, prefix=settings.api_prefix)
 app.include_router(connectors.router, prefix=settings.api_prefix)

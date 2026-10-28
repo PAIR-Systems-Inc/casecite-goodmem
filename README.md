@@ -6,7 +6,7 @@ CaseCite is an **open-source, self-hosted** legal research platform. Upload your
 
 ## What it does
 
-Nine tools behind one login, all reading from the same document corpus.
+Ten tools behind one login, all reading from the same document corpus.
 
 | | |
 |---|---|
@@ -14,6 +14,7 @@ Nine tools behind one login, all reading from the same document corpus.
 | **Documents** (`/documents`) | Upload, index, and organize your corpus. Import from Google Drive, OneDrive, Box, Dropbox, Filevine, or Clio — OAuth sync, or a file picker where OAuth verification isn't needed. iManage and NetDocuments connectors exist but are experimental (untested against a live tenant) and off unless `EXPERIMENTAL_CONNECTORS=true`. |
 | **Contracts** (`/contracts`) | Full contract review pipeline: analyze an indexed contract or pasted text, chat with a single contract, compare 2–4 contracts clause-by-clause against a baseline, and export a redline, a draft, or the analysis itself. |
 | **Tabular review** (`/review-tables`) | Review hundreds of contracts at once: define the fields you need, point the table at a set of documents, and get one row per document with every value tied to the exact passage that supports it (verified, unverified or not found). Re-run a cell, row or column; see the cost before a run; export to Excel with a Citations sheet, or CSV. |
+| **Workflows** (`/workflows`) | Save a review, research or drafting process as an ordered list of steps (extract fields, analyse contracts, compare against a baseline, draft a document, deep research, check citations) and run it over any set of documents as one background job. Every step's output is kept, a failed run resumes from the step that failed, and three starter templates (NDA intake, lease review, due-diligence pass) show the shape. See [docs/workflows.md](docs/workflows.md). |
 | **Drafting** (`/drafting`) | Draft a document grounded in up to four documents you pick from the Knowledge Base, with server-side text extraction and PDF conversion. Set a target length for long documents (30-page agreements): you review a section plan first, then every section is drafted in its own context window against the full references and the whole is reconciled. Revisions to long drafts are scoped to the sections they touch. |
 | **Matters** (`/matters`) | One workspace per client engagement: the documents, research chats and contract analyses filed under it, who can see them, and an activity feed from the audit trail. Set a matter as *active* in the header and Research, Contracts and Drafting scope themselves to it. Owners invite colleagues, file documents in bulk, and hand a matter over when someone leaves. |
 | **Case view** (`/case/:id`) | Open a CourtListener opinion and chat with it directly. |

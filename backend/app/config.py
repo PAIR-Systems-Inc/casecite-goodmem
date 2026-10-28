@@ -543,6 +543,12 @@ class Settings(BaseSettings):
     deep_research_max_passages: int = 60
     # A sub-question may propose this many follow-up searches (0 disables).
     deep_research_followup_depth: int = 1
+    # Workflows (/workflows): steps a workflow may hold, documents one step may
+    # analyse or extract from, and citations one citation-check step may scan.
+    # Each document and each citation is at least one outbound call.
+    workflow_max_steps: int = 12
+    workflow_max_documents_per_step: int = 25
+    workflow_max_citations_per_step: int = 10
     # Jobs kept by the in-memory fallback (Redis unavailable) before the oldest
     # finished ones are evicted. Each can hold up to job_max_result_size.
     job_memory_max_jobs: int = 200

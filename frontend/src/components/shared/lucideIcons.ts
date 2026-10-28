@@ -11,7 +11,7 @@ import {
   Folder, FolderOpen, FolderPlus, FolderSearch, FolderTree, FolderX,
   Gavel, GitCompare, GripHorizontal,
   HardDrive, Hash, HelpCircle, History,
-  Info, Key, KeyRound, Layers, Lightbulb, Link,
+  Info, Key, KeyRound, Layers, Lightbulb, Link, ListOrdered,
   Loader, Loader2, Lock, LogIn, LogOut,
   Mail, Maximize2, Menu, MessageSquare, MessageSquarePlus, MessagesSquare, Mic, Minus,
   PanelRight, Paperclip, PenLine, Pencil, Plus, Quote,
@@ -21,7 +21,7 @@ import {
   Play,
   Table2, Target, ThumbsDown, ThumbsUp, Trash2, TrendingDown, TrendingUp,
   Upload, User, UserPlus,
-  Wand2, Wrench,
+  Wand2, Workflow, Wrench,
   X, XCircle, Zap,
 } from 'lucide-react';
 
@@ -46,7 +46,7 @@ export const lucideIconMap: Record<string, LucideIcon> = {
   Folder, FolderOpen, FolderPlus, FolderSearch, FolderTree, FolderX,
   Gavel, GitCompare, GripHorizontal,
   HardDrive, Hash, HelpCircle, History,
-  Info, Key, KeyRound, Layers, Lightbulb, Link,
+  Info, Key, KeyRound, Layers, Lightbulb, Link, ListOrdered,
   Loader, Loader2, Lock, LogIn, LogOut,
   Mail, Maximize2, Menu, MessageSquare, MessageSquarePlus, MessagesSquare, Mic, Minus,
   PanelRight, Paperclip, PenLine, Pencil, Plus, Quote,
@@ -56,6 +56,6 @@ export const lucideIconMap: Record<string, LucideIcon> = {
   Play,
   Table2, Target, ThumbsDown, ThumbsUp, Trash2, TrendingDown, TrendingUp,
   Upload, User, UserPlus,
-  Wand2, Wrench,
+  Wand2, Workflow, Wrench,
   X, XCircle, Zap,
 };

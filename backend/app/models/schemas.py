@@ -601,6 +601,286 @@ class DeepResearchListResponse(BaseModel):
     runs: list[DeepResearchRunSummary]
 
 
+# ---- Workflows (saved, repeatable sequences of the platform's own operations) ----
+
+
+class WorkflowStepKind(str, Enum):
+    """The operations a workflow step may run. Each maps to one existing service call."""
+
+    EXTRACT_FIELDS = "extract_fields"  # tabular review over the step's input documents
+    ANALYZE_CONTRACT = "analyze_contract"  # the full contract pipeline, per document
+    COMPARE_CONTRACTS = "compare_contracts"  # clause-by-clause against a baseline
+    DRAFT_DOCUMENT = "draft_document"  # a draft from instructions and prior outputs
+    DEEP_RESEARCH = "deep_research"  # plan + run a deep-research question
+    CITATION_CHECK = "citation_check"  # treatment scan of citations found or given
+
+
+class WorkflowInputSource(str, Enum):
+    """Where a step's documents come from."""
+
+    RUN = "run"  # the documents the run was started with
+    DOCUMENTS = "documents"  # explicit ids fixed in the workflow
+    STEP = "step"  # the documents an earlier step produced or read
+
+
+class WorkflowStepInputs(BaseModel):
+    source: WorkflowInputSource = WorkflowInputSource.RUN
+    document_ids: list[str] = Field(default_factory=list, max_length=1000)
+    # The earlier step whose documents this step reads (source == "step").
+    step: str | None = Field(None, max_length=60)
+
+    @model_validator(mode="after")
+    def _consistent(self) -> "WorkflowStepInputs":
+        if self.source == WorkflowInputSource.DOCUMENTS and not self.document_ids:
+            raise ValueError("inputs.document_ids is required when inputs.source is 'documents'")
+        if self.source == WorkflowInputSource.STEP and not self.step:
+            raise ValueError("inputs.step is required when inputs.source is 'step'")
+        if self.source != WorkflowInputSource.DOCUMENTS:
+            self.document_ids = []
+        if self.source != WorkflowInputSource.STEP:
+            self.step = None
+        return self
+
+
+class ExtractFieldsParams(BaseModel):
+    """Tabular review: the fields to extract from every input document."""
+
+    fields: list[ReviewFieldSpec] = Field(..., min_length=1, max_length=40)
+    table_name: str | None = Field(None, max_length=300)
+
+    @field_validator("fields")
+    @classmethod
+    def _keys_unique(cls, v: list[ReviewFieldSpec]) -> list[ReviewFieldSpec]:
+        return _unique_field_keys(v)
+
+
+class AnalyzeContractParams(BaseModel):
+    contract_type: str = Field("auto", max_length=80)
+    jurisdiction: str | None = Field(None, max_length=120)
+    representing: str | None = Field(None, max_length=300)
+    posture: Literal["strict", "balanced"] = "balanced"
+    instructions: str | None = Field(None, max_length=4000)
+
+
+class CompareContractsParams(BaseModel):
+    """Compare every input document against a baseline (the first input when unset)."""
+
+    baseline_document_id: str | None = Field(None, max_length=64)
+    focus: str | None = Field(None, max_length=2000)
+
+
+class DraftDocumentParams(BaseModel):
+    """Draft from instructions; ``{{step.field}}`` in the instructions is filled from
+    earlier outputs, and the named steps' outputs are attached as reference text."""
+
+    instructions: str = Field(..., min_length=3, max_length=8000)
+    include_outputs_from: list[str] = Field(default_factory=list, max_length=12)
+    reference_document_ids: list[str] = Field(default_factory=list, max_length=4)
+
+
+class DeepResearchParams(BaseModel):
+    """A deep-research question, templated from earlier outputs, over the input documents."""
+
+    question: str = Field(..., min_length=3, max_length=4000)
+    # Restrict the planner's tools; None lets it choose.
+    tools: list[DeepResearchTool] | None = Field(None, min_length=1, max_length=2)
+
+
+class CitationCheckParams(BaseModel):
+    """Treatment scan of the given citations plus those found in earlier outputs."""
+
+    citations: list[str] = Field(default_factory=list, max_length=50)
+    # Earlier steps whose outputs are scanned for reporter citations; None = all.
+    from_steps: list[str] | None = Field(None, max_length=12)
+
+
+STEP_PARAM_MODELS: dict[WorkflowStepKind, type[BaseModel]] = {
+    WorkflowStepKind.EXTRACT_FIELDS: ExtractFieldsParams,
+    WorkflowStepKind.ANALYZE_CONTRACT: AnalyzeContractParams,
+    WorkflowStepKind.COMPARE_CONTRACTS: CompareContractsParams,
+    WorkflowStepKind.DRAFT_DOCUMENT: DraftDocumentParams,
+    WorkflowStepKind.DEEP_RESEARCH: DeepResearchParams,
+    WorkflowStepKind.CITATION_CHECK: CitationCheckParams,
+}
+
+_STEP_NAME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,59}$")
+# ``{{step}}``, ``{{step.field}}``, ``{{step.list.0.field}}`` in templated text.
+TEMPLATE_REF_RE = re.compile(r"\{\{\s*([A-Za-z][A-Za-z0-9_-]*)((?:\.[A-Za-z0-9_-]+)*)\s*\}\}")
+
+
+class WorkflowStep(BaseModel):
+    """One step: a name other steps refer to, the operation, its parameters and inputs."""
+
+    name: str = Field(..., min_length=1, max_length=60)
+    kind: WorkflowStepKind
+    params: dict[str, Any] = Field(default_factory=dict)
+    inputs: WorkflowStepInputs = Field(
+        default_factory=lambda: WorkflowStepInputs(
+            source=WorkflowInputSource.RUN, document_ids=[], step=None
+        )
+    )
+
+    @model_validator(mode="after")
+    def _validate_params(self) -> "WorkflowStep":
+        self.name = self.name.strip()
+        if not _STEP_NAME_RE.match(self.name):
+            raise ValueError(
+                "Step names start with a letter and use letters, digits, '_' or '-' only"
+            )
+        model = STEP_PARAM_MODELS[self.kind]
+        # Re-serialise so the stored params are exactly the validated, normalised set.
+        self.params = model.model_validate(self.params).model_dump(mode="json")
+        return self
+
+
+def _referenced_steps(step: WorkflowStep) -> set[str]:
+    """Every earlier step this step names, through its inputs, params or templates."""
+    refs: set[str] = set()
+    if step.inputs.step:
+        refs.add(step.inputs.step)
+    params = step.params
+    for key in ("include_outputs_from", "from_steps"):
+        for name in params.get(key) or []:
+            refs.add(str(name))
+    for key in ("instructions", "question"):
+        text = params.get(key)
+        if isinstance(text, str):
+            refs.update(m.group(1) for m in TEMPLATE_REF_RE.finditer(text))
+    return refs
+
+
+def validate_workflow_steps(steps: list[WorkflowStep]) -> list[WorkflowStep]:
+    """Names unique (case-insensitively); every reference names an EARLIER step."""
+    seen: dict[str, str] = {}
+    for step in steps:
+        lowered = step.name.lower()
+        if lowered in seen:
+            raise ValueError(f"Duplicate step name: {step.name}")
+        for ref in sorted(_referenced_steps(step)):
+            if ref.lower() == lowered:
+                raise ValueError(f"Step '{step.name}' refers to itself")
+            if ref.lower() not in seen:
+                raise ValueError(
+                    f"Step '{step.name}' refers to '{ref}', which is not an earlier step"
+                )
+        seen[lowered] = step.name
+    return steps
+
+
+class WorkflowCreateRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=300)
+    description: str | None = Field(None, max_length=2000)
+    matter_id: str | None = Field(None, max_length=36)
+    steps: list[WorkflowStep] = Field(..., min_length=1, max_length=50)
+
+    @field_validator("steps")
+    @classmethod
+    def _steps_consistent(cls, v: list[WorkflowStep]) -> list[WorkflowStep]:
+        return validate_workflow_steps(v)
+
+
+class WorkflowUpdateRequest(BaseModel):
+    """Change the name, description or steps. Omitted fields keep their value."""
+
+    name: str | None = Field(None, min_length=1, max_length=300)
+    description: str | None = Field(None, max_length=2000)
+    steps: list[WorkflowStep] | None = Field(None, min_length=1, max_length=50)
+
+    @field_validator("steps")
+    @classmethod
+    def _steps_consistent(cls, v: list[WorkflowStep] | None) -> list[WorkflowStep] | None:
+        return validate_workflow_steps(v) if v is not None else None
+
+
+class WorkflowSummary(BaseModel):
+    id: str
+    name: str
+    description: str | None = None
+    matter_id: str | None = None
+    owner_id: str
+    role: str  # the caller's role: "owner" | "member"
+    template_key: str | None = None
+    step_count: int
+    step_kinds: list[WorkflowStepKind] = Field(default_factory=list)
+    run_count: int = 0
+    last_run_at: datetime | None = None
+    last_run_status: str | None = None
+    created_at: datetime
+    updated_at: datetime | None = None
+
+
+class WorkflowListResponse(BaseModel):
+    workflows: list[WorkflowSummary]
+
+
+class WorkflowDetailResponse(WorkflowSummary):
+    steps: list[WorkflowStep]
+
+
+class WorkflowTemplate(BaseModel):
+    key: str
+    name: str
+    description: str
+    steps: list[WorkflowStep]
+
+
+class WorkflowTemplatesResponse(BaseModel):
+    templates: list[WorkflowTemplate]
+
+
+class WorkflowRunRequest(BaseModel):
+    """Start a run. With no ids and a workflow filed under a matter, the matter's documents."""
+
+    document_ids: list[str] = Field(default_factory=list, max_length=1000)
+
+
+class WorkflowRunStarted(BaseModel):
+    run_id: str
+    job_id: str
+    poll_url: str
+    steps: int
+    documents: int
+
+
+class WorkflowStepRunResponse(BaseModel):
+    index: int
+    name: str
+    kind: str
+    status: str
+    output: dict[str, Any] | None = None
+    input_document_ids: list[str] = Field(default_factory=list)
+    produced_ids: dict[str, list[str]] = Field(default_factory=dict)
+    error: str | None = None
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+
+
+class WorkflowRunSummary(BaseModel):
+    id: str
+    workflow_id: str
+    runner_id: str
+    matter_id: str | None = None
+    status: str
+    steps: int
+    completed_steps: int
+    documents: int
+    job_id: str | None = None
+    error: str | None = None
+    resumed_count: int = 0
+    created_at: datetime
+    completed_at: datetime | None = None
+
+
+class WorkflowRunListResponse(BaseModel):
+    runs: list[WorkflowRunSummary]
+
+
+class WorkflowRunDetailResponse(WorkflowRunSummary):
+    step_definitions: list[WorkflowStep]
+    step_runs: list[WorkflowStepRunResponse]
+    input_document_ids: list[str] = Field(default_factory=list)
+
+
 class ChatSessionMessage(BaseModel):
     """A persisted message within a chat session thread."""
 

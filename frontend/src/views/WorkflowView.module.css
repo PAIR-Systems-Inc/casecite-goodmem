@@ -1,0 +1,869 @@
+/* WorkflowView styles — one workflow: step editor, run bar, run history and per-step outcomes */
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--gray-50);
+  overflow: auto;
+}
+
+.content {
+  padding: 20px 32px 32px;
+  width: 100%;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  margin-bottom: 10px;
+  border: none;
+  background: none;
+  color: var(--gray-500);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.backBtn:hover {
+  color: var(--gray-800);
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.titleBlock {
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--navy-800);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--gray-500);
+  margin: 4px 0 0;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.renameForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+}
+
+.primaryBtn,
+.secondaryBtn,
+.dangerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.primaryBtn {
+  background: var(--navy-700);
+  color: var(--on-secondary);
+  border: none;
+}
+
+.secondaryBtn {
+  background: white;
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+}
+
+.secondaryBtn:hover:not(:disabled) {
+  background: var(--gray-100);
+}
+
+.secondaryBtnActive {
+  background: var(--primary-50);
+  border-color: var(--gray-400);
+}
+
+.dangerBtn {
+  background: white;
+  color: var(--red-600, #dc2626);
+  border: 1px solid var(--gray-300);
+  padding: 8px 10px;
+}
+
+.dangerBtn:hover:not(:disabled) {
+  background: var(--red-50, #fef2f2);
+  border-color: var(--red-300, #fca5a5);
+}
+
+.primaryBtn:disabled,
+.secondaryBtn:disabled,
+.dangerBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  background: white;
+  color: var(--gray-600);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.iconBtn:hover:not(:disabled) {
+  background: var(--gray-100);
+}
+
+.iconBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.roleBadge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  flex-shrink: 0;
+}
+
+.roleOwner {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.input,
+.select,
+.textarea {
+  flex: 1 1 220px;
+  padding: 8px 10px;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--gray-900);
+  background: white;
+  min-width: 0;
+  font-family: inherit;
+}
+
+.select {
+  flex: 0 0 auto;
+}
+
+.textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.inputWide {
+  flex: 2 1 320px;
+}
+
+.muted {
+  color: var(--gray-500);
+  font-size: 12px;
+}
+
+/* Panels */
+.panel {
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+}
+
+.panelHead {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.panelTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.panelHint {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.panelActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Read-only step summary */
+.stepSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.stepSummaryItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.stepSummaryName {
+  font-weight: 600;
+  color: var(--gray-900);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Step editor */
+.stepList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stepCard {
+  padding: 10px 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  background: var(--gray-50);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stepHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.stepIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--navy-700);
+  color: var(--on-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.stepKind {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-700);
+  white-space: nowrap;
+}
+
+.stepName {
+  flex: 0 1 160px;
+  padding: 6px 8px;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--gray-900);
+  background: white;
+  min-width: 0;
+}
+
+.stepTools {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.params {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.paramRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.paramLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.paramHint {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.checkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.checkLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--gray-700);
+}
+
+.kindMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.kindOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  background: white;
+  text-align: left;
+  cursor: pointer;
+  color: var(--gray-800);
+}
+
+.kindOption:hover {
+  background: var(--gray-100);
+}
+
+.kindOption span {
+  display: flex;
+  flex-direction: column;
+}
+
+.kindOption small {
+  font-size: 11px;
+  color: var(--gray-500);
+}
+
+.schema {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.schemaEmpty {
+  font-size: 12px;
+  color: var(--gray-500);
+  padding: 10px;
+  border: 1px dashed var(--gray-300);
+  border-radius: 8px;
+}
+
+.schemaRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.schemaActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* Run bar */
+.runBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  background: var(--primary-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+}
+
+.runInfo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--gray-700);
+}
+
+.runError {
+  color: var(--red-600, #dc2626);
+  font-weight: 600;
+}
+
+.progressTrack {
+  flex: 1 1 160px;
+  height: 6px;
+  background: var(--gray-200);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--navy-700);
+  transition: width 0.3s;
+}
+
+/* Runs */
+.runWorkspace {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .runWorkspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin: 4px 0 8px;
+}
+
+.runHistory {
+  min-width: 0;
+}
+
+.runEmpty {
+  font-size: 12px;
+  color: var(--gray-500);
+  padding: 12px;
+  background: white;
+  border: 1px dashed var(--gray-300);
+  border-radius: 8px;
+}
+
+.runList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.runRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.runRow:hover,
+.runRow:focus-visible {
+  border-color: var(--gray-400);
+  outline: none;
+}
+
+.runRowActive {
+  border-color: var(--navy-700);
+  box-shadow: 0 0 0 1px var(--navy-700);
+}
+
+.runRowBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.runRowTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.runRowStatus {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gray-500);
+}
+
+.runRowMeta {
+  font-size: 11px;
+  color: var(--gray-500);
+}
+
+.runDetail {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.runErrorBox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--red-700, #b91c1c);
+  background: var(--red-50, #fef2f2);
+  border: 1px solid var(--red-200, #fecaca);
+  border-radius: 8px;
+}
+
+/* Step outcomes */
+.stepRun {
+  padding: 10px 12px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-left: 3px solid var(--gray-300);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stepRun_completed {
+  border-left-color: var(--green-600, #16a34a);
+}
+
+.stepRun_failed {
+  border-left-color: var(--red-600, #dc2626);
+}
+
+.stepRun_running {
+  border-left-color: var(--navy-700);
+}
+
+.stepRun_skipped {
+  opacity: 0.7;
+}
+
+.stepRunHead {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stepRunName {
+  font-weight: 600;
+  color: var(--gray-900);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+
+.stepRunStatus {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gray-500);
+  margin-left: auto;
+}
+
+.status_completed {
+  color: var(--green-600, #16a34a);
+}
+
+.status_failed {
+  color: var(--red-600, #dc2626);
+}
+
+.status_running {
+  color: var(--navy-700);
+}
+
+.status_skipped,
+.status_pending,
+.status_cancelled {
+  color: var(--gray-400);
+}
+
+.stepRunSummary {
+  font-size: 13px;
+  color: var(--gray-800);
+}
+
+.stepRunError {
+  font-size: 12px;
+  color: var(--red-700, #b91c1c);
+}
+
+.stepRunDetail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--gray-200);
+}
+
+.stepRunTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.linkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.linkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  background: white;
+  color: var(--navy-700);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.linkBtn:hover {
+  background: var(--gray-100);
+}
+
+.outputText,
+.outputJson {
+  margin: 0;
+  padding: 10px;
+  max-height: 360px;
+  overflow: auto;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--gray-800);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.outputText {
+  font-family: inherit;
+}
+
+.outputJson {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Document picker (shared ReviewDocumentPicker) */
+.pickerBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.picker {
+  width: min(680px, 92vw);
+  max-height: 84vh;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.pickerHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.pickerTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.pickerSub {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+.pickerTools {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+}
+
+.pickerList {
+  flex: 1;
+  overflow: auto;
+  padding: 0 8px 8px;
+}
+
+.pickerItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--gray-800);
+  cursor: pointer;
+}
+
+.pickerItem:hover {
+  background: var(--gray-50);
+}
+
+.pickerName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pickerFolder {
+  font-size: 11px;
+  color: var(--gray-400);
+}
+
+.pickerEmpty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 20px;
+  color: var(--gray-500);
+  font-size: 13px;
+  justify-content: center;
+}
+
+.pickerFoot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.pickerCount {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px;
+  color: var(--gray-500);
+  font-size: 13px;
+  text-align: center;
+  background: white;
+  border: 1px dashed var(--gray-300);
+  border-radius: 10px;
+}
+
+.empty p {
+  margin: 0;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

@@ -18,6 +18,8 @@ const MattersView = React.lazy(() => import('../views/MattersView'));
 const MatterWorkspaceView = React.lazy(() => import('../views/MatterWorkspaceView'));
 const ReviewTablesView = React.lazy(() => import('../views/ReviewTablesView'));
 const ReviewTableView = React.lazy(() => import('../views/ReviewTableView'));
+const WorkflowsView = React.lazy(() => import('../views/WorkflowsView'));
+const WorkflowView = React.lazy(() => import('../views/WorkflowView'));
 const ResetPasswordView = React.lazy(() => import('../views/ResetPasswordView'));
 const NotFoundView = React.lazy(() => import('../views/NotFoundView'));
 
@@ -76,6 +78,8 @@ export function AppRoutes() {
         <Route path="/matters" element={<MattersView />} />
         <Route path="/review-tables/:id" element={<ReviewTableView />} />
         <Route path="/review-tables" element={<ReviewTablesView />} />
+        <Route path="/workflows/:id" element={<WorkflowView />} />
+        <Route path="/workflows" element={<WorkflowsView />} />
         <Route path="/" element={<Navigate to="/research" replace />} />
         <Route path="*" element={<NotFoundView />} />
       </Routes>

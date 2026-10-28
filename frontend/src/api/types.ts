@@ -757,6 +757,184 @@ export interface DeepResearchJob {
   progress?: { message: string; fraction: number | null } | null;
 }
 
+// ==================== Workflow Types ====================
+
+export type WorkflowStepKind =
+  | 'extract_fields'
+  | 'analyze_contract'
+  | 'compare_contracts'
+  | 'draft_document'
+  | 'deep_research'
+  | 'citation_check';
+
+export type WorkflowInputSource = 'run' | 'documents' | 'step';
+
+export interface WorkflowStepInputs {
+  source: WorkflowInputSource;
+  document_ids: string[];
+  step: string | null;
+}
+
+export interface ExtractFieldsParams {
+  fields: ReviewFieldSpec[];
+  table_name?: string | null;
+}
+
+export interface AnalyzeContractParams {
+  contract_type?: string;
+  jurisdiction?: string | null;
+  representing?: string | null;
+  posture?: 'strict' | 'balanced';
+  instructions?: string | null;
+}
+
+export interface CompareContractsParams {
+  baseline_document_id?: string | null;
+  focus?: string | null;
+}
+
+export interface DraftDocumentParams {
+  instructions: string;
+  include_outputs_from?: string[];
+  reference_document_ids?: string[];
+}
+
+export interface DeepResearchParams {
+  question: string;
+  tools?: DeepResearchTool[] | null;
+}
+
+export interface CitationCheckParams {
+  citations?: string[];
+  from_steps?: string[] | null;
+}
+
+export type WorkflowStepParams =
+  | ExtractFieldsParams
+  | AnalyzeContractParams
+  | CompareContractsParams
+  | DraftDocumentParams
+  | DeepResearchParams
+  | CitationCheckParams;
+
+export interface WorkflowStep {
+  name: string;
+  kind: WorkflowStepKind;
+  params: Record<string, unknown>;
+  inputs: WorkflowStepInputs;
+}
+
+export interface WorkflowSummary {
+  id: string;
+  name: string;
+  description: string | null;
+  matter_id: string | null;
+  owner_id: string;
+  /** The caller's role: owner edits and deletes; a matter member reads and runs. */
+  role: 'owner' | 'member' | string;
+  template_key: string | null;
+  step_count: number;
+  step_kinds: WorkflowStepKind[];
+  run_count: number;
+  last_run_at: string | null;
+  last_run_status: string | null;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface WorkflowDetail extends WorkflowSummary {
+  steps: WorkflowStep[];
+}
+
+export interface WorkflowTemplate {
+  key: string;
+  name: string;
+  description: string;
+  steps: WorkflowStep[];
+}
+
+export interface WorkflowCreateInput {
+  name: string;
+  description?: string | null;
+  matter_id?: string | null;
+  steps: WorkflowStep[];
+}
+
+export interface WorkflowUpdateInput {
+  name?: string;
+  description?: string | null;
+  steps?: WorkflowStep[];
+}
+
+export interface WorkflowRunStarted {
+  run_id: string;
+  job_id: string;
+  poll_url: string;
+  steps: number;
+  documents: number;
+}
+
+export type WorkflowStepStatus = 'pending' | 'running' | 'completed' | 'failed' | 'skipped' | string;
+
+export interface WorkflowStepOutput {
+  summary: string;
+  data: Record<string, unknown>;
+  document_ids: string[];
+  produced: Record<string, string[]>;
+}
+
+export interface WorkflowStepRun {
+  index: number;
+  name: string;
+  kind: WorkflowStepKind | string;
+  status: WorkflowStepStatus;
+  output: WorkflowStepOutput | null;
+  input_document_ids: string[];
+  produced_ids: Record<string, string[]>;
+  error: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+}
+
+export interface WorkflowRunSummary {
+  id: string;
+  workflow_id: string;
+  runner_id: string;
+  matter_id: string | null;
+  status: 'running' | 'completed' | 'failed' | 'cancelled' | string;
+  steps: number;
+  completed_steps: number;
+  documents: number;
+  job_id: string | null;
+  error: string | null;
+  resumed_count: number;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export interface WorkflowRunDetail extends WorkflowRunSummary {
+  step_definitions: WorkflowStep[];
+  step_runs: WorkflowStepRun[];
+  input_document_ids: string[];
+}
+
+export interface WorkflowRunResult {
+  run_id: string;
+  status: string;
+  steps: number;
+  completed_steps: number;
+  documents: number;
+  produced: Record<string, number>;
+}
+
+export interface WorkflowJob {
+  job_id: string;
+  status: string; // pending | processing | completed | failed | cancelled
+  result?: WorkflowRunResult | null;
+  error?: string | null;
+  progress?: { message: string; fraction: number | null } | null;
+}
+
 export interface MatterActivityEvent {
   id: number;
   timestamp: string;
@@ -1463,6 +1641,22 @@ export interface ApiClient {
   deleteDeepResearch(runId: string): Promise<{ status: string; id: string }>;
   getDeepResearchJob(jobId: string): Promise<DeepResearchJob>;
   cancelDeepResearchJob(jobId: string): Promise<{ status: string; job_id: string }>;
+
+  // Workflows
+  listWorkflows(): Promise<{ workflows: WorkflowSummary[] }>;
+  createWorkflow(input: WorkflowCreateInput): Promise<WorkflowDetail>;
+  getWorkflow(workflowId: string): Promise<WorkflowDetail>;
+  updateWorkflow(workflowId: string, changes: WorkflowUpdateInput): Promise<WorkflowDetail>;
+  deleteWorkflow(workflowId: string): Promise<{ status: string; id: string }>;
+  listWorkflowTemplates(): Promise<{ templates: WorkflowTemplate[] }>;
+  createWorkflowFromTemplate(key: string, matterId?: string | null): Promise<WorkflowDetail>;
+  /** Start a run (202 + a job to poll). With no ids and a matter-filed workflow, the matter's documents. */
+  runWorkflow(workflowId: string, documentIds?: string[]): Promise<WorkflowRunStarted>;
+  listWorkflowRuns(workflowId: string, limit?: number): Promise<{ runs: WorkflowRunSummary[] }>;
+  getWorkflowRun(workflowId: string, runId: string): Promise<WorkflowRunDetail>;
+  resumeWorkflowRun(workflowId: string, runId: string): Promise<WorkflowRunStarted>;
+  getWorkflowJob(jobId: string): Promise<WorkflowJob>;
+  cancelWorkflowJob(jobId: string): Promise<{ status: string; job_id: string }>;
 
   // Connectors
   getConnectors(): Promise<ConnectorDataResponse>;

@@ -112,7 +112,7 @@ describe('useKeyboardShortcuts', () => {
     const descriptions = SHORTCUTS_LIST.map(s => s.description);
     expect(descriptions).not.toContain('Print current view');
     // The advertised range matches the number of modes that actually exist.
-    expect(SHORTCUTS_LIST.find(s => s.description === 'Switch analysis mode')?.keys).toEqual(['Ctrl', 'Shift', '1-4']);
+    expect(SHORTCUTS_LIST.find(s => s.description === 'Switch analysis mode')?.keys).toEqual(['Ctrl', 'Shift', '1-5']);
     expect(descriptions).toContain('Focus search input');
     expect(descriptions).toContain('Close modal / panel');
   });

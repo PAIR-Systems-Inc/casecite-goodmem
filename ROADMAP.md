@@ -8,6 +8,7 @@ evaluating the product — what does **not** exist yet.
 - Deep research: a question planned into sub-questions the user edits, each researched over the firm's documents and CourtListener as one background job, every quote verified against its passage and every citation joined back to a real source in code, with a step log and bounded cost
 - Contract analysis, redlining as native Word tracked changes, and long-document drafting
 - Tabular review (`/review-tables`): one user-defined field schema across many documents, each value quote-verified against the source, re-runnable per cell, row or column, exported to Excel with a Citations sheet or CSV
+- Workflows (`/workflows`): a saved, ordered list of the platform's own operations (extract fields, analyse, compare, draft, deep research, citation check) run over a document set as one job, with every step's output persisted, resume from a failed step, and three starter templates
 - Strategy briefs with quote-verified authorities (API only)
 - Judge intelligence, citation check, and case-law tools backed by CourtListener
 - Matters: a workspace per client engagement (`/matters`) with the documents, chats, analyses, members and activity filed under it; an active-matter selector that scopes Research, Contracts and Drafting; bulk filing of documents between matters; ownership transfer for offboarding
