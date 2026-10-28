@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId, useCallback } from 'react';
 import { Icon } from './Icon';
+import { ModalShell } from './ModalShell';
 import { formatFileSize } from '../../utils';
 import { api } from '../../api';
 import s from './ContractFilePicker.module.css';
@@ -44,16 +45,9 @@ export const ContractFilePicker = ({
   const [expandedFolders, setExpandedFolders] = useState(new Set<string>());
   const [selected, setSelected] = useState<Array<{ id: string; name: string }>>([]);
   const [searchFilter, setSearchFilter] = useState('');
+  const titleId = useId();
 
-  useEffect(() => {
-    if (isOpen) {
-      loadTree();
-      setSelected([]);
-      setSearchFilter('');
-    }
-  }, [isOpen]);
-
-  const loadTree = async () => {
+  const loadTree = useCallback(async () => {
     setTreeLoading(true);
     setError(null);
     try {
@@ -66,7 +60,15 @@ export const ContractFilePicker = ({
       setError(e instanceof Error ? e.message : 'Failed to load documents');
     }
     setTreeLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadTree();
+      setSelected([]);
+      setSearchFilter('');
+    }
+  }, [isOpen, loadTree]);
 
   const toggleFolder = (path: string) => {
     setExpandedFolders(prev => {
@@ -158,8 +160,7 @@ export const ContractFilePicker = ({
   if (!isOpen) return null;
 
   return (
-    <div className={s.overlay} onClick={onClose}>
-      <div className={s.container} onClick={e => e.stopPropagation()}>
+    <ModalShell onClose={onClose} overlayClassName={s.overlay} className={s.container} labelledBy={titleId}>
         {/* Header */}
         <div className={s.header}>
           <div className={s.headerRow}>
@@ -167,7 +168,7 @@ export const ContractFilePicker = ({
               <Icon name="FolderSearch" size={20} className={s.iconWhite} />
             </div>
             <div>
-              <h2 className={s.headerTitle}>Browse Documents</h2>
+              <h2 id={titleId} className={s.headerTitle}>Browse Documents</h2>
               <p className={s.headerSubtitle}>
                 {subtitle || `Pick one document to analyze — or up to ${MAX_SELECT} to open side by side and compare`}
               </p>
@@ -244,7 +245,6 @@ export const ContractFilePicker = ({
             </button>
           </div>
         </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };

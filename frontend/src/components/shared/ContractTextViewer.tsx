@@ -245,6 +245,17 @@ export function ContractTextViewer({
   }, [spans, activeRedlines.length]);
 
   // Redline anchoring from the right panel.
+  const openPopoverAt = (ref: string, el: HTMLElement | null) => {
+    const container = bodyRef.current;
+    if (!el || !container) return;
+    const rect = el.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    setSelection(null);
+    setProposedDraft(null);
+    setPopover({ ref, top: rect.bottom - containerRect.top + container.scrollTop + 6 });
+    onActiveEditChange?.(ref);
+  };
+
   useEffect(() => {
     if (!jumpToEditRef) return;
     const el = editMarkEls.current[jumpToEditRef.ref];
@@ -269,17 +280,6 @@ export function ContractTextViewer({
   // swaps in immediately), rejected (dimmed original).
   const decisionFor = (ref: string): RedlineState =>
     (redlineDecisions || {})[ref] || 'pending';
-
-  const openPopoverAt = (ref: string, el: HTMLElement | null) => {
-    const container = bodyRef.current;
-    if (!el || !container) return;
-    const rect = el.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-    setSelection(null);
-    setProposedDraft(null);
-    setPopover({ ref, top: rect.bottom - containerRect.top + container.scrollTop + 6 });
-    onActiveEditChange?.(ref);
-  };
 
   const closePopover = () => {
     setPopover(null);

@@ -76,10 +76,14 @@ async function showImportedDocuments(importedCount: number): Promise<void> {
     }, IMPORT_CHIP_LINGER_MS);
   }
   // Same follow-ups as a sidebar upload: header count and Knowledge Base list.
-  import('./settingsStore').then(({ useSettingsStore }) => useSettingsStore.getState().refreshSystemStats());
-  import('./ragDocsStore').then(({ useRagDocsStore }) => {
-    if (useRagDocsStore.getState()._initialized) useRagDocsStore.getState().loadRagDocuments();
-  });
+  import('./settingsStore')
+    .then(({ useSettingsStore }) => useSettingsStore.getState().refreshSystemStats())
+    .catch((e) => logger.error('[pickerStore] stats refresh after import failed:', e));
+  import('./ragDocsStore')
+    .then(({ useRagDocsStore }) => {
+      if (useRagDocsStore.getState()._initialized) useRagDocsStore.getState().loadRagDocuments();
+    })
+    .catch((e) => logger.error('[pickerStore] Knowledge Base refresh after import failed:', e));
 }
 
 // Google's two picker dependencies. Loaded on demand, the first time someone

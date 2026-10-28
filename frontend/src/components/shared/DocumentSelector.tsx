@@ -1,4 +1,4 @@
-import { useState, useEffect, useId } from 'react';
+import { useState, useEffect, useId, useCallback } from 'react';
 import { Icon } from './Icon';
 import { ModalShell } from './ModalShell';
 import { DocumentTreeItemRow } from './DocumentTreeItemRow';
@@ -24,6 +24,21 @@ export const DocumentSelector = ({ isOpen, onClose, onSelect, currentFilter }: D
   const [selectMode, setSelectMode] = useState('all');
   const titleId = useId();
 
+  const loadTree = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api.getDocumentTree() as unknown as DocumentTree;
+      setTree(data);
+      const firstLevel = new Set(data.tree.map((item: DocumentTreeItem) => item.path));
+      setExpandedFolders(firstLevel);
+    } catch (e: unknown) {
+      logger.error('[DocSelector] Error loading tree:', e);
+      setError(e instanceof Error ? e.message : String(e));
+    }
+    setLoading(false);
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       loadTree();
@@ -42,22 +57,7 @@ export const DocumentSelector = ({ isOpen, onClose, onSelect, currentFilter }: D
         setSelectMode('mixed');
       }
     }
-  }, [isOpen, currentFilter]);
-
-  const loadTree = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await api.getDocumentTree() as unknown as DocumentTree;
-      setTree(data);
-      const firstLevel = new Set(data.tree.map((item: DocumentTreeItem) => item.path));
-      setExpandedFolders(firstLevel);
-    } catch (e: unknown) {
-      logger.error('[DocSelector] Error loading tree:', e);
-      setError(e instanceof Error ? e.message : String(e));
-    }
-    setLoading(false);
-  };
+  }, [isOpen, currentFilter, loadTree]);
 
   const toggleFolder = (path: string) => {
     setExpandedFolders(prev => {

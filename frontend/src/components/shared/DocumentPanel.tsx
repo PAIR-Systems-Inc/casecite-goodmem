@@ -69,13 +69,16 @@ export const DocumentPanel = ({ documents, onUpload, onRemove, inputRef, onUpdat
         }
         // Keep the header count and the Knowledge Base list in sync with the
         // upload — neither should need a manual refresh to notice a new file.
-        import('../../stores/settingsStore').then(({ useSettingsStore }) =>
-          useSettingsStore.getState().refreshSystemStats());
-        import('../../stores/ragDocsStore').then(({ useRagDocsStore }) => {
-          if (useRagDocsStore.getState()._initialized) {
-            useRagDocsStore.getState().loadRagDocuments();
-          }
-        });
+        import('../../stores/settingsStore')
+          .then(({ useSettingsStore }) => useSettingsStore.getState().refreshSystemStats())
+          .catch((e) => logger.error('[DocumentPanel] stats refresh after upload failed:', e));
+        import('../../stores/ragDocsStore')
+          .then(({ useRagDocsStore }) => {
+            if (useRagDocsStore.getState()._initialized) {
+              useRagDocsStore.getState().loadRagDocuments();
+            }
+          })
+          .catch((e) => logger.error('[DocumentPanel] Knowledge Base refresh after upload failed:', e));
       } catch (error: unknown) {
         logger.error('Upload error:', error);
         if (onUpdateDoc) {

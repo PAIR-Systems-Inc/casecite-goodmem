@@ -1,4 +1,5 @@
 import { getCookie } from '../utils';
+import logger from '../utils/logger';
 import type { ApiClient, RequestOptions } from './types';
 
 // ==================== API CLIENT ====================
@@ -83,18 +84,25 @@ function withTimeout(timeoutMs: number, external?: AbortSignal | null) {
  * avoid a module cycle.
  */
 function handleSessionExpired() {
+  // A stale tab after a deploy can 404 on a chunk URL; the rejection must be
+  // logged rather than left unhandled, or the zombie state this exists to
+  // prevent is exactly what the user sees.
   import('../stores/authStore').then(({ useAuthStore }) => {
     const auth = useAuthStore.getState();
     if (auth.isAuthenticated) {
       auth.setIsAuthenticated(false);
       auth.setShowLoginModal(true);
       // Whoever signs in next must not inherit this user's work.
-      import('../stores/resetRegistry').then(({ resetAllStores }) => resetAllStores());
-      import('../stores/uiStore').then(({ useUIStore }) => {
-        useUIStore.getState().addToast('Your session expired — please sign in again.', 'warning');
-      });
+      import('../stores/resetRegistry')
+        .then(({ resetAllStores }) => resetAllStores())
+        .catch((e) => logger.error('[client] resetAllStores after session expiry failed:', e));
+      import('../stores/uiStore')
+        .then(({ useUIStore }) => {
+          useUIStore.getState().addToast('Your session expired — please sign in again.', 'warning');
+        })
+        .catch((e) => logger.error('[client] session-expired toast failed:', e));
     }
-  });
+  }).catch((e) => logger.error('[client] session-expired handler failed to load authStore:', e));
 }
 
 /**
@@ -114,10 +122,12 @@ function handleAccountGate(code: unknown) {
       return;
     }
     if (!user.mfa_enrollment_required) setUser({ ...user, mfa_enrollment_required: true });
-    import('../stores/uiStore').then(({ useUIStore }) => {
-      const ui = useUIStore.getState();
-      if (!ui.showSettings || ui.settingsTab !== 'security') ui.openSettings('security');
-    });
+    import('../stores/uiStore')
+      .then(({ useUIStore }) => {
+        const ui = useUIStore.getState();
+        if (!ui.showSettings || ui.settingsTab !== 'security') ui.openSettings('security');
+      })
+      .catch((e) => logger.error('[client] account-gate settings open failed:', e));
   });
 }
 

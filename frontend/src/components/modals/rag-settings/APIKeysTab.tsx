@@ -19,6 +19,18 @@ interface APIKeysTabProps {
   s: Record<string, string>;
 }
 
+type SaveState = 'saving' | 'saved' | 'error';
+
+// Small inline status shown next to each field's label. Module-level so its
+// identity is stable across renders (a component defined inside APIKeysTab
+// would remount on every keystroke).
+const SaveHint = ({ state, s }: { state: SaveState | undefined; s: Record<string, string> }) => {
+  if (state === 'saving') return <span className={s.saveHint}>Saving…</span>;
+  if (state === 'saved') return <span className={s.saveHintOk}><Icon name="Check" size={12} /> Saved</span>;
+  if (state === 'error') return <span className={s.saveHintErr}><Icon name="AlertCircle" size={12} /> Failed</span>;
+  return null;
+};
+
 export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setShowKeys, apiKeys, setApiKeys, serverKeyStatus, maskedKeys, keyStatusError, refreshKeyStatus, s }: APIKeysTabProps) => {
   const id = useId();
   const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -55,8 +67,8 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
   useEffect(() => { loadIntegrations(); }, [loadIntegrations]);
 
   // Per-provider save state for the inline "Saving.../Saved" hint.
-  const [savedState, setSavedState] = useState<Record<string, 'saving' | 'saved' | 'error'>>({});
-  const markSaved = (key: string, state: 'saving' | 'saved' | 'error') =>
+  const [savedState, setSavedState] = useState<Record<string, SaveState>>({});
+  const markSaved = (key: string, state: SaveState) =>
     setSavedState((prev) => ({ ...prev, [key]: state }));
 
   const saveKeyNow = useCallback(async (provider: string, value: string) => {
@@ -92,7 +104,9 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
   }, [saveKeyNow]);
 
   // Closing the modal unmounts this tab — fire anything still pending so a
-  // fast type-then-close never loses the key.
+  // fast type-then-close never loses the key. The field said "Saving…" when
+  // the modal closed, so a failure must still reach the admin: the toast
+  // store outlives this tab.
   useEffect(() => {
     const timers = saveTimers.current;
     const pending = pendingSaves.current;
@@ -100,7 +114,16 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
       for (const provider of Object.keys(pending)) {
         if (timers[provider]) clearTimeout(timers[provider]);
         const value = pending[provider];
-        if (value) api.saveApiKey(provider, value).catch(() => { /* surfaced on next open */ });
+        if (value) {
+          api.saveApiKey(provider, value).catch((e: unknown) => {
+            useUIStore.getState().addToast(
+              e instanceof Error && e.message
+                ? `The ${provider} key was not saved: ${e.message}`
+                : `The ${provider} key was not saved. Open Settings and enter it again.`,
+              'error',
+            );
+          });
+        }
       }
     };
   }, []);
@@ -109,15 +132,6 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
     const updated = { ...apiKeys, [provider]: value };
     setApiKeys(updated);
     persistKeyToServer(provider, value);
-  };
-
-  // Small inline status shown next to each field's label.
-  const SaveHint = ({ k }: { k: string }) => {
-    const st = savedState[k];
-    if (st === 'saving') return <span className={s.saveHint}>Saving…</span>;
-    if (st === 'saved') return <span className={s.saveHintOk}><Icon name="Check" size={12} /> Saved</span>;
-    if (st === 'error') return <span className={s.saveHintErr}><Icon name="AlertCircle" size={12} /> Failed</span>;
-    return null;
   };
 
   // Helper: get the placeholder for a key field.
@@ -334,7 +348,7 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
           <span className={s.labelFlex}>
             CourtListener API Token
             {clStatus?.configured && <Icon name="CheckCircle" size={14} className={s.checkIcon} />}
-            <SaveHint k="courtlistener" />
+            <SaveHint state={savedState["courtlistener"]} s={s} />
           </span>
         </label>
         <div className={s.inputRow}>
@@ -379,7 +393,7 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
             </span>
             OpenAI API Key
             {isConfigured('openai') && <Icon name="CheckCircle" size={14} className={s.checkIcon} />}
-            <SaveHint k="openai" />
+            <SaveHint state={savedState["openai"]} s={s} />
           </span>
         </label>
         <div className={s.inputRow}>
@@ -411,7 +425,7 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
             </span>
             Anthropic API Key
             {isConfigured('anthropic') && <Icon name="CheckCircle" size={14} className={s.checkIcon} />}
-            <SaveHint k="anthropic" />
+            <SaveHint state={savedState["anthropic"]} s={s} />
           </span>
         </label>
         <div className={s.inputRow}>
@@ -443,7 +457,7 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
             </span>
             Google Gemini API Key
             {isConfigured('google') && <Icon name="CheckCircle" size={14} className={s.checkIcon} />}
-            <SaveHint k="google" />
+            <SaveHint state={savedState["google"]} s={s} />
           </span>
         </label>
         <div className={s.inputRow}>
@@ -480,7 +494,7 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
           <span className={s.labelFlex}>
             Voyage AI Key
             {isConfigured('voyage') && <Icon name="CheckCircle" size={14} className={s.checkIcon} />}
-            <SaveHint k="voyage" />
+            <SaveHint state={savedState["voyage"]} s={s} />
           </span>
         </label>
         <div className={s.inputRow}>
@@ -509,7 +523,7 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
           <span className={s.labelFlex}>
             Cohere API Key
             {isConfigured('cohere') && <Icon name="CheckCircle" size={14} className={s.checkIcon} />}
-            <SaveHint k="cohere" />
+            <SaveHint state={savedState["cohere"]} s={s} />
           </span>
         </label>
         <div className={s.inputRow}>
@@ -538,7 +552,7 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
           <Icon name="Server" size={16} className={s.bannerIconAmber} />
           <span className={s.localModelTitle}>Local / Self-Hosted Model</span>
           {llmStatus?.configured && <Icon name="CheckCircle" size={14} className={s.checkIcon} />}
-          <SaveHint k="local" />
+          <SaveHint state={savedState["local"]} s={s} />
         </div>
         <p className={s.localModelDesc}>
           Point the app at any OpenAI-compatible endpoint — Ollama, LM Studio, vLLM, or hosted gateways
