@@ -50,7 +50,17 @@ def downgrade() -> None:
         if table not in existing_tables:
             continue
         columns = {c["name"] for c in inspector.get_columns(table)}
-        if "matter_id" in columns:
-            with op.batch_alter_table(table) as batch:
-                batch.drop_index(f"idx_{table}_matter")
-                batch.drop_column("matter_id")
+        if "matter_id" not in columns:
+            continue
+        # Drop whatever index covers the column, by its actual name. A fresh
+        # build never has ``idx_<table>_matter``: these tables are created from
+        # the model metadata (004/006/007/011) with matter_id already present
+        # and the model's ``ix_<table>_matter_id`` index, so upgrade() above
+        # skipped them and an unconditional drop_index here fails.
+        matter_indexes = [
+            ix["name"] for ix in inspector.get_indexes(table) if ix["column_names"] == ["matter_id"]
+        ]
+        with op.batch_alter_table(table) as batch:
+            for name in matter_indexes:
+                batch.drop_index(name)
+            batch.drop_column("matter_id")

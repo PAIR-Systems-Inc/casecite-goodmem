@@ -129,7 +129,7 @@ backend/app/
 ### Schema Rules (`models/`)
 
 - Pydantic request/response models belong in `models/schemas.py`, not inline in router files.
-- SQLAlchemy table definitions live in per-domain modules under `models/` (e.g. `models/documents.py`, `models/matters.py`, `models/auth.py`), all inheriting from `models/base.py`.
+- SQLAlchemy table definitions live in per-domain modules under `models/` (e.g. `models/auth.py`, `models/matters.py`, `models/chat_sessions.py`, `models/audit.py`), all inheriting from `models/base.py`.
 - `models/db_models.py` is a backwards-compatibility re-export barrel only — never define new tables there. Add the model to its domain file and re-export it from `db_models.py`.
 
 ---

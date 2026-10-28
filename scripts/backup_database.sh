@@ -49,10 +49,11 @@
 #                             server; without it the .enc files are
 #                             unrecoverable)
 #   BACKUP_ALLOW_UNENCRYPTED (default: false; see above)
-#   BACKUP_PAUSE_BACKEND     (compose mode, default: true — the backend is paused
-#                             while the data volume is archived so the vector
-#                             index's SQLite files are captured consistently;
-#                             requests wait for the duration)
+#   BACKUP_PAUSE_BACKEND     (compose mode ONLY, default: true — the backend is
+#                             paused while the data volume is archived so the
+#                             vector index's SQLite files are captured
+#                             consistently; requests wait for the duration.
+#                             Direct mode never pauses anything: do it yourself)
 #   S3_BUCKET / S3_ENDPOINT / S3_SSE   (optional upload; needs the aws CLI)
 #   POSTGRES_USER            (default: casecite; must match the compose stack)
 #   POSTGRES_DB              (default: casecite)
@@ -98,11 +99,21 @@ sha256() {
 }
 
 # Encrypt in place when a key is set, write the checksum; echoes the final path.
+# Runs inside $(...), where `set -e` does not apply, so every failure is checked
+# explicitly: the plaintext is removed only after openssl succeeded, and a
+# failure returns non-zero so the caller aborts instead of logging success.
+# Messages go to stderr — stdout is the captured path.
 finalize() {
     local file="$1"
     if [ -n "${BACKUP_ENCRYPTION_KEY:-}" ]; then
-        openssl enc -aes-256-cbc -salt -pbkdf2 -iter 100000 \
-            -in "$file" -out "${file}.enc" -pass env:BACKUP_ENCRYPTION_KEY
+        if ! openssl enc -aes-256-cbc -salt -pbkdf2 -iter 100000 \
+                -in "$file" -out "${file}.enc" -pass env:BACKUP_ENCRYPTION_KEY; then
+            rm -f "${file}.enc"
+            chmod 600 "$file" 2>/dev/null || true
+            log "ERROR: encrypting $file failed — the UNENCRYPTED archive was left at $file (mode 600);" >&2
+            log "       encrypt or delete it by hand, fix the cause, and rerun the backup" >&2
+            return 1
+        fi
         rm -f "$file"
         file="${file}.enc"
     fi
@@ -165,7 +176,7 @@ else
         --no-owner --no-privileges --format=plain | gzip > "$DB_FILE"
 fi
 [ -s "$DB_FILE" ] || { log "ERROR: database dump is empty"; exit 1; }
-DB_FILE=$(finalize "$DB_FILE")
+DB_FILE=$(finalize "$DB_FILE") || { log "ERROR: database backup FAILED"; exit 1; }
 log "Database backup: $DB_FILE ($(du -h "$DB_FILE" | cut -f1))"
 upload "$DB_FILE"
 
@@ -189,6 +200,11 @@ if [ "$BACKUP_MODE" = "compose" ]; then
         compose pause backend >/dev/null
         PAUSED="yes"
     fi
+elif [ -n "${DATA_VOLUME:-}${DATA_DIR:-}" ]; then
+    # Direct mode has no handle on the backend (it may not even run under
+    # this compose file), so nothing is paused here.
+    log "NOTE: direct mode does not pause the backend — pause or stop it yourself for the"
+    log "      duration if the vector index must be captured in a consistent state"
 fi
 if [ -n "${DATA_VOLUME:-}" ]; then
     log "Archiving data volume '${DATA_VOLUME}'…"
@@ -203,7 +219,7 @@ fi
 unpause
 if [ -n "$DATA_FILE" ]; then
     [ -s "$DATA_FILE" ] || { log "ERROR: data archive is empty"; exit 1; }
-    DATA_FILE=$(finalize "$DATA_FILE")
+    DATA_FILE=$(finalize "$DATA_FILE") || { log "ERROR: data backup FAILED"; exit 1; }
     log "Data backup: $DATA_FILE ($(du -h "$DATA_FILE" | cut -f1))"
     upload "$DATA_FILE"
 fi

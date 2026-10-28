@@ -89,8 +89,11 @@ jobs:
             done
             [ "$status" = "healthy" ] || { echo "backend did not become healthy"; docker compose -f docker-compose.prod.yml logs --tail=100 backend; exit 1; }
 
-            # Keep the two previous images around for rollback; prune the rest.
-            docker image prune -f --filter "until=168h"
+            # Remove images no container uses that were built more than a week
+            # ago — tagged ones included (-a; without it only untagged layers go,
+            # so superseded release images pile up). The running image is never
+            # pruned, and the last week's builds stay available for rollback.
+            docker image prune -af --filter "until=168h"
 
             echo "Deployed $TAG"
         env:

@@ -143,11 +143,14 @@ Then sign in at `https://$DOMAIN`, enrol MFA, and invite the rest of the firm
 from Settings → Users. Self-service registration stays off
 (`ALLOW_REGISTRATION=false`) unless you turn it on.
 
-This starts 4 services:
+This starts 5 services:
 - **caddy** — Reverse proxy with automatic Let's Encrypt certificates
 - **postgres** — PostgreSQL 16 database
 - **redis** — Redis 7 for sessions, rate limiting, and token revocation
 - **backend** — Application server (nginx + uvicorn)
+- **frontend-build** — one-shot publisher: copies the SPA out of the backend
+  image into the volume Caddy serves, then exits (it shows as "Exited" in
+  `docker compose ps`; that is normal)
 
 ### DNS Setup
 
@@ -257,8 +260,8 @@ docker compose -f docker-compose.prod.yml exec -u appuser backend alembic downgr
 
 ```bash
 ./scripts/backup_database.sh                                    # database + data volume
-./scripts/restore_database.sh backups/casecite_<ts>.sql.gz \
-    --data backups/rag_data_<ts>.tar.gz --yes                   # if the deploy goes wrong
+BACKUP_ENCRYPTION_KEY=… ./scripts/restore_database.sh \         # if the deploy goes wrong
+    backups/casecite_<ts>.sql.gz.enc --data backups/rag_data_<ts>.tar.gz.enc --yes
 ```
 
 ---
@@ -275,8 +278,11 @@ client text, chat history and password hashes — unless you set
 
 | File | Contents |
 |---|---|
-| `casecite_<ts>.sql.gz` | PostgreSQL: users, matters, chat history, analyses, audit-log mirror |
-| `rag_data_<ts>.tar.gz` | the `/app/data` volume: uploaded documents (encrypted at rest), ChromaDB vector index, audit-log chain, BYOK key store, sessions, instance secrets |
+| `casecite_<ts>.sql.gz.enc` | PostgreSQL: users, matters, chat history, analyses, audit-log mirror |
+| `rag_data_<ts>.tar.gz.enc` | the `/app/data` volume: uploaded documents (encrypted at rest), ChromaDB vector index, audit-log chain, BYOK key store, sessions, instance secrets |
+
+(Only with `BACKUP_ALLOW_UNENCRYPTED=true` are the files written without the
+`.enc` suffix.)
 
 ```bash
 # Daily at 02:00 — put BACKUP_ENCRYPTION_KEY (and S3_* if used) in the cron
@@ -295,9 +301,12 @@ manager, secrets vault): without the first two, a restored instance cannot
 decrypt uploaded documents, stored API keys, connector tokens or MFA secrets;
 without the third, the restored audit log fails verification at startup.
 
-While the data volume is archived the backend container is paused (requests
-wait) so the vector index is captured in a consistent state; set
-`BACKUP_PAUSE_BACKEND=false` to skip that. Local files and S3 copies older
+In the default compose mode the backend container is paused while the data
+volume is archived (requests wait) so the vector index is captured in a
+consistent state; set `BACKUP_PAUSE_BACKEND=false` to skip that. `direct` mode
+(below) never pauses anything — the script has no handle on the backend there —
+so pause or stop it yourself for the duration if that consistency matters to
+you. Local files and S3 copies older
 than `BACKUP_RETENTION_DAYS` (default 30) are deleted. Content a user deletes
 therefore remains recoverable from backups for up to that long — set the
 retention to match the firm's deletion policy.

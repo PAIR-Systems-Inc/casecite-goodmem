@@ -11,7 +11,11 @@ on:
 # Least privilege by default: gitleaks-action needs pull-requests:read to
 # enumerate PR commits. The write scopes (packages for the GHCR push,
 # security-events for the Trivy SARIF upload) are granted to the `build` job
-# only, which never runs for pull requests.
+# only. On pull requests that job builds and scans the image without logging
+# in to or pushing to GHCR (and a fork's token is read-only anyway).
+#
+# Runners are pinned to ubuntu-24.04 rather than ubuntu-latest, which moves
+# to a new release on GitHub's schedule, not ours.
 #
 # Third-party actions are pinned to commit SHAs (the trailing comment is the
 # tag the SHA was resolved from); Dependabot's github-actions ecosystem
@@ -32,7 +36,7 @@ jobs:
   # ====================
   security-scan:
     name: Security Scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
@@ -133,7 +137,7 @@ jobs:
   # ====================
   lint:
     name: Lint & Type Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
@@ -154,6 +158,30 @@ jobs:
       - name: Run Ruff (Formatter Check)
         run: |
           ruff format backend/app --check
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e  # v10.3.2
+        with:
+          version: "0.13.6"
+
+      - name: Check requirements.lock is current
+        run: |
+          cd backend
+          # Re-resolve requirements.txt the way the lock's header says it was
+          # made. Compiling over a COPY of the committed lock keeps its
+          # versions as preferences (no --upgrade), so the only differences
+          # that can appear are packages added, removed or re-pinned in
+          # requirements.txt since the lock was last generated.
+          cp requirements.lock /tmp/requirements.lock
+          uv pip compile requirements.txt --universal --generate-hashes --python-version 3.11 \
+            -o /tmp/requirements.lock --quiet
+          # name==version per package; hashes, markers and comments ignored.
+          pins() { grep -E '^[A-Za-z0-9][A-Za-z0-9._-]*==' "$1" | sed -E 's/^([^ ;\\]+).*/\1/' | sort -u; }
+          if ! diff <(pins requirements.lock) <(pins /tmp/requirements.lock); then
+            echo "::error::backend/requirements.lock is stale relative to backend/requirements.txt ('<' committed lock, '>' fresh resolution above). Regenerate it: cd backend && uv pip compile requirements.txt --universal --generate-hashes --python-version 3.11 -o requirements.lock"
+            exit 1
+          fi
+          echo "✅ requirements.lock matches requirements.txt"
 
       - name: Install backend dependencies for MyPy
         run: |
@@ -211,7 +239,7 @@ jobs:
   # ====================
   test:
     name: Backend Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [lint]
     services:
       redis:
@@ -290,7 +318,7 @@ jobs:
   # ====================
   test-frontend:
     name: Frontend Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [lint]
 
     steps:
@@ -327,7 +355,7 @@ jobs:
   # ====================
   test-e2e:
     name: E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [lint]
     timeout-minutes: 15
 
@@ -370,7 +398,7 @@ jobs:
   # ====================
   migration-check:
     name: Migration Validation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [lint]
     # Alembic imports app.config, whose production-mode validation (DEBUG
     # unset here — intentionally, to exercise the prod path) fails
@@ -464,7 +492,7 @@ jobs:
   # ====================
   production-smoke:
     name: Production Smoke Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [lint]
     timeout-minutes: 15
     # The backend tests run with DEBUG=true on SQLite, so this is the only job
@@ -545,9 +573,11 @@ jobs:
   # ====================
   build:
     name: Build Docker Image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [security-scan, test, test-frontend, test-e2e, migration-check, production-smoke]
-    if: github.event_name == 'push'
+    # Runs on pull requests too, so a Dockerfile change is built and
+    # Trivy-scanned before it merges. Only pushes (main/develop, v* tags) log
+    # in to GHCR, push the image and publish its SBOM — see the step `if`s.
     permissions:
       contents: read
       packages: write          # push the image to GHCR
@@ -563,6 +593,7 @@ jobs:
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4.4.1
 
       - name: Log in to Container Registry
+        if: github.event_name == 'push'
         uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6  # v4.7.0
         with:
           registry: ${{ env.REGISTRY }}
@@ -597,8 +628,10 @@ jobs:
 
       # Trivy on hosted runners cannot read images from the container store
       # (containerd socket permission denied) — scan an exported tarball instead.
+      # Saved by the first tag metadata-action produced: on a pull request the
+      # `sha` tag is the PR head commit, not github.sha (the merge commit).
       - name: Export image for scanning
-        run: docker save -o /tmp/image.tar ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        run: docker save -o /tmp/image.tar "${{ fromJSON(steps.meta.outputs.json).tags[0] }}"
 
       - name: Run Trivy vulnerability scanner (blocking)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0
@@ -630,6 +663,7 @@ jobs:
           sarif_file: 'trivy-results.sarif'
 
       - name: Push Docker image (after Trivy passes)
+        if: github.event_name == 'push'
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25  # v5
         with:
           context: .
@@ -642,6 +676,7 @@ jobs:
           cache-from: type=gha
 
       - name: Generate SBOM
+        if: github.event_name == 'push'
         uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c  # v0.24.3
         with:
           image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
@@ -649,6 +684,7 @@ jobs:
           output-file: sbom.json
 
       - name: Upload SBOM
+        if: github.event_name == 'push'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: sbom
