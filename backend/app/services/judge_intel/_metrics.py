@@ -119,18 +119,9 @@ class MetricsMixin:
 
         # Check for previously computed metrics (cached for 24h)
         if not force_recompute:
-            cached_metrics = judge_data.get("_computed_metrics")
-            if cached_metrics:
-                computed_at_str = cached_metrics.get("computed_at")
-                if computed_at_str:
-                    try:
-                        computed_at = datetime.fromisoformat(computed_at_str)
-                        if datetime.now(UTC) - computed_at.replace(tzinfo=UTC) < timedelta(
-                            hours=24
-                        ):
-                            return cached_metrics
-                    except (ValueError, TypeError):
-                        pass
+            cached_metrics = _fresh_cached_metrics(judge_data)
+            if cached_metrics is not None:
+                return cached_metrics
 
         opinions = opinions_data.get("opinions", [])
         dockets = opinions_data.get("dockets", [])
@@ -143,305 +134,360 @@ class MetricsMixin:
             "metrics": {},
         }
 
-        # ===== DISSENT & CONCURRENCE RATES =====
-        opinion_types: dict[str, int] = {}
-        for op in opinions:
-            ot = (op.get("opinion_type") or "").lower().strip()
-            if ot:
-                opinion_types[ot] = opinion_types.get(ot, 0) + 1
-
-        total_typed = sum(opinion_types.values())
-        dissent_count = sum(v for k, v in opinion_types.items() if "dissent" in k)
-        concur_count = sum(v for k, v in opinion_types.items() if "concur" in k)
-
-        metrics["metrics"]["dissent_rate"] = {
-            "value": round((dissent_count / total_typed * 100), 2) if total_typed > 0 else None,
-            "dissent_count": dissent_count,
-            "total_opinions_analyzed": total_typed,
-            "data_quality": "good"
-            if total_typed >= 50
-            else "limited"
-            if total_typed >= 10
-            else "insufficient",
-        }
-
-        metrics["metrics"]["concurrence_rate"] = {
-            "value": round((concur_count / total_typed * 100), 2) if total_typed > 0 else None,
-            "concurrence_count": concur_count,
-            "total_opinions_analyzed": total_typed,
-            "data_quality": "good"
-            if total_typed >= 50
-            else "limited"
-            if total_typed >= 10
-            else "insufficient",
-        }
-
-        # ===== CITATION IMPACT SCORE =====
-        total_opinions = len(opinions)
-        total_citations = sum(op.get("citation_count", 0) for op in opinions)
-        avg_citations = total_citations / total_opinions if total_opinions > 0 else 0
-        max_citations = max((op.get("citation_count", 0) for op in opinions), default=0)
-        first_opinion_date = min(
-            (op.get("date_filed") for op in opinions if op.get("date_filed")),
-            default=None,
+        dissent_rate, concurrence_rate = _dissent_concurrence_metrics(opinions)
+        metrics["metrics"]["dissent_rate"] = dissent_rate
+        metrics["metrics"]["concurrence_rate"] = concurrence_rate
+        metrics["metrics"]["citation_impact_score"] = _citation_impact_metrics(opinions)
+        metrics["metrics"]["case_disposition_time"] = _case_disposition_metrics(dockets)
+        case_type_expertise = _case_type_metrics(dockets)
+        metrics["metrics"]["case_type_expertise"] = case_type_expertise
+        writing_complexity = _writing_complexity_metrics(opinions)
+        metrics["metrics"]["writing_complexity"] = writing_complexity
+        metrics["metrics"]["opinion_length_trend"] = _opinion_length_trend_metrics(opinions)
+        metrics["metrics"]["bench_experience"] = _bench_experience_metrics(positions)
+        metrics["metrics"]["data_completeness"] = _data_completeness_metrics(
+            judge_data,
+            education=education,
+            positions=positions,
+            total_opinions=len(opinions),
+            total_cases=case_type_expertise["total_cases_analyzed"],
+            has_full_text=writing_complexity["opinions_analyzed"] > 0,
         )
-
-        years_on_bench = 1
-        if first_opinion_date:
-            first_year_match = re.search(r"(1[7-9]\d{2}|20\d{2})", str(first_opinion_date))
-            if first_year_match:
-                first_year = int(first_year_match.group(1))
-                years_on_bench = max(1, datetime.now().year - first_year)
-
-        raw_impact = avg_citations * math.log(years_on_bench + 1)
-        normalized_impact = min(5.0, raw_impact / 35) if raw_impact else 0
-
-        metrics["metrics"]["citation_impact_score"] = {
-            "value": round(normalized_impact, 2),
-            "total_citations": total_citations,
-            "avg_citations_per_opinion": round(avg_citations, 2),
-            "most_cited_opinion_citations": max_citations,
-            "years_on_bench": years_on_bench,
-            "data_quality": "good" if total_opinions >= 50 else "limited",
-        }
-
-        # ===== CASE DISPOSITION TIME =====
-        durations = []
-        for d in dockets:
-            try:
-                filed_match = re.search(r"(\d{4})-(\d{2})-(\d{2})", str(d.get("date_filed", "")))
-                term_match = re.search(
-                    r"(\d{4})-(\d{2})-(\d{2})", str(d.get("date_terminated", ""))
-                )
-                if filed_match and term_match:
-                    filed = date(
-                        int(filed_match.group(1)),
-                        int(filed_match.group(2)),
-                        int(filed_match.group(3)),
-                    )
-                    terminated = date(
-                        int(term_match.group(1)),
-                        int(term_match.group(2)),
-                        int(term_match.group(3)),
-                    )
-                    duration = (terminated - filed).days
-                    if 0 < duration < 3650:
-                        durations.append(duration)
-            except (ValueError, TypeError, AttributeError):
-                pass
-
-        avg_duration = sum(durations) / len(durations) if durations else None
-        metrics["metrics"]["case_disposition_time"] = {
-            "value_days": round(avg_duration, 1) if avg_duration else None,
-            "value_months": round(avg_duration / 30.44, 1) if avg_duration else None,
-            "cases_analyzed": len(durations),
-            "median_days": sorted(durations)[len(durations) // 2] if durations else None,
-            "fastest_case_days": min(durations) if durations else None,
-            "slowest_case_days": max(durations) if durations else None,
-            "data_quality": "good"
-            if len(durations) >= 30
-            else "limited"
-            if len(durations) >= 10
-            else "insufficient",
-        }
-
-        # ===== CASE TYPE EXPERTISE =====
-        suit_counts: dict[str, int] = {}
-        for d in dockets:
-            nos = d.get("nature_of_suit")
-            if nos:
-                suit_counts[nos] = suit_counts.get(nos, 0) + 1
-
-        case_types = sorted(
-            [{"type": k, "count": v} for k, v in suit_counts.items()],
-            key=lambda x: x["count"],
-            reverse=True,
-        )
-        total_cases = sum(ct["count"] for ct in case_types)
-        for ct in case_types:
-            ct["percentage"] = round(ct["count"] / total_cases * 100, 1) if total_cases > 0 else 0
-
-        metrics["metrics"]["case_type_expertise"] = {
-            "distribution": case_types[:15],
-            "total_cases_analyzed": total_cases,
-            "primary_expertise": case_types[0]["type"] if case_types else None,
-            "expertise_concentration": case_types[0]["percentage"] if case_types else 0,
-            "data_quality": "good"
-            if total_cases >= 50
-            else "limited"
-            if total_cases >= 10
-            else "insufficient",
-        }
-
-        # ===== WRITING COMPLEXITY =====
-        word_counts = []
-        sentence_lengths = []
-        vocab_diversities = []
-
-        for op in opinions[:100]:
-            text = op.get("full_text", "")
-            if not text:
-                continue
-            word_count = op.get("word_count") or len(text.split())
-            word_counts.append(word_count)
-
-            sentences = re.split(r"[.!?]+", text)
-            sentences = [s.strip() for s in sentences if len(s.strip()) > 10]
-            if sentences:
-                avg_sent_len = sum(len(s.split()) for s in sentences) / len(sentences)
-                sentence_lengths.append(avg_sent_len)
-
-            words = re.findall(r"\b[a-zA-Z]+\b", text.lower())
-            if len(words) > 100:
-                diversity = len(set(words)) / len(words)
-                vocab_diversities.append(diversity)
-
-        complexity_score = None
-        if sentence_lengths and vocab_diversities:
-            avg_sent_len = sum(sentence_lengths) / len(sentence_lengths)
-            avg_diversity = sum(vocab_diversities) / len(vocab_diversities)
-            avg_length = sum(word_counts) / len(word_counts) if word_counts else 0
-
-            sent_component = min(3, avg_sent_len / 10)
-            diversity_component = min(3, avg_diversity * 10)
-            length_component = min(4, avg_length / 2500)
-            complexity_score = round(sent_component + diversity_component + length_component, 1)
-
-        metrics["metrics"]["writing_complexity"] = {
-            "score": complexity_score,
-            "avg_opinion_length_words": round(sum(word_counts) / len(word_counts))
-            if word_counts
-            else None,
-            "avg_sentence_length_words": round(sum(sentence_lengths) / len(sentence_lengths), 1)
-            if sentence_lengths
-            else None,
-            "vocabulary_diversity": round(sum(vocab_diversities) / len(vocab_diversities), 3)
-            if vocab_diversities
-            else None,
-            "opinions_analyzed": len(word_counts),
-            "data_quality": "good"
-            if len(word_counts) >= 20
-            else "limited"
-            if len(word_counts) >= 5
-            else "insufficient",
-        }
-
-        # ===== OPINION LENGTH TREND =====
-        yearly_lengths: dict[str, list[int]] = {}
-        for op in opinions:
-            wc = op.get("word_count", 0)
-            df = op.get("date_filed")
-            if df and wc and wc > 0:
-                year_match = re.search(r"(1[7-9]\d{2}|20\d{2})", str(df))
-                if year_match:
-                    year = year_match.group(1)
-                    yearly_lengths.setdefault(year, []).append(wc)
-
-        trend_data = []
-        for year in sorted(yearly_lengths.keys()):
-            lengths = yearly_lengths[year]
-            trend_data.append(
-                {
-                    "year": year,
-                    "avg_length": round(sum(lengths) / len(lengths)),
-                    "opinion_count": len(lengths),
-                }
-            )
-
-        trend_direction = "stable"
-        if len(trend_data) >= 3:
-            years_list = [int(t["year"]) for t in trend_data]
-            lengths_list = [t["avg_length"] for t in trend_data]
-            n = len(years_list)
-            sum_x = sum(years_list)
-            sum_y = sum(lengths_list)
-            sum_xy = sum(x * y for x, y in zip(years_list, lengths_list, strict=False))
-            sum_x2 = sum(x * x for x in years_list)
-
-            slope = (
-                (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x * sum_x)
-                if (n * sum_x2 - sum_x * sum_x) != 0
-                else 0
-            )
-
-            if slope > 50:
-                trend_direction = "increasing"
-            elif slope < -50:
-                trend_direction = "decreasing"
-
-        metrics["metrics"]["opinion_length_trend"] = {
-            "trend_direction": trend_direction,
-            "yearly_data": trend_data[-10:],
-            "data_quality": "good"
-            if len(trend_data) >= 5
-            else "limited"
-            if len(trend_data) >= 2
-            else "insufficient",
-        }
-
-        # ===== BENCH EXPERIENCE =====
-        positions_list = []
-        total_years = 0
-        for pos in positions:
-            p = {
-                "position": pos.get("position_type"),
-                "court": pos.get("court_name"),
-                "start": pos.get("date_start"),
-                "end": pos.get("date_termination"),
-            }
-            try:
-                start_match = (
-                    re.search(r"(\d{4})", str(pos.get("date_start")))
-                    if pos.get("date_start")
-                    else None
-                )
-                end_match = (
-                    re.search(r"(\d{4})", str(pos.get("date_termination")))
-                    if pos.get("date_termination")
-                    else None
-                )
-                start_year = int(start_match.group(1)) if start_match else None
-                end_year = int(end_match.group(1)) if end_match else datetime.now().year
-                if start_year:
-                    yrs = end_year - start_year
-                    p["years"] = yrs
-                    total_years += yrs
-            except (ValueError, TypeError, AttributeError):
-                pass
-            positions_list.append(p)
-
-        metrics["metrics"]["bench_experience"] = {
-            "total_years": total_years,
-            "positions": positions_list,
-            "current_position": positions_list[-1] if positions_list else None,
-            "data_quality": "good" if positions_list else "insufficient",
-        }
-
-        # ===== DATA COMPLETENESS SCORE =====
-        completeness_checks = {
-            "biographical_info": bool(judge_data.get("name") or judge_data.get("name_first")),
-            "birth_date": bool(judge_data.get("date_of_birth")),
-            "education": bool(education),
-            "positions": bool(positions),
-            "opinions": total_opinions > 0,
-            "dockets": total_cases > 0,
-            "opinion_full_text": bool(word_counts),
-        }
-
-        completeness_score = sum(completeness_checks.values()) / len(completeness_checks) * 100
-
-        metrics["metrics"]["data_completeness"] = {
-            "score": round(completeness_score, 1),
-            "checks": completeness_checks,
-            "recommendation": "High confidence in metrics"
-            if completeness_score >= 70
-            else "Moderate confidence - some data missing"
-            if completeness_score >= 40
-            else "Low confidence - significant data gaps",
-        }
 
         # ===== CACHE THE RESULTS inside judge_data =====
         judge_data["_computed_metrics"] = metrics
         await self._set_cache(judge_id, judge_data, opinions_data)
 
         return metrics
+
+
+def _fresh_cached_metrics(judge_data: dict[str, Any]) -> dict[str, Any] | None:
+    """Previously computed metrics from judge_data, if they are under 24 hours old."""
+    cached_metrics = judge_data.get("_computed_metrics")
+    if cached_metrics:
+        computed_at_str = cached_metrics.get("computed_at")
+        if computed_at_str:
+            try:
+                computed_at = datetime.fromisoformat(computed_at_str)
+                if datetime.now(UTC) - computed_at.replace(tzinfo=UTC) < timedelta(hours=24):
+                    return cached_metrics
+            except (ValueError, TypeError):
+                pass
+    return None
+
+
+def _data_quality(count: int, good: int, limited: int) -> str:
+    """Three-level data-quality label from a sample size and its two thresholds."""
+    return "good" if count >= good else "limited" if count >= limited else "insufficient"
+
+
+def _dissent_concurrence_metrics(
+    opinions: list[dict[str, Any]],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Dissent and concurrence rates over the opinions with a recorded type."""
+    # ===== DISSENT & CONCURRENCE RATES =====
+    opinion_types: dict[str, int] = {}
+    for op in opinions:
+        ot = (op.get("opinion_type") or "").lower().strip()
+        if ot:
+            opinion_types[ot] = opinion_types.get(ot, 0) + 1
+
+    total_typed = sum(opinion_types.values())
+    dissent_count = sum(v for k, v in opinion_types.items() if "dissent" in k)
+    concur_count = sum(v for k, v in opinion_types.items() if "concur" in k)
+
+    dissent_rate = {
+        "value": round((dissent_count / total_typed * 100), 2) if total_typed > 0 else None,
+        "dissent_count": dissent_count,
+        "total_opinions_analyzed": total_typed,
+        "data_quality": _data_quality(total_typed, 50, 10),
+    }
+    concurrence_rate = {
+        "value": round((concur_count / total_typed * 100), 2) if total_typed > 0 else None,
+        "concurrence_count": concur_count,
+        "total_opinions_analyzed": total_typed,
+        "data_quality": _data_quality(total_typed, 50, 10),
+    }
+    return dissent_rate, concurrence_rate
+
+
+def _citation_impact_metrics(opinions: list[dict[str, Any]]) -> dict[str, Any]:
+    """Citation impact score: citations per opinion scaled by years since the first opinion."""
+    # ===== CITATION IMPACT SCORE =====
+    total_opinions = len(opinions)
+    total_citations = sum(op.get("citation_count", 0) for op in opinions)
+    avg_citations = total_citations / total_opinions if total_opinions > 0 else 0
+    max_citations = max((op.get("citation_count", 0) for op in opinions), default=0)
+    first_opinion_date = min(
+        (op.get("date_filed") for op in opinions if op.get("date_filed")),
+        default=None,
+    )
+
+    years_on_bench = 1
+    if first_opinion_date:
+        first_year_match = re.search(r"(1[7-9]\d{2}|20\d{2})", str(first_opinion_date))
+        if first_year_match:
+            first_year = int(first_year_match.group(1))
+            years_on_bench = max(1, datetime.now().year - first_year)
+
+    raw_impact = avg_citations * math.log(years_on_bench + 1)
+    normalized_impact = min(5.0, raw_impact / 35) if raw_impact else 0
+
+    return {
+        "value": round(normalized_impact, 2),
+        "total_citations": total_citations,
+        "avg_citations_per_opinion": round(avg_citations, 2),
+        "most_cited_opinion_citations": max_citations,
+        "years_on_bench": years_on_bench,
+        "data_quality": "good" if total_opinions >= 50 else "limited",
+    }
+
+
+def _docket_durations(dockets: list[dict[str, Any]]) -> list[int]:
+    """Filing-to-termination durations in days for terminated dockets (0 < days < 3650)."""
+    durations = []
+    for d in dockets:
+        try:
+            filed_match = re.search(r"(\d{4})-(\d{2})-(\d{2})", str(d.get("date_filed", "")))
+            term_match = re.search(r"(\d{4})-(\d{2})-(\d{2})", str(d.get("date_terminated", "")))
+            if filed_match and term_match:
+                filed = date(
+                    int(filed_match.group(1)),
+                    int(filed_match.group(2)),
+                    int(filed_match.group(3)),
+                )
+                terminated = date(
+                    int(term_match.group(1)),
+                    int(term_match.group(2)),
+                    int(term_match.group(3)),
+                )
+                duration = (terminated - filed).days
+                if 0 < duration < 3650:
+                    durations.append(duration)
+        except (ValueError, TypeError, AttributeError):
+            pass
+    return durations
+
+
+def _case_disposition_metrics(dockets: list[dict[str, Any]]) -> dict[str, Any]:
+    """Average, median and extreme case durations over terminated dockets."""
+    # ===== CASE DISPOSITION TIME =====
+    durations = _docket_durations(dockets)
+    avg_duration = sum(durations) / len(durations) if durations else None
+    return {
+        "value_days": round(avg_duration, 1) if avg_duration else None,
+        "value_months": round(avg_duration / 30.44, 1) if avg_duration else None,
+        "cases_analyzed": len(durations),
+        "median_days": sorted(durations)[len(durations) // 2] if durations else None,
+        "fastest_case_days": min(durations) if durations else None,
+        "slowest_case_days": max(durations) if durations else None,
+        "data_quality": _data_quality(len(durations), 30, 10),
+    }
+
+
+def _case_type_metrics(dockets: list[dict[str, Any]]) -> dict[str, Any]:
+    """Nature-of-suit distribution across the dockets."""
+    # ===== CASE TYPE EXPERTISE =====
+    suit_counts: dict[str, int] = {}
+    for d in dockets:
+        nos = d.get("nature_of_suit")
+        if nos:
+            suit_counts[nos] = suit_counts.get(nos, 0) + 1
+
+    case_types = sorted(
+        [{"type": k, "count": v} for k, v in suit_counts.items()],
+        key=lambda x: x["count"],
+        reverse=True,
+    )
+    total_cases = sum(ct["count"] for ct in case_types)
+    for ct in case_types:
+        ct["percentage"] = round(ct["count"] / total_cases * 100, 1) if total_cases > 0 else 0
+
+    return {
+        "distribution": case_types[:15],
+        "total_cases_analyzed": total_cases,
+        "primary_expertise": case_types[0]["type"] if case_types else None,
+        "expertise_concentration": case_types[0]["percentage"] if case_types else 0,
+        "data_quality": _data_quality(total_cases, 50, 10),
+    }
+
+
+def _writing_complexity_metrics(opinions: list[dict[str, Any]]) -> dict[str, Any]:
+    """Writing complexity heuristic over up to 100 opinions with full text."""
+    # ===== WRITING COMPLEXITY =====
+    word_counts = []
+    sentence_lengths = []
+    vocab_diversities = []
+
+    for op in opinions[:100]:
+        text = op.get("full_text", "")
+        if not text:
+            continue
+        word_count = op.get("word_count") or len(text.split())
+        word_counts.append(word_count)
+
+        sentences = re.split(r"[.!?]+", text)
+        sentences = [s.strip() for s in sentences if len(s.strip()) > 10]
+        if sentences:
+            avg_sent_len = sum(len(s.split()) for s in sentences) / len(sentences)
+            sentence_lengths.append(avg_sent_len)
+
+        words = re.findall(r"\b[a-zA-Z]+\b", text.lower())
+        if len(words) > 100:
+            diversity = len(set(words)) / len(words)
+            vocab_diversities.append(diversity)
+
+    complexity_score = None
+    if sentence_lengths and vocab_diversities:
+        avg_sent_len = sum(sentence_lengths) / len(sentence_lengths)
+        avg_diversity = sum(vocab_diversities) / len(vocab_diversities)
+        avg_length = sum(word_counts) / len(word_counts) if word_counts else 0
+
+        sent_component = min(3, avg_sent_len / 10)
+        diversity_component = min(3, avg_diversity * 10)
+        length_component = min(4, avg_length / 2500)
+        complexity_score = round(sent_component + diversity_component + length_component, 1)
+
+    return {
+        "score": complexity_score,
+        "avg_opinion_length_words": round(sum(word_counts) / len(word_counts))
+        if word_counts
+        else None,
+        "avg_sentence_length_words": round(sum(sentence_lengths) / len(sentence_lengths), 1)
+        if sentence_lengths
+        else None,
+        "vocabulary_diversity": round(sum(vocab_diversities) / len(vocab_diversities), 3)
+        if vocab_diversities
+        else None,
+        "opinions_analyzed": len(word_counts),
+        "data_quality": _data_quality(len(word_counts), 20, 5),
+    }
+
+
+def _length_trend_direction(trend_data: list[dict[str, Any]]) -> str:
+    """Least-squares slope of average length by year, labelled increasing/decreasing/stable."""
+    trend_direction = "stable"
+    if len(trend_data) >= 3:
+        years_list = [int(t["year"]) for t in trend_data]
+        lengths_list = [t["avg_length"] for t in trend_data]
+        n = len(years_list)
+        sum_x = sum(years_list)
+        sum_y = sum(lengths_list)
+        sum_xy = sum(x * y for x, y in zip(years_list, lengths_list, strict=False))
+        sum_x2 = sum(x * x for x in years_list)
+
+        slope = (
+            (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x * sum_x)
+            if (n * sum_x2 - sum_x * sum_x) != 0
+            else 0
+        )
+
+        if slope > 50:
+            trend_direction = "increasing"
+        elif slope < -50:
+            trend_direction = "decreasing"
+    return trend_direction
+
+
+def _opinion_length_trend_metrics(opinions: list[dict[str, Any]]) -> dict[str, Any]:
+    """Average opinion length per year and the direction of its trend."""
+    # ===== OPINION LENGTH TREND =====
+    yearly_lengths: dict[str, list[int]] = {}
+    for op in opinions:
+        wc = op.get("word_count", 0)
+        df = op.get("date_filed")
+        if df and wc and wc > 0:
+            year_match = re.search(r"(1[7-9]\d{2}|20\d{2})", str(df))
+            if year_match:
+                year = year_match.group(1)
+                yearly_lengths.setdefault(year, []).append(wc)
+
+    trend_data = []
+    for year in sorted(yearly_lengths.keys()):
+        lengths = yearly_lengths[year]
+        trend_data.append(
+            {
+                "year": year,
+                "avg_length": round(sum(lengths) / len(lengths)),
+                "opinion_count": len(lengths),
+            }
+        )
+
+    return {
+        "trend_direction": _length_trend_direction(trend_data),
+        "yearly_data": trend_data[-10:],
+        "data_quality": _data_quality(len(trend_data), 5, 2),
+    }
+
+
+def _bench_experience_metrics(positions: list[dict[str, Any]]) -> dict[str, Any]:
+    """Years on the bench summed across the judge's positions."""
+    # ===== BENCH EXPERIENCE =====
+    positions_list = []
+    total_years = 0
+    for pos in positions:
+        p = {
+            "position": pos.get("position_type"),
+            "court": pos.get("court_name"),
+            "start": pos.get("date_start"),
+            "end": pos.get("date_termination"),
+        }
+        try:
+            start_match = (
+                re.search(r"(\d{4})", str(pos.get("date_start"))) if pos.get("date_start") else None
+            )
+            end_match = (
+                re.search(r"(\d{4})", str(pos.get("date_termination")))
+                if pos.get("date_termination")
+                else None
+            )
+            start_year = int(start_match.group(1)) if start_match else None
+            end_year = int(end_match.group(1)) if end_match else datetime.now().year
+            if start_year:
+                yrs = end_year - start_year
+                p["years"] = yrs
+                total_years += yrs
+        except (ValueError, TypeError, AttributeError):
+            pass
+        positions_list.append(p)
+
+    return {
+        "total_years": total_years,
+        "positions": positions_list,
+        "current_position": positions_list[-1] if positions_list else None,
+        "data_quality": "good" if positions_list else "insufficient",
+    }
+
+
+def _data_completeness_metrics(
+    judge_data: dict[str, Any],
+    *,
+    education: list[dict[str, Any]],
+    positions: list[dict[str, Any]],
+    total_opinions: int,
+    total_cases: int,
+    has_full_text: bool,
+) -> dict[str, Any]:
+    """Share of the seven data-availability checks that pass, with a confidence label."""
+    # ===== DATA COMPLETENESS SCORE =====
+    completeness_checks = {
+        "biographical_info": bool(judge_data.get("name") or judge_data.get("name_first")),
+        "birth_date": bool(judge_data.get("date_of_birth")),
+        "education": bool(education),
+        "positions": bool(positions),
+        "opinions": total_opinions > 0,
+        "dockets": total_cases > 0,
+        "opinion_full_text": has_full_text,
+    }
+
+    completeness_score = sum(completeness_checks.values()) / len(completeness_checks) * 100
+
+    return {
+        "score": round(completeness_score, 1),
+        "checks": completeness_checks,
+        "recommendation": "High confidence in metrics"
+        if completeness_score >= 70
+        else "Moderate confidence - some data missing"
+        if completeness_score >= 40
+        else "Low confidence - significant data gaps",
+    }

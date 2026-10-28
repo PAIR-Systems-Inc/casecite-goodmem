@@ -34,33 +34,7 @@ class CourtListenerMixin:
 
         async with cl_client(timeout=60.0) as client:
             while len(judges) < limit:
-                if next_url:
-                    response = await client.get(next_url, headers=self.headers)
-                else:
-                    params = {
-                        "page_size": 100,
-                    }
-
-                    query_parts = query.split()
-                    if len(query_parts) >= 2:
-                        params["name_first__icontains"] = query_parts[0]
-                        params["name_last__icontains"] = query_parts[-1]
-                    else:
-                        params["name_last__icontains"] = query
-
-                    response = await client.get(
-                        f"{self.BASE_URL}/people/", params=params, headers=self.headers
-                    )
-
-                if response.status_code != 200:
-                    response = await client.get(
-                        f"{self.BASE_URL}/search/",
-                        params={"q": f"name:{query}", "type": "p", "page_size": 100},
-                        headers=self.headers,
-                    )
-
-                response.raise_for_status()
-                data = response.json()
+                data = await self._fetch_people_page(client, query, next_url)
 
                 if total_count == 0:
                     total_count = data.get("count", 0)
@@ -72,47 +46,12 @@ class CourtListenerMixin:
                 for r in results:
                     if len(judges) >= limit:
                         break
-
-                    name_first = r.get("name_first", "") or ""
-                    name_middle = r.get("name_middle", "") or ""
-                    name_last = r.get("name_last", "") or ""
-                    name_suffix = r.get("name_suffix", "") or ""
-
-                    full_name = " ".join(
-                        filter(None, [name_first, name_middle, name_last, name_suffix])
-                    ).strip()
-                    if not full_name:
-                        full_name = r.get("name_full") or r.get("name", "Unknown")
-
-                    judges.append(
-                        {
-                            "id": r.get("id"),
-                            "name": full_name,
-                            "name_full": r.get("name_full") or full_name,
-                            "name_first": name_first,
-                            "name_last": name_last,
-                            "court": r.get("court"),
-                            "position": r.get("position_type"),
-                            "appointed_by": r.get("appointer"),
-                            "date_start": r.get("date_start"),
-                            "dob": r.get("date_dob"),
-                            "political_affiliation": r.get("political_affiliation"),
-                            "url": f"https://www.courtlistener.com/person/{r.get('id')}/"
-                            if r.get("id")
-                            else "",
-                        }
-                    )
+                    judges.append(_judge_summary(r))
 
                 next_url = data.get("next")
                 if not next_url:
                     break
-                # Validate pagination URL stays on courtlistener.com (SSRF prevention)
-                from urllib.parse import urlparse as _urlparse
-
-                if _urlparse(next_url).hostname not in (
-                    "www.courtlistener.com",
-                    "courtlistener.com",
-                ):
+                if not _is_courtlistener_url(next_url):
                     logger.warning(f"Pagination URL left courtlistener.com domain: {next_url}")
                     break
 
@@ -120,88 +59,71 @@ class CourtListenerMixin:
 
             # If searching by last name only and we have room, also search first name
             if len(query.split()) == 1 and len(judges) < limit:
-                try:
-                    response = await client.get(
-                        f"{self.BASE_URL}/people/",
-                        params={"name_first__icontains": query, "page_size": 50},
-                        headers=self.headers,
-                    )
-                    if response.status_code == 200:
-                        data = response.json()
-                        existing_ids = {j["id"] for j in judges}
+                extra = await self._search_by_first_name(client, query, judges, limit)
+                judges.extend(extra)
+                total_count += len(extra)
 
-                        for r in data.get("results", []):
-                            if len(judges) >= limit:
-                                break
-                            if r.get("id") in existing_ids:
-                                continue
-
-                            name_first = r.get("name_first", "") or ""
-                            name_middle = r.get("name_middle", "") or ""
-                            name_last = r.get("name_last", "") or ""
-                            name_suffix = r.get("name_suffix", "") or ""
-
-                            full_name = " ".join(
-                                filter(
-                                    None,
-                                    [name_first, name_middle, name_last, name_suffix],
-                                )
-                            ).strip()
-                            if not full_name:
-                                full_name = r.get("name_full") or r.get("name", "Unknown")
-
-                            judges.append(
-                                {
-                                    "id": r.get("id"),
-                                    "name": full_name,
-                                    "name_full": r.get("name_full") or full_name,
-                                    "name_first": name_first,
-                                    "name_last": name_last,
-                                    "court": r.get("court"),
-                                    "position": r.get("position_type"),
-                                    "appointed_by": r.get("appointer"),
-                                    "date_start": r.get("date_start"),
-                                    "dob": r.get("date_dob"),
-                                    "political_affiliation": r.get("political_affiliation"),
-                                    "url": f"https://www.courtlistener.com/person/{r.get('id')}/"
-                                    if r.get("id")
-                                    else "",
-                                }
-                            )
-                            total_count += 1
-                except (httpx.HTTPError, KeyError, ValueError) as e:
-                    logger.debug(f"First name search failed (non-critical): {e}")
-                    pass  # First name search is supplementary, don't fail on errors
-
-        # Sort results to prioritize exact matches. For "sonia sotomayor" the
-        # last word is the surname and the first word the given name; a single
-        # word is matched against both.
-        query_lower = query.lower()
-        words = query_lower.split()
-        q_last = words[-1] if words else query_lower
-        q_first = words[0] if len(words) >= 2 else None
-
-        def sort_key(j):
-            name = (j.get("name") or "").lower()
-            name_last = (j.get("name_last") or "").lower()
-            name_first = (j.get("name_first") or "").lower()
-            first_ok = q_first is None or name_first.startswith(q_first)
-
-            if name_last == q_last and (q_first is None or name_first == q_first):
-                return (0, name)
-            if name_last == q_last and first_ok:
-                return (1, name)
-            if name_last.startswith(q_last) and first_ok:
-                return (2, name)
-            if q_last in name_last:
-                return (3, name)
-            if name_first == q_last or name_first.startswith(q_last):
-                return (4, name)
-            return (5, name)
-
-        judges.sort(key=sort_key)
+        _sort_judges_by_match(judges, query)
 
         return {"judges": judges, "count": len(judges), "total_available": total_count}
+
+    async def _fetch_people_page(
+        self, client: httpx.AsyncClient, query: str, next_url: str | None
+    ) -> dict[str, Any]:
+        """Fetch one page of /people/ results (or the next page), falling back to /search/."""
+        if next_url:
+            response = await client.get(next_url, headers=self.headers)
+        else:
+            params = {
+                "page_size": 100,
+            }
+
+            query_parts = query.split()
+            if len(query_parts) >= 2:
+                params["name_first__icontains"] = query_parts[0]
+                params["name_last__icontains"] = query_parts[-1]
+            else:
+                params["name_last__icontains"] = query
+
+            response = await client.get(
+                f"{self.BASE_URL}/people/", params=params, headers=self.headers
+            )
+
+        if response.status_code != 200:
+            response = await client.get(
+                f"{self.BASE_URL}/search/",
+                params={"q": f"name:{query}", "type": "p", "page_size": 100},
+                headers=self.headers,
+            )
+
+        response.raise_for_status()
+        return response.json()
+
+    async def _search_by_first_name(
+        self, client: httpx.AsyncClient, query: str, judges: list[dict[str, Any]], limit: int
+    ) -> list[dict[str, Any]]:
+        """Supplementary first-name search; returns judges not already in ``judges``, up to the limit."""
+        added: list[dict[str, Any]] = []
+        try:
+            response = await client.get(
+                f"{self.BASE_URL}/people/",
+                params={"name_first__icontains": query, "page_size": 50},
+                headers=self.headers,
+            )
+            if response.status_code == 200:
+                data = response.json()
+                existing_ids = {j["id"] for j in judges}
+
+                for r in data.get("results", []):
+                    if len(judges) + len(added) >= limit:
+                        break
+                    if r.get("id") in existing_ids:
+                        continue
+                    added.append(_judge_summary(r))
+        except (httpx.HTTPError, KeyError, ValueError) as e:
+            logger.debug(f"First name search failed (non-critical): {e}")
+            pass  # First name search is supplementary, don't fail on errors
+        return added
 
     async def build_judge_intel(
         self, judge_id: int, progress_callback: Callable | None = None
@@ -226,12 +148,7 @@ class CourtListenerMixin:
         update_progress("Fetching judge biographical data...")
 
         # 1. Get full judge profile
-        async with cl_client(timeout=60.0) as client:
-            response = await client.get(f"{self.BASE_URL}/people/{judge_id}/", headers=self.headers)
-            if response.status_code == 404:
-                raise ValueError(f"Judge with ID {judge_id} not found")
-            response.raise_for_status()
-            api_judge_data = response.json()
+        api_judge_data = await self._fetch_judge_record(judge_id)
 
         # 2. Fetch Wikipedia data
         judge_name = (
@@ -243,164 +160,16 @@ class CourtListenerMixin:
             judge_name, birth_year=int(dob_year.group(1)) if dob_year else None
         )
 
-        # Helper to convert list values to comma-separated strings
-        def to_string(val):
-            if isinstance(val, list):
-                return ", ".join(str(v) for v in val) if val else None
-            return val
-
         # Build the judge_data dict
-        judge_data = {
-            "id": judge_id,
-            "name": judge_name,
-            "name_first": to_string(api_judge_data.get("name_first")),
-            "name_middle": to_string(api_judge_data.get("name_middle")),
-            "name_last": to_string(api_judge_data.get("name_last")),
-            "name_suffix": to_string(api_judge_data.get("name_suffix")),
-            "date_of_birth": to_string(api_judge_data.get("date_dob")),
-            "place_of_birth_city": to_string(api_judge_data.get("dob_city")),
-            "place_of_birth_state": to_string(api_judge_data.get("dob_state")),
-            "date_of_death": to_string(api_judge_data.get("date_dod")),
-            "gender": to_string(api_judge_data.get("gender")),
-            "race": to_string(api_judge_data.get("race")),
-            "religion": to_string(api_judge_data.get("religion")),
-            "political_affiliation": to_string(api_judge_data.get("political_affiliation")),
-            "aba_rating": to_string(api_judge_data.get("aba_rating")),
-            "courtlistener_url": f"https://www.courtlistener.com/person/{judge_id}/",
-            "data_pulled_at": datetime.now(UTC).isoformat(),
-            "wikipedia_url": wikipedia_data.get("url"),
-            "wikipedia_summary": wikipedia_data.get("summary"),
-            "wikipedia_bio": wikipedia_data.get("bio"),
-            "wikipedia_early_life": wikipedia_data.get("early_life"),
-            "wikipedia_education": wikipedia_data.get("education"),
-            "wikipedia_career": wikipedia_data.get("career"),
-            "wikipedia_judicial_service": wikipedia_data.get("judicial_service"),
-            "wikipedia_notable_cases": wikipedia_data.get("notable_cases"),
-            "wikipedia_personal_life": wikipedia_data.get("personal_life"),
-            "wikipedia_raw": wikipedia_data.get("raw"),
-        }
+        judge_data = _build_judge_data(judge_id, judge_name, api_judge_data, wikipedia_data)
 
         # 3. Process education - fetch from URLs if needed
         update_progress("Processing education history...")
-        education_list = []
-        educations = api_judge_data.get("educations", [])
-        async with cl_client(timeout=30.0) as client:
-            for edu in educations:
-                edu_data = edu
-                if isinstance(edu, str) and edu.startswith("http"):
-                    try:
-                        resp = await client.get(edu, headers=self.headers)
-                        if resp.status_code == 200:
-                            edu_data = resp.json()
-                        else:
-                            continue
-                    except (
-                        ValueError,
-                        KeyError,
-                        ConnectionError,
-                        TimeoutError,
-                        OSError,
-                        RuntimeError,
-                    ) as e:
-                        logger.error(f"Error fetching education: {e}")
-                        continue
-
-                if not isinstance(edu_data, dict):
-                    continue
-
-                school = edu_data.get("school", {})
-                if isinstance(school, str) and school.startswith("http"):
-                    try:
-                        resp = await client.get(school, headers=self.headers)
-                        if resp.status_code == 200:
-                            school = resp.json()
-                    except (httpx.HTTPError, ValueError, KeyError):
-                        pass
-
-                education_list.append(
-                    {
-                        "school_name": school.get("name")
-                        if isinstance(school, dict)
-                        else str(school)
-                        if school
-                        else None,
-                        "school_type": school.get("type") if isinstance(school, dict) else None,
-                        "degree": edu_data.get("degree_level") or edu_data.get("degree_detail"),
-                        "degree_year": edu_data.get("degree_year"),
-                    }
-                )
-
-        judge_data["education"] = education_list
+        judge_data["education"] = await self._fetch_education(api_judge_data.get("educations", []))
 
         # 4. Process positions - fetch from URLs if needed
         update_progress("Processing career history...")
-        positions_list = []
-        positions = api_judge_data.get("positions", [])
-        async with cl_client(timeout=30.0) as client:
-            for pos in positions:
-                pos_data = pos
-                if isinstance(pos, str) and pos.startswith("http"):
-                    try:
-                        resp = await client.get(pos, headers=self.headers)
-                        if resp.status_code == 200:
-                            pos_data = resp.json()
-                        else:
-                            continue
-                    except (
-                        ValueError,
-                        KeyError,
-                        ConnectionError,
-                        TimeoutError,
-                        OSError,
-                        RuntimeError,
-                    ) as e:
-                        logger.error(f"Error fetching position: {e}")
-                        continue
-
-                if not isinstance(pos_data, dict):
-                    continue
-
-                court = pos_data.get("court", {})
-                if isinstance(court, str) and court.startswith("http"):
-                    try:
-                        resp = await client.get(court, headers=self.headers)
-                        if resp.status_code == 200:
-                            court = resp.json()
-                    except (httpx.HTTPError, ValueError, KeyError):
-                        pass
-
-                appointer = pos_data.get("appointer")
-                if isinstance(appointer, str) and appointer.startswith("http"):
-                    try:
-                        resp = await client.get(appointer, headers=self.headers)
-                        if resp.status_code == 200:
-                            appointer_data = resp.json()
-                            appointer = (
-                                appointer_data.get("name_full")
-                                or f"{appointer_data.get('name_first', '')} {appointer_data.get('name_last', '')}".strip()
-                            )
-                    except (httpx.HTTPError, ValueError, KeyError):
-                        appointer = None
-
-                positions_list.append(
-                    {
-                        "position_type": to_string(pos_data.get("position_type")),
-                        "court_name": court.get("full_name") or court.get("short_name")
-                        if isinstance(court, dict)
-                        else str(court)
-                        if court
-                        else None,
-                        "court_id": court.get("id") if isinstance(court, dict) else None,
-                        "appointer": to_string(appointer)
-                        if not isinstance(appointer, str) or not appointer.startswith("http")
-                        else None,
-                        "date_start": to_string(pos_data.get("date_start")),
-                        "date_termination": to_string(pos_data.get("date_termination")),
-                        "termination_reason": to_string(pos_data.get("termination_reason")),
-                    }
-                )
-
-        judge_data["positions"] = positions_list
+        judge_data["positions"] = await self._fetch_positions(api_judge_data.get("positions", []))
 
         # 5. Pull opinions
         update_progress("Fetching opinions (optimized - ~30 seconds)...")
@@ -439,6 +208,128 @@ class CourtListenerMixin:
 
         # Return summary
         return await self.get_judge_profile(judge_id)
+
+    async def _fetch_judge_record(self, judge_id: int) -> dict[str, Any]:
+        """Fetch the judge's /people/ record; raises ValueError when the id is unknown."""
+        async with cl_client(timeout=60.0) as client:
+            response = await client.get(f"{self.BASE_URL}/people/{judge_id}/", headers=self.headers)
+            if response.status_code == 404:
+                raise ValueError(f"Judge with ID {judge_id} not found")
+            response.raise_for_status()
+            return response.json()
+
+    async def _resolve_linked_record(
+        self, client: httpx.AsyncClient, item: Any, label: str
+    ) -> dict[str, Any] | None:
+        """An inline record as-is, or fetched from its URL; None when it cannot be used."""
+        data = item
+        if isinstance(item, str) and item.startswith("http"):
+            try:
+                resp = await client.get(item, headers=self.headers)
+                if resp.status_code == 200:
+                    data = resp.json()
+                else:
+                    return None
+            except (
+                ValueError,
+                KeyError,
+                ConnectionError,
+                TimeoutError,
+                OSError,
+                RuntimeError,
+            ) as e:
+                logger.error(f"Error fetching {label}: {e}")
+                return None
+
+        if not isinstance(data, dict):
+            return None
+        return data
+
+    async def _fetch_education(self, educations: list[Any]) -> list[dict[str, Any]]:
+        """Education entries, resolving school records referenced by URL."""
+        education_list = []
+        async with cl_client(timeout=30.0) as client:
+            for edu in educations:
+                edu_data = await self._resolve_linked_record(client, edu, "education")
+                if edu_data is None:
+                    continue
+
+                school = edu_data.get("school", {})
+                if isinstance(school, str) and school.startswith("http"):
+                    try:
+                        resp = await client.get(school, headers=self.headers)
+                        if resp.status_code == 200:
+                            school = resp.json()
+                    except (httpx.HTTPError, ValueError, KeyError):
+                        pass
+
+                education_list.append(
+                    {
+                        "school_name": school.get("name")
+                        if isinstance(school, dict)
+                        else str(school)
+                        if school
+                        else None,
+                        "school_type": school.get("type") if isinstance(school, dict) else None,
+                        "degree": edu_data.get("degree_level") or edu_data.get("degree_detail"),
+                        "degree_year": edu_data.get("degree_year"),
+                    }
+                )
+        return education_list
+
+    async def _fetch_positions(self, positions: list[Any]) -> list[dict[str, Any]]:
+        """Career positions, resolving court and appointer records referenced by URL."""
+        positions_list = []
+        async with cl_client(timeout=30.0) as client:
+            for pos in positions:
+                pos_data = await self._resolve_linked_record(client, pos, "position")
+                if pos_data is None:
+                    continue
+
+                court = pos_data.get("court", {})
+                if isinstance(court, str) and court.startswith("http"):
+                    try:
+                        resp = await client.get(court, headers=self.headers)
+                        if resp.status_code == 200:
+                            court = resp.json()
+                    except (httpx.HTTPError, ValueError, KeyError):
+                        pass
+
+                appointer = await self._resolve_appointer(client, pos_data.get("appointer"))
+
+                positions_list.append(
+                    {
+                        "position_type": _to_string(pos_data.get("position_type")),
+                        "court_name": court.get("full_name") or court.get("short_name")
+                        if isinstance(court, dict)
+                        else str(court)
+                        if court
+                        else None,
+                        "court_id": court.get("id") if isinstance(court, dict) else None,
+                        "appointer": _to_string(appointer)
+                        if not isinstance(appointer, str) or not appointer.startswith("http")
+                        else None,
+                        "date_start": _to_string(pos_data.get("date_start")),
+                        "date_termination": _to_string(pos_data.get("date_termination")),
+                        "termination_reason": _to_string(pos_data.get("termination_reason")),
+                    }
+                )
+        return positions_list
+
+    async def _resolve_appointer(self, client: httpx.AsyncClient, appointer: Any) -> Any:
+        """Replace an appointer URL with the person's name; None when the lookup fails."""
+        if isinstance(appointer, str) and appointer.startswith("http"):
+            try:
+                resp = await client.get(appointer, headers=self.headers)
+                if resp.status_code == 200:
+                    appointer_data = resp.json()
+                    appointer = (
+                        appointer_data.get("name_full")
+                        or f"{appointer_data.get('name_first', '')} {appointer_data.get('name_last', '')}".strip()
+                    )
+            except (httpx.HTTPError, ValueError, KeyError):
+                appointer = None
+        return appointer
 
     async def _pull_all_opinions(
         self,
@@ -784,3 +675,118 @@ class CourtListenerMixin:
 
         progress_callback(f"Analyzed {total_pulled} citation relationships")
         return all_citations
+
+
+def _judge_summary(r: dict[str, Any]) -> dict[str, Any]:
+    """A search-result row for one judge, with the display name assembled from its parts."""
+    name_first = r.get("name_first", "") or ""
+    name_middle = r.get("name_middle", "") or ""
+    name_last = r.get("name_last", "") or ""
+    name_suffix = r.get("name_suffix", "") or ""
+
+    full_name = " ".join(filter(None, [name_first, name_middle, name_last, name_suffix])).strip()
+    if not full_name:
+        full_name = r.get("name_full") or r.get("name", "Unknown")
+
+    return {
+        "id": r.get("id"),
+        "name": full_name,
+        "name_full": r.get("name_full") or full_name,
+        "name_first": name_first,
+        "name_last": name_last,
+        "court": r.get("court"),
+        "position": r.get("position_type"),
+        "appointed_by": r.get("appointer"),
+        "date_start": r.get("date_start"),
+        "dob": r.get("date_dob"),
+        "political_affiliation": r.get("political_affiliation"),
+        "url": f"https://www.courtlistener.com/person/{r.get('id')}/" if r.get("id") else "",
+    }
+
+
+def _is_courtlistener_url(url: str) -> bool:
+    """True when a pagination URL stays on courtlistener.com."""
+    # Validate pagination URL stays on courtlistener.com (SSRF prevention)
+    from urllib.parse import urlparse as _urlparse
+
+    return _urlparse(url).hostname in (
+        "www.courtlistener.com",
+        "courtlistener.com",
+    )
+
+
+def _sort_judges_by_match(judges: list[dict[str, Any]], query: str) -> None:
+    """Sort judges in place so exact name matches for the query come first."""
+    # Sort results to prioritize exact matches. For "sonia sotomayor" the
+    # last word is the surname and the first word the given name; a single
+    # word is matched against both.
+    query_lower = query.lower()
+    words = query_lower.split()
+    q_last = words[-1] if words else query_lower
+    q_first = words[0] if len(words) >= 2 else None
+
+    def sort_key(j):
+        name = (j.get("name") or "").lower()
+        name_last = (j.get("name_last") or "").lower()
+        name_first = (j.get("name_first") or "").lower()
+        first_ok = q_first is None or name_first.startswith(q_first)
+
+        if name_last == q_last and (q_first is None or name_first == q_first):
+            return (0, name)
+        if name_last == q_last and first_ok:
+            return (1, name)
+        if name_last.startswith(q_last) and first_ok:
+            return (2, name)
+        if q_last in name_last:
+            return (3, name)
+        if name_first == q_last or name_first.startswith(q_last):
+            return (4, name)
+        return (5, name)
+
+    judges.sort(key=sort_key)
+
+
+def _to_string(val: Any) -> Any:
+    """Convert a list value to a comma-separated string; other values pass through."""
+    # Helper to convert list values to comma-separated strings
+    if isinstance(val, list):
+        return ", ".join(str(v) for v in val) if val else None
+    return val
+
+
+def _build_judge_data(
+    judge_id: int,
+    judge_name: str,
+    api_judge_data: dict[str, Any],
+    wikipedia_data: dict[str, Any],
+) -> dict[str, Any]:
+    """The biographical judge_data record from the CourtListener person and Wikipedia data."""
+    return {
+        "id": judge_id,
+        "name": judge_name,
+        "name_first": _to_string(api_judge_data.get("name_first")),
+        "name_middle": _to_string(api_judge_data.get("name_middle")),
+        "name_last": _to_string(api_judge_data.get("name_last")),
+        "name_suffix": _to_string(api_judge_data.get("name_suffix")),
+        "date_of_birth": _to_string(api_judge_data.get("date_dob")),
+        "place_of_birth_city": _to_string(api_judge_data.get("dob_city")),
+        "place_of_birth_state": _to_string(api_judge_data.get("dob_state")),
+        "date_of_death": _to_string(api_judge_data.get("date_dod")),
+        "gender": _to_string(api_judge_data.get("gender")),
+        "race": _to_string(api_judge_data.get("race")),
+        "religion": _to_string(api_judge_data.get("religion")),
+        "political_affiliation": _to_string(api_judge_data.get("political_affiliation")),
+        "aba_rating": _to_string(api_judge_data.get("aba_rating")),
+        "courtlistener_url": f"https://www.courtlistener.com/person/{judge_id}/",
+        "data_pulled_at": datetime.now(UTC).isoformat(),
+        "wikipedia_url": wikipedia_data.get("url"),
+        "wikipedia_summary": wikipedia_data.get("summary"),
+        "wikipedia_bio": wikipedia_data.get("bio"),
+        "wikipedia_early_life": wikipedia_data.get("early_life"),
+        "wikipedia_education": wikipedia_data.get("education"),
+        "wikipedia_career": wikipedia_data.get("career"),
+        "wikipedia_judicial_service": wikipedia_data.get("judicial_service"),
+        "wikipedia_notable_cases": wikipedia_data.get("notable_cases"),
+        "wikipedia_personal_life": wikipedia_data.get("personal_life"),
+        "wikipedia_raw": wikipedia_data.get("raw"),
+    }

@@ -13,6 +13,7 @@ from app.config import settings
 from app.models.schemas import (
     AnalysisMode,
     ChatStats,
+    Citation,
     QueryIntent,
     RAGSettings,
 )
@@ -49,6 +50,8 @@ from app.services.rag.search import (
 from app.services.vectordb import get_vector_db
 
 if TYPE_CHECKING:
+    from openai import AsyncOpenAI
+
     from app.services.user_keys import UserAPIKeys
 
 logger = logging.getLogger(__name__)
@@ -343,51 +346,25 @@ class RAGService:
         """
         start_time = time.time()
 
-        # Get LLM clients - prefer user keys (BYOK), fall back to server keys
-        openai_client = None
-        anthropic_client = None
-        gemini_model = None
-
         # Resolve effective per-user settings up front so the model choice and
         # retrieval toggles apply to every code path below (including no-results).
         effective_settings = rag_settings if rag_settings else RAGSettings()
         model = model or effective_settings.llm_model or settings.openai_chat_model
 
-        if user_keys:
-            openai_client = user_keys.get_async_openai_client()
-            anthropic_client = user_keys.get_async_anthropic_client()
-            if user_keys.google:
-                # The Gemini model the user selected, not a fixed default.
-                gemini_model = user_keys.get_google_model(
-                    model if "gemini" in model.lower() else None
-                )
-
-        if not openai_client:
-            openai_client = self.openai
-        if not anthropic_client:
-            anthropic_client = self.anthropic
+        openai_client, anthropic_client, gemini_model = self._resolve_llm_clients(user_keys, model)
 
         # A scope (selected files / folder) that resolved to no indexed
         # documents is answered as exactly that. It must never widen to the
         # whole knowledge base: the user asked about Client A's folder, and
         # an answer drawn from Client B's files would be wrong and unseen.
         if include_documents and document_ids is not None and not document_ids:
-            return {
-                "content": (
-                    "There are no indexed documents in the scope you selected, so "
-                    "there was nothing to search. The folder or files may be empty, "
-                    "or still being indexed — check their status in the knowledge "
-                    "base, or widen the scope and ask again."
-                ),
-                "citations": [],
-                "stats": ChatStats(
-                    docs_searched=0,
-                    chunks_retrieved=0,
-                    processing_time=f"{time.time() - start_time:.2f}s",
-                    case_law_searched=0,
-                    case_law_included=0,
-                ),
-            }
+            return _empty_response(
+                "There are no indexed documents in the scope you selected, so "
+                "there was nothing to search. The folder or files may be empty, "
+                "or still being indexed — check their status in the knowledge "
+                "base, or widen the scope and ask again.",
+                start_time,
+            )
 
         # Search for relevant documents. Infrastructure failures surface as an
         # honest "search is down" answer — never as "no relevant documents".
@@ -409,120 +386,38 @@ class RAGService:
             )
         except SearchUnavailableError as e:
             logger.error(f"[RAG] Search unavailable for user {user_id}: {e}")
-            return {
-                "content": (
-                    f"⚠ I couldn't search your documents: {e}\n\n"
-                    "No answer was attempted — this is an infrastructure problem, "
-                    "not a gap in your documents."
-                ),
-                "citations": [],
-                "stats": ChatStats(
-                    docs_searched=0,
-                    chunks_retrieved=0,
-                    processing_time=f"{time.time() - start_time:.2f}s",
-                    case_law_searched=0,
-                    case_law_included=0,
-                ),
-            }
+            return _empty_response(
+                f"⚠ I couldn't search your documents: {e}\n\n"
+                "No answer was attempted — this is an infrastructure problem, "
+                "not a gap in your documents.",
+                start_time,
+            )
 
-        # Search CourtListener for case law. The keyword term is the distilled
-        # topic (never the raw message) and every hit is judged against the
-        # question before it can be cited. Hard time budget: full-opinion
-        # fetches are real network reads — an unlucky sequence of retries must
-        # degrade to "no case law", never stall the whole chat request.
-        case_law_results = []
-        if include_case_law:
-            # Research-intent chat gets the deep engine automatically: decompose
-            # the question into doctrines, read candidate opinions IN FULL, and
-            # keep only authorities whose quote verifies verbatim against the
-            # opinion text. Falls back to the fast snippet search whenever the
-            # deep pass yields nothing (no OpenAI client, timeout, all dropped)
-            # so a research question is never answered worse than before.
-            if deep_case_law and openai_client is not None:
-                try:
-                    deep_results, deep_status = await asyncio.wait_for(
-                        research_authorities(
-                            question=query,
-                            search_query=case_law_query,
-                            client=openai_client,
-                            limit=case_law_limit,
-                        ),
-                        timeout=140.0,
-                    )
-                    case_law_results = deep_results
-                    logger.info(f"Deep case-law research status: {deep_status}")
-                except TimeoutError:
-                    logger.warning(
-                        "Deep case-law research exceeded its 140s budget; "
-                        "falling back to snippet search"
-                    )
-                except Exception as e:  # deep pass must never kill chat
-                    logger.warning(f"Deep case-law research failed, falling back: {e}")
-            if not case_law_results:
-                try:
-                    case_law_results = await asyncio.wait_for(
-                        search_case_law(
-                            case_law_query or query,
-                            limit=case_law_limit,
-                            question=query,
-                            user_keys=user_keys,
-                            model=model,
-                        ),
-                        timeout=60.0,
-                    )
-                except TimeoutError:
-                    logger.warning("Case-law search exceeded its 60s budget; answering without it")
-                except Exception as e:  # a CourtListener outage must not fail the answer
-                    logger.warning(
-                        f"Case-law search failed ({type(e).__name__}); answering without it"
-                    )
+        case_law_results = await _search_case_law_within_budget(
+            query=query,
+            include_case_law=include_case_law,
+            case_law_query=case_law_query,
+            case_law_limit=case_law_limit,
+            deep_case_law=deep_case_law,
+            openai_client=openai_client,
+            user_keys=user_keys,
+            model=model,
+        )
 
-        # Threshold transparency: if document search came back empty, probe
-        # once WITHOUT the similarity floor. If matches exist below the
-        # threshold, say so with numbers — "no relevant documents" while the
-        # threshold silently discards real matches is indistinguishable from
-        # data loss to the user.
-        if (
-            not search_results
-            and not case_law_results
-            and include_documents
-            and document_ids is None
-        ):
-            effective_threshold = similarity_threshold or settings.similarity_threshold
-            try:
-                probe = await self.search(
-                    query,
-                    top_k=3,
-                    similarity_threshold=0.001,
-                    use_hybrid=False,
-                    use_reranking=False,
-                    user_keys=user_keys,
-                    user_id=user_id,
-                    matter_ids=matter_ids,
-                )
-            except SearchUnavailableError:
-                probe = []
-            if probe:
-                best = max(r.get("similarity", 0.0) for r in probe)
-                best_file = (probe[0].get("metadata") or {}).get("filename", "a document")
-                return {
-                    "content": (
-                        f"⚠ Your documents ARE indexed, but nothing cleared your "
-                        f"similarity threshold. The closest match — in "
-                        f"“{best_file}” — scored {best:.2f}, and your threshold "
-                        f"of {effective_threshold:.2f} discarded it. Lower the "
-                        f"Similarity Threshold in Settings → Retrieval "
-                        f"(0.25 recommended) and ask again."
-                    ),
-                    "citations": [],
-                    "stats": ChatStats(
-                        docs_searched=0,
-                        chunks_retrieved=0,
-                        processing_time=f"{time.time() - start_time:.2f}s",
-                        case_law_searched=0,
-                        case_law_included=0,
-                    ),
-                }
+        threshold_response = await self._explain_threshold_misses(
+            query=query,
+            search_results=search_results,
+            case_law_results=case_law_results,
+            include_documents=include_documents,
+            document_ids=document_ids,
+            similarity_threshold=similarity_threshold,
+            user_keys=user_keys,
+            user_id=user_id,
+            matter_ids=matter_ids,
+            start_time=start_time,
+        )
+        if threshold_response is not None:
+            return threshold_response
 
         # If no RAG sources requested or found, generate direct LLM response
         if not search_results and not case_law_results:
@@ -540,47 +435,52 @@ class RAGService:
                 scoped=bool(document_ids),
             )
 
-        # Build context from both sources. Context compression trims each chunk to
-        # its most query-relevant sentences so more documents fit the token budget;
-        # citations below still use the full, uncompressed passages.
-        context_results = (
-            compress_context_results(search_results, query)
-            if effective_settings.context_compression
-            else search_results
+        return await self._answer_with_sources(
+            query=query,
+            mode=mode,
+            model=model,
+            search_results=search_results,
+            case_law_results=case_law_results,
+            include_documents=include_documents,
+            include_case_law=include_case_law,
+            document_ids=document_ids,
+            user_id=user_id,
+            user_keys=user_keys,
+            effective_settings=effective_settings,
+            openai_client=openai_client,
+            anthropic_client=anthropic_client,
+            gemini_model=gemini_model,
+            start_time=start_time,
         )
-        context = build_context_with_case_law(context_results, case_law_results)
-        self._log_debug_context(context_results, case_law_results, context)
 
-        # Detect query intent
-        if mode == AnalysisMode.STRATEGY:
-            query_intent = QueryIntent.ANALYTICAL
-            logger.debug("[RAG] Strategy mode selected - using ANALYTICAL intent")
-        else:
-            query_intent = detect_query_intent(query)
-            # The query text itself is client-confidential — never logged.
-            logger.info(f"[RAG] Query intent detected: {query_intent.value}")
-
-        # Get system prompt and build user prompt. The context below carries
-        # third-party text in delimited blocks; the rule (once per prompt)
-        # tells the model those blocks are data, not instructions.
-        system_prompt = (
-            get_system_prompt(mode, query_intent=query_intent, rag_settings=effective_settings)
-            + "\n\n"
-            + UNTRUSTED_CONTENT_RULE
-        )
-        user_prompt = self._build_user_prompt(
-            query, context, query_intent, case_law_results, effective_settings
+    async def _answer_with_sources(
+        self,
+        *,
+        query: str,
+        mode: AnalysisMode,
+        model: str,
+        search_results: list[dict[str, Any]],
+        case_law_results: list[dict[str, Any]],
+        include_documents: bool,
+        include_case_law: bool,
+        document_ids: list[str] | None,
+        user_id: str,
+        user_keys: Optional["UserAPIKeys"],
+        effective_settings: RAGSettings,
+        openai_client: "AsyncOpenAI | None",
+        anthropic_client: AsyncAnthropic | None,
+        gemini_model: Any,
+        start_time: float,
+    ) -> dict[str, Any]:
+        """Generate the grounded answer from retrieved sources and assemble its citations and stats."""
+        system_prompt, user_prompt, query_intent = self._build_prompts(
+            query, mode, search_results, case_law_results, effective_settings
         )
 
         # Generate LLM response (model already resolved from user settings
         # above). The provider allowlist is enforced inside call_llm, against
         # the client that actually carries the request.
-        # Honor the user's max-tokens setting, capped by what the model/intent allows.
-        model_token_cap = get_model_max_tokens(model, query_intent)
-        if query_intent == QueryIntent.FACTUAL:
-            max_tokens = model_token_cap
-        else:
-            max_tokens = min(effective_settings.max_tokens, model_token_cap)
+        max_tokens = _resolve_max_tokens(model, query_intent, effective_settings)
 
         try:
             content = await call_llm(
@@ -596,91 +496,26 @@ class RAGService:
         except Exception as e:  # provider SDK errors share no builtin base class
             return self._llm_failure_response(e, start_time)
 
-        # Case law is never trusted from the model: redact any case reference
-        # not traceable to this request's CourtListener results or the user's
-        # own retrieved passages.
-        content, removed_refs = redact_unverified_case_law(
-            content, case_law_results, search_results
-        )
-        if removed_refs:
-            logger.warning(
-                f"[CaseLawGuard] Removed {len(removed_refs)} unverified case "
-                f"reference(s) from chat answer: {removed_refs}"
-            )
+        content = _redact_unverified_references(content, case_law_results, search_results)
 
-        # Build citations
-        cited_cases = extract_cited_cases(content, case_law_results) if case_law_results else []
-        citations = build_document_citations(search_results, query, mode)
-        # Citation verification: only keep `was_cited_by_ai` for citations whose
-        # content is actually reflected in the answer (otherwise reset to PENDING).
-        if effective_settings.citation_verification:
-            verify_document_citations(citations, content)
-        # Source tracking: record precise chunk/page/char location for each citation.
-        if effective_settings.source_tracking:
-            annotate_source_locations(citations, search_results)
-
-        # Claim-level grounding: the answer's OWN claims become the document
-        # citations — each with exact contract language verified verbatim and
-        # pinned to a char span in its source file. Replaces chunk-provenance
-        # citations whenever it succeeds; any failure keeps the chunk ones.
-        grounded = None
-        if include_documents and search_results:
-            try:
-                grounded = await ground_answer_claims(
-                    query=query,
-                    answer=content,
-                    search_results=search_results,
-                    user_id=user_id,
-                    user_keys=user_keys,
-                    model=model,
-                )
-            except Exception as e:  # grounding is best-effort
-                logger.warning(f"Claim grounding failed, keeping chunk citations: {e}")
-        if grounded:
-            citations = grounded
-
-        case_law_citations = build_case_law_citations(
-            case_law_results, cited_cases, len(search_results), query
-        )
-        citations.extend(case_law_citations)
-        # Auditable per-citation reasoning (ONE utility-LLM call). Grounded
-        # claim citations already carry their own Claim→Evidence chains, so the
-        # pass then only needs to cover the case-law citations.
-        await enrich_citations_with_reasoning(
-            case_law_citations if grounded else citations,
+        citations, cited_cases = await _build_answer_citations(
+            content=content,
             query=query,
-            answer=content,
+            mode=mode,
+            search_results=search_results,
+            case_law_results=case_law_results,
+            include_documents=include_documents,
+            effective_settings=effective_settings,
+            user_id=user_id,
             user_keys=user_keys,
             model=model,
         )
 
         processing_time = time.time() - start_time
 
-        # "Docs searched" = documents in THIS query's scope — the scoped file
-        # count when a filter applies, else the user's indexed documents.
-        # (Never the vector store's chunk count: one file = many chunks, and
-        # the collection total spans every user.)
-        if not include_documents:
-            docs_searched = 0
-        elif document_ids is not None:
-            docs_searched = len(document_ids)
-        else:
-            # Lazy import: documents.py imports rag_service at module load.
-            from app.services.documents import document_service
-
-            docs_searched = 0
-            if user_id:
-                try:
-                    doc_stats = await document_service.get_stats(user_id)
-                    docs_searched = doc_stats.get("by_status", {}).get("indexed", 0)
-                except (ValueError, KeyError, RuntimeError):
-                    docs_searched = len(
-                        {
-                            (c.get("metadata") or {}).get("document_id")
-                            for c in search_results
-                            if (c.get("metadata") or {}).get("document_id")
-                        }
-                    )
+        docs_searched = await _count_docs_searched(
+            include_documents, document_ids, user_id, search_results
+        )
 
         return {
             "content": content,
@@ -694,6 +529,115 @@ class RAGService:
                 query_intent=query_intent.value,
             ),
         }
+
+    def _build_prompts(
+        self,
+        query: str,
+        mode: AnalysisMode,
+        search_results: list[dict[str, Any]],
+        case_law_results: list[dict[str, Any]],
+        effective_settings: RAGSettings,
+    ) -> tuple[str, str, QueryIntent]:
+        """Build the system and user prompts over the retrieved context; returns them with the intent."""
+        # Build context from both sources. Context compression trims each chunk to
+        # its most query-relevant sentences so more documents fit the token budget;
+        # citations below still use the full, uncompressed passages.
+        context_results = (
+            compress_context_results(search_results, query)
+            if effective_settings.context_compression
+            else search_results
+        )
+        context = build_context_with_case_law(context_results, case_law_results)
+        self._log_debug_context(context_results, case_law_results, context)
+
+        query_intent = _resolve_query_intent(mode, query)
+
+        # Get system prompt and build user prompt. The context below carries
+        # third-party text in delimited blocks; the rule (once per prompt)
+        # tells the model those blocks are data, not instructions.
+        system_prompt = (
+            get_system_prompt(mode, query_intent=query_intent, rag_settings=effective_settings)
+            + "\n\n"
+            + UNTRUSTED_CONTENT_RULE
+        )
+        user_prompt = self._build_user_prompt(
+            query, context, query_intent, case_law_results, effective_settings
+        )
+        return system_prompt, user_prompt, query_intent
+
+    def _resolve_llm_clients(
+        self, user_keys: Optional["UserAPIKeys"], model: str
+    ) -> tuple["AsyncOpenAI | None", AsyncAnthropic | None, Any]:
+        """Pick the LLM clients for this request: user keys (BYOK) first, server keys as fallback."""
+        # Get LLM clients - prefer user keys (BYOK), fall back to server keys
+        openai_client = None
+        anthropic_client = None
+        gemini_model = None
+
+        if user_keys:
+            openai_client = user_keys.get_async_openai_client()
+            anthropic_client = user_keys.get_async_anthropic_client()
+            if user_keys.google:
+                # The Gemini model the user selected, not a fixed default.
+                gemini_model = user_keys.get_google_model(
+                    model if "gemini" in model.lower() else None
+                )
+
+        if not openai_client:
+            openai_client = self.openai
+        if not anthropic_client:
+            anthropic_client = self.anthropic
+        return openai_client, anthropic_client, gemini_model
+
+    async def _explain_threshold_misses(
+        self,
+        *,
+        query: str,
+        search_results: list[dict[str, Any]],
+        case_law_results: list[dict[str, Any]],
+        include_documents: bool,
+        document_ids: list[str] | None,
+        similarity_threshold: float | None,
+        user_keys: Optional["UserAPIKeys"],
+        user_id: str,
+        matter_ids: list[str] | None,
+        start_time: float,
+    ) -> dict[str, Any] | None:
+        """Probe below the similarity floor; return an explanatory answer when matches exist there."""
+        if search_results or case_law_results or not include_documents or document_ids is not None:
+            return None
+        # Threshold transparency: if document search came back empty, probe
+        # once WITHOUT the similarity floor. If matches exist below the
+        # threshold, say so with numbers — "no relevant documents" while the
+        # threshold silently discards real matches is indistinguishable from
+        # data loss to the user.
+        effective_threshold = similarity_threshold or settings.similarity_threshold
+        try:
+            probe = await self.search(
+                query,
+                top_k=3,
+                similarity_threshold=0.001,
+                use_hybrid=False,
+                use_reranking=False,
+                user_keys=user_keys,
+                user_id=user_id,
+                matter_ids=matter_ids,
+            )
+        except SearchUnavailableError:
+            probe = []
+        if not probe:
+            return None
+        best = max(r.get("similarity", 0.0) for r in probe)
+        best_file = (probe[0].get("metadata") or {}).get("filename", "a document")
+        return _empty_response(
+            f"⚠ Your documents ARE indexed, but nothing cleared your "
+            f"similarity threshold. The closest match — in "
+            f"“{best_file}” — scored {best:.2f}, and your threshold "
+            f"of {effective_threshold:.2f} discarded it. Lower the "
+            f"Similarity Threshold in Settings → Retrieval "
+            f"(0.25 recommended) and ask again.",
+            start_time,
+        )
 
     async def _retrieve_documents(
         self,
@@ -968,3 +912,219 @@ Query: {_sanitize_prompt_input(query)}
             logger.warning(f"Vector DB unavailable, skipping vector deletion for {document_id}")
             return True
         return await self.vector_db.delete_by_document(document_id)
+
+
+def _empty_response(content: str, start_time: float) -> dict[str, Any]:
+    """An answer-shaped response with no citations and zeroed retrieval stats."""
+    return {
+        "content": content,
+        "citations": [],
+        "stats": ChatStats(
+            docs_searched=0,
+            chunks_retrieved=0,
+            processing_time=f"{time.time() - start_time:.2f}s",
+            case_law_searched=0,
+            case_law_included=0,
+        ),
+    }
+
+
+async def _search_case_law_within_budget(
+    *,
+    query: str,
+    include_case_law: bool,
+    case_law_query: str | None,
+    case_law_limit: int,
+    deep_case_law: bool,
+    openai_client: "AsyncOpenAI | None",
+    user_keys: Optional["UserAPIKeys"],
+    model: str,
+) -> list[dict[str, Any]]:
+    """Find case law for the question under a hard time budget, degrading to no results on failure."""
+    if not include_case_law:
+        return []
+    # Search CourtListener for case law. The keyword term is the distilled
+    # topic (never the raw message) and every hit is judged against the
+    # question before it can be cited. Hard time budget: full-opinion
+    # fetches are real network reads — an unlucky sequence of retries must
+    # degrade to "no case law", never stall the whole chat request.
+    case_law_results: list[dict[str, Any]] = []
+    # Research-intent chat gets the deep engine automatically: decompose
+    # the question into doctrines, read candidate opinions IN FULL, and
+    # keep only authorities whose quote verifies verbatim against the
+    # opinion text. Falls back to the fast snippet search whenever the
+    # deep pass yields nothing (no OpenAI client, timeout, all dropped)
+    # so a research question is never answered worse than before.
+    if deep_case_law and openai_client is not None:
+        try:
+            deep_results, deep_status = await asyncio.wait_for(
+                research_authorities(
+                    question=query,
+                    search_query=case_law_query,
+                    client=openai_client,
+                    limit=case_law_limit,
+                ),
+                timeout=140.0,
+            )
+            case_law_results = deep_results
+            logger.info(f"Deep case-law research status: {deep_status}")
+        except TimeoutError:
+            logger.warning(
+                "Deep case-law research exceeded its 140s budget; falling back to snippet search"
+            )
+        except Exception as e:  # deep pass must never kill chat
+            logger.warning(f"Deep case-law research failed, falling back: {e}")
+    if not case_law_results:
+        try:
+            case_law_results = await asyncio.wait_for(
+                search_case_law(
+                    case_law_query or query,
+                    limit=case_law_limit,
+                    question=query,
+                    user_keys=user_keys,
+                    model=model,
+                ),
+                timeout=60.0,
+            )
+        except TimeoutError:
+            logger.warning("Case-law search exceeded its 60s budget; answering without it")
+        except Exception as e:  # a CourtListener outage must not fail the answer
+            logger.warning(f"Case-law search failed ({type(e).__name__}); answering without it")
+    return case_law_results
+
+
+def _resolve_query_intent(mode: AnalysisMode, query: str) -> QueryIntent:
+    """Detect the query intent, forcing ANALYTICAL in strategy mode."""
+    if mode == AnalysisMode.STRATEGY:
+        query_intent = QueryIntent.ANALYTICAL
+        logger.debug("[RAG] Strategy mode selected - using ANALYTICAL intent")
+    else:
+        query_intent = detect_query_intent(query)
+        # The query text itself is client-confidential — never logged.
+        logger.info(f"[RAG] Query intent detected: {query_intent.value}")
+    return query_intent
+
+
+def _resolve_max_tokens(
+    model: str, query_intent: QueryIntent, effective_settings: RAGSettings
+) -> int:
+    """The user's max-tokens setting, capped by what the model/intent allows."""
+    # Honor the user's max-tokens setting, capped by what the model/intent allows.
+    model_token_cap = get_model_max_tokens(model, query_intent)
+    if query_intent == QueryIntent.FACTUAL:
+        return model_token_cap
+    return min(effective_settings.max_tokens, model_token_cap)
+
+
+def _redact_unverified_references(
+    content: str,
+    case_law_results: list[dict[str, Any]],
+    search_results: list[dict[str, Any]],
+) -> str:
+    """Strip case references the model produced that trace to neither retrieved source."""
+    # Case law is never trusted from the model: redact any case reference
+    # not traceable to this request's CourtListener results or the user's
+    # own retrieved passages.
+    content, removed_refs = redact_unverified_case_law(content, case_law_results, search_results)
+    if removed_refs:
+        logger.warning(
+            f"[CaseLawGuard] Removed {len(removed_refs)} unverified case "
+            f"reference(s) from chat answer: {removed_refs}"
+        )
+    return content
+
+
+async def _build_answer_citations(
+    *,
+    content: str,
+    query: str,
+    mode: AnalysisMode,
+    search_results: list[dict[str, Any]],
+    case_law_results: list[dict[str, Any]],
+    include_documents: bool,
+    effective_settings: RAGSettings,
+    user_id: str,
+    user_keys: Optional["UserAPIKeys"],
+    model: str,
+) -> tuple[list[Citation], list[dict[str, Any]]]:
+    """Build, verify and enrich the document and case-law citations for an answer."""
+    # Build citations
+    cited_cases = extract_cited_cases(content, case_law_results) if case_law_results else []
+    citations = build_document_citations(search_results, query, mode)
+    # Citation verification: only keep `was_cited_by_ai` for citations whose
+    # content is actually reflected in the answer (otherwise reset to PENDING).
+    if effective_settings.citation_verification:
+        verify_document_citations(citations, content)
+    # Source tracking: record precise chunk/page/char location for each citation.
+    if effective_settings.source_tracking:
+        annotate_source_locations(citations, search_results)
+
+    # Claim-level grounding: the answer's OWN claims become the document
+    # citations — each with exact contract language verified verbatim and
+    # pinned to a char span in its source file. Replaces chunk-provenance
+    # citations whenever it succeeds; any failure keeps the chunk ones.
+    grounded = None
+    if include_documents and search_results:
+        try:
+            grounded = await ground_answer_claims(
+                query=query,
+                answer=content,
+                search_results=search_results,
+                user_id=user_id,
+                user_keys=user_keys,
+                model=model,
+            )
+        except Exception as e:  # grounding is best-effort
+            logger.warning(f"Claim grounding failed, keeping chunk citations: {e}")
+    if grounded:
+        citations = grounded
+
+    case_law_citations = build_case_law_citations(
+        case_law_results, cited_cases, len(search_results), query
+    )
+    citations.extend(case_law_citations)
+    # Auditable per-citation reasoning (ONE utility-LLM call). Grounded
+    # claim citations already carry their own Claim→Evidence chains, so the
+    # pass then only needs to cover the case-law citations.
+    await enrich_citations_with_reasoning(
+        case_law_citations if grounded else citations,
+        query=query,
+        answer=content,
+        user_keys=user_keys,
+        model=model,
+    )
+    return citations, cited_cases
+
+
+async def _count_docs_searched(
+    include_documents: bool,
+    document_ids: list[str] | None,
+    user_id: str,
+    search_results: list[dict[str, Any]],
+) -> int:
+    """Number of documents in this query's scope, for the stats line."""
+    # "Docs searched" = documents in THIS query's scope — the scoped file
+    # count when a filter applies, else the user's indexed documents.
+    # (Never the vector store's chunk count: one file = many chunks, and
+    # the collection total spans every user.)
+    if not include_documents:
+        return 0
+    if document_ids is not None:
+        return len(document_ids)
+    # Lazy import: documents.py imports rag_service at module load.
+    from app.services.documents import document_service
+
+    docs_searched = 0
+    if user_id:
+        try:
+            doc_stats = await document_service.get_stats(user_id)
+            docs_searched = doc_stats.get("by_status", {}).get("indexed", 0)
+        except (ValueError, KeyError, RuntimeError):
+            docs_searched = len(
+                {
+                    (c.get("metadata") or {}).get("document_id")
+                    for c in search_results
+                    if (c.get("metadata") or {}).get("document_id")
+                }
+            )
+    return docs_searched

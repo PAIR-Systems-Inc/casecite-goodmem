@@ -16,7 +16,7 @@ from __future__ import annotations
 import logging
 import uuid
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import select
 
@@ -32,6 +32,14 @@ from app.services.clause_intel.deviation_detector import detect_deviations
 from app.services.clause_intel.jurisdiction_lookup import evaluate as evaluate_jurisdiction
 from app.services.clause_intel.missing_detector import detect_missing
 from app.services.embeddings import embedding_service
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from app.services.clause_intel.classifier import TagCandidate
+    from app.services.clause_intel.deviation_detector import Deviation
+    from app.services.clause_intel.jurisdiction_lookup import JurisdictionFlag
+    from app.services.clause_intel.missing_detector import MissingClauseResult
 
 logger = logging.getLogger(__name__)
 
@@ -64,15 +72,7 @@ class ClauseIntelService:
                 return await embedding_service.embed_texts(segs, user_keys=user_keys)
 
             tags = await classifier.classify(text, embed_segments_fn=embed_fn)
-
-            # Best tag per (slug, span) — drop dups
-            best: dict[tuple[str, int, int], Any] = {}
-            for t in tags:
-                key = (t.canonical_slug, t.segment.start, t.segment.end)
-                cur = best.get(key)
-                if cur is None or t.confidence > cur.confidence:
-                    best[key] = t
-            tags = list(best.values())
+            tags = _best_tag_per_span(tags)
 
             tagged_slugs = sorted({t.canonical_slug for t in tags})
 
@@ -80,41 +80,8 @@ class ClauseIntelService:
             missing = await detect_missing(contract_type, tagged_slugs, session)
 
             # 3. Deviations
-            canonical_rows = (
-                (
-                    await session.execute(
-                        select(ClauseCanonical).where(ClauseCanonical.slug.in_(tagged_slugs))
-                    )
-                )
-                .scalars()
-                .all()
-            )
-            canonical_index = {
-                c.slug: {
-                    "id": c.id,
-                    "slug": c.slug,
-                    "name": c.name,
-                    "sub_elements": c.sub_elements or [],
-                    "market_standard_text": c.market_standard_text,
-                }
-                for c in canonical_rows
-            }
-
-            deviations: list[Any] = []
-            for tag in tags:
-                canonical = canonical_index.get(tag.canonical_slug)
-                if canonical is None:
-                    continue
-                deviations.extend(
-                    detect_deviations(
-                        canonical=canonical,
-                        matched_text=tag.segment.text,
-                        detected_sub_elements=tag.detected_sub_elements,
-                        span_start=tag.segment.start,
-                        span_end=tag.segment.end,
-                        classifier_confidence=tag.confidence,
-                    )
-                )
+            canonical_index = await _load_canonical_index(session, tagged_slugs)
+            deviations = _detect_tag_deviations(tags, canonical_index)
 
             # 4. Jurisdiction enforceability flags
             jurisdiction_flags = await evaluate_jurisdiction(
@@ -123,56 +90,18 @@ class ClauseIntelService:
 
             # 5. Persist
             if persist:
-                run = ContractAnalysisRun(
-                    id=analysis_id,
+                await _persist_run(
+                    session,
+                    analysis_id,
+                    text=text,
+                    contract_type=contract_type,
+                    jurisdiction=jurisdiction,
                     user_id=user_id,
                     document_id=document_id,
-                    contract_type=contract_type,
-                    jurisdiction=(jurisdiction or "").upper() or None,
-                    document_length_chars=len(text),
-                    tags_found=len(tags),
-                    deviations_found=len(deviations),
-                    missing_required=len(missing.missing_required),
-                    summary={
-                        "coverage_required_pct": missing.coverage_required_pct,
-                        "coverage_recommended_pct": missing.coverage_recommended_pct,
-                    },
-                    is_complete=True,
-                    completed_at=datetime.utcnow(),
+                    tags=tags,
+                    deviations=deviations,
+                    missing=missing,
                 )
-                session.add(run)
-
-                for tag in tags:
-                    session.add(
-                        ClauseTagFinding(
-                            analysis_id=analysis_id,
-                            canonical_id=tag.canonical_id,
-                            canonical_slug=tag.canonical_slug,
-                            span_start=tag.segment.start,
-                            span_end=tag.segment.end,
-                            matched_text=tag.segment.text[:4000],
-                            method=tag.method,
-                            confidence=tag.confidence,
-                            detected_sub_elements=tag.detected_sub_elements,
-                        )
-                    )
-                for d in deviations:
-                    session.add(
-                        ClauseDeviationFinding(
-                            analysis_id=analysis_id,
-                            canonical_id=d.canonical_id,
-                            canonical_slug=d.canonical_slug,
-                            span_start=d.span_start,
-                            span_end=d.span_end,
-                            matched_text=d.matched_text,
-                            deviation_type=d.deviation_type,
-                            sub_element=d.sub_element,
-                            severity=d.severity,
-                            detail=d.detail,
-                            classifier_confidence=d.classifier_confidence,
-                        )
-                    )
-                await session.commit()
 
         # Compose response
         severity_counts: dict[str, int] = {}
@@ -184,18 +113,7 @@ class ClauseIntelService:
             "contract_type": contract_type,
             "jurisdiction": jurisdiction,
             "document_length_chars": len(text),
-            "tags": [
-                {
-                    "canonical_slug": t.canonical_slug,
-                    "span_start": t.segment.start,
-                    "span_end": t.segment.end,
-                    "matched_text": t.segment.text[:600],
-                    "method": t.method,
-                    "confidence": t.confidence,
-                    "detected_sub_elements": t.detected_sub_elements,
-                }
-                for t in tags
-            ],
+            "tags": _serialize_tags(tags),
             "missing": {
                 "missing_required": missing.missing_required,
                 "missing_recommended": missing.missing_recommended,
@@ -203,34 +121,8 @@ class ClauseIntelService:
                 "coverage_recommended_pct": missing.coverage_recommended_pct,
                 "confidence": missing.confidence,
             },
-            "deviations": [
-                {
-                    "canonical_slug": d.canonical_slug,
-                    "deviation_type": d.deviation_type,
-                    "sub_element": d.sub_element,
-                    "severity": d.severity,
-                    "span_start": d.span_start,
-                    "span_end": d.span_end,
-                    "matched_text": d.matched_text,
-                    "detail": d.detail,
-                    "classifier_confidence": d.classifier_confidence,
-                }
-                for d in deviations
-            ],
-            "jurisdiction_flags": [
-                {
-                    "canonical_slug": f.canonical_slug,
-                    "jurisdiction": f.jurisdiction,
-                    "enforceability": f.enforceability,
-                    "severity": f.severity,
-                    "note": f.note,
-                    "constraints": f.constraints,
-                    "authorities": f.authorities,
-                    "recommended_text": f.recommended_text,
-                    "as_of": f.as_of,
-                }
-                for f in jurisdiction_flags
-            ],
+            "deviations": _serialize_deviations(deviations),
+            "jurisdiction_flags": _serialize_jurisdiction_flags(jurisdiction_flags),
             "summary": {
                 "tags_found": len(tags),
                 "deviations_found": len(deviations),
@@ -290,6 +182,183 @@ class ClauseIntelService:
         except Exception as e:
             logger.warning(f"explain_deviation failed: {e}")
             return ""
+
+
+def _best_tag_per_span(tags: list[TagCandidate]) -> list[TagCandidate]:
+    """Keep the highest-confidence tag for each (slug, span); drops duplicates."""
+    # Best tag per (slug, span) — drop dups
+    best: dict[tuple[str, int, int], Any] = {}
+    for t in tags:
+        key = (t.canonical_slug, t.segment.start, t.segment.end)
+        cur = best.get(key)
+        if cur is None or t.confidence > cur.confidence:
+            best[key] = t
+    return list(best.values())
+
+
+async def _load_canonical_index(
+    session: AsyncSession, tagged_slugs: list[str]
+) -> dict[str, dict[str, Any]]:
+    """Canonical clause definitions for the tagged slugs, keyed by slug."""
+    canonical_rows = (
+        (
+            await session.execute(
+                select(ClauseCanonical).where(ClauseCanonical.slug.in_(tagged_slugs))
+            )
+        )
+        .scalars()
+        .all()
+    )
+    return {
+        c.slug: {
+            "id": c.id,
+            "slug": c.slug,
+            "name": c.name,
+            "sub_elements": c.sub_elements or [],
+            "market_standard_text": c.market_standard_text,
+        }
+        for c in canonical_rows
+    }
+
+
+def _detect_tag_deviations(
+    tags: list[TagCandidate], canonical_index: dict[str, dict[str, Any]]
+) -> list[Deviation]:
+    """Run the deviation detector over every tag that has a canonical definition."""
+    deviations: list[Deviation] = []
+    for tag in tags:
+        canonical = canonical_index.get(tag.canonical_slug)
+        if canonical is None:
+            continue
+        deviations.extend(
+            detect_deviations(
+                canonical=canonical,
+                matched_text=tag.segment.text,
+                detected_sub_elements=tag.detected_sub_elements,
+                span_start=tag.segment.start,
+                span_end=tag.segment.end,
+                classifier_confidence=tag.confidence,
+            )
+        )
+    return deviations
+
+
+async def _persist_run(
+    session: AsyncSession,
+    analysis_id: str,
+    *,
+    text: str,
+    contract_type: str,
+    jurisdiction: str | None,
+    user_id: str | None,
+    document_id: str | None,
+    tags: list[TagCandidate],
+    deviations: list[Deviation],
+    missing: MissingClauseResult,
+) -> None:
+    """Store the analysis run with its tag and deviation findings and commit."""
+    run = ContractAnalysisRun(
+        id=analysis_id,
+        user_id=user_id,
+        document_id=document_id,
+        contract_type=contract_type,
+        jurisdiction=(jurisdiction or "").upper() or None,
+        document_length_chars=len(text),
+        tags_found=len(tags),
+        deviations_found=len(deviations),
+        missing_required=len(missing.missing_required),
+        summary={
+            "coverage_required_pct": missing.coverage_required_pct,
+            "coverage_recommended_pct": missing.coverage_recommended_pct,
+        },
+        is_complete=True,
+        completed_at=datetime.utcnow(),
+    )
+    session.add(run)
+
+    for tag in tags:
+        session.add(
+            ClauseTagFinding(
+                analysis_id=analysis_id,
+                canonical_id=tag.canonical_id,
+                canonical_slug=tag.canonical_slug,
+                span_start=tag.segment.start,
+                span_end=tag.segment.end,
+                matched_text=tag.segment.text[:4000],
+                method=tag.method,
+                confidence=tag.confidence,
+                detected_sub_elements=tag.detected_sub_elements,
+            )
+        )
+    for d in deviations:
+        session.add(
+            ClauseDeviationFinding(
+                analysis_id=analysis_id,
+                canonical_id=d.canonical_id,
+                canonical_slug=d.canonical_slug,
+                span_start=d.span_start,
+                span_end=d.span_end,
+                matched_text=d.matched_text,
+                deviation_type=d.deviation_type,
+                sub_element=d.sub_element,
+                severity=d.severity,
+                detail=d.detail,
+                classifier_confidence=d.classifier_confidence,
+            )
+        )
+    await session.commit()
+
+
+def _serialize_tags(tags: list[TagCandidate]) -> list[dict[str, Any]]:
+    """Clause tags as response dicts (matched text trimmed to 600 chars)."""
+    return [
+        {
+            "canonical_slug": t.canonical_slug,
+            "span_start": t.segment.start,
+            "span_end": t.segment.end,
+            "matched_text": t.segment.text[:600],
+            "method": t.method,
+            "confidence": t.confidence,
+            "detected_sub_elements": t.detected_sub_elements,
+        }
+        for t in tags
+    ]
+
+
+def _serialize_deviations(deviations: list[Deviation]) -> list[dict[str, Any]]:
+    """Deviation findings as response dicts."""
+    return [
+        {
+            "canonical_slug": d.canonical_slug,
+            "deviation_type": d.deviation_type,
+            "sub_element": d.sub_element,
+            "severity": d.severity,
+            "span_start": d.span_start,
+            "span_end": d.span_end,
+            "matched_text": d.matched_text,
+            "detail": d.detail,
+            "classifier_confidence": d.classifier_confidence,
+        }
+        for d in deviations
+    ]
+
+
+def _serialize_jurisdiction_flags(flags: list[JurisdictionFlag]) -> list[dict[str, Any]]:
+    """Jurisdiction enforceability flags as response dicts."""
+    return [
+        {
+            "canonical_slug": f.canonical_slug,
+            "jurisdiction": f.jurisdiction,
+            "enforceability": f.enforceability,
+            "severity": f.severity,
+            "note": f.note,
+            "constraints": f.constraints,
+            "authorities": f.authorities,
+            "recommended_text": f.recommended_text,
+            "as_of": f.as_of,
+        }
+        for f in flags
+    ]
 
 
 clause_intel_service = ClauseIntelService()

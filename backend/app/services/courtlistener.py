@@ -155,6 +155,16 @@ def _normalize_citation(cite: str) -> str:
     return re.sub(r"[\s.]", "", cite).lower()
 
 
+def _last_cited(citing_opinions: list[CitingOpinion]) -> date | None:
+    """The most recent filing date among the citing opinions, if any carry one."""
+    last_cited = None
+    if citing_opinions:
+        dates = [c.date_filed for c in citing_opinions if c.date_filed]
+        if dates:
+            last_cited = max(dates)
+    return last_cited
+
+
 class CourtListenerService(CourtListenerClientBase):
     """
     Integration with CourtListener API for legal research.
@@ -546,8 +556,88 @@ class CourtListenerService(CourtListenerClientBase):
         absolute_url = None
         found_citations: list[str] = []
         opinion_ids: list[int] = []
-        nearest: str | None = None
 
+        first_result, nearest = await self._search_cited_case(citation)
+        if first_result is not None:
+            opinion_ids = [
+                o["id"]
+                for o in first_result.get("opinions") or []
+                if isinstance(o, dict) and o.get("id")
+            ]
+            cluster_id = first_result.get("cluster_id") or first_result.get("id")
+            case_name = first_result.get("caseName", "Unknown")
+            case_name_short = first_result.get("caseNameShort") or None
+            total_citations = first_result.get("citeCount", 0)
+            found_citations = first_result.get("citation") or []
+            rel_url = first_result.get("absolute_url", "")
+            if rel_url:
+                absolute_url = f"https://www.courtlistener.com{rel_url}"
+
+        if not cluster_id:
+            return self._not_found_validation(citation, nearest)
+
+        # The citation string that citing opinions are most likely to use.
+        cite_term = (
+            citation
+            if self._looks_like_citation(citation)
+            else (found_citations[0] if found_citations else None)
+        )
+        name_term = case_name_short or (case_name if " v. " in case_name else None)
+        try:
+            citing_opinions = await self._citing_opinions_recent_and_most_cited(
+                cluster_id, cite_term, name_term, opinion_ids
+            )
+        except CitingLookupError as e:
+            logger.warning(f"citation check could not run for cluster {cluster_id}: {e}")
+            return self._lookup_failed_validation(
+                citation,
+                cluster_id=cluster_id,
+                case_name=case_name,
+                absolute_url=absolute_url,
+                total_citations=total_citations,
+            )
+
+        negative = [c for c in citing_opinions if c.treatment == CitationTreatment.NEGATIVE]
+        caution = [c for c in citing_opinions if c.treatment == CitationTreatment.CAUTION]
+        positive = [c for c in citing_opinions if c.treatment == CitationTreatment.POSITIVE]
+        neutral = [c for c in citing_opinions if c.treatment == CitationTreatment.NEUTRAL]
+        with_context = sum(1 for c in citing_opinions if c.context_found)
+
+        warning_level, is_good_law = self._treatment_verdict(
+            negative=len(negative), caution=len(caution), read=with_context
+        )
+
+        notes = self._treatment_notes(
+            total_citations=total_citations,
+            citing_opinions=citing_opinions,
+            negative=negative,
+            caution=caution,
+            positive=positive,
+            with_context=with_context,
+        )
+
+        return CitationValidation(
+            case_id=cluster_id,
+            case_name=case_name,
+            citation=citation,
+            absolute_url=absolute_url,
+            is_good_law=is_good_law,
+            warning_level=warning_level,
+            negative_citations=negative[:25],
+            caution_citations=caution[:25],
+            positive_citations=positive[:25],
+            neutral_count=len(neutral),
+            total_citing_cases=total_citations or len(citing_opinions),
+            citing_cases_analyzed=len(citing_opinions),
+            last_cited=_last_cited(citing_opinions),
+            notes=notes,
+            analysis_basis="language_near_citation" if with_context else "opening_text_only",
+        )
+
+    async def _search_cited_case(self, citation: str) -> tuple[dict | None, str | None]:
+        """Search CourtListener for the cited case; returns (matching result, nearest miss name)."""
+        nearest: str | None = None
+        first_result = None
         async with cl_client(timeout=180.0) as client:
             # Search for the citation
             search_query = (
@@ -567,84 +657,70 @@ class CourtListenerService(CourtListenerClientBase):
                 first_result = next((r for r in results if self._result_matches(citation, r)), None)
                 if results and first_result is None:
                     nearest = results[0].get("caseName")
-                if first_result is not None:
-                    opinion_ids = [
-                        o["id"]
-                        for o in first_result.get("opinions") or []
-                        if isinstance(o, dict) and o.get("id")
-                    ]
-                    cluster_id = first_result.get("cluster_id") or first_result.get("id")
-                    case_name = first_result.get("caseName", "Unknown")
-                    case_name_short = first_result.get("caseNameShort") or None
-                    total_citations = first_result.get("citeCount", 0)
-                    found_citations = first_result.get("citation") or []
-                    rel_url = first_result.get("absolute_url", "")
-                    if rel_url:
-                        absolute_url = f"https://www.courtlistener.com{rel_url}"
             else:
                 response.raise_for_status()
+        return first_result, nearest
 
-        if not cluster_id:
+    def _not_found_validation(self, citation: str, nearest: str | None) -> CitationValidation:
+        """The undetermined result for a citation CourtListener could not match."""
+        not_found = (
+            "Citation not found in CourtListener database. Try a different format "
+            "(e.g., '410 U.S. 113' or 'Roe v. Wade')."
+        )
+        if nearest:
             not_found = (
-                "Citation not found in CourtListener database. Try a different format "
-                "(e.g., '410 U.S. 113' or 'Roe v. Wade')."
+                "No case in CourtListener matched this citation exactly, so nothing was "
+                f'checked. The closest search result was "{nearest}" — if that is the '
+                "case you meant, search by its reporter citation (e.g., '410 U.S. 113')."
             )
-            if nearest:
-                not_found = (
-                    "No case in CourtListener matched this citation exactly, so nothing was "
-                    f'checked. The closest search result was "{nearest}" — if that is the '
-                    "case you meant, search by its reporter citation (e.g., '410 U.S. 113')."
-                )
-            return CitationValidation(
-                case_id=0,
-                case_name="Not Found",
-                citation=citation,
-                is_good_law=None,
-                warning_level="unknown",
-                notes=[not_found, self._NOT_A_CITATOR],
-                analysis_basis="not_found",
-            )
-
-        # The citation string that citing opinions are most likely to use.
-        cite_term = (
-            citation
-            if self._looks_like_citation(citation)
-            else (found_citations[0] if found_citations else None)
-        )
-        name_term = case_name_short or (case_name if " v. " in case_name else None)
-        try:
-            citing_opinions = await self._citing_opinions_recent_and_most_cited(
-                cluster_id, cite_term, name_term, opinion_ids
-            )
-        except CitingLookupError as e:
-            logger.warning(f"citation check could not run for cluster {cluster_id}: {e}")
-            return CitationValidation(
-                case_id=cluster_id,
-                case_name=case_name,
-                citation=citation,
-                absolute_url=absolute_url,
-                is_good_law=None,
-                warning_level="unknown",
-                total_citing_cases=total_citations,
-                notes=[
-                    self._NOT_A_CITATOR,
-                    "Could not verify: the opinions citing this case could not be looked up "
-                    "in CourtListener, so nothing was scanned. This is not a clean result — "
-                    "try again, or check the case in a citator.",
-                ],
-                analysis_basis="citing_lookup_failed",
-            )
-
-        negative = [c for c in citing_opinions if c.treatment == CitationTreatment.NEGATIVE]
-        caution = [c for c in citing_opinions if c.treatment == CitationTreatment.CAUTION]
-        positive = [c for c in citing_opinions if c.treatment == CitationTreatment.POSITIVE]
-        neutral = [c for c in citing_opinions if c.treatment == CitationTreatment.NEUTRAL]
-        with_context = sum(1 for c in citing_opinions if c.context_found)
-
-        warning_level, is_good_law = self._treatment_verdict(
-            negative=len(negative), caution=len(caution), read=with_context
+        return CitationValidation(
+            case_id=0,
+            case_name="Not Found",
+            citation=citation,
+            is_good_law=None,
+            warning_level="unknown",
+            notes=[not_found, self._NOT_A_CITATOR],
+            analysis_basis="not_found",
         )
 
+    def _lookup_failed_validation(
+        self,
+        citation: str,
+        *,
+        cluster_id: int,
+        case_name: str,
+        absolute_url: str | None,
+        total_citations: int,
+    ) -> CitationValidation:
+        """The undetermined result when the citing opinions could not be looked up."""
+        return CitationValidation(
+            case_id=cluster_id,
+            case_name=case_name,
+            citation=citation,
+            absolute_url=absolute_url,
+            is_good_law=None,
+            warning_level="unknown",
+            total_citing_cases=total_citations,
+            notes=[
+                self._NOT_A_CITATOR,
+                "Could not verify: the opinions citing this case could not be looked up "
+                "in CourtListener, so nothing was scanned. This is not a clean result — "
+                "try again, or check the case in a citator.",
+            ],
+            analysis_basis="citing_lookup_failed",
+        )
+
+    def _treatment_notes(
+        self,
+        *,
+        total_citations: int,
+        citing_opinions: list[CitingOpinion],
+        negative: list[CitingOpinion],
+        caution: list[CitingOpinion],
+        positive: list[CitingOpinion],
+        with_context: int,
+    ) -> list[str]:
+        """Human-readable notes describing what was scanned and what language was found."""
         # Build notes — the method caveat first, because it frames everything else.
         notes = [self._NOT_A_CITATOR]
         if total_citations > 0:
@@ -678,30 +754,7 @@ class CourtListenerService(CourtListenerClientBase):
                 "None of the retrieved opinions could be read at the citation, so no treatment "
                 "signal is available — this is not a clean result."
             )
-
-        last_cited = None
-        if citing_opinions:
-            dates = [c.date_filed for c in citing_opinions if c.date_filed]
-            if dates:
-                last_cited = max(dates)
-
-        return CitationValidation(
-            case_id=cluster_id,
-            case_name=case_name,
-            citation=citation,
-            absolute_url=absolute_url,
-            is_good_law=is_good_law,
-            warning_level=warning_level,
-            negative_citations=negative[:25],
-            caution_citations=caution[:25],
-            positive_citations=positive[:25],
-            neutral_count=len(neutral),
-            total_citing_cases=total_citations or len(citing_opinions),
-            citing_cases_analyzed=len(citing_opinions),
-            last_cited=last_cited,
-            notes=notes,
-            analysis_basis="language_near_citation" if with_context else "opening_text_only",
-        )
+        return notes
 
     @staticmethod
     def _treatment_verdict(*, negative: int, caution: int, read: int) -> tuple[str, bool | None]:
