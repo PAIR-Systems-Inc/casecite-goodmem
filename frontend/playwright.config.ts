@@ -1,5 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// CI uses the Vite default port. Locally, set PLAYWRIGHT_PORT when 3000 is
+// taken (the dev server and the tests both follow it).
+const PORT = process.env.PLAYWRIGHT_PORT || '3000';
+const BASE_URL = `http://localhost:${PORT}`;
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -9,7 +14,7 @@ export default defineConfig({
   reporter: 'html',
 
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: BASE_URL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -26,8 +31,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
+    command: `npm run dev -- --port ${PORT} --strictPort`,
+    url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
