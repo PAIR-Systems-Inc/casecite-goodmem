@@ -9,6 +9,8 @@ import { conversationTitle, downloadConversation } from '../utils/conversationEx
 import type { ConversationExportFormat } from '../api/types';
 import type { CaseInfo, CaseMessage, DocumentFilter } from '../types';
 
+export type CaseIdKind = 'cluster' | 'opinion';
+
 export interface CaseViewState {
   mainViewCase: CaseInfo | null;
   caseLoading: boolean;
@@ -23,8 +25,10 @@ export interface CaseViewState {
   setCaseDocFilter: (val: DocumentFilter | null) => void;
   showCaseDocSelector: boolean;
   setShowCaseDocSelector: (val: boolean) => void;
-  loadCaseDetail: (opinionId: string | number) => Promise<void>;
-  initCaseFromRoute: (opinionId: string) => Promise<void>;
+  /** `kind` says what the id is: 'cluster' (a search result) or 'opinion'
+      (a citation's opinion_id). Omitted, the server guesses cluster first. */
+  loadCaseDetail: (opinionId: string | number, kind?: CaseIdKind) => Promise<void>;
+  initCaseFromRoute: (opinionId: string, kind?: CaseIdKind) => Promise<void>;
   queryCaseContext: () => Promise<void>;
   clearCaseConversation: () => void;
   exportingCaseConversation: boolean;
@@ -49,14 +53,15 @@ export const useCaseViewStore = create<CaseViewState>((set, get) => ({
   showCaseDocSelector: false,
   setShowCaseDocSelector: (val) => set({ showCaseDocSelector: val }),
 
-  loadCaseDetail: async (opinionId) => {
-    appNavigate(`/case/${opinionId}`);
-    await get().initCaseFromRoute(String(opinionId));
+  loadCaseDetail: async (opinionId, kind) => {
+    // The kind rides on the route so a refresh re-resolves the id the same way.
+    appNavigate(`/case/${opinionId}${kind ? `?kind=${kind}` : ''}`);
+    await get().initCaseFromRoute(String(opinionId), kind);
   },
 
   // Route-driven load: lets /case/:id fetch itself on refresh or direct
   // navigation, where nothing has called loadCaseDetail.
-  initCaseFromRoute: async (opinionId) => {
+  initCaseFromRoute: async (opinionId, kind) => {
     const { caseLoading, mainViewCase } = get();
     if (caseLoading) return;
     if (mainViewCase && !mainViewCase.error && String(mainViewCase.id) === opinionId) return;
@@ -64,7 +69,7 @@ export const useCaseViewStore = create<CaseViewState>((set, get) => ({
     resetWorkspaceSessionKey('case');
     set({ caseLoading: true, mainViewCase: null, caseMessages: [] });
     try {
-      const response = await api.authFetch(`${API_BASE_URL}/tools/cases/${opinionId}`);
+      const response = await api.authFetch(`${API_BASE_URL}/tools/cases/${opinionId}${kind ? `?kind=${kind}` : ''}`);
       if (!response.ok) throw new Error('Failed to load case');
       const data = await response.json();
       // Stamp the route id so the same-case guard above holds even if the

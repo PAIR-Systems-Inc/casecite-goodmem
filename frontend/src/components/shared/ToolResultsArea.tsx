@@ -127,7 +127,7 @@ interface ToolResultsAreaProps {
   loadDocketDetail: (id: number) => void;
   setSelectedDocket: (d: DocketDetail | null) => void;
   loadPrecedentCase: (id: number | string) => void;
-  loadCaseDetail: (id: string) => void;
+  loadCaseDetail: (id: string, kind?: 'cluster' | 'opinion') => void;
   setSelectedCase: (c: CaseInfo | null) => void;
   setSelectedJudge: (j: string | null) => void;
   loadMoreResults: () => void;

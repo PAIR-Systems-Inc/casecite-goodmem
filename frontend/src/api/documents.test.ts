@@ -81,4 +81,24 @@ describe('api/documents', () => {
     await (api as any).deleteDocument('doc1');
     expect(api.request).toHaveBeenCalledWith('/documents/doc1', { method: 'DELETE' });
   });
+
+  it('getAllDocuments walks every page by total, 200 at a time', async () => {
+    (api.request as any)
+      .mockResolvedValueOnce({ documents: [{ id: 'a' }, { id: 'b' }], count: 2, total: 3 })
+      .mockResolvedValueOnce({ documents: [{ id: 'c' }], count: 1, total: 3 });
+    const docs = await (api as any).getAllDocuments();
+    expect(docs.map((d: { id: string }) => d.id)).toEqual(['a', 'b', 'c']);
+    expect(api.request).toHaveBeenNthCalledWith(1, '/documents?limit=200&offset=0');
+    expect(api.request).toHaveBeenNthCalledWith(2, '/documents?limit=200&offset=2');
+    expect(api.request).toHaveBeenCalledTimes(2);
+  });
+
+  it('getAllDocuments stops on an empty page and tolerates a missing total', async () => {
+    (api.request as any)
+      .mockResolvedValueOnce({ documents: [{ id: 'a' }] })
+      .mockResolvedValueOnce({ documents: [] });
+    const docs = await (api as any).getAllDocuments();
+    expect(docs).toEqual([{ id: 'a' }]);
+    expect(api.request).toHaveBeenCalledTimes(1);
+  });
 });

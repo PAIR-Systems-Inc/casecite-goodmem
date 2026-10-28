@@ -35,7 +35,9 @@ export function OpinionAnchorView({ opinionId, passage, onOpenFull }: OpinionAnc
     setLoading(true);
     setError(null);
     setText(null);
-    api.getCaseOpinion(opinionId)
+    // A citation's id is an opinion id — say so, or the server resolves it as
+    // a cluster first and can land on a different case.
+    api.getCaseOpinion(opinionId, 'opinion')
       .then((data) => {
         if (cancelled) return;
         const body = (data.opinion_text || data.syllabus || '') as string;

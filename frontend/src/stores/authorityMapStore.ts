@@ -7,6 +7,7 @@ import { extractTextFromFile } from '../utils/extractText';
 import { buildDocAnnotations, mappingToCitation, pushCitations } from '../utils';
 import { useUIStore } from './uiStore';
 import { createJobPoller, toast } from './storeUtils';
+import { appNavigate } from '../utils/router';
 import logger from '../utils/logger';
 
 type Status = 'idle' | 'running' | 'done' | 'error';
@@ -32,6 +33,8 @@ export interface AuthorityMapState {
   loadIndexedDocument: (docId: string, meta: { name?: string; filename?: string }) => Promise<void>;
   clearDocument: () => void;
   run: () => Promise<void>;
+  /** Open a stored run (e.g. one a chat message launched) in Case Citations. */
+  openRun: (runId: string, meta?: { documentId?: string | null; documentName?: string | null }) => Promise<void>;
   /** Ask, then delete the stored run behind the current result from the server. */
   deleteResult: () => void;
 }
@@ -190,6 +193,34 @@ export const useAuthorityMapStore = create<AuthorityMapState>((set, get) => ({
     } catch (e) {
       logger.error('authority map submit failed', e);
       set({ status: 'error', error: e instanceof Error ? e.message : 'Failed to start mapping.' });
+    }
+  },
+
+  openRun: async (runId, meta = {}) => {
+    jobPoller.stop();
+    appNavigate('/case-citations');
+    // The map's quotes anchor into the filing, so show it when it is still
+    // in the Knowledge Base; the run itself loads either way.
+    if (meta.documentId) {
+      await get().loadIndexedDocument(meta.documentId, { name: meta.documentName || undefined });
+    }
+    set({ status: 'idle', error: null, result: null, annotations: [] });
+    try {
+      const result = await api.getAuthorityMapRun(runId);
+      set({
+        status: 'done',
+        result,
+        docName: get().docName || result.document_name || meta.documentName || '',
+        annotations: buildDocAnnotations(result.mappings ?? []),
+      });
+      if (result.mappings?.length) {
+        const ordered = [...result.mappings].sort((a, b) => Number(b.verified) - Number(a.verified));
+        pushCitations(ordered.map((m, i) => mappingToCitation(m, i)));
+        useUIStore.getState().setRightPanelTab('sources');
+      }
+    } catch (e) {
+      logger.error('authority map load failed', e);
+      set({ status: 'error', error: e instanceof Error ? e.message : 'Could not load the citation map.' });
     }
   },
 

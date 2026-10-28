@@ -150,7 +150,10 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
     markSaved('courtlistener', 'saving');
     clTimer.current = setTimeout(async () => {
       try {
-        setClStatus(await api.setCourtListenerToken(value.trim()));
+        // The save response is the status: a successful save means configured,
+        // whatever the previous (or a stale) status said.
+        const saved = await api.setCourtListenerToken(value.trim());
+        setClStatus((prev) => ({ ...prev, ...saved, configured: saved.configured ?? true }));
         setClToken('');
         markSaved('courtlistener', 'saved');
       } catch (e) {
@@ -167,9 +170,12 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
       confirmText: 'Clear',
       onConfirm: async () => {
         try {
-          await api.clearCourtListenerToken();
+          const cleared = await api.clearCourtListenerToken();
           setClToken('');
-          await loadIntegrations();
+          // The response carries the effective (post-clear) status — e.g. an
+          // .env fallback still counts as configured.
+          if (typeof cleared?.configured === 'boolean') setClStatus((prev) => ({ ...prev, ...cleared }));
+          else await loadIntegrations();
           addToast('CourtListener token cleared', 'success');
         } catch (e) {
           addToast(e instanceof Error ? e.message : 'Failed to clear token', 'error');
@@ -209,10 +215,18 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
     markSaved('local', 'saving');
     llmTimer.current = setTimeout(async () => {
       try {
-        setLlmStatus(await api.setLocalLlm({
+        const saved = await api.setLocalLlm({
           baseUrl: next.baseUrl.trim(),
           chatModel: next.chatModel.trim(),
           utilityModel: next.utilityModel.trim() || null,
+        });
+        setLlmStatus((prev) => ({
+          ...prev,
+          ...saved,
+          configured: saved.configured ?? true,
+          base_url: saved.base_url ?? next.baseUrl.trim(),
+          chat_model: saved.chat_model ?? next.chatModel.trim(),
+          utility_model: saved.utility_model ?? (next.utilityModel.trim() || null),
         }));
         markSaved('local', 'saved');
       } catch (e) {
@@ -229,8 +243,15 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
       confirmText: 'Revert',
       onConfirm: async () => {
         try {
-          await api.clearLocalLlm();
-          await loadIntegrations();
+          const cleared = await api.clearLocalLlm();
+          if (typeof cleared?.configured === 'boolean') {
+            setLlmStatus((prev) => ({ ...prev, ...cleared }));
+            setBaseUrl(cleared.base_url || '');
+            setChatModel(cleared.chat_model || '');
+            setUtilityModel(cleared.utility_model || '');
+          } else {
+            await loadIntegrations();
+          }
           addToast('Reverted to default models', 'success');
         } catch (e) {
           addToast(e instanceof Error ? e.message : 'Failed to revert', 'error');

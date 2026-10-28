@@ -18,7 +18,7 @@ export { AiNotice } from './shared/AiNotice';
 export { CaseLawRemovedNotice } from './shared/CaseLawRemovedNotice';
 export { ContractFilePicker } from './shared/ContractFilePicker';
 export { FloatingChatDock } from './shared/FloatingChatDock';
-export { AuthorityMapCard } from './shared/AuthorityMapCard';
+export { AuthorityMapCard, AuthorityMapRecordCard } from './shared/AuthorityMapCard';
 export { AssistantAvatar } from './shared/AssistantAvatar';
 export { MessageMarkdown } from './shared/MessageMarkdown';
 export { MatterFileWorkspace } from './shared/MatterFileWorkspace';

@@ -16,6 +16,25 @@ Object.assign(api, {
     return api.request(`/documents?limit=${limit}&offset=${offset}`);
   },
 
+  // The list endpoint pages (50 by default), so every "show the whole
+  // Knowledge Base" caller walks the pages by `total` — otherwise the UI
+  // silently showed only the newest page.
+  async getAllDocuments(): Promise<DocumentListResponse['documents']> {
+    const pageSize = 200;
+    const documents: DocumentListResponse['documents'] = [];
+    let offset = 0;
+    let total = Infinity;
+    while (offset < total) {
+      const page = await api.getDocuments(pageSize, offset);
+      const docs = page.documents || [];
+      documents.push(...docs);
+      total = typeof page.total === 'number' ? page.total : documents.length;
+      if (docs.length === 0) break;
+      offset += docs.length;
+    }
+    return documents;
+  },
+
   async getDocumentTree(): Promise<DocumentTree> {
     return api.request('/documents/tree');
   },

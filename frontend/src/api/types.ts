@@ -1071,6 +1071,8 @@ export interface ApiClient {
   /** `metadata` is ignored — the server derives filename and type from the upload. */
   uploadDocument(file: File, metadata?: Record<string, string>): Promise<DocumentInfo>;
   getDocuments(limit?: number, offset?: number): Promise<DocumentListResponse>;
+  /** Every document across all pages (walks `total` in pages of 200). */
+  getAllDocuments(): Promise<DocumentListResponse['documents']>;
   getDocumentTree(): Promise<DocumentTree>;
   getDocumentContent(documentId: string): Promise<DocumentContent>;
   deleteDocument(documentId: string): Promise<MessageResponse>;
@@ -1103,6 +1105,8 @@ export interface ApiClient {
   /** GET /tools/cases/{id}?kind= — pass 'opinion' for a citation's opinion_id,
       'cluster' for a search result id; omitted = cluster first, then opinion. */
   getCaseOpinion(opinionId: string, kind?: 'opinion' | 'cluster'): Promise<CaseDetail>;
+  /** GET /authority-map/{run_id} — a stored run with all of its mappings. */
+  getAuthorityMapRun(runId: string): Promise<AuthorityMapResult>;
   /** Delete a stored authority-map run and its mappings (owner only). */
   deleteAuthorityMap(runId: string): Promise<{ status: string; id: string }>;
 

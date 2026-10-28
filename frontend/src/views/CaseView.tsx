@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useCaseViewStore } from '../stores/caseViewStore';
 import type { CaseMessage } from '../types';
 import s from './CaseView.module.css';
@@ -42,9 +42,13 @@ function CaseView() {
   // On refresh or direct navigation nothing has loaded this case yet — the
   // route id is the source of truth, so let the store init from it.
   const { id: routeCaseId } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const routeKind = searchParams.get('kind');
   useEffect(() => {
-    if (routeCaseId) initCaseFromRoute(routeCaseId);
-  }, [routeCaseId, initCaseFromRoute]);
+    if (routeCaseId) {
+      initCaseFromRoute(routeCaseId, routeKind === 'cluster' || routeKind === 'opinion' ? routeKind : undefined);
+    }
+  }, [routeCaseId, routeKind, initCaseFromRoute]);
 
   const [detailsOpen, setDetailsOpen] = useState(true);
   // Local UI state only: the floating conversation dock and composer collapse.

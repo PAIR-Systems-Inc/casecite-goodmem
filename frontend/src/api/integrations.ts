@@ -33,14 +33,14 @@ Object.assign(api, {
     return api.request('/admin/integrations/courtlistener');
   },
 
-  async setCourtListenerToken(apiToken: string): Promise<CourtListenerStatus> {
+  async setCourtListenerToken(apiToken: string): Promise<CourtListenerStatus & { status: string }> {
     return api.request('/admin/integrations/courtlistener', {
       method: 'POST',
       body: JSON.stringify({ api_token: apiToken }),
     });
   },
 
-  async clearCourtListenerToken(): Promise<{ status: string }> {
+  async clearCourtListenerToken(): Promise<CourtListenerStatus & { status: string }> {
     return api.request('/admin/integrations/courtlistener', { method: 'DELETE' });
   },
 
@@ -49,7 +49,7 @@ Object.assign(api, {
     return api.request('/admin/integrations/local-llm');
   },
 
-  async setLocalLlm(config: LocalLlmConfig): Promise<LocalLlmStatus> {
+  async setLocalLlm(config: LocalLlmConfig): Promise<LocalLlmStatus & { status: string }> {
     return api.request('/admin/integrations/local-llm', {
       method: 'POST',
       body: JSON.stringify({
@@ -60,7 +60,7 @@ Object.assign(api, {
     });
   },
 
-  async clearLocalLlm(): Promise<{ status: string }> {
+  async clearLocalLlm(): Promise<LocalLlmStatus & { status: string }> {
     return api.request('/admin/integrations/local-llm', { method: 'DELETE' });
   },
 });

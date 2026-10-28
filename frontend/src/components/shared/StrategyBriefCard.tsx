@@ -96,7 +96,7 @@ function StrategyBriefCard({ brief, citations, onCitationClick, s }: StrategyBri
                             <button
                               className={s.briefAuthorityNameBtn}
                               title="Read the full opinion"
-                              onClick={() => loadCaseDetail(auth.opinionId as string)}
+                              onClick={() => loadCaseDetail(auth.opinionId as string, 'opinion')}
                             >
                               {auth.source}
                             </button>
@@ -138,12 +138,23 @@ function StrategyBriefCard({ brief, citations, onCitationClick, s }: StrategyBri
     );
   };
 
+  // Every folder the brief was scoped to; `folder_path` alone is the legacy
+  // single-folder field (the first of them).
+  const scopeFolders = brief.scope?.folder_paths?.length
+    ? brief.scope.folder_paths
+    : brief.scope?.folder_path ? [brief.scope.folder_path] : [];
+
   return (
     <div className={s.briefCard}>
       <div className={s.briefOverline}>
         Strategy brief · {brief.scope?.documents_considered ?? 0} document{(brief.scope?.documents_considered ?? 0) === 1 ? '' : 's'} reviewed
         {brief.scope?.documents_total > brief.scope?.documents_considered && (
           <span className={s.briefTruncNote}> (of {brief.scope.documents_total})</span>
+        )}
+        {scopeFolders.length > 0 && (
+          <span className={s.briefTruncNote} title={scopeFolders.join('\n')}>
+            {' '}· in {scopeFolders.length === 1 ? scopeFolders[0] : `${scopeFolders.length} folders: ${scopeFolders.join(', ')}`}
+          </span>
         )}
       </div>
       {brief.scope?.coverage_note && (

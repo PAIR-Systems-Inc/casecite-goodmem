@@ -485,6 +485,9 @@ export function useResearchState({ addToast, activeMode, setActiveMode }: { addT
           citations,
           mode: 'research',
           strategy: (m.strategy as StrategyBriefResponse | null) ?? undefined,
+          // A chat-triggered authority map is stored compactly; the card
+          // reopens each run from its run_id.
+          authorityMapRecord: m.authority_map ?? undefined,
           stats: mapStoredStats(m.stats, citations.length),
         };
       });

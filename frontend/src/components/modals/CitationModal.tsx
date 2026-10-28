@@ -115,7 +115,7 @@ export const CitationModal = ({ isOpen, onClose, citation }: CitationModalProps)
                 <OpinionAnchorView
                   opinionId={citation.opinionId}
                   passage={citation.passage}
-                  onOpenFull={() => { useCaseViewStore.getState().loadCaseDetail(citation.opinionId as string); onClose(); }}
+                  onOpenFull={() => { useCaseViewStore.getState().loadCaseDetail(citation.opinionId as string, 'opinion'); onClose(); }}
                 />
               </div>
             )}

@@ -39,6 +39,8 @@ export interface Citation {
   // CourtListener opinion id — when set, the citation modal can fetch the full
   // opinion and anchor/highlight the cited passage for verification.
   opinionId?: string | null;
+  // CourtListener cluster (case) id the opinion belongs to.
+  clusterId?: string | null;
   verified?: boolean;
   // Which exchange produced this citation: the assistant message id (for
   // jump-to-answer anchoring) and the question it answered (the Sources
@@ -73,5 +75,8 @@ export interface ChatMessage {
   strategy?: import('../api/types').StrategyBriefResponse;
   /** Exhaustive authority-map result (chat-triggered Case Citations audit). */
   authorityMap?: import('../api/types').AuthorityMapChatResult;
+  /** The compact stored record of a chat-triggered map, restored from History
+      (the full result lives behind each run's `run_id`). */
+  authorityMapRecord?: import('../api/types').ChatAuthorityMapRecord;
 }
 

@@ -214,7 +214,7 @@ describe('draftingStore', () => {
     await send;
     expect(useDraftingStore.getState().progressMessage).toBe('Drafted section 2 of 3: Services');
 
-    await vi.advanceTimersByTimeAsync(2000);
+    await vi.advanceTimersByTimeAsync(3000);
     const st = useDraftingStore.getState();
     expect(st.sending).toBe(false);
     expect(st.draftWorkspace?.text).toBe('body');

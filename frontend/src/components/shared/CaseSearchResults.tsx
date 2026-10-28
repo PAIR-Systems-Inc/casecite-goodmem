@@ -7,7 +7,7 @@ interface CaseSearchResultsProps {
   s: Record<string, string>;
   tr: ToolResultData;
   toolLoading: boolean;
-  loadCaseDetail: (id: string) => void;
+  loadCaseDetail: (id: string, kind?: 'cluster' | 'opinion') => void;
   loadMoreResults: () => void;
 }
 
@@ -30,8 +30,8 @@ function CaseSearchResults({ s, tr, toolLoading, loadCaseDetail, loadMoreResults
               className={`case-result ${s.caseResultItem}`}
               role="button"
               tabIndex={0}
-              onClick={() => loadCaseDetail(c.id)}
-              onKeyDown={activateOnKey(() => loadCaseDetail(c.id))}
+              onClick={() => loadCaseDetail(c.id, 'cluster')}
+              onKeyDown={activateOnKey(() => loadCaseDetail(c.id, 'cluster'))}
               style={{ cursor: 'pointer' }}
             >
               <div className={s.caseResultContent}>

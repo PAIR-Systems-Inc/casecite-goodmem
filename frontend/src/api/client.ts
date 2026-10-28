@@ -199,7 +199,9 @@ export const api = {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Request failed' }));
-      throw new Error(formatErrorDetail(error.detail, 'Request failed'));
+      // Carry the HTTP status so callers can tell a 429 (back off and retry)
+      // from a real failure without parsing the message.
+      throw Object.assign(new Error(formatErrorDetail(error.detail, 'Request failed')), { status: response.status });
     }
 
     return response.json();

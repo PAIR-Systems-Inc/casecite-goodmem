@@ -16,6 +16,10 @@ export interface PickerConfig {
   clientId?: string;
   appKey?: string;
   google_enabled?: boolean;
+  /** False when the picker cannot open; `google_missing` names the absent
+      settings fields (e.g. ["google_api_key"]). */
+  google_configured?: boolean;
+  google_missing?: string[];
   google_client_id?: string;
   google_api_key?: string;
   google_app_id?: string;

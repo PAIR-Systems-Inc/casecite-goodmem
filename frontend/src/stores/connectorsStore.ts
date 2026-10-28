@@ -6,6 +6,7 @@ import { isAllowedOAuthUrl } from '../utils/oauthOrigins';
 import { useUIStore } from './uiStore';
 import { usePickerStore } from './pickerStore';
 import { useAuthStore } from './authStore';
+import { describeFileErrors } from './storeUtils';
 import type { Connector, PickerConfig, PickerFile } from '../types';
 
 const DEFAULT_CONNECTORS = [
@@ -232,7 +233,17 @@ export const useConnectorsStore = create<ConnectorsState>((set, get) => ({
         const status = await api.getConnectorSyncStatus(connector.id, syncId);
         const state = String(status.status || '').toLowerCase();
         if (['succeeded', 'completed', 'complete', 'done'].includes(state)) {
-          addToast(`${connector.name} sync complete.`, 'success');
+          const result = status.result;
+          const processed = result?.docs_processed;
+          addToast(
+            `${connector.name} sync complete${typeof processed === 'number' ? ` — ${processed} document${processed === 1 ? '' : 's'} indexed` : ''}.`,
+            'success',
+          );
+          // Per-file failures used to vanish behind the success toast.
+          const failedCount = result?.errors_count ?? result?.errors?.length ?? 0;
+          if (failedCount > 0) {
+            addToast(describeFileErrors(`${failedCount} file${failedCount === 1 ? '' : 's'} could not be indexed`, result?.errors, failedCount), 'error');
+          }
           await get().loadConnectors();
           return;
         }

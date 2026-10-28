@@ -143,6 +143,21 @@ describe('citationParser', () => {
     expect(result[0].opinionId).toBe('123');
   });
 
+  it('carries the cluster id and the verified flag for case-law citations', () => {
+    const raw = [
+      { type: 'case_law', opinion_id: '123', cluster_id: '77', verified: true },
+      { type: 'case_law', opinion_id: '124', cluster_id: null, verified: false },
+      { type: 'document', verified: null },
+    ];
+    const result = parseCitations(raw);
+    expect(result[0].clusterId).toBe('77');
+    expect(result[0].verified).toBe(true);
+    expect(result[1].clusterId).toBeNull();
+    expect(result[1].verified).toBe(false);
+    // null means "unknown" — never rendered as unverified.
+    expect(result[2].verified).toBeUndefined();
+  });
+
   it('handles empty input array', () => {
     expect(parseCitations([])).toEqual([]);
   });

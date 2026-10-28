@@ -6,6 +6,7 @@ vi.mock('../api', () => ({
     getSettings: vi.fn(),
     reindexDocuments: vi.fn(),
     getDocuments: vi.fn().mockResolvedValue({ documents: [] }),
+    getAllDocuments: vi.fn().mockResolvedValue([]),
   },
   API_BASE_URL: 'http://localhost:8000/api/v1',
 }));

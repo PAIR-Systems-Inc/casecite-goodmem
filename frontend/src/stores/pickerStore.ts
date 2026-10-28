@@ -6,8 +6,9 @@ import { isAllowedOAuthUrl } from '../utils/oauthOrigins';
 import { useUIStore } from './uiStore';
 import { useDocumentsStore } from './documentsStore';
 import { useConnectorsStore } from './connectorsStore';
-import type { PickerFile } from '../types';
-import type { ImportResponse } from '../api/types';
+import { describeFileErrors } from './storeUtils';
+import type { PickerFile, UploadedDocument } from '../types';
+import type { ImportResponse, DocumentListResponse } from '../api/types';
 
 export interface PickerState {
   showPickerModal: boolean;
@@ -27,6 +28,59 @@ export interface PickerState {
 }
 
 const BOX_ELEMENTS_VERSION = '22.0.0';
+
+// Imported files confirm themselves in the sidebar the same way uploads do
+// (DocumentPanel's SUCCESS_LINGER_MS): a brief chip, then gone — the file
+// lives in the Knowledge Base, not in a sidebar list.
+const IMPORT_CHIP_LINGER_MS = 2500;
+
+/** The sidebar's DocumentPanel renders UploadedDocument rows (name/chunks),
+    not the API's document records (filename/chunk_count). */
+function toUploadedDocument(d: DocumentListResponse['documents'][number]): UploadedDocument {
+  return {
+    id: d.id,
+    serverId: d.id,
+    name: d.filename,
+    size: d.size || 0,
+    type: d.content_type || '',
+    uploadedAt: new Date(d.created_at || Date.now()),
+    status: d.status === 'failed' ? 'error' : 'indexed',
+    chunks: d.chunk_count || 0,
+    indexed_at: d.indexed_at || undefined,
+    error: d.status === 'failed' ? ((d.metadata?.error as string) || 'Failed to index document') : undefined,
+  };
+}
+
+/**
+ * After a picker import: refresh every list that shows the Knowledge Base and
+ * show the imported files as transient sidebar chips (the `imported` newest
+ * documents — the import response carries counts, not ids).
+ */
+async function showImportedDocuments(importedCount: number): Promise<void> {
+  const { setDocuments } = useDocumentsStore.getState();
+  const docs = await api.getAllDocuments();
+  const newest = [...docs]
+    .sort((a, b) => Date.parse(b.created_at || '') - Date.parse(a.created_at || ''))
+    .slice(0, importedCount)
+    .map(toUploadedDocument);
+  const ids = new Set(newest.map((d) => d.id));
+  setDocuments((prev) => [
+    ...(prev as unknown as UploadedDocument[]).filter((d) => !ids.has(d.id)),
+    ...newest,
+  ] as unknown as Record<string, unknown>[]);
+  const successIds = new Set(newest.filter((d) => d.status === 'indexed').map((d) => d.id));
+  if (successIds.size > 0) {
+    setTimeout(() => {
+      useDocumentsStore.getState().setDocuments((prev) =>
+        prev.filter((d) => !successIds.has(d.id as string)));
+    }, IMPORT_CHIP_LINGER_MS);
+  }
+  // Same follow-ups as a sidebar upload: header count and Knowledge Base list.
+  import('./settingsStore').then(({ useSettingsStore }) => useSettingsStore.getState().refreshSystemStats());
+  import('./ragDocsStore').then(({ useRagDocsStore }) => {
+    if (useRagDocsStore.getState()._initialized) useRagDocsStore.getState().loadRagDocuments();
+  });
+}
 
 // Google's two picker dependencies. Loaded on demand, the first time someone
 // opens the Google picker — never on page load — so an instance that doesn't
@@ -67,7 +121,6 @@ export const usePickerStore = create<PickerState>((set, get) => ({
   handlePickerFilesSelected: async (files, provider) => {
     if (!files || files.length === 0) return;
     const { addToast } = useUIStore.getState();
-    const { setDocuments } = useDocumentsStore.getState();
 
     set({ pickerLoading: true, showPickerModal: false });
     try {
@@ -81,11 +134,11 @@ export const usePickerStore = create<PickerState>((set, get) => ({
       }
       if (result.imported > 0) {
         addToast(`Imported ${result.imported} file(s) from ${provider}`, 'success');
-        const docsResp = await api.getDocuments();
-        setDocuments((docsResp.documents || []).map(d => ({ ...d })));
+        await showImportedDocuments(result.imported);
       }
       if (result.failed > 0) {
-        addToast(`Failed to import ${result.failed} file(s)`, 'error');
+        // Name the files and the reasons — a bare count left people guessing.
+        addToast(describeFileErrors(`Failed to import ${result.failed} file(s)`, result.errors, result.failed), 'error');
       }
     } catch (error: unknown) {
       logger.error('Import error:', error);
@@ -121,6 +174,15 @@ export const usePickerStore = create<PickerState>((set, get) => ({
 
     if (!pickerConfig?.google_enabled) {
       addToast('Google Picker not configured', 'error');
+      return;
+    }
+    // Enabled but incomplete (e.g. no API key): opening the picker would only
+    // fail inside Google's widget. Say which settings are missing instead.
+    if (pickerConfig.google_configured === false) {
+      const missing = pickerConfig.google_missing?.length
+        ? ` Missing: ${pickerConfig.google_missing.join(', ')}.`
+        : '';
+      addToast(`Google Picker is not fully configured.${missing} An administrator can add the Google credentials in Settings.`, 'error');
       return;
     }
 

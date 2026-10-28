@@ -63,6 +63,8 @@ export function parseCitations(rawCitations: unknown[], query?: string): Citatio
       document_id: (cite.document_id as string) || null,
       url: (cite.url as string) || null,
       opinionId: (cite.opinion_id as string) || (cite.opinionId as string) || null,
+      clusterId: (cite.cluster_id as string) || (cite.clusterId as string) || null,
+      // null from the server means "unknown" — never shown as unverified.
       verified: typeof cite.verified === 'boolean' ? (cite.verified as boolean) : undefined,
       docSpanStart: (cite.doc_span_start as number) ?? null,
       docSpanEnd: (cite.doc_span_end as number) ?? null,

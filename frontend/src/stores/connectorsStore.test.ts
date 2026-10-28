@@ -13,6 +13,8 @@ vi.mock('../api', () => ({
     importFromBoxPicker: vi.fn(),
     importFromDropboxChooser: vi.fn(),
     getDocuments: vi.fn(),
+    getAllDocuments: vi.fn().mockResolvedValue([]),
+    getConnectorSyncStatus: vi.fn(),
   },
   API_BASE_URL: 'http://localhost:8000/api/v1',
 }));
@@ -113,7 +115,7 @@ describe('connectorsStore', () => {
 
   it('handlePickerFilesSelected imports files from google and shows toast', async () => {
     (api.importFromGooglePicker as ReturnType<typeof vi.fn>).mockResolvedValue({ imported: 2, failed: 0 });
-    (api.getDocuments as ReturnType<typeof vi.fn>).mockResolvedValue({ documents: [{ id: '1' }] });
+    (api.getAllDocuments as ReturnType<typeof vi.fn>).mockResolvedValue([{ id: '1', filename: 'a.pdf' }]);
 
     const files = [{ id: '1', name: 'test.pdf' }] as any;
     await useConnectorsStore.getState().handlePickerFilesSelected(files, 'google');
@@ -123,8 +125,8 @@ describe('connectorsStore', () => {
   });
 
   it('handlePickerFilesSelected shows error toast for failed imports', async () => {
-    (api.importFromOneDrivePicker as ReturnType<typeof vi.fn>).mockResolvedValue({ imported: 1, failed: 2 });
-    (api.getDocuments as ReturnType<typeof vi.fn>).mockResolvedValue({ documents: [] });
+    (api.importFromOneDrivePicker as ReturnType<typeof vi.fn>).mockResolvedValue({ imported: 1, failed: 2, errors: [] });
+    (api.getAllDocuments as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
     const files = [{ id: '1', name: 'test.pdf' }] as any;
     await useConnectorsStore.getState().handlePickerFilesSelected(files, 'onedrive');
@@ -140,6 +142,95 @@ describe('connectorsStore', () => {
     const toasts = useUIStore.getState().toasts;
     expect(toasts.some(t => t.message.includes('Failed to import files'))).toBe(true);
     expect(useConnectorsStore.getState().pickerLoading).toBe(false);
+  });
+
+  it('shows imported files as sidebar chips in the shape the panel renders, then lets them go', async () => {
+    vi.useFakeTimers();
+    try {
+      (api.importFromBoxPicker as ReturnType<typeof vi.fn>).mockResolvedValue({ imported: 1, failed: 0, errors: [] });
+      (api.getAllDocuments as ReturnType<typeof vi.fn>).mockResolvedValue([
+        { id: 'old', filename: 'old.pdf', size: 10, content_type: 'application/pdf', status: 'indexed', chunk_count: 2, created_at: '2026-01-01T00:00:00Z' },
+        { id: 'new', filename: 'new.pdf', size: 20, content_type: 'application/pdf', status: 'indexed', chunk_count: 7, created_at: '2026-03-01T00:00:00Z' },
+      ]);
+      useDocumentsStore.setState({ documents: [{ id: 'pending', name: 'typing.pdf', status: 'error' }] });
+
+      await usePickerStore.getState().handlePickerFilesSelected([{ id: 'f1', name: 'new.pdf' }] as any, 'box');
+
+      const docs = useDocumentsStore.getState().documents;
+      expect(docs).toHaveLength(2);
+      // Only the newly imported file joins the existing rows — not the whole Knowledge Base.
+      expect(docs[1]).toMatchObject({ id: 'new', name: 'new.pdf', status: 'indexed', chunks: 7, size: 20 });
+      expect(docs[1]).not.toHaveProperty('filename');
+
+      // Like an upload, the confirmation chip vanishes on its own.
+      await vi.advanceTimersByTimeAsync(2500);
+      expect(useDocumentsStore.getState().documents.map((d) => d.id)).toEqual(['pending']);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('names the files that failed to import, and how many more there were', async () => {
+    (api.importFromGooglePicker as ReturnType<typeof vi.fn>).mockResolvedValue({
+      imported: 0,
+      failed: 5,
+      errors: [
+        { name: 'a.pdf', reason: 'too large' },
+        { name: 'b.docx', reason: 'unsupported type' },
+        { name: 'c.pdf', reason: 'download failed' },
+        { name: 'd.pdf', reason: 'download failed' },
+      ],
+    });
+
+    await useConnectorsStore.getState().handlePickerFilesSelected([{ id: '1', name: 'a.pdf' }] as any, 'google');
+
+    const toast = useUIStore.getState().toasts.find((t) => t.message.startsWith('Failed to import 5 file(s)'));
+    expect(toast?.message).toBe(
+      'Failed to import 5 file(s): a.pdf: too large; b.docx: unsupported type; c.pdf: download failed; and 2 more',
+    );
+    expect(api.getAllDocuments).not.toHaveBeenCalled();
+  });
+
+  it('openGooglePicker names the missing settings instead of opening a broken picker', async () => {
+    useConnectorsStore.getState().setPickerConfig({
+      google_enabled: true,
+      google_configured: false,
+      google_missing: ['google_api_key', 'google_app_id'],
+      microsoft_enabled: false,
+    });
+
+    await usePickerStore.getState().openGooglePicker();
+
+    const toast = useUIStore.getState().toasts.find((t) => t.message.includes('Google Picker'));
+    expect(toast?.message).toContain('Missing: google_api_key, google_app_id');
+    expect(toast?.type).toBe('error');
+    expect(usePickerStore.getState().pickerLoading).toBe(false);
+    expect(document.querySelector('script[src*="apis.google.com"]')).toBeNull();
+  });
+
+  it('pollSyncStatus reports the per-file failures of a finished sync', async () => {
+    vi.useFakeTimers();
+    try {
+      (api.getConnectorSyncStatus as ReturnType<typeof vi.fn>).mockResolvedValue({
+        status: 'completed',
+        result: {
+          status: 'completed', docs_processed: 3, docs_skipped: 0, docs_total: 5, errors_count: 2,
+          errors: [{ name: 'x.pdf', reason: 'too large' }, { name: 'y.pdf', reason: 'empty file' }],
+        },
+      });
+      (api.getConnectors as ReturnType<typeof vi.fn>).mockResolvedValue({ connectors: [] });
+      (api.getPickerConfig as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+      useConnectorsStore.getState().pollSyncStatus({ id: 'box', name: 'Box' } as any, 'sync-1');
+      await vi.advanceTimersByTimeAsync(3000);
+
+      const messages = useUIStore.getState().toasts.map((t) => t.message);
+      expect(api.getConnectorSyncStatus).toHaveBeenCalledWith('box', 'sync-1');
+      expect(messages).toContain('Box sync complete — 3 documents indexed.');
+      expect(messages).toContain('2 files could not be indexed: x.pdf: too large; y.pdf: empty file');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   // ==================== handleConnectorClick ====================

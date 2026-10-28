@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useResearch } from '../contexts/ResearchContext';
 import { useAuthStore } from '../stores/authStore';
+import { useAuthorityMapStore } from '../stores/authorityMapStore';
 import { useApp } from '../contexts/AppContext'; // fileInputRef only
 import { ANALYSIS_MODES } from '../constants/analysisModes';
 import { groupCitationsBySource, claimLabel, mappingToCitation } from '../utils';
 import type { ChatMessage } from '../types';
 import s from './ResearchView.module.css';
-import { Icon, StrategyBriefCard, FloatingChatDock, AuthorityMapCard, MatterFileWorkspace, AnnotatedDocument, PdfDocumentViewer, AssistantAvatar, MessageMarkdown, AiNotice } from '../components';
+import { Icon, StrategyBriefCard, FloatingChatDock, AuthorityMapCard, AuthorityMapRecordCard, MatterFileWorkspace, AnnotatedDocument, PdfDocumentViewer, AssistantAvatar, MessageMarkdown, AiNotice } from '../components';
 
 // Static constants only (no components, no rendering functions).
 // Composer placeholder ticker: each phrase slides up into view in turn.
@@ -247,7 +248,15 @@ function ResearchView() {
                         onCitationSelect={setSelectedCitation}
                       />
                     )}
-                    {!msg.strategy && !msg.authorityMap && (
+                    {msg.authorityMapRecord && !msg.authorityMap && (
+                      <AuthorityMapRecordCard
+                        record={msg.authorityMapRecord}
+                        onOpenRun={(runId, run) => useAuthorityMapStore.getState().openRun(runId, {
+                          documentId: run.document_id, documentName: run.document_name,
+                        })}
+                      />
+                    )}
+                    {!msg.strategy && !msg.authorityMap && !msg.authorityMapRecord && (
                       <MessageMarkdown text={msg.content} />
                     )}
                     {msg.citations && msg.citations.length > 0 && (
@@ -277,7 +286,7 @@ function ResearchView() {
                       </div>
                     )}
                     {/* The brief and authority-map cards carry their own notice */}
-                    {!msg.strategy && !msg.authorityMap && <AiNotice />}
+                    {!msg.strategy && !msg.authorityMap && !msg.authorityMapRecord && <AiNotice />}
                     <span className={s.timestamp}>{msg.timestamp.toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'})}</span>
                       </>
                     )}

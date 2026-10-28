@@ -53,8 +53,9 @@ export const useRagDocsStore = create<RagDocsState>((set, get) => ({
   loadRagDocuments: async () => {
     set({ ragDocsLoading: true });
     try {
-      const resp = await api.getDocuments();
-      const docs = resp.documents || [];
+      // Every page — the list endpoint pages at 50, which used to hide the
+      // older documents behind an invisible cut-off.
+      const docs = await api.getAllDocuments();
       const { ragDocsSearchQuery } = get();
       set({
         ragDocs: docs,

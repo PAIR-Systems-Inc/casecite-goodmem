@@ -193,8 +193,7 @@ export const useSettingsStore = create<SettingsState>((set, _get) => ({
   // pinned at 0 forever.)
   refreshSystemStats: async () => {
     try {
-      const resp = await api.getDocuments(200, 0);
-      const docs = resp.documents || [];
+      const docs = await api.getAllDocuments();
       const indexed = docs.filter((d) => d.status === 'indexed');
       set((state) => ({
         systemStats: {

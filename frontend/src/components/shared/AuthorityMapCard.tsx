@@ -1,7 +1,7 @@
 import { Icon } from './Icon';
 import { AiNotice } from './AiNotice';
 import { mappingToCitation } from '../../utils';
-import type { AuthorityMapChatResult, AuthorityMapping } from '../../api/types';
+import type { AuthorityMapChatResult, AuthorityMapping, ChatAuthorityMapRecord, ChatAuthorityMapRun } from '../../api/types';
 import type { Citation } from '../../types/research';
 import s from './AuthorityMapCard.module.css';
 
@@ -83,4 +83,71 @@ function AuthorityMapCard({ result, onCitationSelect }: AuthorityMapCardProps) {
   );
 }
 
-export { AuthorityMapCard };
+function countsLine(t?: { propositions?: number; authorities?: number; verified?: number } | null): string {
+  return `${t?.verified ?? 0} verified · ${t?.authorities ?? 0} authorities · ${t?.propositions ?? 0} propositions`;
+}
+
+interface AuthorityMapRecordCardProps {
+  record: ChatAuthorityMapRecord;
+  /** Open the stored run (GET /authority-map/{run_id}) in Case Citations. */
+  onOpenRun: (runId: string, run: ChatAuthorityMapRun) => void;
+}
+
+/**
+ * Compact card for a chat-triggered authority map restored from History: the
+ * stored record keeps only the job status and one summary per file, so each
+ * row opens its full map from the run id instead of listing every authority.
+ */
+function AuthorityMapRecordCard({ record, onOpenRun }: AuthorityMapRecordCardProps) {
+  const status = record.status;
+  const runs = record.runs ?? [];
+  const statusText = status === 'completed'
+    ? countsLine(record.totals)
+    : status === 'running'
+      ? 'Still running — reopen this conversation later for the result.'
+      : `Failed${record.error ? ` (${record.error})` : ''}`;
+  return (
+    <div className={s.card}>
+      <div className={s.header}>
+        <Icon name={status === 'completed' ? 'ShieldCheck' : status === 'running' ? 'Loader2' : 'ShieldAlert'} size={15} className={s.headerIcon} />
+        <span className={s.title}>Authority map</span>
+        <span className={s.totals}>{statusText}</span>
+      </div>
+      {runs.map((run, i) => (
+        <button
+          key={run.run_id ?? `${run.document_id ?? 'doc'}-${i}`}
+          className={s.row}
+          disabled={!run.run_id}
+          title={run.run_id ? 'Open this map in Case Citations' : 'No stored map for this file'}
+          onClick={() => run.run_id && onOpenRun(run.run_id, run)}
+        >
+          <Icon name="FileText" size={13} className={s.chevron} />
+          <span className={s.rowBody}>
+            <span className={s.caseName}>{run.document_name || 'Document'}</span>
+            <span className={s.proposition}>{countsLine(run.summary)}</span>
+          </span>
+          {run.run_id && <Icon name="ChevronRight" size={13} className={s.chevron} />}
+        </button>
+      ))}
+      {runs.length === 0 && record.documents.length > 0 && (
+        <p className={s.empty}>
+          {record.documents.map((d) => d.name).join(', ')}
+        </p>
+      )}
+      {(record.coverage_notes?.length ?? 0) > 0 && (
+        <div className={s.coverage} role="note">
+          <Icon name="AlertCircle" size={12} className={s.coverageIcon} />
+          <div>
+            Not every file was covered in full:
+            <ul className={s.coverageList}>
+              {record.coverage_notes?.map((note, i) => <li key={i}>{note}</li>)}
+            </ul>
+          </div>
+        </div>
+      )}
+      <AiNotice />
+    </div>
+  );
+}
+
+export { AuthorityMapCard, AuthorityMapRecordCard };
