@@ -354,6 +354,56 @@ jobs:
             frontend/coverage/
 
   # ====================
+  # Word add-in (lint, types, unit tests, build)
+  # ====================
+  word-addin:
+    name: Word Add-in
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: word-addin/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd word-addin
+          npm ci
+
+      - name: Dependency audit
+        run: |
+          cd word-addin
+          npm audit --omit=dev --audit-level=high
+
+      - name: Lint
+        run: |
+          cd word-addin
+          npm run lint
+
+      - name: Type check
+        run: |
+          cd word-addin
+          npx tsc --noEmit
+
+      - name: Unit tests
+        run: |
+          cd word-addin
+          npx vitest run
+
+      - name: Build pane and manifest
+        run: |
+          cd word-addin
+          npm run build
+          npm run manifest -- --origin https://addin.example.com
+          test -f dist/manifest.xml
+
+  # ====================
   # E2E Tests (Playwright)
   # ====================
   test-e2e:

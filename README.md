@@ -160,6 +160,19 @@ should know about custody:
   cannot be rotated without making stored documents unreadable; keep it safe
   and backed up off the server.
 
+## Word add-in
+
+`word-addin/` is a task-pane add-in for Microsoft Word that talks to your own
+CaseCite server: analyze the open document and jump to each flagged passage,
+insert a suggested rewrite as a tracked change, and research the firm's
+documents with the answer inserted as footnoted paragraphs. It signs in with a
+short code you approve in the web app (`/device`), so the pane never holds
+your browser cookies, and its session shows up under Settings → Security →
+Sessions as "Word add-in". Set `WORD_ADDIN_ORIGIN` on the server to the
+origin the pane is served from. Build, sideloading on Windows, Mac and the
+web, Centralized Deployment and the current limits are in
+[word-addin/README.md](word-addin/README.md).
+
 ## Configuration
 
 ### Required env vars

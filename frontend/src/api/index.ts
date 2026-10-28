@@ -3,6 +3,7 @@
 import { api, API_BASE_URL } from './client';
 import './auth';
 import './mfa';
+import './deviceAuth';
 import './chat';
 import './chatSessions';
 import './workspaceSessions';

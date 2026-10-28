@@ -60,6 +60,11 @@ class TokenData(BaseModel):
     token_type: str = "access"  # "access" or "refresh"
     session_id: str | None = None  # ``sid`` claim: the sign-in this token belongs to
     token_version: int = 0  # ``tv`` claim: must equal users.token_version
+    # ``cl`` claim on refresh tokens: the kind of client the sign-in was issued
+    # to. "device" marks a device-code grant (Word add-in), whose refresh token
+    # travels in the response body and is accepted back in a request body;
+    # cookie sign-ins carry no claim and are refreshed from the cookie only.
+    client: str | None = None
 
 
 class AuthActionRequired(HTTPException):
@@ -262,8 +267,14 @@ class AuthService:
             payload["sid"] = session_id
         return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
 
-    def create_refresh_token(self, user: User, session_id: str | None = None) -> str:
-        """Create a new refresh token bound to the sign-in session ``session_id``."""
+    def create_refresh_token(
+        self, user: User, session_id: str | None = None, client: str | None = None
+    ) -> str:
+        """Create a new refresh token bound to the sign-in session ``session_id``.
+
+        ``client="device"`` marks a device-code grant whose refresh token is
+        carried in request bodies instead of the httpOnly cookie.
+        """
         import uuid
 
         now = datetime.now(UTC)
@@ -278,6 +289,8 @@ class AuthService:
         }
         if session_id:
             payload["sid"] = session_id
+        if client:
+            payload["cl"] = client
         return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
 
     def verify_token(self, token: str, check_revocation: bool = True) -> TokenData:
@@ -307,6 +320,7 @@ class AuthService:
                 token_type=payload.get("type"),
                 session_id=payload.get("sid"),
                 token_version=int(payload.get("tv") or 0),
+                client=payload.get("cl"),
             )
         except JWTError as e:
             logger.debug(f"Token validation details: {e}")

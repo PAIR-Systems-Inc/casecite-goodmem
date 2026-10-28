@@ -10,6 +10,14 @@ Exempt paths:
 - OAuth callbacks (already protected by state parameter)
 - Public endpoints (health, config)
 - Webhooks (authenticated via signatures)
+
+Requests that carry no auth cookie at all are not validated either. CSRF
+abuses credentials the browser attaches on its own; a request with neither the
+``access_token`` nor the ``refresh_token`` cookie has none, and a cross-site
+page cannot add an ``Authorization`` header (a custom header forces a CORS
+preflight that only the configured origins pass). That is how a bearer-token
+client such as the Word add-in's task pane, which never holds the cookies,
+makes state-changing calls.
 """
 
 import hashlib
@@ -118,6 +126,10 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             "/api/v1/auth/verify-reset-token",
             # MFA second-step verification (pre-auth, like login)
             "/api/v1/auth/mfa/verify",
+            # Device-code sign-in: the device side is pre-auth and cookie-less
+            # (approve/deny are made by the signed-in web app and stay protected)
+            "/api/v1/auth/device/start",
+            "/api/v1/auth/device/token",
             # OAuth callbacks are protected by state parameter
             "/api/v1/connectors/google/callback",
             "/api/v1/connectors/microsoft/callback",
@@ -145,6 +157,11 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             if path.startswith(prefix):
                 return True
         return False
+
+    @staticmethod
+    def _has_ambient_credentials(request: Request) -> bool:
+        """Whether the browser attached a session cookie that CSRF could abuse."""
+        return bool(request.cookies.get("access_token") or request.cookies.get("refresh_token"))
 
     def _generate_token(self) -> str:
         """Generate a cryptographically secure CSRF token."""
@@ -200,6 +217,12 @@ class CSRFMiddleware(BaseHTTPMiddleware):
                 )
 
             return response
+
+        # No auth cookie on the request means no ambient credential a forged
+        # cross-site request could ride on: a bearer-token client (the Word
+        # add-in) authenticates by header alone. See the module docstring.
+        if not self._has_ambient_credentials(request):
+            return await call_next(request)
 
         # State-changing methods: validate CSRF token
         cookie_token = request.cookies.get(self.cookie_name)

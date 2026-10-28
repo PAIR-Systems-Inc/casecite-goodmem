@@ -168,6 +168,32 @@ DOMAIN=app.yourfirm.com
 
 ---
 
+## Word Add-in
+
+The task-pane add-in in `word-addin/` is static files served from an HTTPS
+origin of your choice; it is not part of the Docker image. Two server settings
+make it work:
+
+```bash
+# The origin the pane is served from. Appended to the CORS allow list; the
+# allow list is untouched when this is unset.
+WORD_ADDIN_ORIGIN=https://addin.yourfirm.com
+# Makes the approval link the pane opens absolute (otherwise the pane prefixes
+# its own server address, which is right for the bundled single-origin stack).
+FRONTEND_URL=https://casecite.yourfirm.com
+```
+
+Optional: `DEVICE_CODE_TTL` (seconds a pending sign-in code lives, default
+600) and `DEVICE_CODE_INTERVAL` (minimum seconds between polls, default 5).
+Pending codes are kept in Redis under a hash of the code, so a restart does
+not lose them; with no Redis they live in process memory.
+
+Build and publish steps, including Centralized Deployment through the
+Microsoft 365 admin center, are in [`word-addin/README.md`](../word-addin/README.md).
+Each add-in sign-in appears in the web app under Settings → Security →
+Sessions as "Word add-in" and can be ended there; "log out everywhere" and an
+admin force sign-out end it too.
+
 ## Health Checks
 
 All deployment modes expose these endpoints:

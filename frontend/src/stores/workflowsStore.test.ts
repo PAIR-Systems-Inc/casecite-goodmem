@@ -31,13 +31,13 @@ import { useWorkflowsStore, newStep, describeRun, stepKindInfo } from './workflo
 import { useMattersStore } from './mattersStore';
 import { useUIStore } from './uiStore';
 import { api } from '../api';
-import type { WorkflowStep } from '../api/types';
+import type { WorkflowStep, WorkflowSummary } from '../api/types';
 
 const steps: WorkflowStep[] = [
   { name: 'extract', kind: 'extract_fields', params: { fields: [{ key: 'term', name: 'Term', description: '', type: 'duration' }] }, inputs: { source: 'run', document_ids: [], step: null } },
   { name: 'review', kind: 'analyze_contract', params: { contract_type: 'auto', posture: 'balanced' }, inputs: { source: 'run', document_ids: [], step: null } },
 ];
-const summary = {
+const summary: WorkflowSummary = {
   id: 'w1', name: 'Intake', description: null, matter_id: null, owner_id: 'me', role: 'owner', template_key: null,
   step_count: 2, step_kinds: ['extract_fields', 'analyze_contract'], run_count: 0, last_run_at: null, last_run_status: null,
   created_at: '2026-10-01T00:00:00Z', updated_at: '2026-10-01T00:00:00Z',

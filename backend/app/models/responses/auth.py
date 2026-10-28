@@ -35,11 +35,52 @@ class LoginResponse(BaseModel):
 
 
 class TokenRefreshResponse(BaseModel):
-    """POST /auth/refresh — new access token."""
+    """POST /auth/refresh — new access token.
+
+    ``refresh_token`` is present only for a device-code session (Word add-in),
+    whose rotated refresh token cannot be delivered as a cookie; cookie
+    sessions never see it in the body.
+    """
 
     access_token: str
     token_type: str = "bearer"
     expires_in: int
+    refresh_token: str | None = None
+
+
+class DeviceStartResponse(BaseModel):
+    """POST /auth/device/start — a pending device code for a cookie-less client."""
+
+    device_code: str
+    user_code: str
+    verification_uri: str
+    verification_uri_complete: str
+    expires_in: int
+    interval: int
+
+
+class DeviceTokenResponse(BaseModel):
+    """POST /auth/device/token — one poll of a pending device code.
+
+    ``status`` is one of the RFC 8628 states (``authorization_pending``,
+    ``slow_down``, ``expired_token``, ``access_denied``) or ``approved``, in
+    which case the token fields are present. A device-code grant is the one
+    place the refresh token travels in the body: the client has no cookies.
+    """
+
+    status: str
+    access_token: str | None = None
+    refresh_token: str | None = None
+    token_type: str = "bearer"
+    expires_in: int | None = None
+    user: UserInfo | None = None
+
+
+class DeviceDecisionResponse(BaseModel):
+    """POST /auth/device/approve and /deny — the decision recorded for a user code."""
+
+    status: str  # "approved" | "denied"
+    user_code: str
 
 
 class SessionsResponse(BaseModel):

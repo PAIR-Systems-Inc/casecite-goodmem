@@ -1093,6 +1093,18 @@ class EmailLoginRequest(BaseModel):
     password: str
 
 
+class DeviceUserCodeRequest(BaseModel):
+    """POST /auth/device/approve and /deny: the short code shown on the device."""
+
+    user_code: str = Field(..., min_length=8, max_length=12)
+
+
+class DeviceTokenRequest(BaseModel):
+    """POST /auth/device/token: the device's secret code from /auth/device/start."""
+
+    device_code: str = Field(..., min_length=16, max_length=128)
+
+
 class RegisterRequest(BaseModel):
     """Request body for self-hosted user registration."""
 

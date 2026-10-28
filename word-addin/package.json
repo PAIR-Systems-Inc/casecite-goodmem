@@ -1,0 +1,49 @@
+{
+  "name": "casecite-word-addin",
+  "private": true,
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "description": "CaseCite task-pane add-in for Microsoft Word: analyze the open document, insert suggested rewrites as tracked changes, and research the firm's documents without leaving Word.",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "manifest": "node scripts/make-manifest.mjs",
+    "lint": "eslint src scripts --report-unused-disable-directives --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zustand": "5.0.11"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@types/node": "25.3.0",
+    "@types/office-js": "1.0.614",
+    "@types/react": "18.3.31",
+    "@types/react-dom": "18.3.7",
+    "@vitejs/plugin-basic-ssl": "2.1.0",
+    "@vitejs/plugin-react": "4.7.0",
+    "eslint": "9.39.5",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.13.0",
+    "jsdom": "28.1.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.1",
+    "vite": "7.3.7",
+    "vitest": "4.1.12"
+  },
+  "overrides": {
+    "undici": "^7.30.1",
+    "source-map-js": "^1.2.2"
+  }
+}

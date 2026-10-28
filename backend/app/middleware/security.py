@@ -76,6 +76,12 @@ class RateLimiter:
             "/api/v1/auth/mfa/enable": (5, 300),  # 5 per 5 min
             "/api/v1/auth/mfa/disable": (5, 300),  # 5 per 5 min
             "/api/v1/auth/mfa/recovery-codes": (5, 300),  # 5 per 5 min (code-proof gated)
+            # Device-code sign-in (Word add-in). Starting a code is as cheap to
+            # abuse as a login attempt; polling runs every 5 s by design.
+            "/api/v1/auth/device/start": (5, 300),  # 5 per 5 min
+            "/api/v1/auth/device/token": (30, 60),  # 30 per min (one poll per 5 s + slack)
+            "/api/v1/auth/device/approve": (10, 300),  # 10 per 5 min (user-code guessing)
+            "/api/v1/auth/device/deny": (10, 300),  # 10 per 5 min
             # Expensive AI / extraction operations — stricter limits to prevent cost abuse
             "/api/v1/legal-docs": (20, 60),  # 20 per min (text extraction, PDF render)
             "/api/v1/strategy/brief": (5, 60),  # 5 per min
@@ -615,11 +621,14 @@ class SessionManager:
         user_agent: str,
         jti: str,
         session_id: str | None = None,
+        client: str | None = None,
     ) -> bool:
         """Create a new session (one per sign-in), enforcing limits.
 
         ``session_id`` is the stable id the refresh token is bound to (``sid``
-        claim); it defaults to a fresh random id.
+        claim); it defaults to a fresh random id. ``client`` labels the kind of
+        client that signed in ("web" by default, "Word add-in" for a
+        device-code grant) so the sessions list can tell them apart.
         """
         self._cleanup_expired_sessions()
         now = datetime.now(UTC)
@@ -641,6 +650,7 @@ class SessionManager:
             "session_id": session_id or uuid.uuid4().hex,
             "ip_address": ip_address,
             "user_agent": user_agent,
+            "client": client or "web",
             "created_at": now,
             "expires_at": now + self.session_timeout,
             "last_activity": now,
@@ -744,6 +754,8 @@ class SessionManager:
                 "ip_address": s["ip_address"][:20] + "..."
                 if len(s["ip_address"]) > 20
                 else s["ip_address"],
+                # Sessions persisted before the label existed are web sign-ins.
+                "client": s.get("client") or "web",
             }
             for s in self._sessions.get(user_id, [])
             if self._is_live(s, now)

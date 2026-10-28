@@ -21,6 +21,12 @@ export interface AuthResponse {
   mfa_token?: string;
 }
 
+/** POST /auth/device/approve and /deny — the decision recorded for a device code. */
+export interface DeviceDecision {
+  status: 'approved' | 'denied';
+  user_code: string;
+}
+
 export interface MfaStatus {
   enabled: boolean;
   recovery_codes_remaining: number;
@@ -1533,6 +1539,10 @@ export interface ApiClient {
   disableMfa(code: string, password: string): Promise<{ status: string }>;
   verifyMfa(mfaToken: string, code: string): Promise<AuthResponse>;
   regenerateRecoveryCodes(code: string): Promise<MfaRecoveryCodes>;
+
+  // Device-code sign-in (approving the Word add-in's code from the web app)
+  approveDeviceCode(userCode: string): Promise<DeviceDecision>;
+  denyDeviceCode(userCode: string): Promise<DeviceDecision>;
 
   // Chat
   query(message: string, mode: string, options?: ChatQueryOptions, signal?: AbortSignal): Promise<ChatResponse>;

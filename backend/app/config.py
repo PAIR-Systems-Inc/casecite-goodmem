@@ -80,6 +80,16 @@ class Settings(BaseSettings):
     # Frontend URL for password reset emails (e.g., https://app.casecite.com)
     frontend_url: str = ""
 
+    # Device-code sign-in (RFC 8628 style) for clients that cannot hold a cookie
+    # session, such as the Word add-in's task pane: how long a pending code
+    # lives, and the minimum seconds between polls of /auth/device/token.
+    device_code_ttl: int = 600
+    device_code_interval: int = 5
+    # Origin the Word add-in's task pane is served from (e.g.
+    # https://addin.yourfirm.com). When set it is appended to the CORS allow
+    # list; when empty nothing changes.
+    word_addin_origin: str = ""
+
     # Encryption salt - generated per deployment, stored in .env
     encryption_salt: str = ""  # Will be auto-generated if not set
     # Previous encryption salts for key rotation (comma-separated)

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CaseCite for Word: task-pane add-in manifest (Word only).
+
+  The https://localhost:3200 URLs are placeholders for local development.
+  `npm run manifest - - origin https://addin.yourfirm.com` (scripts/make-manifest.mjs)
+  writes dist/manifest.xml with every URL pointed at the deployed origin.
+  The Id must stay the same across versions of one deployment; generate a
+  fresh GUID for a second, independent deployment.
+-->
+<OfficeApp
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
+  xsi:type="TaskPaneApp">
+  <Id>7c1a0a6e-4d8b-4f3e-9b1a-2c5d6e7f8a90</Id>
+  <Version>0.1.0.0</Version>
+  <ProviderName>CaseCite</ProviderName>
+  <DefaultLocale>en-US</DefaultLocale>
+  <DisplayName DefaultValue="CaseCite" />
+  <Description DefaultValue="Analyze the open document, insert suggested rewrites as tracked changes, and research your firm's documents without leaving Word." />
+  <IconUrl DefaultValue="https://localhost:3200/icons/icon-32.png" />
+  <HighResolutionIconUrl DefaultValue="https://localhost:3200/icons/icon-80.png" />
+  <SupportUrl DefaultValue="https://github.com/thomasunise/casecite" />
+  <AppDomains>
+    <AppDomain>https://localhost:3200</AppDomain>
+  </AppDomains>
+  <Hosts>
+    <Host Name="Document" />
+  </Hosts>
+  <Requirements>
+    <Sets DefaultMinVersion="1.1">
+      <Set Name="WordApi" MinVersion="1.4" />
+    </Sets>
+  </Requirements>
+  <DefaultSettings>
+    <SourceLocation DefaultValue="https://localhost:3200/index.html" />
+  </DefaultSettings>
+  <Permissions>ReadWriteDocument</Permissions>
+
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <Hosts>
+      <Host xsi:type="Document">
+        <DesktopFormFactor>
+          <GetStarted>
+            <Title resid="GetStarted.Title" />
+            <Description resid="GetStarted.Description" />
+            <LearnMoreUrl resid="GetStarted.LearnMoreUrl" />
+          </GetStarted>
+          <FunctionFile resid="Taskpane.Url" />
+          <ExtensionPoint xsi:type="PrimaryCommandSurface">
+            <OfficeTab id="TabHome">
+              <Group id="CaseCite.Group">
+                <Label resid="Group.Label" />
+                <Icon>
+                  <bt:Image size="16" resid="Icon.16" />
+                  <bt:Image size="32" resid="Icon.32" />
+                  <bt:Image size="80" resid="Icon.80" />
+                </Icon>
+                <Control xsi:type="Button" id="CaseCite.OpenPane">
+                  <Label resid="Button.Label" />
+                  <Supertip>
+                    <Title resid="Button.Label" />
+                    <Description resid="Button.Tooltip" />
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16" />
+                    <bt:Image size="32" resid="Icon.32" />
+                    <bt:Image size="80" resid="Icon.80" />
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>CaseCite.Pane</TaskpaneId>
+                    <SourceLocation resid="Taskpane.Url" />
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+    <Resources>
+      <bt:Images>
+        <bt:Image id="Icon.16" DefaultValue="https://localhost:3200/icons/icon-16.png" />
+        <bt:Image id="Icon.32" DefaultValue="https://localhost:3200/icons/icon-32.png" />
+        <bt:Image id="Icon.80" DefaultValue="https://localhost:3200/icons/icon-80.png" />
+      </bt:Images>
+      <bt:Urls>
+        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/thomasunise/casecite/blob/main/word-addin/README.md" />
+        <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3200/index.html" />
+      </bt:Urls>
+      <bt:ShortStrings>
+        <bt:String id="GetStarted.Title" DefaultValue="CaseCite is ready" />
+        <bt:String id="Group.Label" DefaultValue="CaseCite" />
+        <bt:String id="Button.Label" DefaultValue="CaseCite" />
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        <bt:String id="GetStarted.Description" DefaultValue="Open the CaseCite pane from the Home tab to analyze this document or research your firm's documents." />
+        <bt:String id="Button.Tooltip" DefaultValue="Analyze this document, insert suggested rewrites as tracked changes, and research your firm's documents." />
+      </bt:LongStrings>
+    </Resources>
+  </VersionOverrides>
+</OfficeApp>

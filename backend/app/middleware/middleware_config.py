@@ -130,6 +130,24 @@ def configure_middleware(app: FastAPI) -> None:
             "Localhost origins are not allowed in production."
         )
 
+    # The Word add-in's task pane is served from its own origin. WORD_ADDIN_ORIGIN
+    # adds exactly that origin; unset, the allow list is untouched.
+    addin_origin = settings.word_addin_origin.strip().rstrip("/")
+    if addin_origin:
+        if not addin_origin.startswith(("http://", "https://")):
+            raise ValueError(
+                "CONFIGURATION ERROR: WORD_ADDIN_ORIGIN must be an origin such as "
+                f"https://addin.yourfirm.com, got {addin_origin!r}."
+            )
+        if addin_origin.startswith("http://") and not settings.debug:
+            logger.warning(
+                f"SECURITY WARNING: WORD_ADDIN_ORIGIN '{addin_origin}' uses HTTP; Office "
+                "add-ins require HTTPS outside local development."
+            )
+        if addin_origin not in cors_origins:
+            cors_origins = [*cors_origins, addin_origin]
+            logger.info(f"CORS: Word add-in origin {addin_origin} added")
+
     # PostgreSQL TLS is enforced in app/database.py via DB_SSL (require / internal);
     # asyncpg does not accept an `sslmode` URL parameter, so nothing is checked here.
 

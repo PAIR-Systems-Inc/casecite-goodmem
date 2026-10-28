@@ -17,7 +17,7 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from jwt.exceptions import PyJWTError as JWTError
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -27,6 +27,7 @@ from app.exceptions import (
     BadRequestError,
     ConflictError,
     ForbiddenError,
+    NotFoundError,
     RateLimitedError,
     ServiceUnavailableError,
     UnauthorizedError,
@@ -37,6 +38,9 @@ from app.models.db_models import User as DBUser
 from app.models.responses.auth import (
     AzureConfigResponse,
     CurrentUserResponse,
+    DeviceDecisionResponse,
+    DeviceStartResponse,
+    DeviceTokenResponse,
     LoginResponse,
     ResetTokenValidationResponse,
     SessionsResponse,
@@ -48,6 +52,8 @@ from app.models.schemas import (
     AzureLoginRequest,
     ChangePasswordRequest,
     DemoLoginRequest,
+    DeviceTokenRequest,
+    DeviceUserCodeRequest,
     EmailLoginRequest,
     ForgotPasswordRequest,
     RegisterRequest,
@@ -65,6 +71,7 @@ from app.services.auth import (
     mfa_enrollment_required,
     password_reset_service,
 )
+from app.services.device_auth import device_auth_service, format_user_code, normalize_user_code
 from app.utils.ip_resolution import get_client_ip
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -140,18 +147,40 @@ def start_session(request: Request, response: Response, user: User) -> str:
     makes the absolute lifetime, idle timeout and concurrent-session cap hold
     across refreshes. Returns the access token.
     """
+    access_token, refresh_token = _mint_session(request, user)
+    _set_auth_cookies(request, response, access_token, refresh_token)
+    return access_token
+
+
+DEVICE_CLIENT = "device"
+DEVICE_CLIENT_LABEL = "Word add-in"
+
+
+def _mint_session(request: Request, user: User, client: str | None = None) -> tuple[str, str]:
+    """Mint a token pair sharing one session id and register the session."""
     session_id = uuid.uuid4().hex
     access_token = auth_service.create_access_token(user, session_id=session_id)
-    refresh_token = auth_service.create_refresh_token(user, session_id=session_id)
+    refresh_token = auth_service.create_refresh_token(user, session_id=session_id, client=client)
     session_manager.create_session(
         user_id=user.id,
         ip_address=get_client_ip(request),
         user_agent=request.headers.get("user-agent", ""),
         jti=auth_service.verify_token(access_token).jti,
         session_id=session_id,
+        client=DEVICE_CLIENT_LABEL if client == DEVICE_CLIENT else None,
     )
-    _set_auth_cookies(request, response, access_token, refresh_token)
-    return access_token
+    return access_token, refresh_token
+
+
+def issue_device_session(request: Request, user: User) -> tuple[str, str]:
+    """A sign-in for a device-code grant: same session rules, no cookies.
+
+    The caller (the Word add-in's task pane) cannot hold the httpOnly cookies,
+    so both tokens go back in the body and the refresh token carries the
+    ``device`` client claim that lets /auth/refresh accept it from a body.
+    The session is labelled so it stands out in GET /auth/sessions.
+    """
+    return _mint_session(request, user, client=DEVICE_CLIENT)
 
 
 def user_from_row(db_user: DBUser, default_role: str = "attorney") -> User:
@@ -703,6 +732,29 @@ def _azure_default_role() -> UserRole:
     return role
 
 
+async def _refresh_token_from_request(request: Request) -> tuple[str | None, bool]:
+    """The refresh token and where it came from: (token, from_body).
+
+    The httpOnly cookie wins. A ``refresh_token`` field in a JSON body is read
+    only when there is no cookie at all, which is the device-code client's
+    situation; the caller then checks the token's client claim before trusting
+    it. A body that is not JSON is simply not a token.
+    """
+    cookie_token = request.cookies.get("refresh_token")
+    if cookie_token:
+        return cookie_token, False
+    try:
+        body = await request.json()
+    except (ValueError, UnicodeDecodeError, RuntimeError):
+        return None, False
+    if not isinstance(body, dict):
+        return None, False
+    token = body.get("refresh_token")
+    if not isinstance(token, str) or not token:
+        return None, False
+    return token, True
+
+
 @router.post("/refresh", response_model=TokenRefreshResponse)
 async def refresh_token(
     request: Request,
@@ -721,7 +773,7 @@ async def refresh_token(
     the concurrent-session cap, admin force sign-out).
     """
     try:
-        raw_token = request.cookies.get("refresh_token")
+        raw_token, from_body = await _refresh_token_from_request(request)
         if not raw_token:
             raise UnauthorizedError("No refresh token provided")
 
@@ -732,6 +784,11 @@ async def refresh_token(
         # Enforce refresh token type — reject access tokens
         if token_data.token_type != "refresh":
             raise UnauthorizedError("Invalid token type")
+
+        # A refresh token taken from the body is honoured only for a device-code
+        # session, which is the one kind that was issued without cookies.
+        if from_body and token_data.client != DEVICE_CLIENT:
+            raise UnauthorizedError("No refresh token provided")
 
         # Verify user still exists and is active in the database
         result = await db.execute(select(DBUser).where(DBUser.id == token_data.user_id))
@@ -785,7 +842,7 @@ async def refresh_token(
             # evicted, idle too long, or is past its absolute lifetime.
             raise UnauthorizedError("Session expired, please sign in again")
         new_refresh_token = auth_service.create_refresh_token(
-            user, session_id=token_data.session_id
+            user, session_id=token_data.session_id, client=token_data.client
         )
 
         await audit_service.log_event(
@@ -793,7 +850,17 @@ async def refresh_token(
             user_id=user.id,
             user_email=user.email,
             ip_address=get_client_ip(request),
+            details={"client": token_data.client or "web"},
         )
+
+        if token_data.client == DEVICE_CLIENT:
+            # A device-code session has no cookies: the rotated refresh token
+            # goes back in the body, exactly as it arrived.
+            return TokenRefreshResponse(
+                access_token=access_token,
+                expires_in=int(auth_service.access_token_expire.total_seconds()),
+                refresh_token=new_refresh_token,
+            )
 
         # Re-set BOTH cookies: new access token and the rotated refresh token.
         _set_auth_cookies(request, response, access_token, new_refresh_token)
@@ -1186,3 +1253,195 @@ async def verify_reset_token(body: VerifyResetTokenRequest) -> ResetTokenValidat
     """
     email = password_reset_service.verify_reset_token(body.token)
     return {"valid": email is not None}
+
+
+# ---------------------------------------------------------------------------
+# Device-code sign-in (Word add-in)
+# ---------------------------------------------------------------------------
+
+
+def _verification_uri(request: Request) -> str:
+    """Where the user approves a device code: the web app's /device page.
+
+    FRONTEND_URL is the configured source of truth; in local development the
+    request's Origin header stands in for it. Without either the path alone is
+    returned and the client prefixes its own server URL (in the bundled
+    deployment the web app and the API share one origin).
+    """
+    if settings.frontend_url:
+        base = settings.frontend_url.rstrip("/")
+    elif settings.debug:
+        base = request.headers.get("origin", "http://localhost:3000").rstrip("/")
+    else:
+        base = ""
+    return f"{base}/device"
+
+
+@router.post("/device/start", response_model=DeviceStartResponse)
+async def device_start(request: Request) -> DeviceStartResponse:
+    """Begin a device-code sign-in for a client that cannot hold a cookie session.
+
+    Returns the secret ``device_code`` the client polls with and the short
+    ``user_code`` it shows; a signed-in user approves that code on the web
+    app's ``/device`` page. Unauthenticated and rate-limited per IP.
+    """
+    grant = device_auth_service.start()
+    uri = _verification_uri(request)
+    return DeviceStartResponse(
+        device_code=grant.device_code,
+        user_code=grant.user_code,
+        verification_uri=uri,
+        verification_uri_complete=f"{uri}?user_code={grant.user_code}",
+        expires_in=grant.expires_in,
+        interval=grant.interval,
+    )
+
+
+async def _device_decider(
+    request: Request, current_user: TokenData, db: AsyncSession
+) -> DBUser | None:
+    """The signed-in user about to decide a device code, after the MFA gate.
+
+    ``get_current_user`` already refuses an account that REQUIRE_MFA obliges to
+    enrol; this repeats the check so the rule holds here even if the allowed
+    path list ever changes. An account with MFA enabled can only have reached
+    this point through /auth/mfa/verify, so its second factor is complete.
+    """
+    result = await db.execute(select(DBUser).where(DBUser.id == current_user.user_id))
+    db_user = result.scalar_one_or_none()
+    if db_user is None and not settings.debug:
+        raise UnauthorizedError("Account disabled or deleted")
+    if db_user is not None and mfa_enrollment_required(
+        bool(db_user.mfa_enabled), db_user.password_hash is not None
+    ):
+        await audit_service.log_event(
+            event_type=AuditEventType.ACCESS_DENIED,
+            user_id=current_user.user_id,
+            user_email=current_user.email,
+            details={"action": "device_code_decision", "reason": "mfa_enrollment_required"},
+            ip_address=get_client_ip(request),
+            success=False,
+        )
+        raise ForbiddenError(
+            "Set up multi-factor authentication before approving a device sign-in."
+        )
+    return db_user
+
+
+_DEVICE_CODE_NOT_PENDING = (
+    "That code is not waiting for approval. Codes expire after a few minutes; "
+    "ask the device for a new one and try again."
+)
+
+
+@router.post("/device/approve", response_model=DeviceDecisionResponse)
+async def device_approve(
+    request: Request,
+    body: DeviceUserCodeRequest,
+    current_user: TokenData = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> DeviceDecisionResponse:
+    """Approve a pending device code: the device's next poll signs in as the caller.
+
+    Made by the signed-in web app, so it is cookie-authenticated and
+    CSRF-protected like every other state-changing call. 404 for a code that
+    is unknown or expired, 409 for one already decided.
+    """
+    await _device_decider(request, current_user, db)
+    code = normalize_user_code(body.user_code)
+    try:
+        approved = device_auth_service.approve(code, current_user.user_id)
+    except ValueError as e:
+        raise ConflictError(str(e))
+    if not approved:
+        raise NotFoundError(_DEVICE_CODE_NOT_PENDING)
+    await audit_service.log_event(
+        event_type=AuditEventType.DEVICE_CODE_APPROVED,
+        user_id=current_user.user_id,
+        user_email=current_user.email,
+        details={"client": DEVICE_CLIENT_LABEL},
+        ip_address=get_client_ip(request),
+    )
+    return DeviceDecisionResponse(status="approved", user_code=format_user_code(code))
+
+
+@router.post("/device/deny", response_model=DeviceDecisionResponse)
+async def device_deny(
+    request: Request,
+    body: DeviceUserCodeRequest,
+    current_user: TokenData = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> DeviceDecisionResponse:
+    """Refuse a pending device code: the device's next poll reports access_denied."""
+    await _device_decider(request, current_user, db)
+    code = normalize_user_code(body.user_code)
+    try:
+        denied = device_auth_service.deny(code)
+    except ValueError as e:
+        raise ConflictError(str(e))
+    if not denied:
+        raise NotFoundError(_DEVICE_CODE_NOT_PENDING)
+    await audit_service.log_event(
+        event_type=AuditEventType.DEVICE_CODE_DENIED,
+        user_id=current_user.user_id,
+        user_email=current_user.email,
+        details={"client": DEVICE_CLIENT_LABEL},
+        ip_address=get_client_ip(request),
+    )
+    return DeviceDecisionResponse(status="denied", user_code=format_user_code(code))
+
+
+@router.post("/device/token", response_model=DeviceTokenResponse)
+async def device_token(
+    request: Request,
+    body: DeviceTokenRequest,
+    db: AsyncSession = Depends(get_db),
+) -> DeviceTokenResponse:
+    """Poll a pending device code (RFC 8628 states in ``status``).
+
+    Until a decision: ``authorization_pending``; polling faster than
+    ``interval``: ``slow_down``; past its lifetime: ``expired_token``; refused:
+    ``access_denied``. Once approved the code is consumed and a session is
+    issued through the same path as a login, labelled "Word add-in" in
+    GET /auth/sessions; both tokens are returned in the body because the
+    client has no cookies.
+    """
+    result = device_auth_service.poll(body.device_code)
+    if result.status != "approved" or not result.user_id:
+        return DeviceTokenResponse(status=result.status)
+
+    db_result = await db.execute(select(DBUser).where(DBUser.id == result.user_id))
+    db_user = db_result.scalar_one_or_none()
+    if db_user is None or not db_user.is_active:
+        await audit_service.log_event(
+            event_type=AuditEventType.LOGIN_FAILURE,
+            user_id=result.user_id,
+            details={"method": "device", "reason": "account_disabled"},
+            ip_address=get_client_ip(request),
+            success=False,
+        )
+        raise ForbiddenError("Account is disabled")
+
+    await db.execute(
+        update(DBUser)
+        .where(DBUser.id == db_user.id)
+        .values(last_login=datetime.now(UTC).replace(tzinfo=None))
+    )
+    await db.commit()
+    user = user_from_row(db_user)
+    access_token, refresh_token = issue_device_session(request, user)
+
+    await audit_service.log_event(
+        event_type=AuditEventType.LOGIN_SUCCESS,
+        user_id=user.id,
+        user_email=user.email,
+        details={"method": "device", "client": DEVICE_CLIENT_LABEL},
+        ip_address=get_client_ip(request),
+    )
+    return DeviceTokenResponse(
+        status="approved",
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=int(auth_service.access_token_expire.total_seconds()),
+        user=user_info(user, db_user),
+    )

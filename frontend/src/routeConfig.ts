@@ -12,6 +12,8 @@ const ROUTE_TO_MODE: Record<string, string> = {
   '/matters': 'matters',
   '/review-tables': 'review-tables',
   '/workflows': 'workflows',
+  // Approving the Word add-in's sign-in code; no sidebar entry.
+  '/device': 'device',
 };
 
 export const MODE_TO_ROUTE: Record<string, string> = {
@@ -25,6 +27,7 @@ export const MODE_TO_ROUTE: Record<string, string> = {
   'matters': '/matters',
   'review-tables': '/review-tables',
   'workflows': '/workflows',
+  'device': '/device',
 };
 
 /**

@@ -71,6 +71,9 @@ class AuditEventType(str, Enum):
     PASSWORD_CHANGE = "auth.password.change"  # nosec B105
     PASSWORD_RESET_REQUEST = "auth.password.reset.request"  # nosec B105
     PASSWORD_RESET_COMPLETE = "auth.password.reset.complete"  # nosec B105
+    # Device-code sign-in (Word add-in): a signed-in web user decides a code
+    DEVICE_CODE_APPROVED = "auth.device.approved"
+    DEVICE_CODE_DENIED = "auth.device.denied"
 
     # Document Access
     DOCUMENT_VIEW = "document.view"

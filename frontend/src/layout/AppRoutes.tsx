@@ -21,6 +21,7 @@ const ReviewTableView = React.lazy(() => import('../views/ReviewTableView'));
 const WorkflowsView = React.lazy(() => import('../views/WorkflowsView'));
 const WorkflowView = React.lazy(() => import('../views/WorkflowView'));
 const ResetPasswordView = React.lazy(() => import('../views/ResetPasswordView'));
+const DeviceApprovalView = React.lazy(() => import('../views/DeviceApprovalView'));
 const NotFoundView = React.lazy(() => import('../views/NotFoundView'));
 
 /** The emailed reset link must work signed out — it is how you get back in. */
@@ -80,6 +81,9 @@ export function AppRoutes() {
         <Route path="/review-tables" element={<ReviewTablesView />} />
         <Route path="/workflows/:id" element={<WorkflowView />} />
         <Route path="/workflows" element={<WorkflowsView />} />
+        {/* Approving the Word add-in's sign-in code: signed in only, so the
+            auth overlay runs first and the path survives it. */}
+        <Route path="/device" element={<DeviceApprovalView />} />
         <Route path="/" element={<Navigate to="/research" replace />} />
         <Route path="*" element={<NotFoundView />} />
       </Routes>

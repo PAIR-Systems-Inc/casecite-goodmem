@@ -147,7 +147,7 @@ class TestCSRFMiddlewareIntegration:
         request = MagicMock()
         request.url.path = "/api/v1/some-protected-endpoint"
         request.method = "POST"
-        request.cookies = {"_csrf": generate_signed_csrf_token()}
+        request.cookies = {"_csrf": generate_signed_csrf_token(), "access_token": "jwt"}
         request.headers = {}  # No X-CSRF-Token
 
         with (
@@ -172,7 +172,7 @@ class TestCSRFMiddlewareIntegration:
         request = MagicMock()
         request.url.path = "/api/v1/some-protected-endpoint"
         request.method = "POST"
-        request.cookies = {"_csrf": token1}
+        request.cookies = {"_csrf": token1, "access_token": "jwt"}
         request.headers = {"X-CSRF-Token": token2}
 
         with (
@@ -196,7 +196,7 @@ class TestCSRFMiddlewareIntegration:
         request = MagicMock()
         request.url.path = "/api/v1/some-protected-endpoint"
         request.method = "POST"
-        request.cookies = {"_csrf": bad_token}
+        request.cookies = {"_csrf": bad_token, "access_token": "jwt"}
         request.headers = {"X-CSRF-Token": bad_token}
 
         with (
@@ -208,3 +208,53 @@ class TestCSRFMiddlewareIntegration:
             response = await middleware.dispatch(request, AsyncMock())
         assert response.status_code == 403
 
+
+    async def test_middleware_skips_validation_without_auth_cookies(self):
+        """A bearer-token POST with no session cookie is not a CSRF vector.
+
+        The Word add-in's task pane never holds the httpOnly cookies, so it
+        authenticates by header alone; a cross-site page cannot forge that.
+        """
+        from unittest.mock import AsyncMock, MagicMock
+
+        from app.middleware.csrf import CSRFMiddleware
+
+        middleware = CSRFMiddleware(app=MagicMock())
+        request = MagicMock()
+        request.url.path = "/api/v1/chat"
+        request.method = "POST"
+        request.cookies = {}
+        request.headers = {"Authorization": "Bearer jwt"}
+        downstream = AsyncMock(return_value=MagicMock(status_code=200))
+
+        with (
+            patch.object(middleware, "_is_exempt", return_value=False),
+            patch("app.middleware.csrf.settings") as mock_settings,
+        ):
+            mock_settings.debug = False
+            mock_settings.csrf_disabled = False
+            response = await middleware.dispatch(request, downstream)
+        downstream.assert_awaited_once()
+        assert response.status_code == 200
+
+    async def test_middleware_validates_when_only_refresh_cookie_present(self):
+        """Any auth cookie, including just the refresh token, keeps validation on."""
+        from unittest.mock import AsyncMock, MagicMock
+
+        from app.middleware.csrf import CSRFMiddleware
+
+        middleware = CSRFMiddleware(app=MagicMock())
+        request = MagicMock()
+        request.url.path = "/api/v1/auth/refresh"
+        request.method = "POST"
+        request.cookies = {"refresh_token": "jwt"}
+        request.headers = {}
+
+        with (
+            patch.object(middleware, "_is_exempt", return_value=False),
+            patch("app.middleware.csrf.settings") as mock_settings,
+        ):
+            mock_settings.debug = False
+            mock_settings.csrf_disabled = False
+            response = await middleware.dispatch(request, AsyncMock())
+        assert response.status_code == 403
