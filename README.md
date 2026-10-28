@@ -10,7 +10,7 @@ Nine tools behind one login, all reading from the same document corpus.
 
 | | |
 |---|---|
-| **Research** (`/research`) | Chat over your firm's documents — semantic retrieval with keyword (BM25) rescoring of the candidates, and inline citations back to the source. |
+| **Research** (`/research`) | Chat over your firm's documents — semantic retrieval with keyword (BM25) rescoring of the candidates, and inline citations back to the source. **Deep research** for bigger questions: a plan of sub-questions you edit before anything runs, each researched over your documents and CourtListener, every quote verified against the text it came from, and a step log of what was searched. |
 | **Documents** (`/documents`) | Upload, index, and organize your corpus. Import from Google Drive, OneDrive, Box, Dropbox, Filevine, or Clio — OAuth sync, or a file picker where OAuth verification isn't needed. iManage and NetDocuments connectors exist but are experimental (untested against a live tenant) and off unless `EXPERIMENTAL_CONNECTORS=true`. |
 | **Contracts** (`/contracts`) | Full contract review pipeline: analyze an indexed contract or pasted text, chat with a single contract, compare 2–4 contracts clause-by-clause against a baseline, and export a redline, a draft, or the analysis itself. |
 | **Tabular review** (`/review-tables`) | Review hundreds of contracts at once: define the fields you need, point the table at a set of documents, and get one row per document with every value tied to the exact passage that supports it (verified, unverified or not found). Re-run a cell, row or column; see the cost before a run; export to Excel with a Citations sheet, or CSV. |

@@ -7,7 +7,8 @@ import { ANALYSIS_MODES } from '../constants/analysisModes';
 import { groupCitationsBySource, claimLabel, mappingToCitation } from '../utils';
 import type { ChatMessage } from '../types';
 import s from './ResearchView.module.css';
-import { Icon, StrategyBriefCard, FloatingChatDock, AuthorityMapCard, AuthorityMapRecordCard, MatterFileWorkspace, AnnotatedDocument, PdfDocumentViewer, AssistantAvatar, MessageMarkdown, AiNotice } from '../components';
+import { Icon, StrategyBriefCard, FloatingChatDock, AuthorityMapCard, AuthorityMapRecordCard, MatterFileWorkspace, AnnotatedDocument, PdfDocumentViewer, AssistantAvatar, MessageMarkdown, AiNotice, DeepResearchPanel } from '../components';
+import { useDeepResearchStore } from '../stores/deepResearchStore';
 
 // Static constants only (no components, no rendering functions).
 // Composer placeholder ticker: each phrase slides up into view in turn.
@@ -47,6 +48,8 @@ function ResearchView() {
   const { isAuthenticated, setShowSignupModal } = useAuthStore();
   const { fileInputRef } = useApp();
   const analysisModes = ANALYSIS_MODES;
+  const deepResearchOpen = useDeepResearchStore((st) => st.open);
+  const toggleDeepResearch = useDeepResearchStore((st) => st.toggle);
 
   // Local UI state only: the floating conversation dock and composer collapse.
   const [chatOpen, setChatOpen] = useState(true);
@@ -326,6 +329,7 @@ function ResearchView() {
             {/* Input */}
             {!composerCollapsed && (
           <div className={s.inputSection}>
+            {deepResearchOpen && isAuthenticated && <DeepResearchPanel docFilter={mainDocFilter} />}
             <div className={s.inputWrap}>
               {/* Lock overlay when not authenticated */}
               {!isAuthenticated && (
@@ -365,6 +369,16 @@ function ResearchView() {
                   <span>Press <kbd className={s.kbd}>Enter</kbd> to search</span>
                   <span>{'\u2022'}</span>
                   <span><kbd className={s.kbd}>{'\u2318'}K</kbd> to focus</span>
+                  <span>{'\u2022'}</span>
+                  <button
+                    type="button"
+                    className={`${s.deepResearchBtn} ${deepResearchOpen ? s.deepResearchBtnActive : ''}`}
+                    onClick={toggleDeepResearch}
+                    aria-pressed={deepResearchOpen}
+                    title="Plan a multi-step research run with verified sources"
+                  >
+                    <Icon name="ScanSearch" size={11} /> Deep research
+                  </button>
                 </>
               ) : (
                 <span className={s.unauthHint}>Create a free account to access all features</span>

@@ -5,6 +5,7 @@ evaluating the product — what does **not** exist yet.
 
 ## Current
 - Research chat over the firm's documents with citations back to the source and a case-law guard
+- Deep research: a question planned into sub-questions the user edits, each researched over the firm's documents and CourtListener as one background job, every quote verified against its passage and every citation joined back to a real source in code, with a step log and bounded cost
 - Contract analysis, redlining as native Word tracked changes, and long-document drafting
 - Tabular review (`/review-tables`): one user-defined field schema across many documents, each value quote-verified against the source, re-runnable per cell, row or column, exported to Excel with a Citations sheet or CSV
 - Strategy briefs with quote-verified authorities (API only)

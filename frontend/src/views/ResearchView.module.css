@@ -643,6 +643,33 @@
   font-family: inherit;
 }
 
+/* Deep research toggle in the composer hints */
+.deepResearchBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--gray-200);
+  border-radius: 9999px;
+  background: white;
+  color: var(--gray-500);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.deepResearchBtn:hover {
+  color: var(--navy-800);
+  border-color: var(--gray-300);
+}
+
+.deepResearchBtnActive {
+  background: var(--navy-700);
+  border-color: var(--navy-700);
+  color: var(--on-secondary);
+}
+
 /* Document Selection Panel (Chat With) */
 
 .caseLawToggle {

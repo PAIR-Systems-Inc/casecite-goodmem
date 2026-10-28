@@ -504,6 +504,103 @@ class ReviewTableRunStarted(BaseModel):
     fields: int
 
 
+# ---- Deep research (planned, multi-step, source-verified research) ----
+
+
+class DeepResearchTool(str, Enum):
+    """The fixed tool set a sub-question may use. Nothing else is callable."""
+
+    DOCUMENTS = "documents"  # semantic search over the firm's indexed documents
+    CASE_LAW = "case_law"  # CourtListener opinion search (the cited passage is read in full)
+
+
+class DeepResearchSubQuestion(BaseModel):
+    """One step of a research plan, as proposed by the planner and edited by the user."""
+
+    id: str = Field(..., min_length=1, max_length=16, pattern=r"^[A-Za-z0-9_-]+$")
+    question: str = Field(..., min_length=3, max_length=1000)
+    tools: list[DeepResearchTool] = Field(..., min_length=1, max_length=2)
+
+    @model_validator(mode="after")
+    def _tidy(self) -> "DeepResearchSubQuestion":
+        self.question = self.question.strip()
+        self.tools = list(dict.fromkeys(self.tools))
+        return self
+
+
+class DeepResearchPlanRequest(BaseModel):
+    question: str = Field(..., min_length=3, max_length=4000)
+    matter_id: str | None = None
+    # An explicit document pick (from the Research file workspace); when given,
+    # the firm-document tool searches only those documents.
+    document_filter: DocumentFilter | None = None
+
+
+class DeepResearchScope(BaseModel):
+    """What a run may search: stated up front so the user sees it before running."""
+
+    matter_id: str | None = None
+    # None means every indexed document the caller can read.
+    document_ids: list[str] | None = None
+    documents_in_scope: int
+    case_law_available: bool
+    citation_check_available: bool
+
+
+class DeepResearchPlanResponse(BaseModel):
+    question: str
+    plan: list[DeepResearchSubQuestion]
+    scope: DeepResearchScope
+    caps: dict[str, int]
+    model: str
+
+
+class DeepResearchRunRequest(DeepResearchPlanRequest):
+    plan: list[DeepResearchSubQuestion] = Field(..., min_length=1, max_length=20)
+
+    @field_validator("plan")
+    @classmethod
+    def _ids_unique(cls, v: list[DeepResearchSubQuestion]) -> list[DeepResearchSubQuestion]:
+        seen: set[str] = set()
+        for step in v:
+            if step.id in seen:
+                raise ValueError(f"Duplicate sub-question id: {step.id}")
+            seen.add(step.id)
+        return v
+
+
+class DeepResearchRunStarted(BaseModel):
+    run_id: str
+    job_id: str
+    poll_url: str
+    sub_questions: int
+
+
+class DeepResearchRunSummary(BaseModel):
+    id: str
+    owner_id: str
+    matter_id: str | None
+    role: str  # "owner" | "member"
+    question: str
+    status: str
+    sub_questions: int
+    sources_cited: int | None = None
+    created_at: datetime
+    completed_at: datetime | None
+
+
+class DeepResearchRunDetail(DeepResearchRunSummary):
+    plan: list[DeepResearchSubQuestion]
+    scope: dict[str, Any]
+    job_id: str | None
+    result: dict[str, Any] | None
+    error: str | None
+
+
+class DeepResearchListResponse(BaseModel):
+    runs: list[DeepResearchRunSummary]
+
+
 class ChatSessionMessage(BaseModel):
     """A persisted message within a chat session thread."""
 

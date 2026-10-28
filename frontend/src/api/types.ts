@@ -573,6 +573,190 @@ export interface ReviewTableUpdateInput {
   document_ids?: string[];
 }
 
+// ==================== Deep Research Types ====================
+
+export type DeepResearchTool = 'documents' | 'case_law';
+
+export interface DeepResearchSubQuestion {
+  id: string;
+  question: string;
+  tools: DeepResearchTool[];
+}
+
+/** The Research file-workspace pick, as the deep-research endpoints accept it. */
+export interface DeepResearchDocumentFilter {
+  document_ids?: string[] | null;
+  folder_paths?: string[] | null;
+  sources?: string[] | null;
+  doc_types?: string[] | null;
+  include_subfolders?: boolean;
+  search_all?: boolean;
+}
+
+export interface DeepResearchScope {
+  matter_id: string | null;
+  /** null = every indexed document the caller can read. */
+  document_ids: string[] | null;
+  documents_in_scope: number;
+  case_law_available: boolean;
+  citation_check_available: boolean;
+}
+
+export interface DeepResearchPlanInput {
+  question: string;
+  matter_id?: string | null;
+  document_filter?: DeepResearchDocumentFilter | null;
+}
+
+export interface DeepResearchPlanResponse {
+  question: string;
+  plan: DeepResearchSubQuestion[];
+  scope: DeepResearchScope;
+  caps: Record<string, number>;
+  model: string;
+}
+
+export interface DeepResearchRunInput extends DeepResearchPlanInput {
+  plan: DeepResearchSubQuestion[];
+}
+
+export interface DeepResearchRunStarted {
+  run_id: string;
+  job_id: string;
+  poll_url: string;
+  sub_questions: number;
+}
+
+export interface DeepResearchToolCall {
+  tool: string;
+  query: string;
+  passages: number;
+  error?: string;
+}
+
+export interface DeepResearchClaim {
+  text: string;
+  refs: string[];
+  quote: string | null;
+  /** The quote was located, character for character, in a cited passage. */
+  verified: boolean;
+  quote_ref: string | null;
+}
+
+export interface DeepResearchStep {
+  id: string;
+  question: string;
+  tools: string[];
+  status: 'pending' | 'completed' | 'failed' | string;
+  tool_calls: DeepResearchToolCall[];
+  passages_found: number;
+  followup_query: string | null;
+  answer: string;
+  claims: DeepResearchClaim[];
+  quotes_verified: number;
+  quotes_unverified: number;
+  invalid_refs_stripped: number;
+  error: string | null;
+  duration_ms: number;
+}
+
+export interface DeepResearchTreatment {
+  status: 'checked' | 'unavailable' | 'error' | string;
+  warning_level?: string;
+  is_good_law?: boolean | null;
+  case_name?: string;
+  url?: string | null;
+  negative?: number;
+  caution?: number;
+  detail?: string;
+}
+
+export interface DeepResearchSource {
+  ref: string;
+  type: 'document' | 'case_law' | string;
+  title: string;
+  snippet: string;
+  excerpt_source: 'index' | 'opinion' | 'snippet' | string;
+  document_id: string | null;
+  chunk_index: number | null;
+  opinion_id: string | null;
+  cluster_id: string | null;
+  citation: string | null;
+  url: string | null;
+  court: string | null;
+  date_filed: string | null;
+  score: number | null;
+  sub_question_ids: string[];
+  quotes_verified: number;
+  treatment?: DeepResearchTreatment;
+}
+
+export interface DeepResearchResultScope {
+  matter_id: string | null;
+  document_ids: string[] | null;
+  documents_in_scope: number | null;
+  case_law_searched: boolean;
+  courtlistener_contacted: boolean;
+  tool_calls: number;
+  tool_call_cap: number;
+  passages_collected: number;
+  passages_dropped_over_cap: number;
+  passages_cited: number;
+  steps_failed: number;
+  coverage_note: string;
+}
+
+export interface DeepResearchVerification {
+  quotes_verified: number;
+  quotes_unverified: number;
+  invalid_refs_stripped: number;
+  case_references_removed: string[];
+  citations_checked: number;
+}
+
+export interface DeepResearchResult {
+  run_id?: string;
+  question: string;
+  answer: string;
+  key_findings: { text: string; refs: string[] }[];
+  open_questions: string[];
+  sub_questions: DeepResearchStep[];
+  sources: DeepResearchSource[];
+  scope: DeepResearchResultScope;
+  verification: DeepResearchVerification;
+  model: string;
+  notice: string;
+}
+
+export interface DeepResearchRunSummary {
+  id: string;
+  owner_id: string;
+  matter_id: string | null;
+  role: 'owner' | 'member' | string;
+  question: string;
+  status: 'running' | 'completed' | 'failed' | 'cancelled' | string;
+  sub_questions: number;
+  sources_cited: number | null;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export interface DeepResearchRunDetail extends DeepResearchRunSummary {
+  plan: DeepResearchSubQuestion[];
+  scope: { matter_id: string | null; document_ids: string[] | null; documents_in_scope: number };
+  job_id: string | null;
+  result: DeepResearchResult | null;
+  error: string | null;
+}
+
+export interface DeepResearchJob {
+  job_id: string;
+  status: string; // pending | processing | completed | failed | cancelled
+  result?: DeepResearchResult | null;
+  error?: string | null;
+  progress?: { message: string; fraction: number | null } | null;
+}
+
 export interface MatterActivityEvent {
   id: number;
   timestamp: string;
@@ -1270,6 +1454,15 @@ export interface ApiClient {
   runReviewTable(tableId: string, scope?: { document_ids?: string[]; field_keys?: string[] }): Promise<ReviewTableRunStarted>;
   getReviewTableJob(jobId: string): Promise<ReviewTableJob>;
   exportReviewTable(tableId: string, format: 'xlsx' | 'csv'): Promise<Blob>;
+
+  // Deep research
+  planDeepResearch(input: DeepResearchPlanInput): Promise<DeepResearchPlanResponse>;
+  runDeepResearch(input: DeepResearchRunInput): Promise<DeepResearchRunStarted>;
+  listDeepResearch(matterId?: string | null, limit?: number): Promise<{ runs: DeepResearchRunSummary[] }>;
+  getDeepResearch(runId: string): Promise<DeepResearchRunDetail>;
+  deleteDeepResearch(runId: string): Promise<{ status: string; id: string }>;
+  getDeepResearchJob(jobId: string): Promise<DeepResearchJob>;
+  cancelDeepResearchJob(jobId: string): Promise<{ status: string; job_id: string }>;
 
   // Connectors
   getConnectors(): Promise<ConnectorDataResponse>;

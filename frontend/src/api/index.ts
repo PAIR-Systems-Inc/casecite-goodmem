@@ -9,6 +9,7 @@ import './workspaceSessions';
 import './documents';
 import './matters';
 import './reviewTables';
+import './deepResearch';
 import './settings';
 import './connectors';
 import './pickers';

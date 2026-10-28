@@ -535,6 +535,14 @@ class Settings(BaseSettings):
     # Each is one utility-model call; the bound keeps a 200-contract review from
     # opening 200 provider connections at once.
     review_table_concurrency: int = 4
+    # Deep research (/deep-research): sub-questions researched at the same time
+    # within one run, and the hard caps that keep a run's cost predictable.
+    deep_research_concurrency: int = 3
+    deep_research_max_subquestions: int = 8
+    deep_research_max_tool_calls: int = 24
+    deep_research_max_passages: int = 60
+    # A sub-question may propose this many follow-up searches (0 disables).
+    deep_research_followup_depth: int = 1
     # Jobs kept by the in-memory fallback (Redis unavailable) before the oldest
     # finished ones are evicted. Each can hold up to job_max_result_size.
     job_memory_max_jobs: int = 200

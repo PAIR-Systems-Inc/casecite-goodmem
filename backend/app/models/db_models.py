@@ -34,6 +34,9 @@ from app.models.contract_analysis import (  # noqa: F401
     ContractParty,
 )
 
+# Deep research (planned multi-step research runs)
+from app.models.deep_research import DeepResearchRun  # noqa: F401
+
 # Enums
 from app.models.enums import (  # noqa: F401
     DocumentStatus,
