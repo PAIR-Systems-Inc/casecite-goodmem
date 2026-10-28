@@ -56,3 +56,6 @@ backups/
 **/*.key
 **/*.crt
 **/credentials.json
+
+# Screenshots are README assets, not part of the image
+docs/screenshots/
