@@ -102,6 +102,10 @@ services:
     environment:
       # Non-secret configuration only; secrets come from .env via env_file
       - DEBUG=false
+      # .env.example ships ENVIRONMENT=development so a fresh copy runs locally;
+      # this stack is the production deployment, so label it as such for
+      # /health and the logs regardless of what .env says.
+      - ENVIRONMENT=production
       # The bundled postgres:16-alpine has no TLS and lives only on the isolated
       # casecite_network below, so default to the in-network no-TLS mode. If you
       # point DATABASE_URL at a managed/external database, set DB_SSL=require.

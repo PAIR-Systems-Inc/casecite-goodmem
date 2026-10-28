@@ -20,7 +20,7 @@ deliberately not a dependency (see `backend/requirements.txt`).
 
 ## Python (backend image)
 
-136 packages pinned in `backend/requirements.lock`. The lock is
+142 packages pinned in `backend/requirements.lock`. The lock is
 universal, so it includes a few packages that install only on some platforms.
 
 | Package | Version | License |
@@ -33,7 +33,7 @@ universal, so it includes a few packages that install only on some platforms.
 | [alembic](https://alembic.sqlalchemy.org) | 1.13.1 | MIT |
 | [annotated-doc](https://github.com/fastapi/annotated-doc) | 0.0.4 | MIT |
 | [annotated-types](https://github.com/annotated-types/annotated-types) | 0.7.0 | MIT License |
-| [anthropic](https://github.com/anthropics/anthropic-sdk-python) | 0.18.1 | MIT License |
+| [anthropic](https://github.com/anthropics/anthropic-sdk-python) | 2.3.0 | Apache-2.0 |
 | [anyio](https://pypi.org/project/anyio/) | 4.14.2 | MIT |
 | [async-timeout](https://github.com/aio-libs/async-timeout) | 5.0.1 | Apache 2 |
 | [asyncpg](https://pypi.org/project/asyncpg/) | 0.29.0 | Apache License, Version 2.0 |
@@ -49,27 +49,32 @@ universal, so it includes a few packages that install only on some platforms.
 | [cryptography](https://pypi.org/project/cryptography/) | 50.0.2 | Apache-2.0 OR BSD-3-Clause |
 | [distro](https://github.com/python-distro/distro) | 1.9.0 | Apache License, Version 2.0 |
 | [dnspython](https://pypi.org/project/dnspython/) | 2.9.0 | ISC |
+| [docstring-parser](https://pypi.org/project/docstring-parser/) | 0.18.0 | MIT |
 | [durationpy](https://github.com/icholy/durationpy) | 0.10 | MIT |
 | [email-validator](https://github.com/JoshData/python-email-validator) | 2.3.0 | Unlicense |
 | [et-xmlfile](https://foss.heptapod.net/openpyxl/et_xmlfile) | 2.0.0 | MIT |
-| [fastapi](https://github.com/fastapi/fastapi) | 0.139.0 | MIT |
+| [fastapi](https://github.com/fastapi/fastapi) | 0.162.0 | MIT |
 | [filelock](https://github.com/tox-dev/py-filelock) | 4.2.4 | MIT |
 | [flatbuffers](https://google.github.io/flatbuffers/) | 25.12.19 | Apache 2.0 |
 | [frozenlist](https://github.com/aio-libs/frozenlist) | 1.8.0 | Apache-2.0 |
 | [fsspec](https://github.com/fsspec/filesystem_spec) | 2026.6.0 | BSD-3-Clause |
-| [google-auth](https://github.com/googleapis/google-cloud-python/tree/main/packages/google-auth) | 2.55.2 | Apache 2.0 |
-| [google-genai](https://github.com/googleapis/python-genai) | 1.2.0 | Apache-2.0 |
+| [google-auth](https://github.com/googleapis/google-cloud-python/tree/main/packages/google-auth) | 2.62.0 | Apache 2.0 |
+| [google-genai](https://github.com/googleapis/python-genai) | 2.33.0 | Apache-2.0 |
 | [googleapis-common-protos](https://github.com/googleapis/google-cloud-python/tree/main/packages/googleapis-common-protos) | 1.75.0 | Apache 2.0 |
 | [greenlet](https://greenlet.readthedocs.io) | 3.5.3 | MIT AND PSF-2.0 |
 | [grpcio](https://grpc.io) | 1.82.1 | Apache-2.0 |
 | [h11](https://github.com/python-hyper/h11) | 0.16.0 | MIT |
 | [hf-xet](https://github.com/huggingface/xet-core) | 1.5.1 | Apache-2.0 |
 | [httpcore](https://www.encode.io/httpcore/) | 1.0.9 | BSD-3-Clause |
+| [httpcore2](https://github.com/pydantic/httpx2) | 2.16.0 | BSD-3-Clause |
 | [httptools](https://github.com/MagicStack/httptools) | 0.8.0 | MIT |
-| [httpx](https://github.com/encode/httpx) | 0.27.0 | BSD License |
+| [httpx](https://github.com/encode/httpx) | 0.28.1 | BSD-3-Clause |
+| [httpx2](https://github.com/pydantic/httpx2) | 2.16.0 | BSD-3-Clause |
+| [httpx2-jsfetch](https://pypi.org/project/httpx2-jsfetch/) | 1.0 | BSD-3-Clause |
 | [huggingface-hub](https://github.com/huggingface/huggingface_hub) | 1.23.0 | Apache-2.0 |
 | [idna](https://github.com/kjd/idna) | 3.18 | BSD-3-Clause |
 | [importlib-resources](https://github.com/python/importlib_resources) | 7.1.0 | Apache-2.0 |
+| [jiter](https://github.com/pydantic/jiter/) | 0.18.0 | MIT |
 | [jsonschema](https://github.com/python-jsonschema/jsonschema) | 4.26.0 | MIT |
 | [jsonschema-specifications](https://github.com/python-jsonschema/jsonschema-specifications) | 2025.9.1 | MIT |
 | [kubernetes](https://github.com/kubernetes-client/python) | 36.0.2 | Apache License Version 2.0 |
@@ -84,7 +89,7 @@ universal, so it includes a few packages that install only on some platforms.
 | [oauthlib](https://github.com/oauthlib/oauthlib) | 4.0.0 | BSD-3-Clause |
 | [olefile](https://www.decalage.info/python/olefileio) | 0.47 | BSD |
 | [onnxruntime](https://onnxruntime.ai) | 1.27.0 | MIT License |
-| [openai](https://github.com/openai/openai-python) | 1.12.0 | Apache Software License |
+| [openai](https://github.com/openai/openai-python) | 3.40.0 | Apache-2.0 |
 | [openpyxl](https://openpyxl.readthedocs.io) | 3.1.5 | MIT |
 | [opentelemetry-api](https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-api) | 1.45.1 | Apache-2.0 |
 | [opentelemetry-exporter-otlp-common](https://github.com/open-telemetry/opentelemetry-python/tree/main/exporter/opentelemetry-exporter-otlp-common) | 0.66b1 | Apache-2.0 |
@@ -129,7 +134,7 @@ universal, so it includes a few packages that install only on some platforms.
 | [python-multipart](https://github.com/Kludex/python-multipart) | 0.0.32 | Apache-2.0 |
 | [python-pptx](https://github.com/scanny/python-pptx) | 1.0.2 | MIT |
 | [pyyaml](https://pyyaml.org/) | 6.0.3 | MIT |
-| [redis](https://github.com/redis/redis-py) | 5.0.3 | MIT |
+| [redis](https://github.com/redis/redis-py) | 8.1.0 | MIT |
 | [referencing](https://github.com/python-jsonschema/referencing) | 0.37.0 | MIT |
 | [regex](https://github.com/mrabarnett/mrab-regex) | 2026.7.10 | Apache-2.0 AND CNRI-Python |
 | [reportlab](https://www.reportlab.com/) | 5.0.1 | BSD License |
@@ -146,9 +151,10 @@ universal, so it includes a few packages that install only on some platforms.
 | [starlette](https://github.com/Kludex/starlette) | 1.3.1 | BSD-3-Clause |
 | [striprtf](https://github.com/joshy/striprtf) | 0.0.33 | BSD-3-Clause |
 | [tenacity](https://github.com/jd/tenacity) | 8.2.3 | Apache 2.0 |
-| [tiktoken](https://pypi.org/project/tiktoken/) | 0.6.0 | MIT |
+| [tiktoken](https://pypi.org/project/tiktoken/) | 0.14.0 | MIT |
 | [tokenizers](https://github.com/huggingface/tokenizers) | 0.23.1 | Apache Software License |
 | [tqdm](https://pypi.org/project/tqdm/) | 4.68.4 | MPL-2.0 AND MIT |
+| [truststore](https://github.com/sethmlarson/truststore) | 0.10.5 | MIT |
 | [typer](https://github.com/fastapi/typer) | 0.26.8 | MIT |
 | [typing-extensions](https://github.com/python/typing_extensions) | 4.16.0 | PSF-2.0 |
 | [typing-inspection](https://github.com/pydantic/typing-inspection) | 0.4.2 | MIT |

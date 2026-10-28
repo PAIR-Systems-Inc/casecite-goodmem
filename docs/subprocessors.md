@@ -33,7 +33,12 @@ InfoSec team can assess and control it.
 | **OpenAI public blob storage** (`openaipublic.blob.core.windows.net`) | First use of the tokenizer after a fresh install outside Docker (the Docker image ships the file in `/opt/tiktoken`) | Nothing about your data — a one-time download of the `tiktoken` encoding file | Behind a strict egress allowlist, allow this host once or pre-seed `TIKTOKEN_CACHE_DIR` |
 
 A custom OpenAI-compatible gateway (Groq, Together, an internal proxy, …) set
-through `OPENAI_BASE_URL` receives what the OpenAI row describes.
+through `OPENAI_BASE_URL` receives what the OpenAI row describes. It also
+receives the `Authorization` header of every request, which carries the
+user's own OpenAI key when they have saved one, so the endpoint an admin
+configures (in `.env` or at runtime under Settings → API Keys → Local LLM)
+is trusted with those keys. Runtime changes to it are written to the audit
+log; review them as you would a change to the provider allowlist.
 
 ## Calls made by the user's browser
 

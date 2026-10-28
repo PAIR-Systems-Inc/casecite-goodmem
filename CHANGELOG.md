@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Security
+- Connector OAuth callbacks are bound to the browser that started the flow with a signed HttpOnly cookie; a callback arriving without it, or with another user's binding, is refused (403) and audited.
+- Saving admin connector credentials merges into the stored values, so a field omitted from the request keeps its value instead of being blanked; an empty string clears just that field.
+- Invitations write their audit entry before the account is committed, so with `AUDIT_FAIL_CLOSED=true` a failed audit write refuses the invite rather than creating an account whose temporary password is lost.
+- A failed permission-override load serves the defaults for one short back-off window without caching them and logs at error level.
+- Azure AD SSO normalises the email in the identity service and the login route, and provisions a fresh local id instead of reusing the Azure object id, so a deleted user who signs in again is not caught by the deletion tombstone.
+- Authority maps require `document_id` to name a document the caller owns or can read through a matter (404 otherwise).
+- Dropbox disconnect mints a fresh access token from the refresh token before revoking; revocation failures never block user deletion.
+- The nginx site config inside the image is root-owned 0644 instead of writable by the application user.
+- An access token whose user row no longer exists (deleted by hand, or a database restored from before the account existed) is rejected outside DEBUG instead of staying valid for its remaining lifetime.
+- `AUDIT_HMAC_KEY` must be at least 32 characters; the audit chain uses its first 32 bytes, so a short value silently weakened the tamper evidence.
+- A second process serving the same data directory (`uvicorn --workers 2`, gunicorn, a second container replica) is refused at startup through an advisory lock on `data/.instance.lock`, not only when `UVICORN_WORKERS` says so. Linux only; skipped on Windows.
+- Chat error logs outside DEBUG record the exception type only, so a parse error can no longer quote privileged chat text into long-retained logs.
+- Mako 1.3.x advisory (CVE-2026-102991) resolved by bumping the lock.
+
+### Changed
+- Backend SDKs: openai 3.40, anthropic 2.3, google-genai 2.33, fastapi 0.162, redis 8.1, httpx 0.28.1, tiktoken 0.14; mypy 2.4 (which now checks every file, a comment starting with "type:" had stopped it at the first).
+- `eslint-plugin-react-hooks` 7.1.1: the component-identity and declaration-order findings it raised are fixed; its `set-state-in-effect` rule is off with a tracked follow-up (see `frontend/.eslintrc.cjs`).
+- `GET /documents` returns a real cross-page total; the Knowledge Base, header count and picker imports walk every page instead of showing the newest 50.
+- `GET /tools/cases/{id}?kind=opinion|cluster` tries the stated id kind first and reports `resolved_as`; chat citations carry `opinion_id`, `cluster_id` and `verified` through the strategy brief and case-law builders.
+- Chat retrieval and scoped filters include documents shared through the caller's matters. Strategy briefs scope to every selected folder.
+- Job polling has its own 300/min per-IP bucket; the UI backs off on 429 and retries transient errors.
+- Connector sync honours `Retry-After`, skips and reports an unreadable subfolder instead of aborting, pages Box with markers, and lists Google Shared Drive items. Sync and picker-import errors are reported per file as `{name, reason}`.
+- Chat-triggered authority maps are stored on the assistant message (migration 014) and reopen from History.
+- The bundled production stack labels itself `ENVIRONMENT=production` regardless of the `.env` default; `APP_DISPLAY_NAME` and `POSTGRES_USER` are documented in `.env.example`.
+- A `SENDGRID_API_KEY` with the default `NOREPLY_EMAIL` sender logs a warning at startup: mail from `noreply@casecite.com` fails SPF/DMARC on a domain you do not control.
+- The "Browse Documents" picker uses the shared accessible dialog shell (role, focus trap, Escape); an API-key save that fails after Settings is closed now raises a toast instead of failing silently.
+
+### Fixed
+- `backup_database.sh` no longer deletes the plaintext dump and reports success when encryption failed.
+- Migration 005 is inspector-guarded so a database built by `create_all` and stamped at 004 no longer crash-loops the container; migration 009's downgrade drops the index by its real name.
+- Caddy's body limit is 100 MiB (was 10^8 bytes, below nginx and `MAX_UPLOAD_SIZE`).
+- `NOTICE.md` is regenerated from the current lock files and CI fails when it goes stale.
+- Public bug reports: the issue template now asks reporters to redact client data.
+
 ## [1.2.0] - 2026-10-04
 
 ### Added

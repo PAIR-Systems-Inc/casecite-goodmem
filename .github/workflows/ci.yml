@@ -183,6 +183,13 @@ jobs:
           fi
           echo "✅ requirements.lock matches requirements.txt"
 
+      - name: Check NOTICE.md is current
+        # NOTICE.md ships inside the image (Dockerfile copies it to /app), so a
+        # dependency bump that is not reflected there distributes wrong
+        # third-party attributions. Standard library only; needs pypi.org.
+        run: |
+          python3 scripts/generate_notice.py --check
+
       - name: Install backend dependencies for MyPy
         run: |
           pip install -r backend/requirements.lock
