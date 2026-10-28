@@ -52,10 +52,10 @@ const FIELD_LABELS: Record<string, string> = {
 };
 
 interface SourcesTabProps {
-  s: Record<string, string>;
+  styles: Record<string, string>;
 }
 
-export function SourcesTab({ s }: SourcesTabProps) {
+export function SourcesTab({ styles }: SourcesTabProps) {
   const id = useId();
   const connectors = useConnectorsStore((st) => st.connectors);
   const addToast = useUIStore((st) => st.addToast);
@@ -78,10 +78,18 @@ export function SourcesTab({ s }: SourcesTabProps) {
   const statusFor = (src: SourceMeta): { label: string; cls: string } => {
     const cred = src.provider ? credStatus[src.provider] : undefined;
     const c = connectors.find((x: Connector) => x.id === src.id);
-    if (c?.connected) return { label: 'Connected', cls: t.connected };
-    if (cred?.source === 'instance') return { label: 'Configured here', cls: t.configured };
-    if (cred?.configured || (c && c.configured !== false)) return { label: 'Configured', cls: t.configured };
-    return { label: 'Not configured', cls: t.notConfigured };
+    if (c && c.available === false) {
+      return { label: 'Not enabled on this server', cls: t.notConfigured };
+    }
+    const base = (() => {
+      if (c?.connected) return { label: 'Connected', cls: t.connected };
+      if (cred?.source === 'instance') return { label: 'Configured here', cls: t.configured };
+      if (cred?.configured || (c && c.configured !== false)) return { label: 'Configured', cls: t.configured };
+      return { label: 'Not configured', cls: t.notConfigured };
+    })();
+    // Experimental connectors are enabled deliberately (EXPERIMENTAL_CONNECTORS);
+    // keep the reminder visible wherever their status is shown.
+    return c?.experimental ? { ...base, label: `${base.label} · experimental` } : base;
   };
 
   const saveProvider = async (provider: string) => {
@@ -215,7 +223,7 @@ export function SourcesTab({ s }: SourcesTabProps) {
   );
 
   return (
-    <div className={s.tabPanel}>
+    <div className={styles.tabPanel}>
       <p className={t.intro}>
         File-picker credentials can be set two ways: server environment variables (self-hosted
         installs) or entered here — stored encrypted, applied immediately, and taking precedence

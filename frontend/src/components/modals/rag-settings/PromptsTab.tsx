@@ -8,10 +8,10 @@ import logger from '../../../utils/logger';
 interface PromptsTabProps {
   local: RagSettings;
   setLocal: (s: RagSettings) => void;
-  s: Record<string, string>;
+  styles: Record<string, string>;
 }
 
-export const PromptsTab = ({ local, setLocal, s }: PromptsTabProps) => {
+export const PromptsTab = ({ local, setLocal, styles }: PromptsTabProps) => {
   const id = useId();
   const addToast = useUIStore((st) => st.addToast);
   const [generatingProfile, setGeneratingProfile] = useState(false);
@@ -35,47 +35,47 @@ export const PromptsTab = ({ local, setLocal, s }: PromptsTabProps) => {
   };
 
   return (
-  <div className={s.settingsGrid}>
-    <div className={s.promptsBanner}>
-      <div className={s.bannerHeader}>
-        <Icon name="MessageSquare" size={16} className={s.bannerIconAmber} />
-        <span className={s.bannerTitleAmber}>Custom Prompts</span>
+  <div className={styles.settingsGrid}>
+    <div className={styles.promptsBanner}>
+      <div className={styles.bannerHeader}>
+        <Icon name="MessageSquare" size={16} className={styles.bannerIconAmber} />
+        <span className={styles.bannerTitleAmber}>Custom Prompts</span>
       </div>
-      <p className={s.bannerTextAmber}>
+      <p className={styles.bannerTextAmber}>
         Customize how the AI responds. Leave blank to use defaults. Changes apply to all future queries.
       </p>
     </div>
 
     {/* Practice Area & Profile — nothing about any practice is baked in */}
-    <div className={s.settingGroupFullWidth}>
-      <div className={s.promptBlockHeader}>
-        <label className={s.settingLabel} htmlFor={`${id}-practice-area`}>Your Practice</label>
+    <div className={styles.settingGroupFullWidth}>
+      <div className={styles.promptBlockHeader}>
+        <label className={styles.settingLabel} htmlFor={`${id}-practice-area`}>Your Practice</label>
         <button
-          className={s.btnSecondaryXSmall}
+          className={styles.btnSecondaryXSmall}
           onClick={handleGenerateProfile}
           disabled={generatingProfile}
         >
           {generatingProfile
-            ? <Icon name="Loader2" size={12} className={s.spin} />
+            ? <Icon name="Loader2" size={12} className={styles.spin} />
             : <Icon name="Sparkles" size={12} />}
           {generatingProfile ? 'Generating…' : 'Generate profile'}
         </button>
       </div>
       <input
         id={`${id}-practice-area`}
-        className={s.modalInput}
+        className={styles.modalInput}
         value={local.practice_area || ''}
         onChange={e => setLocal({ ...local, practice_area: e.target.value || null })}
         placeholder='What do you practice? e.g. "residential landlord-tenant law in New York", "healthcare compliance", "IP litigation"'
       />
       <textarea
         aria-label="Practice profile"
-        className={s.textareaMedium}
+        className={styles.textareaMedium}
         value={local.practice_profile || ''}
         onChange={e => setLocal({ ...local, practice_profile: e.target.value || null })}
         placeholder="Generate a profile from your practice area above, or write your own — the document types you handle, the terms that matter, the red flags, the deadlines. It rides along with every review, redline, and draft."
       />
-      <span className={s.helpText}>
+      <span className={styles.helpText}>
         Nothing about any practice area is built into the product. This profile — generated for
         YOUR practice and edited by you — is what tailors every contract review, redline, and
         draft to how you actually work.
@@ -83,29 +83,29 @@ export const PromptsTab = ({ local, setLocal, s }: PromptsTabProps) => {
     </div>
 
     {/* Contract Review Playbook */}
-    <div className={s.settingGroupFullWidth}>
-      <div className={s.promptBlockHeader}>
-        <label className={s.settingLabel} htmlFor={`${id}-contract-playbook`}>Contract Review Playbook</label>
+    <div className={styles.settingGroupFullWidth}>
+      <div className={styles.promptBlockHeader}>
+        <label className={styles.settingLabel} htmlFor={`${id}-contract-playbook`}>Contract Review Playbook</label>
       </div>
       <textarea
         id={`${id}-contract-playbook`}
-        className={s.textareaMedium}
+        className={styles.textareaMedium}
         value={local.contract_playbook || ''}
         onChange={e => setLocal({...local, contract_playbook: e.target.value || null})}
         placeholder={'Your firm\'s standing contract standards, applied to every review and redline. E.g.:\n- We usually represent the customer/tenant side\n- Never accept unlimited liability or one-sided indemnity\n- Auto-renewal requires a 60-day notice window\n- Ignore boilerplate (counterparts, severability)'}
       />
-      <span className={s.helpText}>Applied automatically whenever a contract is analyzed or redlined, on top of whatever you say in the chat.</span>
+      <span className={styles.helpText}>Applied automatically whenever a contract is analyzed or redlined, on top of whatever you say in the chat.</span>
     </div>
 
     {/* Quick Answer Prompt */}
-    <div className={s.quickAnswerBlock}>
-      <div className={s.promptBlockHeader}>
+    <div className={styles.quickAnswerBlock}>
+      <div className={styles.promptBlockHeader}>
         <div>
-          <label className={s.settingLabelBlue} htmlFor={`${id}-factual-prompt`}>Quick Answer Prompt</label>
-          <span className={s.autoDetectedBadge}>Auto-detected</span>
+          <label className={styles.settingLabelBlue} htmlFor={`${id}-factual-prompt`}>Quick Answer Prompt</label>
+          <span className={styles.autoDetectedBadge}>Auto-detected</span>
         </div>
         <button
-          className={s.btnSecondaryXSmall}
+          className={styles.btnSecondaryXSmall}
           onClick={async () => {
             try {
               const defaults = await api.getPromptDefaults() as Record<string, string>;
@@ -118,20 +118,20 @@ export const PromptsTab = ({ local, setLocal, s }: PromptsTabProps) => {
       </div>
       <textarea
         id={`${id}-factual-prompt`}
-        className={s.textareaMedium}
+        className={styles.textareaMedium}
         value={local.custom_factual_prompt || ''}
         onChange={e => setLocal({...local, custom_factual_prompt: e.target.value || null})}
         placeholder="Leave blank for default. Used for simple factual questions like 'What was the date?' - gives brief, direct answers."
       />
-      <span className={s.helpTextBlue}>Used when system auto-detects factual questions (what, when, where, who, how many). Keeps responses concise.</span>
+      <span className={styles.helpTextBlue}>Used when system auto-detects factual questions (what, when, where, who, how many). Keeps responses concise.</span>
     </div>
 
     {/* System Prompt */}
-    <div className={s.settingGroupFullWidth}>
-      <div className={s.promptBlockHeader}>
-        <label className={s.settingLabel} htmlFor={`${id}-system-prompt`}>System Prompt (Analytical Base)</label>
+    <div className={styles.settingGroupFullWidth}>
+      <div className={styles.promptBlockHeader}>
+        <label className={styles.settingLabel} htmlFor={`${id}-system-prompt`}>System Prompt (Analytical Base)</label>
         <button
-          className={s.btnSecondaryXSmall}
+          className={styles.btnSecondaryXSmall}
           onClick={async () => {
             try {
               const defaults = await api.getPromptDefaults() as Record<string, string>;
@@ -144,20 +144,20 @@ export const PromptsTab = ({ local, setLocal, s }: PromptsTabProps) => {
       </div>
       <textarea
         id={`${id}-system-prompt`}
-        className={s.textareaLarge}
+        className={styles.textareaLarge}
         value={local.custom_system_prompt || ''}
         onChange={e => setLocal({...local, custom_system_prompt: e.target.value || null})}
         placeholder="Leave blank to use default system prompt. This controls the AI's persona and overall behavior..."
       />
-      <span className={s.helpText}>Base prompt for all analytical queries. Mode-specific prompts are appended to this.</span>
+      <span className={styles.helpText}>Base prompt for all analytical queries. Mode-specific prompts are appended to this.</span>
     </div>
 
     {/* Grounding Rules */}
-    <div className={s.settingGroupFullWidth}>
-      <div className={s.promptBlockHeader}>
-        <label className={s.settingLabel} htmlFor={`${id}-grounding-rules`}>Grounding Rules</label>
+    <div className={styles.settingGroupFullWidth}>
+      <div className={styles.promptBlockHeader}>
+        <label className={styles.settingLabel} htmlFor={`${id}-grounding-rules`}>Grounding Rules</label>
         <button
-          className={s.btnSecondaryXSmall}
+          className={styles.btnSecondaryXSmall}
           onClick={async () => {
             try {
               const defaults = await api.getPromptDefaults() as Record<string, string>;
@@ -170,22 +170,22 @@ export const PromptsTab = ({ local, setLocal, s }: PromptsTabProps) => {
       </div>
       <textarea
         id={`${id}-grounding-rules`}
-        className={s.textareaSmall}
+        className={styles.textareaSmall}
         value={local.custom_grounding_rules || ''}
         onChange={e => setLocal({...local, custom_grounding_rules: e.target.value || null})}
         placeholder="Leave blank to use default grounding rules. Controls how the AI uses document context..."
       />
-      <span className={s.helpText}>Instructions for how the AI should use provided documents and cite sources</span>
+      <span className={styles.helpText}>Instructions for how the AI should use provided documents and cite sources</span>
     </div>
 
     {/* Mode-Specific Prompts */}
-    <div className={s.modePromptsAccordion}>
+    <div className={styles.modePromptsAccordion}>
       <details>
-        <summary className={s.modePromptsSummary}>
+        <summary className={styles.modePromptsSummary}>
           <Icon name="Layers" size={16} /> Analysis Mode Prompts
-          <span className={s.modePromptsSummaryNote}>Customize response structure for each mode</span>
+          <span className={styles.modePromptsSummaryNote}>Customize response structure for each mode</span>
         </summary>
-        <div className={s.modePromptsBody}>
+        <div className={styles.modePromptsBody}>
           {[
             { key: 'custom_research_prompt', label: 'Legal Research Mode', icon: 'Search', placeholder: 'Default: Primary Sources, Key Findings, Recommendations' },
             { key: 'custom_case_prompt', label: 'Case Analysis Mode', icon: 'Scale', placeholder: 'Default: Factual Summary, Legal Issues, Strengths, Weaknesses, Recommendations' },
@@ -195,14 +195,14 @@ export const PromptsTab = ({ local, setLocal, s }: PromptsTabProps) => {
           ].map((mode: { key: string; label: string; icon: string; placeholder: string }) => {
             const modeKey = mode.key.replace('custom_', '').replace('_prompt', '');
             return (
-              <div key={mode.key} className={s.settingGroup}>
-                <div className={s.promptBlockHeader}>
-                  <label className={s.settingLabelLarger} htmlFor={`${id}-mode-${mode.key}`}>
-                    <Icon name={mode.icon} size={14} className={s.modeLabelIcon} />
+              <div key={mode.key} className={styles.settingGroup}>
+                <div className={styles.promptBlockHeader}>
+                  <label className={styles.settingLabelLarger} htmlFor={`${id}-mode-${mode.key}`}>
+                    <Icon name={mode.icon} size={14} className={styles.modeLabelIcon} />
                     {mode.label}
                   </label>
                   <button
-                    className={s.btnSecondaryXXSmall}
+                    className={styles.btnSecondaryXXSmall}
                     onClick={async () => {
                       try {
                         const defaults = await api.getPromptDefaults() as Record<string, unknown>;
@@ -216,7 +216,7 @@ export const PromptsTab = ({ local, setLocal, s }: PromptsTabProps) => {
                 </div>
                 <textarea
                   id={`${id}-mode-${mode.key}`}
-                  className={s.textareaModePrompt}
+                  className={styles.textareaModePrompt}
                   value={(local[mode.key] as string) || ''}
                   onChange={e => setLocal({...local, [mode.key]: e.target.value || null})}
                   placeholder={mode.placeholder}
@@ -228,9 +228,9 @@ export const PromptsTab = ({ local, setLocal, s }: PromptsTabProps) => {
       </details>
     </div>
 
-    <div className={s.resetAllWrapper}>
+    <div className={styles.resetAllWrapper}>
       <button
-        className={s.btnSecondaryFullWidth}
+        className={styles.btnSecondaryFullWidth}
         onClick={async () => {
           setLocal({
             ...local,

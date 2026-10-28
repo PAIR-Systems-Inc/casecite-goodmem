@@ -24,7 +24,7 @@ describe('StrategyBriefCard scope', () => {
         brief={brief({ folder_path: 'Acme/Leases', folder_paths: ['Acme/Leases', 'Acme/Correspondence'] })}
         citations={[]}
         onCitationClick={vi.fn()}
-        s={s}
+        styles={s}
       />,
     );
     expect(container.textContent).toContain('2 folders: Acme/Leases, Acme/Correspondence');
@@ -32,7 +32,7 @@ describe('StrategyBriefCard scope', () => {
 
   it('falls back to the legacy single folder field', () => {
     const { container } = render(
-      <StrategyBriefCard brief={brief({ folder_path: 'Acme/Leases' })} citations={[]} onCitationClick={vi.fn()} s={s} />,
+      <StrategyBriefCard brief={brief({ folder_path: 'Acme/Leases' })} citations={[]} onCitationClick={vi.fn()} styles={s} />,
     );
     expect(container.textContent).toContain('· in Acme/Leases');
     expect(container.textContent).not.toContain('folders:');
@@ -40,7 +40,7 @@ describe('StrategyBriefCard scope', () => {
 
   it('says nothing about folders for an unscoped brief', () => {
     const { container } = render(
-      <StrategyBriefCard brief={brief({})} citations={[]} onCitationClick={vi.fn()} s={s} />,
+      <StrategyBriefCard brief={brief({})} citations={[]} onCitationClick={vi.fn()} styles={s} />,
     );
     expect(container.textContent).not.toContain('· in');
   });

@@ -170,8 +170,8 @@
 }
 
 .treeItemActive {
-  background: var(--gold-50);
-  border: 1px solid var(--gold-400);
+  background: var(--primary-50);
+  border: 1px solid var(--primary-400);
 }
 
 .folderToggle {
@@ -246,7 +246,7 @@
   padding: 10px 20px;
   border-radius: 8px;
   border: none;
-  background: var(--gold-500);
+  background: var(--primary-500);
   color: var(--on-primary);
   font-size: 14px;
   font-weight: 600;
@@ -287,7 +287,7 @@
 
 .spinnerGold {
   animation: spin 1s linear infinite;
-  color: var(--gold-500);
+  color: var(--primary-500);
 }
 
 .spinner {

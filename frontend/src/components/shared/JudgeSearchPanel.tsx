@@ -7,7 +7,7 @@ import type { JudgeSearchResult, JudgeSearchResponse } from '../../types';
 import t from '../../views/ToolsView.module.css';
 
 interface JudgeSearchPanelProps {
-  s: Record<string, string>;
+  styles: Record<string, string>;
   judgeIntelSearch: string;
   setJudgeIntelSearch: (value: string) => void;
   searchJudgesIntel: () => void;
@@ -17,7 +17,7 @@ interface JudgeSearchPanelProps {
 }
 
 function JudgeSearchPanel({
-  s,
+  styles,
   judgeIntelSearch,
   setJudgeIntelSearch,
   searchJudgesIntel,
@@ -54,14 +54,14 @@ function JudgeSearchPanel({
             </button>
           </div>
           {judgeIntelResults?.error && (
-            <div className={s.toolErrorBox}><Icon name="AlertCircle" size={14} /> {judgeIntelResults.error}</div>
+            <div className={styles.toolErrorBox}><Icon name="AlertCircle" size={14} /> {judgeIntelResults.error}</div>
           )}
         </div>
       ) : (
         <>
           <div className={t.resultsScroll}>
-            <div className={s.judgeIntelResultsList}>
-              <div className={s.judgeIntelResultsHeader}>
+            <div className={styles.judgeIntelResultsList}>
+              <div className={styles.judgeIntelResultsHeader}>
                 Showing {judgeIntelResults.count ?? 0} judges
                 {(judgeIntelResults.total_available ?? 0) > (judgeIntelResults.count ?? 0) &&
                   ` (${(judgeIntelResults.total_available ?? 0).toLocaleString()} total in database)`}
@@ -69,24 +69,24 @@ function JudgeSearchPanel({
               {judgeIntelResults.judges!.map((j: JudgeSearchResult, i: number) => (
                 <div
                   key={`${j.id}-${i}`}
-                  className={s.judgeIntelResultItem}
+                  className={styles.judgeIntelResultItem}
                   role="button"
                   tabIndex={0}
                   onClick={() => buildJudgeIntel(j.id, j.name)}
                   onKeyDown={activateOnKey(() => buildJudgeIntel(j.id, j.name))}
                 >
-                  <div className={s.judgeIntelResultIcon}>
+                  <div className={styles.judgeIntelResultIcon}>
                     <Icon name="User" size={20} />
                   </div>
-                  <div className={s.judgeIntelResultContent}>
-                    <div className={s.judgeIntelResultName}>{j.name || j.name_full}</div>
-                    <div className={s.judgeIntelResultMeta}>
+                  <div className={styles.judgeIntelResultContent}>
+                    <div className={styles.judgeIntelResultName}>{j.name || j.name_full}</div>
+                    <div className={styles.judgeIntelResultMeta}>
                       {j.court && <span><Icon name="Building" size={12} /> {j.court}</span>}
                       {j.position && <span><Icon name="Briefcase" size={12} /> {j.position}</span>}
                       {j.appointed_by && <span><Icon name="Award" size={12} /> {j.appointed_by}</span>}
                     </div>
                   </div>
-                  <Icon name="ChevronRight" size={20} className={s.resultChevron} />
+                  <Icon name="ChevronRight" size={20} className={styles.resultChevron} />
                 </div>
               ))}
             </div>

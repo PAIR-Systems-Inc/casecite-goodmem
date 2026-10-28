@@ -119,7 +119,7 @@ export const ContractFilePicker = ({
             <span className={s.folderToggle}>
               <Icon name={isExpanded ? 'ChevronDown' : 'ChevronRight'} size={16} className={s.iconGray500} />
             </span>
-            <Icon name="Folder" size={18} style={{ color: isExpanded ? 'var(--gold-500)' : 'var(--gray-500)' }} />
+            <Icon name="Folder" size={18} style={{ color: isExpanded ? 'var(--primary-500)' : 'var(--gray-500)' }} />
             <span className={s.folderName}>{item.name}</span>
             <span className={s.docCount}>{item.document_count} docs</span>
           </div>
@@ -146,7 +146,7 @@ export const ContractFilePicker = ({
           <Icon
             name={item.name?.endsWith('.pdf') ? 'FileText' : item.name?.endsWith('.docx') ? 'FileEdit' : 'File'}
             size={16}
-            style={{ color: isActive ? 'var(--gold-600)' : 'var(--gray-500)' }}
+            style={{ color: isActive ? 'var(--primary-600)' : 'var(--gray-500)' }}
           />
           <span className={s.fileName}>{item.name}</span>
           <span className={s.fileMeta}>

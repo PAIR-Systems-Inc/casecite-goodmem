@@ -16,7 +16,7 @@ interface APIKeysTabProps {
   maskedKeys: Record<string, string | null>;
   keyStatusError: boolean;
   refreshKeyStatus: () => Promise<void>;
-  s: Record<string, string>;
+  styles: Record<string, string>;
 }
 
 type SaveState = 'saving' | 'saved' | 'error';
@@ -24,14 +24,14 @@ type SaveState = 'saving' | 'saved' | 'error';
 // Small inline status shown next to each field's label. Module-level so its
 // identity is stable across renders (a component defined inside APIKeysTab
 // would remount on every keystroke).
-const SaveHint = ({ state, s }: { state: SaveState | undefined; s: Record<string, string> }) => {
-  if (state === 'saving') return <span className={s.saveHint}>Saving…</span>;
-  if (state === 'saved') return <span className={s.saveHintOk}><Icon name="Check" size={12} /> Saved</span>;
-  if (state === 'error') return <span className={s.saveHintErr}><Icon name="AlertCircle" size={12} /> Failed</span>;
+const SaveHint = ({ state, styles }: { state: SaveState | undefined; styles: Record<string, string> }) => {
+  if (state === 'saving') return <span className={styles.saveHint}>Saving…</span>;
+  if (state === 'saved') return <span className={styles.saveHintOk}><Icon name="Check" size={12} /> Saved</span>;
+  if (state === 'error') return <span className={styles.saveHintErr}><Icon name="AlertCircle" size={12} /> Failed</span>;
   return null;
 };
 
-export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setShowKeys, apiKeys, setApiKeys, serverKeyStatus, maskedKeys, keyStatusError, refreshKeyStatus, s }: APIKeysTabProps) => {
+export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setShowKeys, apiKeys, setApiKeys, serverKeyStatus, maskedKeys, keyStatusError, refreshKeyStatus, styles }: APIKeysTabProps) => {
   const id = useId();
   const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   // Values typed but not yet persisted (the debounce window). Flushed
@@ -278,13 +278,13 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
   const storedKeys = statusItems.filter((item) => serverKeyStatus[item.key]);
 
   return (
-    <div className={s.settingsGrid}>
+    <div className={styles.settingsGrid}>
       {/* Key Status — kept at the top so configuration state is visible at a glance */}
-      <div className={s.keyStatusSection}>
-        <div className={s.keyStatusTitle}>Key Status</div>
-        <div className={s.keyStatusList}>
+      <div className={styles.keyStatusSection}>
+        <div className={styles.keyStatusTitle}>Key Status</div>
+        <div className={styles.keyStatusList}>
           {statusItems.map((item) => (
-            <div key={item.key} className={`${s.keyBadge} ${item.configured ? s.keyBadgeActive : (item.required ? s.keyBadgeRequired : s.keyBadgeOptional)}`}>
+            <div key={item.key} className={`${styles.keyBadge} ${item.configured ? styles.keyBadgeActive : (item.required ? styles.keyBadgeRequired : styles.keyBadgeOptional)}`}>
               <Icon name={item.configured ? 'Check' : (item.required ? 'AlertCircle' : 'Minus')} size={12} />
               {item.label}
             </div>
@@ -293,12 +293,12 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
       </div>
 
       {keyStatusError && (
-        <div className={s.byokBanner}>
-          <div className={s.bannerHeader}>
-            <Icon name="AlertCircle" size={16} className={s.bannerIconAmber} />
-            <span className={s.bannerTitleBlue}>Could not load saved-key status</span>
+        <div className={styles.byokBanner}>
+          <div className={styles.bannerHeader}>
+            <Icon name="AlertCircle" size={16} className={styles.bannerIconAmber} />
+            <span className={styles.bannerTitleBlue}>Could not load saved-key status</span>
           </div>
-          <p className={s.bannerTextBlue}>
+          <p className={styles.bannerTextBlue}>
             The fields below may show as unconfigured even though your keys are still saved on the
             server. Reopen Settings to retry — do not re-enter keys unless a provider genuinely
             stops working.
@@ -306,29 +306,29 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
         </div>
       )}
 
-      <div className={s.byokBanner}>
-        <div className={s.bannerHeader}>
-          <Icon name="Key" size={16} className={s.bannerIconBlue} />
-          <span className={s.bannerTitleBlue}>Bring Your Own Keys</span>
+      <div className={styles.byokBanner}>
+        <div className={styles.bannerHeader}>
+          <Icon name="Key" size={16} className={styles.bannerIconBlue} />
+          <span className={styles.bannerTitleBlue}>Bring Your Own Keys</span>
         </div>
-        <p className={s.bannerTextBlue}>
+        <p className={styles.bannerTextBlue}>
           Your API keys are encrypted and stored securely on our servers. Keys are never exposed in API responses.
           {Object.values(serverKeyStatus).some(Boolean) && ' Saved keys are shown masked below — leave a field empty to keep your existing key.'}
         </p>
       </div>
 
       {storedKeys.length > 0 && (
-        <div className={s.keyStatusSection}>
-          <div className={s.keyStatusTitle}>Your stored keys</div>
+        <div className={styles.keyStatusSection}>
+          <div className={styles.keyStatusTitle}>Your stored keys</div>
           {storedKeys.map((item) => (
-            <div key={item.key} className={s.storedKeyRow}>
+            <div key={item.key} className={styles.storedKeyRow}>
               <span>
                 {item.label}
-                {maskedKeys[item.key] && <span className={s.helpText}> · {maskedKeys[item.key]}</span>}
+                {maskedKeys[item.key] && <span className={styles.helpText}> · {maskedKeys[item.key]}</span>}
               </span>
               <button
                 type="button"
-                className={s.btnDangerXSmall}
+                className={styles.btnDangerXSmall}
                 onClick={() => handleDeleteKey(item.key, item.label)}
               >
                 <Icon name="Trash2" size={12} /> Remove
@@ -339,231 +339,231 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
       )}
 
       {/* ===== Case Law ===== */}
-      <div className={s.sectionTitle}>
+      <div className={styles.sectionTitle}>
         <Icon name="Scale" size={13} /> Case Law
       </div>
 
-      <div className={s.settingGroupFullWidth}>
-        <label className={s.settingLabel} htmlFor={`${id}-key-courtlistener`}>
-          <span className={s.labelFlex}>
+      <div className={styles.settingGroupFullWidth}>
+        <label className={styles.settingLabel} htmlFor={`${id}-key-courtlistener`}>
+          <span className={styles.labelFlex}>
             CourtListener API Token
-            {clStatus?.configured && <Icon name="CheckCircle" size={14} className={s.checkIcon} />}
-            <SaveHint state={savedState["courtlistener"]} s={s} />
+            {clStatus?.configured && <Icon name="CheckCircle" size={14} className={styles.checkIcon} />}
+            <SaveHint state={savedState["courtlistener"]} styles={styles} />
           </span>
         </label>
-        <div className={s.inputRow}>
+        <div className={styles.inputRow}>
           <input
             id={`${id}-key-courtlistener`}
             type={showKeys.courtlistener ? 'text' : 'password'}
-            className={s.modalInputMono}
+            className={styles.modalInputMono}
             value={clToken}
             onChange={e => handleClChange(e.target.value)}
             placeholder={clStatus?.masked || 'Free Law Project API token'}
           />
           <button
-            className={s.btnSecondarySmall}
+            className={styles.btnSecondarySmall}
             onClick={() => setShowKeys({ ...showKeys, courtlistener: !showKeys.courtlistener })}
           >
             <Icon name={showKeys.courtlistener ? 'EyeOff' : 'Eye'} size={16} />
           </button>
         </div>
-        <span className={s.helpText}>
+        <span className={styles.helpText}>
           {clStatus?.configured
             ? `Configured (source: ${clStatus.source}). Powers every Legal Tool. Type a new token to replace it — saves automatically.`
             : 'Powers every Legal Tool (case search, judges, dockets, precedents). Paste your token — it saves automatically. Get one free at courtlistener.com.'}
         </span>
         {clStatus?.configured && clStatus.source === 'instance' && (
-          <div className={s.boxActions}>
-            <button className={s.brandingResetBtn} onClick={handleClearCl}>Clear</button>
+          <div className={styles.boxActions}>
+            <button className={styles.brandingResetBtn} onClick={handleClearCl}>Clear</button>
           </div>
         )}
       </div>
 
       {/* ===== Language Models ===== */}
-      <div className={s.sectionTitle}>
+      <div className={styles.sectionTitle}>
         <Icon name="Sparkles" size={13} /> Language Models (LLMs)
       </div>
 
       {/* OpenAI */}
-      <div className={s.settingGroupFullWidth}>
-        <label className={s.settingLabel} htmlFor={`${id}-key-openai`}>
-          <span className={s.labelFlex}>
-            <span className={`${s.providerIcon} ${s.providerIconOpenAI}`}>
-              <span className={s.providerIconText}>AI</span>
+      <div className={styles.settingGroupFullWidth}>
+        <label className={styles.settingLabel} htmlFor={`${id}-key-openai`}>
+          <span className={styles.labelFlex}>
+            <span className={`${styles.providerIcon} ${styles.providerIconOpenAI}`}>
+              <span className={styles.providerIconText}>AI</span>
             </span>
             OpenAI API Key
-            {isConfigured('openai') && <Icon name="CheckCircle" size={14} className={s.checkIcon} />}
-            <SaveHint state={savedState["openai"]} s={s} />
+            {isConfigured('openai') && <Icon name="CheckCircle" size={14} className={styles.checkIcon} />}
+            <SaveHint state={savedState["openai"]} styles={styles} />
           </span>
         </label>
-        <div className={s.inputRow}>
+        <div className={styles.inputRow}>
           <input
             id={`${id}-key-openai`}
             type={showKeys.openai ? 'text' : 'password'}
-            className={s.modalInputMono}
+            className={styles.modalInputMono}
             value={apiKeys.openai}
             onChange={e => handleApiKeyChange('openai', e.target.value)}
             onBlur={() => flushKeySave('openai')}
             placeholder={getPlaceholder('openai', 'sk-...')}
           />
           <button
-            className={s.btnSecondarySmall}
+            className={styles.btnSecondarySmall}
             onClick={() => setShowKeys({...showKeys, openai: !showKeys.openai})}
           >
             <Icon name={showKeys.openai ? 'EyeOff' : 'Eye'} size={16} />
           </button>
         </div>
-        <span className={s.helpText}>Used for GPT-5 and default embeddings. Get key at platform.openai.com</span>
+        <span className={styles.helpText}>Used for GPT-5 and default embeddings. Get key at platform.openai.com</span>
       </div>
 
       {/* Anthropic */}
-      <div className={s.settingGroupFullWidth}>
-        <label className={s.settingLabel} htmlFor={`${id}-key-anthropic`}>
-          <span className={s.labelFlex}>
-            <span className={`${s.providerIcon} ${s.providerIconAnthropic}`}>
-              <span className={s.providerIconTextSmall}>A</span>
+      <div className={styles.settingGroupFullWidth}>
+        <label className={styles.settingLabel} htmlFor={`${id}-key-anthropic`}>
+          <span className={styles.labelFlex}>
+            <span className={`${styles.providerIcon} ${styles.providerIconAnthropic}`}>
+              <span className={styles.providerIconTextSmall}>A</span>
             </span>
             Anthropic API Key
-            {isConfigured('anthropic') && <Icon name="CheckCircle" size={14} className={s.checkIcon} />}
-            <SaveHint state={savedState["anthropic"]} s={s} />
+            {isConfigured('anthropic') && <Icon name="CheckCircle" size={14} className={styles.checkIcon} />}
+            <SaveHint state={savedState["anthropic"]} styles={styles} />
           </span>
         </label>
-        <div className={s.inputRow}>
+        <div className={styles.inputRow}>
           <input
             id={`${id}-key-anthropic`}
             type={showKeys.anthropic ? 'text' : 'password'}
-            className={s.modalInputMono}
+            className={styles.modalInputMono}
             value={apiKeys.anthropic}
             onChange={e => handleApiKeyChange('anthropic', e.target.value)}
             onBlur={() => flushKeySave('anthropic')}
             placeholder={getPlaceholder('anthropic', 'sk-ant-...')}
           />
           <button
-            className={s.btnSecondarySmall}
+            className={styles.btnSecondarySmall}
             onClick={() => setShowKeys({...showKeys, anthropic: !showKeys.anthropic})}
           >
             <Icon name={showKeys.anthropic ? 'EyeOff' : 'Eye'} size={16} />
           </button>
         </div>
-        <span className={s.helpText}>Used for Claude models. Get key at console.anthropic.com</span>
+        <span className={styles.helpText}>Used for Claude models. Get key at console.anthropic.com</span>
       </div>
 
       {/* Google Gemini */}
-      <div className={s.settingGroupFullWidth}>
-        <label className={s.settingLabel} htmlFor={`${id}-key-google`}>
-          <span className={s.labelFlex}>
-            <span className={`${s.providerIcon} ${s.providerIconGoogle}`}>
-              <span className={s.providerIconTextSmall}>G</span>
+      <div className={styles.settingGroupFullWidth}>
+        <label className={styles.settingLabel} htmlFor={`${id}-key-google`}>
+          <span className={styles.labelFlex}>
+            <span className={`${styles.providerIcon} ${styles.providerIconGoogle}`}>
+              <span className={styles.providerIconTextSmall}>G</span>
             </span>
             Google Gemini API Key
-            {isConfigured('google') && <Icon name="CheckCircle" size={14} className={s.checkIcon} />}
-            <SaveHint state={savedState["google"]} s={s} />
+            {isConfigured('google') && <Icon name="CheckCircle" size={14} className={styles.checkIcon} />}
+            <SaveHint state={savedState["google"]} styles={styles} />
           </span>
         </label>
-        <div className={s.inputRow}>
+        <div className={styles.inputRow}>
           <input
             id={`${id}-key-google`}
             type={showKeys.google ? 'text' : 'password'}
-            className={s.modalInputMono}
+            className={styles.modalInputMono}
             value={apiKeys.google}
             onChange={e => handleApiKeyChange('google', e.target.value)}
             onBlur={() => flushKeySave('google')}
             placeholder={getPlaceholder('google', 'AIza...')}
           />
           <button
-            className={s.btnSecondarySmall}
+            className={styles.btnSecondarySmall}
             onClick={() => setShowKeys({...showKeys, google: !showKeys.google})}
           >
             <Icon name={showKeys.google ? 'EyeOff' : 'Eye'} size={16} />
           </button>
         </div>
-        <span className={s.helpText}>Used for Gemini models. Get key at aistudio.google.com</span>
+        <span className={styles.helpText}>Used for Gemini models. Get key at aistudio.google.com</span>
       </div>
 
       {/* ===== Embeddings ===== */}
-      <div className={s.sectionTitle}>
+      <div className={styles.sectionTitle}>
         <Icon name="Layers" size={13} /> Embedding Models
       </div>
-      <div className={s.sectionSubtext}>
+      <div className={styles.sectionSubtext}>
         Dedicated embedding providers for vector search. OpenAI (above) supplies the default embeddings.
       </div>
 
       {/* Voyage */}
-      <div className={s.settingGroup}>
-        <label className={s.settingLabel} htmlFor={`${id}-key-voyage`}>
-          <span className={s.labelFlex}>
+      <div className={styles.settingGroup}>
+        <label className={styles.settingLabel} htmlFor={`${id}-key-voyage`}>
+          <span className={styles.labelFlex}>
             Voyage AI Key
-            {isConfigured('voyage') && <Icon name="CheckCircle" size={14} className={s.checkIcon} />}
-            <SaveHint state={savedState["voyage"]} s={s} />
+            {isConfigured('voyage') && <Icon name="CheckCircle" size={14} className={styles.checkIcon} />}
+            <SaveHint state={savedState["voyage"]} styles={styles} />
           </span>
         </label>
-        <div className={s.inputRow}>
+        <div className={styles.inputRow}>
           <input
             id={`${id}-key-voyage`}
             type={showKeys.voyage ? 'text' : 'password'}
-            className={s.modalInputMono}
+            className={styles.modalInputMono}
             value={apiKeys.voyage}
             onChange={e => handleApiKeyChange('voyage', e.target.value)}
             onBlur={() => flushKeySave('voyage')}
             placeholder={getPlaceholder('voyage', 'pa-...')}
           />
           <button
-            className={s.btnSecondarySmall}
+            className={styles.btnSecondarySmall}
             onClick={() => setShowKeys({...showKeys, voyage: !showKeys.voyage})}
           >
             <Icon name={showKeys.voyage ? 'EyeOff' : 'Eye'} size={16} />
           </button>
         </div>
-        <span className={s.helpText}>Legal-optimized embeddings (voyage-law-2)</span>
+        <span className={styles.helpText}>Legal-optimized embeddings (voyage-law-2)</span>
       </div>
 
       {/* Cohere */}
-      <div className={s.settingGroup}>
-        <label className={s.settingLabel} htmlFor={`${id}-key-cohere`}>
-          <span className={s.labelFlex}>
+      <div className={styles.settingGroup}>
+        <label className={styles.settingLabel} htmlFor={`${id}-key-cohere`}>
+          <span className={styles.labelFlex}>
             Cohere API Key
-            {isConfigured('cohere') && <Icon name="CheckCircle" size={14} className={s.checkIcon} />}
-            <SaveHint state={savedState["cohere"]} s={s} />
+            {isConfigured('cohere') && <Icon name="CheckCircle" size={14} className={styles.checkIcon} />}
+            <SaveHint state={savedState["cohere"]} styles={styles} />
           </span>
         </label>
-        <div className={s.inputRow}>
+        <div className={styles.inputRow}>
           <input
             id={`${id}-key-cohere`}
             type={showKeys.cohere ? 'text' : 'password'}
-            className={s.modalInputMono}
+            className={styles.modalInputMono}
             value={apiKeys.cohere}
             onChange={e => handleApiKeyChange('cohere', e.target.value)}
             onBlur={() => flushKeySave('cohere')}
             placeholder={getPlaceholder('cohere', '...')}
           />
           <button
-            className={s.btnSecondarySmall}
+            className={styles.btnSecondarySmall}
             onClick={() => setShowKeys({...showKeys, cohere: !showKeys.cohere})}
           >
             <Icon name={showKeys.cohere ? 'EyeOff' : 'Eye'} size={16} />
           </button>
         </div>
-        <span className={s.helpText}>Alternative embeddings provider</span>
+        <span className={styles.helpText}>Alternative embeddings provider</span>
       </div>
 
       {/* ===== Local / Self-Hosted (highlighted box) ===== */}
-      <div className={s.localModelBox}>
-        <div className={s.localModelHeader}>
-          <Icon name="Server" size={16} className={s.bannerIconAmber} />
-          <span className={s.localModelTitle}>Local / Self-Hosted Model</span>
-          {llmStatus?.configured && <Icon name="CheckCircle" size={14} className={s.checkIcon} />}
-          <SaveHint state={savedState["local"]} s={s} />
+      <div className={styles.localModelBox}>
+        <div className={styles.localModelHeader}>
+          <Icon name="Server" size={16} className={styles.bannerIconAmber} />
+          <span className={styles.localModelTitle}>Local / Self-Hosted Model</span>
+          {llmStatus?.configured && <Icon name="CheckCircle" size={14} className={styles.checkIcon} />}
+          <SaveHint state={savedState["local"]} styles={styles} />
         </div>
-        <p className={s.localModelDesc}>
+        <p className={styles.localModelDesc}>
           Point the app at any OpenAI-compatible endpoint — Ollama, LM Studio, vLLM, or hosted gateways
           (Together, Groq, OpenRouter). Leave blank to use the default OpenAI models above.
         </p>
 
         <div>
-          <label className={s.settingLabel} htmlFor={`${id}-llm-base-url`}>Base URL</label>
+          <label className={styles.settingLabel} htmlFor={`${id}-llm-base-url`}>Base URL</label>
           <input
             id={`${id}-llm-base-url`}
-            className={s.modalInputMono}
+            className={styles.modalInputMono}
             value={baseUrl}
             onChange={e => { const v = e.target.value; setBaseUrl(v); autoSaveLlm({ baseUrl: v, chatModel, utilityModel }); }}
             placeholder="http://localhost:11434/v1"
@@ -571,10 +571,10 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
         </div>
 
         <div>
-          <label className={s.settingLabel} htmlFor={`${id}-llm-chat-model`}>Chat Model</label>
+          <label className={styles.settingLabel} htmlFor={`${id}-llm-chat-model`}>Chat Model</label>
           <input
             id={`${id}-llm-chat-model`}
-            className={s.modalInputMono}
+            className={styles.modalInputMono}
             value={chatModel}
             onChange={e => { const v = e.target.value; setChatModel(v); autoSaveLlm({ baseUrl, chatModel: v, utilityModel }); }}
             placeholder="llama3.1:70b"
@@ -582,10 +582,10 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
         </div>
 
         <div>
-          <label className={s.settingLabel} htmlFor={`${id}-llm-utility-model`}>Utility Model (optional)</label>
+          <label className={styles.settingLabel} htmlFor={`${id}-llm-utility-model`}>Utility Model (optional)</label>
           <input
             id={`${id}-llm-utility-model`}
-            className={s.modalInputMono}
+            className={styles.modalInputMono}
             value={utilityModel}
             onChange={e => { const v = e.target.value; setUtilityModel(v); autoSaveLlm({ baseUrl, chatModel, utilityModel: v }); }}
             placeholder="defaults to chat model"
@@ -593,8 +593,8 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
         </div>
 
         {llmStatus?.configured && (
-          <div className={s.boxActions}>
-            <button className={s.brandingResetBtn} onClick={handleClearLlm}>Revert to OpenAI</button>
+          <div className={styles.boxActions}>
+            <button className={styles.brandingResetBtn} onClick={handleClearLlm}>Revert to OpenAI</button>
           </div>
         )}
       </div>

@@ -3,7 +3,7 @@ import { Icon } from './Icon';
 import type { JudgeMetrics, JudgeMetricValue } from '../../types';
 
 interface JudgeMetricsSectionProps {
-  s: Record<string, string>;
+  styles: Record<string, string>;
   metrics: JudgeMetrics | null;
   loading?: boolean;
 }
@@ -72,12 +72,12 @@ function buildCards(metrics: Record<string, JudgeMetricValue>): Card[] {
   return cards;
 }
 
-function JudgeMetricsSection({ s, metrics, loading }: JudgeMetricsSectionProps) {
+function JudgeMetricsSection({ styles, metrics, loading }: JudgeMetricsSectionProps) {
   if (loading && !metrics) {
     return (
-      <div className={s.judgeProfileSection}>
-        <h3 className={s.judgeProfileSectionTitle}>Analytics</h3>
-        <div className={s.caseLoading}><Icon name="Loader2" size={20} className={s.spinnerIcon} /> Computing analytics...</div>
+      <div className={styles.judgeProfileSection}>
+        <h3 className={styles.judgeProfileSectionTitle}>Analytics</h3>
+        <div className={styles.caseLoading}><Icon name="Loader2" size={20} className={styles.spinnerIcon} /> Computing analytics...</div>
       </div>
     );
   }
@@ -99,41 +99,41 @@ function JudgeMetricsSection({ s, metrics, loading }: JudgeMetricsSectionProps) 
   };
 
   return (
-    <div className={s.judgeProfileSection}>
-      <h3 className={s.judgeProfileSectionTitle}>Analytics</h3>
-      <div className={s.metricNote}>
+    <div className={styles.judgeProfileSection}>
+      <h3 className={styles.judgeProfileSectionTitle}>Analytics</h3>
+      <div className={styles.metricNote}>
         Computed from this judge's cached opinions and dockets. Every figure carries a data-quality note; hover a card for how it is calculated.
       </div>
 
       {cards.length > 0 && (
-        <div className={s.statChipRow}>
+        <div className={styles.statChipRow}>
           {cards.map((c) => (
-            <div key={c.key} className={s.statChip} title={tip(c.key)}>
-              <span className={`${s.statChipValue} mono`}>{c.value}</span>
-              <span className={s.statChipLabel}>{c.label}</span>
-              {c.detail && <span className={s.statChipDetail}>{c.detail}</span>}
-              {c.quality && <span className={s.dataQuality}>data: {c.quality}</span>}
+            <div key={c.key} className={styles.statChip} title={tip(c.key)}>
+              <span className={`${styles.statChipValue} mono`}>{c.value}</span>
+              <span className={styles.statChipLabel}>{c.label}</span>
+              {c.detail && <span className={styles.statChipDetail}>{c.detail}</span>}
+              {c.quality && <span className={styles.dataQuality}>data: {c.quality}</span>}
             </div>
           ))}
         </div>
       )}
 
       {distribution.length > 0 && (
-        <div className={s.statSubBlock}>
-          <div className={s.statSubTitle} title={tip('case_type_expertise')}>
+        <div className={styles.statSubBlock}>
+          <div className={styles.statSubTitle} title={tip('case_type_expertise')}>
             Case types{expertise.primary_expertise ? ` · most experience: ${String(expertise.primary_expertise)}` : ''}
             {expertise.data_quality ? ` · data: ${String(expertise.data_quality)}` : ''}
           </div>
-          <div className={s.mixBars}>
+          <div className={styles.mixBars}>
             {(() => {
               const max = Math.max(...distribution.map(([, v]) => Number(v) || 0), 1);
               return distribution.map(([label, v], i) => (
-                <div key={i} className={s.mixBarRow}>
-                  <span className={s.mixBarLabel} title={label}>{label}</span>
-                  <div className={s.mixBarTrack}>
-                    <div className={s.mixBarFill} style={{ '--bar-width': `${(Number(v) / max) * 100}%` } as React.CSSProperties} />
+                <div key={i} className={styles.mixBarRow}>
+                  <span className={styles.mixBarLabel} title={label}>{label}</span>
+                  <div className={styles.mixBarTrack}>
+                    <div className={styles.mixBarFill} style={{ '--bar-width': `${(Number(v) / max) * 100}%` } as React.CSSProperties} />
                   </div>
-                  <span className={`${s.mixBarCount} mono`}>{Number(v).toLocaleString()}</span>
+                  <span className={`${styles.mixBarCount} mono`}>{Number(v).toLocaleString()}</span>
                 </div>
               ));
             })()}
@@ -142,14 +142,14 @@ function JudgeMetricsSection({ s, metrics, loading }: JudgeMetricsSectionProps) 
       )}
 
       {((summary.strengths?.length ?? 0) > 0 || (summary.cautions?.length ?? 0) > 0) && (
-        <div className={s.statSubBlock}>
-          <div className={s.statSubTitle}>Reading the numbers{summary.data_quality_overall ? ` · overall data: ${summary.data_quality_overall}` : ''}</div>
-          {(summary.strengths || []).map((t, i) => <div key={`s${i}`} className={s.judgeProfileItemMeta}>• {t}</div>)}
-          {(summary.cautions || []).map((t, i) => <div key={`c${i}`} className={s.judgeProfileItemMeta}>• {t}</div>)}
+        <div className={styles.statSubBlock}>
+          <div className={styles.statSubTitle}>Reading the numbers{summary.data_quality_overall ? ` · overall data: ${summary.data_quality_overall}` : ''}</div>
+          {(summary.strengths || []).map((t, i) => <div key={`s${i}`} className={styles.judgeProfileItemMeta}>• {t}</div>)}
+          {(summary.cautions || []).map((t, i) => <div key={`c${i}`} className={styles.judgeProfileItemMeta}>• {t}</div>)}
         </div>
       )}
       {metrics.computed_at && (
-        <div className={s.dataQuality}>Computed {String(metrics.computed_at).slice(0, 10)}</div>
+        <div className={styles.dataQuality}>Computed {String(metrics.computed_at).slice(0, 10)}</div>
       )}
     </div>
   );

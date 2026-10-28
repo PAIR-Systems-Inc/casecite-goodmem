@@ -9,10 +9,10 @@ import { Icon } from '../../shared/Icon';
 import t from './SecurityTab.module.css';
 
 interface SecurityTabProps {
-  s: Record<string, string>;
+  styles: Record<string, string>;
 }
 
-export function SecurityTab({ s }: SecurityTabProps) {
+export function SecurityTab({ styles }: SecurityTabProps) {
   const {
     enabled, recoveryCodesRemaining, loading,
     setup, qrDataUrl, enrollCode, setEnrollCode,
@@ -72,7 +72,7 @@ export function SecurityTab({ s }: SecurityTabProps) {
   };
 
   return (
-    <div className={s.tabPanel}>
+    <div className={styles.tabPanel}>
       {/* Password */}
       <div className={t.managePanel}>
         <div className={t.manageHeading}>Password</div>

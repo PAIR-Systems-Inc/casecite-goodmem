@@ -88,7 +88,7 @@ export function SourcesSections({ panelStyles, allCitations, setSelectedCitation
               </div>
             )}
             <SourcesList
-              s={panelStyles}
+              styles={panelStyles}
               allCitations={group.citations}
               setSelectedCitation={setSelectedCitation}
               showTitle={false}

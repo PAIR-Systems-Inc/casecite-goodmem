@@ -62,7 +62,7 @@
 }
 
 .reloadButton {
-  background: var(--gold-500);
+  background: var(--primary-500);
   color: var(--on-primary);
   border: none;
   border-radius: 8px;

@@ -7,7 +7,7 @@ import { downloadBlob } from '../../../utils/downloadBlob';
 import type { AdminUser, RolePermissionsMatrix } from '../../../api/types';
 
 interface UsersTabProps {
-  s: Record<string, string>;
+  styles: Record<string, string>;
 }
 
 const ROLES = [
@@ -17,7 +17,7 @@ const ROLES = [
   { value: 'viewer', label: 'Viewer' },
 ] as const;
 
-export const UsersTab = ({ s }: UsersTabProps) => {
+export const UsersTab = ({ styles }: UsersTabProps) => {
   const id = useId();
   const addToast = useUIStore((st) => st.addToast);
   const showConfirm = useUIStore((st) => st.showConfirm);
@@ -211,52 +211,52 @@ export const UsersTab = ({ s }: UsersTabProps) => {
   };
 
   return (
-    <div className={s.usersTabContent}>
+    <div className={styles.usersTabContent}>
       {/* Invite */}
-      <div className={s.inviteCard}>
-        <div className={s.keyStatusTitle}>Invite a User</div>
-        <div className={s.inviteRow}>
-          <div className={s.inviteField}>
-            <label className={s.settingLabel} htmlFor={`${id}-invite-email`}>Email</label>
+      <div className={styles.inviteCard}>
+        <div className={styles.keyStatusTitle}>Invite a User</div>
+        <div className={styles.inviteRow}>
+          <div className={styles.inviteField}>
+            <label className={styles.settingLabel} htmlFor={`${id}-invite-email`}>Email</label>
             <input
               id={`${id}-invite-email`}
-              className={s.modalInput}
+              className={styles.modalInput}
               type="email"
               value={inviteEmail}
               onChange={e => setInviteEmail(e.target.value)}
               placeholder="name@firm.com"
             />
           </div>
-          <div className={s.inviteField}>
-            <label className={s.settingLabel} htmlFor={`${id}-invite-name`}>Name</label>
+          <div className={styles.inviteField}>
+            <label className={styles.settingLabel} htmlFor={`${id}-invite-name`}>Name</label>
             <input
               id={`${id}-invite-name`}
-              className={s.modalInput}
+              className={styles.modalInput}
               value={inviteName}
               onChange={e => setInviteName(e.target.value)}
               placeholder="Full name"
             />
           </div>
-          <div className={s.inviteField}>
-            <label className={s.settingLabel} htmlFor={`${id}-invite-role`}>Role</label>
-            <select id={`${id}-invite-role`} className={s.select} value={inviteRole} onChange={e => setInviteRole(e.target.value)}>
+          <div className={styles.inviteField}>
+            <label className={styles.settingLabel} htmlFor={`${id}-invite-role`}>Role</label>
+            <select id={`${id}-invite-role`} className={styles.select} value={inviteRole} onChange={e => setInviteRole(e.target.value)}>
               {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
           </div>
-          <button className={s.btnPrimary} onClick={handleInvite} disabled={inviting}>
+          <button className={styles.btnPrimary} onClick={handleInvite} disabled={inviting}>
             <Icon name="UserPlus" size={14} /> {inviting ? 'Inviting...' : 'Invite'}
           </button>
         </div>
 
         {tempPassword && (
-          <div className={s.tempPasswordBox}>
-            <div className={s.tempPasswordLabel}>
+          <div className={styles.tempPasswordBox}>
+            <div className={styles.tempPasswordLabel}>
               Temporary password — share it with the user (shown once). They must choose their own
               password the first time they sign in.
             </div>
-            <div className={s.tempPasswordValue}>
+            <div className={styles.tempPasswordValue}>
               <span>{tempPassword}</span>
-              <button className={s.btnSecondaryXSmall} onClick={copyTempPassword}>
+              <button className={styles.btnSecondaryXSmall} onClick={copyTempPassword}>
                 <Icon name="Copy" size={12} /> Copy
               </button>
             </div>
@@ -266,82 +266,82 @@ export const UsersTab = ({ s }: UsersTabProps) => {
 
       {/* Existing users */}
       <div>
-        <div className={s.keyStatusTitle}>Users ({users.length})</div>
-        <div className={s.userList}>
+        <div className={styles.keyStatusTitle}>Users ({users.length})</div>
+        <div className={styles.userList}>
           {users.map(u => {
             const isSelf = u.id === currentUserId;
             const busy = busyUserId === u.id;
             return (
-            <div key={u.id} className={s.userCard}>
-              <div className={s.userRow}>
-                <div className={s.userRowInfo}>
-                  <div className={s.userName}>
+            <div key={u.id} className={styles.userCard}>
+              <div className={styles.userRow}>
+                <div className={styles.userRowInfo}>
+                  <div className={styles.userName}>
                     {u.name || '(no name)'}
-                    {isSelf && <span className={s.youBadge}>You</span>}
-                    {!u.is_active && <span className={s.inactiveBadge}>Deactivated</span>}
-                    {u.must_change_password && <span className={s.inactiveBadge}>Temporary password</span>}
-                    {u.mfa_enabled === false && <span className={s.inactiveBadge}>No two-factor</span>}
+                    {isSelf && <span className={styles.youBadge}>You</span>}
+                    {!u.is_active && <span className={styles.inactiveBadge}>Deactivated</span>}
+                    {u.must_change_password && <span className={styles.inactiveBadge}>Temporary password</span>}
+                    {u.mfa_enabled === false && <span className={styles.inactiveBadge}>No two-factor</span>}
                   </div>
-                  <div className={s.userEmail}>{u.email}</div>
+                  <div className={styles.userEmail}>{u.email}</div>
                 </div>
                 <select
                   aria-label={`Role for ${u.email}`}
-                  className={s.userRoleSelect}
+                  className={styles.userRoleSelect}
                   value={u.roles[0] || 'attorney'}
                   onChange={e => handleRoleChange(u, e.target.value)}
                 >
                   {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                 </select>
               </div>
-              <div className={s.userActions}>
-                <button className={s.btnSecondaryXSmall} disabled={busy} onClick={() => handleExport(u)}>
+              <div className={styles.userActions}>
+                <button className={styles.btnSecondaryXSmall} disabled={busy} onClick={() => handleExport(u)}>
                   <Icon name="Download" size={12} /> Export data
                 </button>
                 {/* Your own account is managed from the Security tab — these
                     actions would lock you out of the page you are on. */}
                 {!isSelf && (
                   <>
-                    <button className={s.btnSecondaryXSmall} disabled={busy} onClick={() => handleForceSignOut(u)}>
+                    <button className={styles.btnSecondaryXSmall} disabled={busy} onClick={() => handleForceSignOut(u)}>
                       <Icon name="LogOut" size={12} /> Sign out everywhere
                     </button>
-                    <button className={s.btnSecondaryXSmall} disabled={busy} onClick={() => handleResetMfa(u)}>
+                    <button className={styles.btnSecondaryXSmall} disabled={busy} onClick={() => handleResetMfa(u)}>
                       <Icon name="ShieldOff" size={12} /> Reset two-factor
                     </button>
-                    <button className={s.btnSecondaryXSmall} disabled={busy} onClick={() => handleSetActive(u, !u.is_active)}>
+                    <button className={styles.btnSecondaryXSmall} disabled={busy} onClick={() => handleSetActive(u, !u.is_active)}>
                       <Icon name={u.is_active ? 'Lock' : 'Check'} size={12} /> {u.is_active ? 'Deactivate' : 'Reactivate'}
                     </button>
-                    <button className={s.btnDangerXSmall} disabled={busy} onClick={() => openDelete(u)}>
+                    <button className={styles.btnDangerXSmall} disabled={busy} onClick={() => openDelete(u)}>
                       <Icon name="Trash2" size={12} /> Delete…
                     </button>
                   </>
                 )}
               </div>
               {deleteTarget?.id === u.id && (
-                <div className={s.dangerPanel} role="group" aria-label={`Delete ${u.email}`}>
-                  <div className={s.dangerTitle}>
+                <div className={styles.dangerPanel} role="group" aria-label={`Delete ${u.email}`}>
+                  <div className={styles.dangerTitle}>
                     <Icon name="AlertTriangle" size={14} /> Permanently delete this user and everything they own
                   </div>
-                  <p className={s.dangerText}>
+                  <p className={styles.dangerText}>
                     This destroys {u.email}&apos;s uploaded documents and their search index, their
                     conversations, contract analyses, authority maps, saved API keys and connector
                     connections, and every matter they own. Nothing is transferred to another user and
                     it cannot be undone. If the firm must keep this work product, <strong>deactivate</strong> the
                     account instead — that blocks sign-in and keeps the data. Export first if you need a record.
                   </p>
-                  <label className={s.settingLabel} htmlFor={`${id}-delete-confirm`}>
+                  <label className={styles.settingLabel} htmlFor={`${id}-delete-confirm`}>
                     Type <strong>{u.email}</strong> to confirm
                   </label>
                   <input
                     id={`${id}-delete-confirm`}
-                    className={s.modalInput}
+                    className={styles.modalInput}
                     value={deleteConfirmText}
                     onChange={e => setDeleteConfirmText(e.target.value)}
                     autoComplete="off"
                   />
-                  <div className={s.boxActions}>
-                    <button className={s.btnSecondaryXSmall} onClick={closeDelete}>Cancel</button>
+                  <div className={styles.boxActions}>
+                    <button className={styles.btnSecondaryXSmall} onClick={closeDelete}>Cancel</button>
                     <button
-                      className={s.btnDangerXSmall}
+                      className={styles.btnDangerXSmall}
                       disabled={busy || deleteConfirmText.trim().toLowerCase() !== u.email.toLowerCase()}
                       onClick={() => handleDelete(u)}
                     >
@@ -353,38 +353,38 @@ export const UsersTab = ({ s }: UsersTabProps) => {
             </div>
             );
           })}
-          {users.length === 0 && <span className={s.helpText}>No users found.</span>}
+          {users.length === 0 && <span className={styles.helpText}>No users found.</span>}
         </div>
       </div>
 
       {/* Role permissions matrix */}
       {matrix && (
-        <div className={s.permSection}>
-          <div className={s.permHeader}>
+        <div className={styles.permSection}>
+          <div className={styles.permHeader}>
             <div>
-              <div className={s.keyStatusTitle}>Role Permissions</div>
-              <span className={s.helpText}>
+              <div className={styles.keyStatusTitle}>Role Permissions</div>
+              <span className={styles.helpText}>
                 What each role can do. Defaults are prechecked — check and uncheck to
                 customize; changes apply to everyone with that role immediately.
               </span>
             </div>
             {matrix.customized.length > 0 && (
-              <button className={s.btnSecondaryXSmall} onClick={handleResetRoles}>
+              <button className={styles.btnSecondaryXSmall} onClick={handleResetRoles}>
                 <Icon name="RotateCcw" size={12} /> Reset to defaults
               </button>
             )}
           </div>
 
-          <div className={s.permTableWrap}>
-            <table className={s.permTable}>
+          <div className={styles.permTableWrap}>
+            <table className={styles.permTable}>
               <thead>
                 <tr>
-                  <th className={s.permNameCol}>Permission</th>
+                  <th className={styles.permNameCol}>Permission</th>
                   {matrix.roles.map(role => (
-                    <th key={role} className={s.permRoleCol}>
+                    <th key={role} className={styles.permRoleCol}>
                       {role.charAt(0).toUpperCase() + role.slice(1)}
                       {matrix.customized.includes(role) && (
-                        <span className={s.permCustomBadge} title="Differs from defaults">edited</span>
+                        <span className={styles.permCustomBadge} title="Differs from defaults">edited</span>
                       )}
                     </th>
                   ))}
@@ -393,21 +393,21 @@ export const UsersTab = ({ s }: UsersTabProps) => {
               <tbody>
                 {permissionGroups.map(group => (
                   [
-                    <tr key={group} className={s.permGroupRow}>
+                    <tr key={group} className={styles.permGroupRow}>
                       <td colSpan={matrix.roles.length + 1}>{group}</td>
                     </tr>,
                     ...matrix.permissions.filter(p => p.group === group).map(p => (
                       <tr key={p.key}>
-                        <td className={s.permNameCol}>
-                          <span className={s.permLabel}>{p.label}</span>
-                          <span className={s.permDesc}>{p.description}</span>
+                        <td className={styles.permNameCol}>
+                          <span className={styles.permLabel}>{p.label}</span>
+                          <span className={styles.permDesc}>{p.description}</span>
                         </td>
                         {matrix.roles.map(role => (
-                          <td key={role} className={s.permCheckCell}>
+                          <td key={role} className={styles.permCheckCell}>
                             <input
                               aria-label={`${p.label} for ${role}`}
                               type="checkbox"
-                              className={s.permCheckbox}
+                              className={styles.permCheckbox}
                               checked={(matrix.assigned[role] || []).includes(p.key)}
                               disabled={isLocked(role, p.key)}
                               title={isLocked(role, p.key)

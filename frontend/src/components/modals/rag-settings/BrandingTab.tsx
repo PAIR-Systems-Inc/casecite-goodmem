@@ -5,10 +5,10 @@ import type { AppTheme } from '../../../stores/uiStore';
 import { Icon } from '../../shared/Icon';
 
 interface BrandingTabProps {
-  s: Record<string, string>;
+  styles: Record<string, string>;
 }
 
-export const BrandingTab = ({ s }: BrandingTabProps) => {
+export const BrandingTab = ({ styles }: BrandingTabProps) => {
   const id = useId();
   const theme = useUIStore((st) => st.theme);
   const setTheme = useUIStore((st) => st.setTheme);
@@ -80,28 +80,28 @@ export const BrandingTab = ({ s }: BrandingTabProps) => {
   };
 
   return (
-    <div className={s.brandingTabContent}>
+    <div className={styles.brandingTabContent}>
       {/* Theme */}
-      <div className={s.settingGroup}>
-        <label className={s.settingLabel} htmlFor={`${id}-theme`}>Theme</label>
+      <div className={styles.settingGroup}>
+        <label className={styles.settingLabel} htmlFor={`${id}-theme`}>Theme</label>
         <select
           id={`${id}-theme`}
-          className={s.modalInput}
+          className={styles.modalInput}
           value={theme}
           onChange={(e) => setTheme(e.target.value as AppTheme)}
         >
           <option value="default">Default (dark sidebar)</option>
           <option value="light">Light</option>
         </select>
-        <div className={s.brandingUploadHint}>Saved on this device only.</div>
+        <div className={styles.brandingUploadHint}>Saved on this device only.</div>
       </div>
 
       {/* Firm Name */}
-      <div className={s.settingGroup}>
-        <label className={s.settingLabel} htmlFor={`${id}-firm-name`}>Firm Name</label>
+      <div className={styles.settingGroup}>
+        <label className={styles.settingLabel} htmlFor={`${id}-firm-name`}>Firm Name</label>
         <input
           id={`${id}-firm-name`}
-          className={s.modalInput}
+          className={styles.modalInput}
           value={firmName}
           onChange={(e) => setFirmName(e.target.value)}
           placeholder="CaseCite"
@@ -110,21 +110,21 @@ export const BrandingTab = ({ s }: BrandingTabProps) => {
       </div>
 
       {/* Logo Upload */}
-      <div className={s.settingGroup}>
-        <label className={s.settingLabel} htmlFor={`${id}-logo`}>Logo</label>
+      <div className={styles.settingGroup}>
+        <label className={styles.settingLabel} htmlFor={`${id}-logo`}>Logo</label>
         <div
-          className={s.brandingLogoZone}
+          className={styles.brandingLogoZone}
           onClick={() => fileRef.current?.click()}
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
         >
           {branding.logo_url && (
-            <img src={branding.logo_url} alt="Logo" className={s.brandingLogoPreview} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src={branding.logo_url} alt="Logo" className={styles.brandingLogoPreview} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           )}
-          <div className={s.brandingUploadText}>
+          <div className={styles.brandingUploadText}>
             {branding.logo_url ? 'Click or drag to replace' : 'Click or drag to upload'}
           </div>
-          <div className={s.brandingUploadHint}>PNG, JPEG, SVG, or WebP. Max 2 MB.</div>
+          <div className={styles.brandingUploadHint}>PNG, JPEG, SVG, or WebP. Max 2 MB.</div>
         </div>
         <input
           id={`${id}-logo`}
@@ -137,43 +137,43 @@ export const BrandingTab = ({ s }: BrandingTabProps) => {
       </div>
 
       {/* Colors */}
-      <div className={s.settingGroup}>
-        <label className={s.settingLabel} htmlFor={`${id}-primary-color`}>Colors</label>
+      <div className={styles.settingGroup}>
+        <label className={styles.settingLabel} htmlFor={`${id}-primary-color`}>Colors</label>
 
-        <div className={s.brandingColorRow}>
-          <span className={s.brandingColorLabel}>Primary</span>
-          <input id={`${id}-primary-color`} aria-label="Primary colour" type="color" className={s.brandingColorInput} value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} />
-          <input aria-label="Primary colour hex" className={s.brandingColorHex} value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} maxLength={7} />
+        <div className={styles.brandingColorRow}>
+          <span className={styles.brandingColorLabel}>Primary</span>
+          <input id={`${id}-primary-color`} aria-label="Primary colour" type="color" className={styles.brandingColorInput} value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} />
+          <input aria-label="Primary colour hex" className={styles.brandingColorHex} value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} maxLength={7} />
         </div>
 
-        <div className={s.brandingColorRow}>
-          <span className={s.brandingColorLabel}>Secondary</span>
-          <input aria-label="Secondary colour" type="color" className={s.brandingColorInput} value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} />
-          <input aria-label="Secondary colour hex" className={s.brandingColorHex} value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} maxLength={7} />
+        <div className={styles.brandingColorRow}>
+          <span className={styles.brandingColorLabel}>Secondary</span>
+          <input aria-label="Secondary colour" type="color" className={styles.brandingColorInput} value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} />
+          <input aria-label="Secondary colour hex" className={styles.brandingColorHex} value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} maxLength={7} />
         </div>
 
-        <div className={s.brandingColorRow}>
-          <span className={s.brandingColorLabel}>Accent</span>
-          <input aria-label="Accent colour" type="color" className={s.brandingColorInput} value={accentColor} onChange={(e) => setAccentColor(e.target.value)} />
-          <input aria-label="Accent colour hex" className={s.brandingColorHex} value={accentColor} onChange={(e) => setAccentColor(e.target.value)} maxLength={7} />
+        <div className={styles.brandingColorRow}>
+          <span className={styles.brandingColorLabel}>Accent</span>
+          <input aria-label="Accent colour" type="color" className={styles.brandingColorInput} value={accentColor} onChange={(e) => setAccentColor(e.target.value)} />
+          <input aria-label="Accent colour hex" className={styles.brandingColorHex} value={accentColor} onChange={(e) => setAccentColor(e.target.value)} maxLength={7} />
         </div>
 
-        <div className={s.brandingPreview}>
-          <div className={s.brandingPreviewLabel}>Preview</div>
-          <div className={s.brandingSwatchRow}>
-            <div className={s.brandingSwatch} style={{ background: primaryColor }} title="Primary" />
-            <div className={s.brandingSwatch} style={{ background: secondaryColor }} title="Secondary" />
-            <div className={s.brandingSwatch} style={{ background: accentColor }} title="Accent" />
+        <div className={styles.brandingPreview}>
+          <div className={styles.brandingPreviewLabel}>Preview</div>
+          <div className={styles.brandingSwatchRow}>
+            <div className={styles.brandingSwatch} style={{ background: primaryColor }} title="Primary" />
+            <div className={styles.brandingSwatch} style={{ background: secondaryColor }} title="Secondary" />
+            <div className={styles.brandingSwatch} style={{ background: accentColor }} title="Accent" />
           </div>
         </div>
       </div>
 
       {/* Actions */}
-      <div className={s.brandingActions}>
-        <button className={s.brandingResetBtn} onClick={handleReset}>
+      <div className={styles.brandingActions}>
+        <button className={styles.brandingResetBtn} onClick={handleReset}>
           Reset Defaults
         </button>
-        <button className={s.btnPrimary} onClick={handleSave} disabled={saving}>
+        <button className={styles.btnPrimary} onClick={handleSave} disabled={saving}>
           <Icon name="Save" size={14} /> {saving ? 'Saving...' : 'Save Branding'}
         </button>
       </div>

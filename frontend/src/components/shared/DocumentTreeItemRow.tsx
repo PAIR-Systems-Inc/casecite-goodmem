@@ -6,7 +6,7 @@ import type { DocumentTreeItem } from '../../types';
 import localStyles from './DocumentTreeItemRow.module.css';
 
 interface DocumentTreeItemRowProps {
-  s: Record<string, string>;
+  styles: Record<string, string>;
   item: DocumentTreeItem;
   depth: number;
   expandedFolders: Set<string>;
@@ -16,7 +16,7 @@ interface DocumentTreeItemRowProps {
   toggleSelect: (item: DocumentTreeItem) => void;
 }
 
-function DocumentTreeItemRow({ s, item, depth, expandedFolders, selectedItems, searchFilter, toggleFolder, toggleSelect }: DocumentTreeItemRowProps) {
+function DocumentTreeItemRow({ styles, item, depth, expandedFolders, selectedItems, searchFilter, toggleFolder, toggleSelect }: DocumentTreeItemRowProps) {
   const isExpanded = expandedFolders.has(item.path);
   const isSelected = selectedItems.has(item.type === 'folder' ? item.path : item.id);
   const matchesSearch = !searchFilter ||
@@ -34,7 +34,7 @@ function DocumentTreeItemRow({ s, item, depth, expandedFolders, selectedItems, s
   return (
     <div>
       <div
-        className={`${s.treeItem} ${localStyles.treeItemIndent} ${isSelected ? s.treeItemSelected : ''}`}
+        className={`${styles.treeItem} ${localStyles.treeItemIndent} ${isSelected ? styles.treeItemSelected : ''}`}
         style={{ '--depth-indent': `${depth * 20}px` } as React.CSSProperties}
       >
         {item.type === 'folder' ? (
@@ -46,43 +46,43 @@ function DocumentTreeItemRow({ s, item, depth, expandedFolders, selectedItems, s
               aria-expanded={isExpanded}
               onClick={() => toggleFolder(item.path)}
               onKeyDown={activateOnKey(() => toggleFolder(item.path))}
-              className={s.folderToggle}
+              className={styles.folderToggle}
             >
-              <Icon name={isExpanded ? 'ChevronDown' : 'ChevronRight'} size={16} className={s.iconGray500} />
+              <Icon name={isExpanded ? 'ChevronDown' : 'ChevronRight'} size={16} className={styles.iconGray500} />
             </span>
             <input
               aria-label={`Select folder ${item.name}`}
               type="checkbox"
               checked={isSelected}
               onChange={() => toggleSelect(item)}
-              className={s.checkbox}
+              className={styles.checkbox}
             />
-            <Icon name="Folder" size={18} style={{color: isExpanded ? 'var(--gold-500)' : 'var(--gray-500)'}} />
-            <span className={s.folderName}>{item.name}</span>
-            <span className={s.docCount}>
+            <Icon name="Folder" size={18} style={{color: isExpanded ? 'var(--primary-500)' : 'var(--gray-500)'}} />
+            <span className={styles.folderName}>{item.name}</span>
+            <span className={styles.docCount}>
               {item.document_count} docs
             </span>
           </>
         ) : (
           <>
-            <span className={s.fileSpacer} />
+            <span className={styles.fileSpacer} />
             <input
               aria-label={`Select ${item.name}`}
               type="checkbox"
               checked={isSelected}
               onChange={() => toggleSelect(item)}
-              className={s.checkbox}
+              className={styles.checkbox}
             />
             <Icon
               name={item.name.endsWith('.pdf') ? 'FileText' : item.name.endsWith('.docx') ? 'FileEdit' : 'File'}
               size={16}
-              className={s.iconGray500}
+              className={styles.iconGray500}
             />
-            <span className={s.fileName}>
+            <span className={styles.fileName}>
               {item.name}
             </span>
             {item.size && (
-              <span className={s.fileSize}>
+              <span className={styles.fileSize}>
                 {formatFileSize(item.size)}
               </span>
             )}
@@ -92,7 +92,7 @@ function DocumentTreeItemRow({ s, item, depth, expandedFolders, selectedItems, s
       {item.type === 'folder' && isExpanded && item.children?.map((child: DocumentTreeItem) => (
         <DocumentTreeItemRow
           key={child.id || child.path}
-          s={s}
+          styles={styles}
           item={child}
           depth={depth + 1}
           expandedFolders={expandedFolders}

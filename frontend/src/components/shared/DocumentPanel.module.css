@@ -29,12 +29,12 @@
 }
 
 .dropZone:hover {
-  border-color: var(--gold-500);
+  border-color: var(--primary-500);
   background: var(--chrome-fill);
 }
 
 .dropZoneActive {
-  border-color: var(--gold-500);
+  border-color: var(--primary-500);
   background: rgba(184, 134, 11, 0.1);
 }
 
@@ -121,7 +121,7 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  color: var(--gold-500);
+  color: var(--primary-500);
 }
 
 .iconMuted {

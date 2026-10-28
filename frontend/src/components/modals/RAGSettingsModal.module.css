@@ -1017,7 +1017,7 @@
 }
 
 .brandingLogoZone:hover {
-  border-color: var(--gold-600);
+  border-color: var(--primary-600);
 }
 
 .brandingLogoPreview {

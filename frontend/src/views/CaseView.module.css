@@ -63,8 +63,8 @@
 
 .citeBadge {
   padding: 1px 6px;
-  background: var(--gold-100);
-  color: var(--gold-700);
+  background: var(--primary-100);
+  color: var(--primary-700);
   border-radius: 3px;
   font-size: 10px;
   font-weight: 600;
@@ -190,7 +190,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--gold-400);
+  color: var(--primary-400);
   flex-shrink: 0;
 }
 

@@ -6,19 +6,19 @@ const s = new Proxy({} as Record<string, string>, { get: (_, key) => String(key)
 
 describe('JudgeStatsSection', () => {
   it('renders nothing without stats', () => {
-    const { container } = render(<JudgeStatsSection s={s} judgeIntelStats={null} />);
+    const { container } = render(<JudgeStatsSection styles={s} judgeIntelStats={null} />);
     expect(container.innerHTML).toBe('');
   });
 
   it('renders nothing when stats carry no usable fields', () => {
-    const { container } = render(<JudgeStatsSection s={s} judgeIntelStats={{}} />);
+    const { container } = render(<JudgeStatsSection styles={s} judgeIntelStats={{}} />);
     expect(container.innerHTML).toBe('');
   });
 
   it('shows overview averages', () => {
     const { container } = render(
       <JudgeStatsSection
-        s={s}
+        styles={s}
         judgeIntelStats={{
           overview: { avg_citations_per_opinion: 4.2, avg_opinion_length: 2150 },
         }}
@@ -33,7 +33,7 @@ describe('JudgeStatsSection', () => {
   it('shows day-of-week and citation distribution', () => {
     const { container } = render(
       <JudgeStatsSection
-        s={s}
+        styles={s}
         judgeIntelStats={{
           by_day_of_week: [{ day_of_week: 'Monday', opinions: 12 }],
           citation_distribution: [{ citation_range: '0-5', count: 340 }],

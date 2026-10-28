@@ -270,6 +270,8 @@ export interface ConnectorDataResponse {
     connected?: boolean;
     configured?: boolean;
     admin_only?: boolean;
+    /** Implemented but not validated against a live tenant; only listed when enabled. */
+    experimental?: boolean;
     docs_indexed?: number;
   }>;
   [key: string]: unknown;

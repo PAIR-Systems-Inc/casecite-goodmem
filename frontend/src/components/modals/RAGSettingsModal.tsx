@@ -132,37 +132,37 @@ export const RAGSettingsModal = ({ isOpen, onClose, settings, onSave }: RAGSetti
 
         <div className={s.modalBody}>
           {activeTab === 'api' && (
-            <APIKeysTab local={local} setLocal={setLocal} showKeys={showKeys} setShowKeys={setShowKeys} apiKeys={apiKeys} setApiKeys={setApiKeys} serverKeyStatus={serverKeyStatus} maskedKeys={maskedKeys} keyStatusError={keyStatusError} refreshKeyStatus={refreshKeyStatus} s={s} />
+            <APIKeysTab local={local} setLocal={setLocal} showKeys={showKeys} setShowKeys={setShowKeys} apiKeys={apiKeys} setApiKeys={setApiKeys} serverKeyStatus={serverKeyStatus} maskedKeys={maskedKeys} keyStatusError={keyStatusError} refreshKeyStatus={refreshKeyStatus} styles={s} />
           )}
           {activeTab === 'security' && (
-            <SecurityTab s={s} />
+            <SecurityTab styles={s} />
           )}
           {activeTab === 'retrieval' && (
-            <RetrievalTab local={local} setLocal={setLocal} s={s} />
+            <RetrievalTab local={local} setLocal={setLocal} styles={s} />
           )}
           {activeTab === 'embedding' && (
-            <EmbeddingTab local={local} setLocal={setLocal} s={s} />
+            <EmbeddingTab local={local} setLocal={setLocal} styles={s} />
           )}
           {activeTab === 'generation' && (
-            <GenerationTab local={local} setLocal={setLocal} s={s} />
+            <GenerationTab local={local} setLocal={setLocal} styles={s} />
           )}
           {activeTab === 'prompts' && (
-            <PromptsTab local={local} setLocal={setLocal} s={s} />
+            <PromptsTab local={local} setLocal={setLocal} styles={s} />
           )}
           {activeTab === 'sources' && isAdmin && (
-            <SourcesTab s={s} />
+            <SourcesTab styles={s} />
           )}
           {activeTab === 'users' && isAdmin && (
-            <UsersTab s={s} />
+            <UsersTab styles={s} />
           )}
           {activeTab === 'audit' && isAdmin && (
-            <AuditTab s={s} />
+            <AuditTab styles={s} />
           )}
           {activeTab === 'advanced' && (
-            <AdvancedTab local={local} setLocal={setLocal} s={s} />
+            <AdvancedTab local={local} setLocal={setLocal} styles={s} />
           )}
           {activeTab === 'branding' && isAdmin && (
-            <BrandingTab s={s} />
+            <BrandingTab styles={s} />
           )}
         </div>
 

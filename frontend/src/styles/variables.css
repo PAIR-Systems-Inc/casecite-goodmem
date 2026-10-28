@@ -5,7 +5,7 @@
   /* Brand ramps — defaults mirror brandingStore DEFAULT_BRANDING exactly
      (same lighten/darken derivations); applyBrandingColors overrides at runtime */
   --navy-900: #0A0A0A; --navy-800: #141414; --navy-700: #1E1E1E; --navy-600: #292929;
-  --gold-700: #595959; --gold-600: #737373; --gold-500: #E5E5E5; --gold-400: #FFFFFF; --gold-300: #FFFFFF; --gold-50: #F5F5F5;
+  --primary-700: #595959; --primary-600: #737373; --primary-500: #E5E5E5; --primary-400: #FFFFFF; --primary-300: #FFFFFF; --primary-50: #F5F5F5;
   --accent-600: #5F5F5F; --accent-500: #737373; --accent-400: #929292;
   --gray-50: #F9FAFB; --gray-100: #F3F4F6; --gray-200: #E5E7EB; --gray-300: #D1D5DB;
   --gray-400: #9CA3AF; --gray-500: #6B7280; --gray-600: #4B5563; --gray-700: #374151;
@@ -44,9 +44,9 @@
   --chrome-fill-subtle: var(--on-secondary-fill-subtle);
   --chrome-border: var(--on-secondary-border);
   --chrome-border-strong: var(--on-secondary-border-strong);
-  /* Wordmark matches the active-icon box fill (gold-500 in dark chrome);
+  /* Wordmark matches the active-icon box fill (primary-500 in dark chrome);
      the light theme needs a darker gray to stay readable on white. */
-  --chrome-wordmark: var(--gold-500);
+  --chrome-wordmark: var(--primary-500);
 }
 
 :root[data-theme="light"] {
@@ -61,5 +61,5 @@
   --chrome-fill-subtle: rgba(10, 10, 10, 0.04);
   --chrome-border: var(--gray-200);
   --chrome-border-strong: var(--gray-300);
-  --chrome-wordmark: var(--gold-600);
+  --chrome-wordmark: var(--primary-600);
 }

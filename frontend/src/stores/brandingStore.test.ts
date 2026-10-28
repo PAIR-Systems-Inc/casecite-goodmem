@@ -134,7 +134,7 @@ describe('brandingStore', () => {
     useBrandingStore.getState().applyBrandingColors();
 
     const root = document.documentElement.style;
-    expect(root.getPropertyValue('--gold-500')).toBe('#E5E5E5');
+    expect(root.getPropertyValue('--primary-500')).toBe('#E5E5E5');
     expect(root.getPropertyValue('--navy-900')).toBe('#0A0A0A');
   });
 
@@ -143,7 +143,7 @@ describe('brandingStore', () => {
     useBrandingStore.getState().applyBrandingColors(custom);
 
     const root = document.documentElement.style;
-    expect(root.getPropertyValue('--gold-500')).toBe('#FF0000');
+    expect(root.getPropertyValue('--primary-500')).toBe('#FF0000');
     expect(root.getPropertyValue('--navy-900')).toBe('#0000FF');
   });
 

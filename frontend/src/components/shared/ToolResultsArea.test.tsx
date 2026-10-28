@@ -10,7 +10,7 @@ const s = new Proxy({} as Record<string, string>, { get: (_, key) => String(key)
 
 function defaultProps(overrides: Record<string, any> = {}) {
   return {
-    s,
+    styles: s,
     tr: null as any,
     activeTool: null as any,
     toolInput: '',

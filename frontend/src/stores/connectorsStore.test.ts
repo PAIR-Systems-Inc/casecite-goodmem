@@ -307,6 +307,31 @@ describe('connectorsStore', () => {
     expect(filevine?.adminOnly).toBe(true);
   });
 
+  it('loadConnectors marks connectors the server did not list as unavailable', async () => {
+    // EXPERIMENTAL_CONNECTORS=false: iManage and NetDocuments are absent from
+    // the response. They must not keep their default (unset) `configured`,
+    // which the Sources tab would read as "Configured".
+    (api.getConnectors as ReturnType<typeof vi.fn>).mockResolvedValue({
+      connectors: [{ id: 'clio', connected: false, configured: true }],
+    });
+    (api.getPickerConfig as ReturnType<typeof vi.fn>).mockResolvedValue({});
+    await useConnectorsStore.getState().loadConnectors();
+    const byId = (id: string) => useConnectorsStore.getState().connectors.find(c => c.id === id);
+    expect(byId('clio')).toMatchObject({ available: true, configured: true, experimental: false });
+    expect(byId('imanage')).toMatchObject({ available: false, configured: false, connected: false });
+    expect(byId('netdocuments')).toMatchObject({ available: false, configured: false });
+  });
+
+  it('loadConnectors carries the experimental flag', async () => {
+    (api.getConnectors as ReturnType<typeof vi.fn>).mockResolvedValue({
+      connectors: [{ id: 'imanage', connected: false, configured: true, experimental: true }],
+    });
+    (api.getPickerConfig as ReturnType<typeof vi.fn>).mockResolvedValue({});
+    await useConnectorsStore.getState().loadConnectors();
+    const imanage = useConnectorsStore.getState().connectors.find(c => c.id === 'imanage');
+    expect(imanage).toMatchObject({ available: true, experimental: true, configured: true });
+  });
+
   it('refuses to open an OAuth address that only looks like a provider', async () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     (api.connectConnector as ReturnType<typeof vi.fn>).mockResolvedValue({

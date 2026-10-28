@@ -49,35 +49,35 @@ export interface DocketDetail {
 }
 
 interface DocketDetailViewProps {
-  s: Record<string, string>;
+  styles: Record<string, string>;
   docket: DocketDetail | null;
   docketLoading: boolean;
   onBack: () => void;
 }
 
-function DocketDetailView({ s, docket, docketLoading, onBack }: DocketDetailViewProps) {
+function DocketDetailView({ styles, docket, docketLoading, onBack }: DocketDetailViewProps) {
   return (
-    <div className={s.caseDetailView}>
-      <button className={s.backToResultsBtn} onClick={onBack}>
+    <div className={styles.caseDetailView}>
+      <button className={styles.backToResultsBtn} onClick={onBack}>
         <Icon name="ChevronLeft" size={14} /> Back to results
       </button>
       {docketLoading ? (
-        <div className={s.caseLoading}>
-          <Icon name="Loader2" size={20} className={s.spinner} />
+        <div className={styles.caseLoading}>
+          <Icon name="Loader2" size={20} className={styles.spinner} />
           <span>Loading docket...</span>
         </div>
       ) : !docket ? null : docket.error ? (
-        <div className={s.toolErrorBox}>
+        <div className={styles.toolErrorBox}>
           <Icon name="AlertCircle" size={14} />
           <span>{docket.error}</span>
         </div>
       ) : (
         <>
-          <h3 className={s.caseDetailTitle}>{docket.case_name}</h3>
+          <h3 className={styles.caseDetailTitle}>{docket.case_name}</h3>
           {docket.case_name_full && docket.case_name_full !== docket.case_name && (
-            <div className={s.caseDetailJudges}>{docket.case_name_full}</div>
+            <div className={styles.caseDetailJudges}>{docket.case_name_full}</div>
           )}
-          <div className={s.caseDetailMeta}>
+          <div className={styles.caseDetailMeta}>
             {(docket.court_name || docket.court) && (
               <span><Icon name="Building" size={12} /> {docket.court_name || docket.court!.toUpperCase()}</span>
             )}
@@ -88,16 +88,16 @@ function DocketDetailView({ s, docket, docketLoading, onBack }: DocketDetailView
             {docket.date_last_filing && <span><Icon name="Clock" size={12} /> Last filing {docket.date_last_filing}</span>}
           </div>
           {(docket.assigned_to || docket.referred_to) && (
-            <div className={s.caseDetailJudges}>
+            <div className={styles.caseDetailJudges}>
               {docket.assigned_to && <><strong>Assigned to:</strong> {docket.assigned_to}</>}
               {docket.assigned_to && docket.referred_to ? ' · ' : ''}
               {docket.referred_to && <><strong>Referred to:</strong> {docket.referred_to}</>}
             </div>
           )}
           {(docket.nature_of_suit || docket.cause || docket.jury_demand || docket.jurisdiction_type || docket.pacer_case_id) && (
-            <div className={s.caseDetailSection}>
-              <div className={s.caseDetailSectionTitle}>Case Information</div>
-              <div className={s.caseDetailText}>
+            <div className={styles.caseDetailSection}>
+              <div className={styles.caseDetailSectionTitle}>Case Information</div>
+              <div className={styles.caseDetailText}>
                 {docket.nature_of_suit && <div>Nature of suit: {docket.nature_of_suit}</div>}
                 {docket.cause && <div>Cause: {docket.cause}</div>}
                 {docket.jury_demand && <div>Jury demand: {docket.jury_demand}</div>}
@@ -108,13 +108,13 @@ function DocketDetailView({ s, docket, docketLoading, onBack }: DocketDetailView
           )}
 
           {(docket.parties?.length ?? 0) > 0 && (
-            <div className={s.caseDetailSection}>
-              <div className={s.caseDetailSectionTitle}>Parties ({docket.parties!.length})</div>
+            <div className={styles.caseDetailSection}>
+              <div className={styles.caseDetailSectionTitle}>Parties ({docket.parties!.length})</div>
               {docket.parties!.map((p, i) => (
-                <div key={i} className={s.resultRow}>
-                  <div className={s.resultRowContent}>
-                    <span className={s.resultRowTitle}>{p.name}</span>
-                    <span className={s.resultRowMeta}>
+                <div key={i} className={styles.resultRow}>
+                  <div className={styles.resultRowContent}>
+                    <span className={styles.resultRowTitle}>{p.name}</span>
+                    <span className={styles.resultRowMeta}>
                       {p.role || 'Party'}
                       {(p.attorneys?.length ?? 0) > 0 ? ` • Represented by ${p.attorneys!.join(', ')}` : ''}
                     </span>
@@ -124,23 +124,23 @@ function DocketDetailView({ s, docket, docketLoading, onBack }: DocketDetailView
             </div>
           )}
 
-          <div className={s.caseDetailSection}>
-            <div className={s.caseDetailSectionTitle}>
+          <div className={styles.caseDetailSection}>
+            <div className={styles.caseDetailSectionTitle}>
               Filing Entries{docket.entry_count ? ` (${docket.entry_count})` : ''}
             </div>
             {(docket.entries?.length ?? 0) > 0 ? (
               docket.entries!.map((e, i) => {
                 const docs = (e.documents || []).filter((d) => d.url && d.is_available !== false);
                 return (
-                  <div key={i} className={s.resultRow}>
-                    {e.entry_number != null && <span className={s.resultRank}>{e.entry_number}</span>}
-                    <div className={s.resultRowContent}>
-                      <span className={s.resultRowTitle}>{e.description || 'No description available'}</span>
-                      {e.date_filed && <span className={s.resultRowMeta}>{e.date_filed}</span>}
+                  <div key={i} className={styles.resultRow}>
+                    {e.entry_number != null && <span className={styles.resultRank}>{e.entry_number}</span>}
+                    <div className={styles.resultRowContent}>
+                      <span className={styles.resultRowTitle}>{e.description || 'No description available'}</span>
+                      {e.date_filed && <span className={styles.resultRowMeta}>{e.date_filed}</span>}
                       {docs.length > 0 && (
-                        <span className={s.resultRowMeta}>
+                        <span className={styles.resultRowMeta}>
                           {docs.map((d, j) => (
-                            <a key={j} href={safeHttpUrl(d.url) ?? undefined} target="_blank" rel="noopener noreferrer" className={s.oralArgLink}>
+                            <a key={j} href={safeHttpUrl(d.url) ?? undefined} target="_blank" rel="noopener noreferrer" className={styles.oralArgLink}>
                               <Icon name="FileText" size={11} /> {d.description || `Document ${d.document_number ?? j + 1}`}
                               {d.page_count ? ` (${d.page_count} pp.)` : ''}
                             </a>
@@ -152,20 +152,20 @@ function DocketDetailView({ s, docket, docketLoading, onBack }: DocketDetailView
                 );
               })
             ) : (
-              <div className={s.caseDetailText}>
+              <div className={styles.caseDetailText}>
                 No filing entries are available for this docket in the public archive.
                 Entries appear when RECAP has collected them from PACER.
               </div>
             )}
             {docket.entry_count && docket.entries && docket.entry_count > docket.entries.length ? (
-              <div className={s.caseDetailText}>
+              <div className={styles.caseDetailText}>
                 Showing the {docket.entries.length} most recent of {docket.entry_count} entries — the full docket is on CourtListener.
               </div>
             ) : null}
           </div>
 
           {docket.url && (
-            <a href={safeHttpUrl(docket.url) ?? undefined} target="_blank" rel="noopener noreferrer" className={s.oralArgLink}>
+            <a href={safeHttpUrl(docket.url) ?? undefined} target="_blank" rel="noopener noreferrer" className={styles.oralArgLink}>
               <Icon name="ExternalLink" size={12} /> View on CourtListener
             </a>
           )}

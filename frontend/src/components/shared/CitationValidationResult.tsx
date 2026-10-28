@@ -4,7 +4,7 @@ import type { ToolResultData, CitingCase } from './ToolResultsArea';
 import { safeHttpUrl } from './safeUrl';
 
 interface CitationValidationResultProps {
-  s: Record<string, string>;
+  styles: Record<string, string>;
   tr: ToolResultData;
 }
 
@@ -25,7 +25,7 @@ const BADGE: Record<string, { icon: string; label: string; className: string }> 
   unknown: { icon: 'HelpCircle', label: 'No treatment signal available', className: 'validationBadgeUnknown' },
 };
 
-function CitationValidationResult({ s, tr }: CitationValidationResultProps) {
+function CitationValidationResult({ styles, tr }: CitationValidationResultProps) {
   const citing = (tr.citing_cases || []) as CitingCase[];
   const grouped = ['negative', 'caution', 'positive'].map((t) => ({
     treatment: t,
@@ -35,74 +35,74 @@ function CitationValidationResult({ s, tr }: CitationValidationResultProps) {
   const read = tr.citing_cases_analyzed;
 
   return (
-    <div className={s.resultCard}>
-      <div className={s.toolOverline}>Citation check · CourtListener</div>
-      <div className={s.validationBadgeWrapper}>
-        <div className={s.validationCaseName}>
+    <div className={styles.resultCard}>
+      <div className={styles.toolOverline}>Citation check · CourtListener</div>
+      <div className={styles.validationBadgeWrapper}>
+        <div className={styles.validationCaseName}>
           {tr.case_name || 'Unknown Case'}
         </div>
-        <div className={s.validationCitation}>{tr.citation}</div>
+        <div className={styles.validationCitation}>{tr.citation}</div>
         {tr.absolute_url && (
-          <a className={s.validationCaseLink} href={safeHttpUrl(tr.absolute_url) ?? undefined} target="_blank" rel="noopener noreferrer">
+          <a className={styles.validationCaseLink} href={safeHttpUrl(tr.absolute_url) ?? undefined} target="_blank" rel="noopener noreferrer">
             <Icon name="ExternalLink" size={12} /> Open case on CourtListener
           </a>
         )}
       </div>
-      <div className={`${s.validationBadge} ${s[badge.className]}`}>
+      <div className={`${styles.validationBadge} ${styles[badge.className]}`}>
         <Icon name={badge.icon} size={16} />
         {badge.label}
       </div>
-      <div className={s.validationMethod}>
+      <div className={styles.validationMethod}>
         Scan of the language courts use near this citation
         {typeof read === 'number' && read > 0 ? ` in ${read} recent and most-cited citing opinions` : ''}.
         Not an editorial citator — it does not replace Shepard&rsquo;s or KeyCite.
       </div>
-      <div className={s.validationGrid}>
-        <div className={s.validationItem}>
-          <span className={s.validationLabel}>Total Citations</span>
-          <span className={s.validationValue}>{(tr.total_citing_cases || 0).toLocaleString()}</span>
+      <div className={styles.validationGrid}>
+        <div className={styles.validationItem}>
+          <span className={styles.validationLabel}>Total Citations</span>
+          <span className={styles.validationValue}>{(tr.total_citing_cases || 0).toLocaleString()}</span>
         </div>
-        <div className={s.validationItem}>
-          <span className={s.validationLabel}>Positive</span>
-          <span className={s.validationValuePositive}>{tr.positive_citations || 0}</span>
+        <div className={styles.validationItem}>
+          <span className={styles.validationLabel}>Positive</span>
+          <span className={styles.validationValuePositive}>{tr.positive_citations || 0}</span>
         </div>
-        <div className={s.validationItem}>
-          <span className={s.validationLabel}>Caution</span>
-          <span className={s.validationValue}>{tr.caution_citations || 0}</span>
+        <div className={styles.validationItem}>
+          <span className={styles.validationLabel}>Caution</span>
+          <span className={styles.validationValue}>{tr.caution_citations || 0}</span>
         </div>
-        <div className={s.validationItem}>
-          <span className={s.validationLabel}>Negative</span>
-          <span className={s.validationValueNegative}>{tr.negative_citations || 0}</span>
+        <div className={styles.validationItem}>
+          <span className={styles.validationLabel}>Negative</span>
+          <span className={styles.validationValueNegative}>{tr.negative_citations || 0}</span>
         </div>
         {tr.last_cited && (
-          <div className={s.validationItem}>
-            <span className={s.validationLabel}>Last Cited</span>
-            <span className={s.validationValue}>{tr.last_cited}</span>
+          <div className={styles.validationItem}>
+            <span className={styles.validationLabel}>Last Cited</span>
+            <span className={styles.validationValue}>{tr.last_cited}</span>
           </div>
         )}
       </div>
 
       {grouped.map((g) => (
-        <div key={g.treatment} className={s.caseDetailSection}>
-          <div className={s.caseDetailSectionTitle}>
+        <div key={g.treatment} className={styles.caseDetailSection}>
+          <div className={styles.caseDetailSectionTitle}>
             {TREATMENT_LABEL[g.treatment]} ({g.cases.length})
           </div>
           {g.cases.map((c, i) => (
-            <div key={`${c.id}-${i}`} className={s.resultRow}>
-              <div className={s.resultRowContent}>
-                <span className={s.resultRowTitle}>{c.case_name}</span>
-                <span className={s.resultRowMeta}>
+            <div key={`${c.id}-${i}`} className={styles.resultRow}>
+              <div className={styles.resultRowContent}>
+                <span className={styles.resultRowTitle}>{c.case_name}</span>
+                <span className={styles.resultRowMeta}>
                   {[c.citation, c.court, c.date_filed].filter(Boolean).join(' • ')}
                 </span>
                 {c.snippet && (
-                  <span className={s.resultSnippet}>
+                  <span className={styles.resultSnippet}>
                     {c.context_found ? '' : 'Opening lines: '}“{c.snippet}”
                   </span>
                 )}
               </div>
               {c.url && (
                 <a href={safeHttpUrl(c.url) ?? undefined} target="_blank" rel="noopener noreferrer" title="View on CourtListener">
-                  <Icon name="ExternalLink" size={14} className={s.resultRowLinkIcon} />
+                  <Icon name="ExternalLink" size={14} className={styles.resultRowLinkIcon} />
                 </a>
               )}
             </div>
@@ -111,10 +111,10 @@ function CitationValidationResult({ s, tr }: CitationValidationResultProps) {
       ))}
 
       {tr.notes && tr.notes.length > 0 && (
-        <div className={s.analysisNotes}>
-          <div className={s.analysisNotesTitle}>How this was checked</div>
+        <div className={styles.analysisNotes}>
+          <div className={styles.analysisNotesTitle}>How this was checked</div>
           {tr.notes.map((note, i) => (
-            <div key={i} className={s.analysisNote}>• {note}</div>
+            <div key={i} className={styles.analysisNote}>• {note}</div>
           ))}
         </div>
       )}

@@ -55,8 +55,8 @@
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  background: var(--gold-50);
-  border: 1px solid var(--gold-300);
+  background: var(--primary-50);
+  border: 1px solid var(--primary-300);
   border-radius: 8px;
   font-size: 13px;
   color: var(--navy-800);
@@ -88,7 +88,7 @@
   font-size: 13px;
   outline: none;
 }
-.jurisInput:focus { border-color: var(--gold-600); }
+.jurisInput:focus { border-color: var(--primary-600); }
 
 .spin { animation: amSpin 0.8s linear infinite; }
 @keyframes amSpin { to { transform: rotate(360deg); } }

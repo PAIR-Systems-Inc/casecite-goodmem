@@ -200,7 +200,7 @@ export const DocumentSelector = ({ isOpen, onClose, onSelect, currentFilter }: D
               {tree?.tree?.map((item: DocumentTreeItem) => (
                 <DocumentTreeItemRow
                   key={item.id || item.path}
-                  s={s}
+                  styles={s}
                   item={item}
                   depth={0}
                   expandedFolders={expandedFolders}

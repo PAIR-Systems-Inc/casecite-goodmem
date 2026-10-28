@@ -190,7 +190,7 @@
   align-items: center;
   justify-content: center;
   background: var(--navy-900);
-  color: var(--gold-500);
+  color: var(--primary-500);
   flex-shrink: 0;
 }
 .assistantBubble {

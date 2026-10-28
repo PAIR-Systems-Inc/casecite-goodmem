@@ -4,22 +4,22 @@ import { safeHttpUrl } from './safeUrl';
 import type { ToolResultData } from './ToolResultsArea';
 
 interface CaseSearchResultsProps {
-  s: Record<string, string>;
+  styles: Record<string, string>;
   tr: ToolResultData;
   toolLoading: boolean;
   loadCaseDetail: (id: string, kind?: 'cluster' | 'opinion') => void;
   loadMoreResults: () => void;
 }
 
-function CaseSearchResults({ s, tr, toolLoading, loadCaseDetail, loadMoreResults }: CaseSearchResultsProps) {
+function CaseSearchResults({ styles, tr, toolLoading, loadCaseDetail, loadMoreResults }: CaseSearchResultsProps) {
   return (
-    <div className={`${s.toolCard} ${s.caseSearchResults}`}>
-      <div className={s.toolOverline}>Case Lookup · CourtListener</div>
-      <div className={s.searchResultsHeader}>
+    <div className={`${styles.toolCard} ${styles.caseSearchResults}`}>
+      <div className={styles.toolOverline}>Case Lookup · CourtListener</div>
+      <div className={styles.searchResultsHeader}>
         <span>{tr.count?.toLocaleString() || 0} cases found</span>
-        <span className={s.searchResultsPage}>Showing {tr.results?.length || 0}</span>
+        <span className={styles.searchResultsPage}>Showing {tr.results?.length || 0}</span>
       </div>
-      <div className={s.caseResultsList}>
+      <div className={styles.caseResultsList}>
         {tr.results!.map((c, i) => {
           const citations = Array.isArray(c.citation) ? (c.citation as string[]) : c.citation ? [String(c.citation)] : [];
           const status = typeof c.status === 'string' ? c.status : null;
@@ -27,16 +27,16 @@ function CaseSearchResults({ s, tr, toolLoading, loadCaseDetail, loadMoreResults
           return (
             <div
               key={`${c.id}-${i}`}
-              className={`case-result ${s.caseResultItem}`}
+              className={`case-result ${styles.caseResultItem}`}
               role="button"
               tabIndex={0}
               onClick={() => loadCaseDetail(c.id, 'cluster')}
               onKeyDown={activateOnKey(() => loadCaseDetail(c.id, 'cluster'))}
               style={{ cursor: 'pointer' }}
             >
-              <div className={s.caseResultContent}>
-                <div className={s.caseResultName}>{c.case_name}</div>
-                <div className={s.caseResultMeta}>
+              <div className={styles.caseResultContent}>
+                <div className={styles.caseResultName}>{c.case_name}</div>
+                <div className={styles.caseResultMeta}>
                   {c.court && <span>{c.court}</span>}
                   {c.date_filed && <span>{c.date_filed}</span>}
                   {c.docket_number ? <span>No. {String(c.docket_number)}</span> : null}
@@ -44,10 +44,10 @@ function CaseSearchResults({ s, tr, toolLoading, loadCaseDetail, loadMoreResults
                   {status && status !== 'Published' && <span>{status}</span>}
                 </div>
                 {citations.length > 0 && (
-                  <div className={s.caseResultCitation}>{citations.join(' · ')}</div>
+                  <div className={styles.caseResultCitation}>{citations.join(' · ')}</div>
                 )}
-                {c.judges ? <div className={s.caseResultMeta}><span>{c.judges}</span></div> : null}
-                {c.snippet ? <div className={s.resultSnippet}>{String(c.snippet)}</div> : null}
+                {c.judges ? <div className={styles.caseResultMeta}><span>{c.judges}</span></div> : null}
+                {c.snippet ? <div className={styles.resultSnippet}>{String(c.snippet)}</div> : null}
               </div>
               {url ? (
                 <a
@@ -56,9 +56,9 @@ function CaseSearchResults({ s, tr, toolLoading, loadCaseDetail, loadMoreResults
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
                   title="View on CourtListener"
-                  className={s.caseResultLink}
+                  className={styles.caseResultLink}
                 >
-                  <Icon name="ExternalLink" size={14} className={s.resultRowLinkIcon} />
+                  <Icon name="ExternalLink" size={14} className={styles.resultRowLinkIcon} />
                 </a>
               ) : null}
             </div>
@@ -67,7 +67,7 @@ function CaseSearchResults({ s, tr, toolLoading, loadCaseDetail, loadMoreResults
       </div>
       {tr.has_next && (
         <button
-          className={s.loadMoreBtn}
+          className={styles.loadMoreBtn}
           onClick={loadMoreResults}
           disabled={toolLoading}
         >

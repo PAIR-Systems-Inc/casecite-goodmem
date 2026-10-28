@@ -22,7 +22,7 @@ function makeSession(overrides: Partial<ChatSessionSummary> = {}): ChatSessionSu
 
 function defaultProps(overrides: Record<string, any> = {}) {
   return {
-    s,
+    styles: s,
     sessions: [] as ChatSessionSummary[],
     isLoading: false,
     currentSessionId: null as string | null,

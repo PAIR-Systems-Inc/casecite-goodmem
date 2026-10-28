@@ -10,7 +10,7 @@ interface StrategyBriefCardProps {
   brief: StrategyBriefResponse;
   citations: Citation[];
   onCitationClick: (cite: Citation) => void;
-  s: Record<string, string>;
+  styles: Record<string, string>;
 }
 
 /** Honest one-sentence account of why the case-law stage attached nothing —
@@ -52,7 +52,7 @@ function caseLawOutcome(cl: NonNullable<StrategyBriefResponse['case_law']>): str
 /** Structured matter-strategy brief rendered inside the chat thread:
  * position, strengths, weaknesses, and next steps — every point carrying
  * clickable citations back to the underlying documents. */
-function StrategyBriefCard({ brief, citations, onCitationClick, s }: StrategyBriefCardProps) {
+function StrategyBriefCard({ brief, citations, onCitationClick, styles }: StrategyBriefCardProps) {
   const byId = new Map(citations.map((c) => [c.id, c]));
   const { loadCaseDetail } = useCaseViewStore();
   const authoritiesById = new Map(
@@ -62,20 +62,20 @@ function StrategyBriefCard({ brief, citations, onCitationClick, s }: StrategyBri
   const renderPoints = (title: string, points: StrategyBriefPoint[]) => {
     if (!points?.length) return null;
     return (
-      <div className={s.briefSection}>
-        <div className={s.briefSectionTitle}>{title}</div>
+      <div className={styles.briefSection}>
+        <div className={styles.briefSectionTitle}>{title}</div>
         {points.map((p, i) => (
-          <div key={i} className={s.briefPoint}>
-            <span className={`${s.briefPointNum} mono`}>{i + 1}.</span>
-            <div className={s.briefPointBody}>
-              <p className={s.briefPointText}>{p.point || p.step}</p>
+          <div key={i} className={styles.briefPoint}>
+            <span className={`${styles.briefPointNum} mono`}>{i + 1}.</span>
+            <div className={styles.briefPointBody}>
+              <p className={styles.briefPointText}>{p.point || p.step}</p>
               {(p.citation_ids?.length ?? 0) > 0 && (
-                <div className={s.briefCites}>
+                <div className={styles.briefCites}>
                   {p.citation_ids.map((id) => {
                     const cite = byId.get(id);
                     if (!cite) return null;
                     return (
-                      <button key={id} className={s.briefCiteChip} onClick={() => onCitationClick(cite)}>
+                      <button key={id} className={styles.briefCiteChip} onClick={() => onCitationClick(cite)}>
                         <Icon name={cite.type === 'case_law' ? 'Scale' : 'FileText'} size={10} />
                         {cite.source}
                       </button>
@@ -84,36 +84,36 @@ function StrategyBriefCard({ brief, citations, onCitationClick, s }: StrategyBri
                 </div>
               )}
               {(p.case_refs?.length ?? 0) > 0 && (
-                <div className={s.briefAuthorities}>
+                <div className={styles.briefAuthorities}>
                   {p.case_refs?.map((id) => {
                     const auth = authoritiesById.get(id);
                     if (!auth) return null;
                     return (
-                      <div key={id} className={s.briefAuthority}>
-                        <div className={s.briefAuthorityHead}>
+                      <div key={id} className={styles.briefAuthority}>
+                        <div className={styles.briefAuthorityHead}>
                           <Icon name="Scale" size={11} />
                           {auth.opinionId ? (
                             <button
-                              className={s.briefAuthorityNameBtn}
+                              className={styles.briefAuthorityNameBtn}
                               title="Read the full opinion"
                               onClick={() => loadCaseDetail(auth.opinionId as string, 'opinion')}
                             >
                               {auth.source}
                             </button>
                           ) : (
-                            <span className={s.briefAuthorityName}>{auth.source}</span>
+                            <span className={styles.briefAuthorityName}>{auth.source}</span>
                           )}
                           {auth.reference && (
-                            <span className={`${s.briefAuthorityCite} mono`}>{auth.reference}</span>
+                            <span className={`${styles.briefAuthorityCite} mono`}>{auth.reference}</span>
                           )}
                           {auth.verified && (
-                            <span className={s.briefAuthorityVerified}>
+                            <span className={styles.briefAuthorityVerified}>
                               <Icon name="ShieldCheck" size={11} /> quote verified
                             </span>
                           )}
                           {auth.url && (
                             <a
-                              className={s.briefAuthorityLink}
+                              className={styles.briefAuthorityLink}
                               href={safeHttpUrl(auth.url) ?? undefined}
                               target="_blank"
                               rel="noreferrer"
@@ -123,9 +123,9 @@ function StrategyBriefCard({ brief, citations, onCitationClick, s }: StrategyBri
                           )}
                         </div>
                         {auth.passage && (
-                          <blockquote className={s.briefAuthorityQuote}>“{auth.passage}”</blockquote>
+                          <blockquote className={styles.briefAuthorityQuote}>“{auth.passage}”</blockquote>
                         )}
-                        {auth.explanation && <p className={s.briefAuthorityHow}>{auth.explanation}</p>}
+                        {auth.explanation && <p className={styles.briefAuthorityHow}>{auth.explanation}</p>}
                       </div>
                     );
                   })}
@@ -145,36 +145,36 @@ function StrategyBriefCard({ brief, citations, onCitationClick, s }: StrategyBri
     : brief.scope?.folder_path ? [brief.scope.folder_path] : [];
 
   return (
-    <div className={s.briefCard}>
-      <div className={s.briefOverline}>
+    <div className={styles.briefCard}>
+      <div className={styles.briefOverline}>
         Strategy brief · {brief.scope?.documents_considered ?? 0} document{(brief.scope?.documents_considered ?? 0) === 1 ? '' : 's'} reviewed
         {brief.scope?.documents_total > brief.scope?.documents_considered && (
-          <span className={s.briefTruncNote}> (of {brief.scope.documents_total})</span>
+          <span className={styles.briefTruncNote}> (of {brief.scope.documents_total})</span>
         )}
         {scopeFolders.length > 0 && (
-          <span className={s.briefTruncNote} title={scopeFolders.join('\n')}>
+          <span className={styles.briefTruncNote} title={scopeFolders.join('\n')}>
             {' '}· in {scopeFolders.length === 1 ? scopeFolders[0] : `${scopeFolders.length} folders: ${scopeFolders.join(', ')}`}
           </span>
         )}
       </div>
       {brief.scope?.coverage_note && (
-        <div className={s.briefCoverageNote}>{brief.scope.coverage_note}</div>
+        <div className={styles.briefCoverageNote}>{brief.scope.coverage_note}</div>
       )}
-      <p className={s.briefPosition}>{brief.position}</p>
+      <p className={styles.briefPosition}>{brief.position}</p>
       {renderPoints('Strengths', brief.strengths)}
       {renderPoints('Weaknesses & Exposure', brief.weaknesses)}
       {renderPoints('Recommended Next Steps', brief.next_steps)}
       {brief.case_law?.requested && brief.case_law.attached === 0 && (
-        <div className={s.briefCaseLawNote}>
+        <div className={styles.briefCaseLawNote}>
           <Icon name="Scale" size={12} /> {caseLawOutcome(brief.case_law)}
         </div>
       )}
       {brief.case_law?.requested && brief.case_law.attached > 0 && (brief.case_law.partially_read ?? 0) > 0 && (
-        <div className={s.briefCaseLawNote}>
+        <div className={styles.briefCaseLawNote}>
           <Icon name="Scale" size={12} /> {brief.case_law.partially_read} of the opinions considered {brief.case_law.partially_read === 1 ? 'was' : 'were'} too long to read in full; only the opening portion was reviewed.
         </div>
       )}
-      <CaseLawRemovedNotice removed={brief.case_law_removed} className={s.briefCaseLawNote} />
+      <CaseLawRemovedNotice removed={brief.case_law_removed} className={styles.briefCaseLawNote} />
       <AiNotice />
     </div>
   );

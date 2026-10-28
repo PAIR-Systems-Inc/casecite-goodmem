@@ -68,7 +68,7 @@ function JudgeIntelView() {
       ) : !judgeIntelProfile ? (
         /* Judge Search View */
         <JudgeSearchPanel
-          s={s}
+          styles={s}
           judgeIntelSearch={judgeIntelSearch}
           setJudgeIntelSearch={setJudgeIntelSearch}
           searchJudgesIntel={searchJudgesIntel}
@@ -144,23 +144,23 @@ function JudgeIntelView() {
 
                 <div className={s.profileBody}>
                   <JudgeProfileTab
-                    s={s}
+                    styles={s}
                     judgeIntelProfile={judgeIntelProfile}
                   />
 
                   <JudgeStatsSection
-                    s={s}
+                    styles={s}
                     judgeIntelStats={judgeIntelStats}
                   />
 
                   <JudgeMetricsSection
-                    s={s}
+                    styles={s}
                     metrics={judgeIntelMetrics}
                     loading={judgeIntelMetricsLoading}
                   />
 
                   <JudgeOpinionsTab
-                    s={s}
+                    styles={s}
                     judgeId={judgeIntelProfile.id}
                     selectedOpinion={selectedOpinion}
                     setSelectedOpinion={setSelectedOpinion}
@@ -174,7 +174,7 @@ function JudgeIntelView() {
                   />
 
                   <JudgeBriefTab
-                    s={s}
+                    styles={s}
                     judgeIntelProfile={judgeIntelProfile}
                     judgeBrief={judgeBrief}
                     judgeBriefLoading={judgeBriefLoading}

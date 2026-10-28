@@ -44,7 +44,7 @@ beforeEach(() => {
 
 describe('UsersTab offboarding', () => {
   async function renderTab() {
-    render(<UsersTab s={s} />);
+    render(<UsersTab styles={s} />);
     const email = await screen.findByText('departed@firm.com');
     return email.closest('.userCard') as HTMLElement;
   }
@@ -142,7 +142,7 @@ describe('AuditTab', () => {
   });
 
   it('loads the newest entries on open and renders them', async () => {
-    render(<AuditTab s={s} />);
+    render(<AuditTab styles={s} />);
     expect(await screen.findByText('auth.login.failure (failed)')).toBeInTheDocument();
     expect(screen.getByText('d***@firm.com')).toBeInTheDocument();
     expect(screen.getByText('reason: bad_password')).toBeInTheDocument();
@@ -150,7 +150,7 @@ describe('AuditTab', () => {
   });
 
   it('sends the filters as UTC day bounds', async () => {
-    render(<AuditTab s={s} />);
+    render(<AuditTab styles={s} />);
     await screen.findByText('auth.login.failure (failed)');
 
     fireEvent.change(screen.getByLabelText('From'), { target: { value: '2026-09-01' } });
@@ -170,7 +170,7 @@ describe('AuditTab', () => {
 
   it('reports a clean verification, including legacy and truncated notes', async () => {
     mock(api.verifyAuditChain).mockResolvedValue({ valid: true, entries_checked: 1234, legacy_entries: 10, truncated: true });
-    render(<AuditTab s={s} />);
+    render(<AuditTab styles={s} />);
     await screen.findByText('auth.login.failure (failed)');
 
     fireEvent.click(screen.getByRole('button', { name: /Verify integrity/ }));
@@ -186,7 +186,7 @@ describe('AuditTab', () => {
     mock(api.verifyAuditChain).mockResolvedValue({
       valid: false, entries_checked: 50, first_invalid_id: 'e-17', reason: 'Entry signature does not match.',
     });
-    render(<AuditTab s={s} />);
+    render(<AuditTab styles={s} />);
     await screen.findByText('auth.login.failure (failed)');
 
     fireEvent.click(screen.getByRole('button', { name: /Verify integrity/ }));
@@ -200,7 +200,7 @@ describe('AuditTab', () => {
   it('exports the filtered range as a JSONL download', async () => {
     const blob = new Blob(['{}\n']);
     mock(api.exportAuditLogs).mockResolvedValue(blob);
-    render(<AuditTab s={s} />);
+    render(<AuditTab styles={s} />);
     await screen.findByText('auth.login.failure (failed)');
 
     fireEvent.change(screen.getByLabelText('From'), { target: { value: '2026-09-01' } });

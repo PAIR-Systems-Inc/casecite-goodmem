@@ -239,7 +239,7 @@ function ResearchView() {
                         brief={msg.strategy}
                         citations={msg.citations || []}
                         onCitationClick={setSelectedCitation}
-                        s={s}
+                        styles={s}
                       />
                     )}
                     {msg.authorityMap && (

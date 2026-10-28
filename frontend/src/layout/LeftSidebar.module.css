@@ -166,7 +166,7 @@
 }
 
 .modeIconActive {
-  background: var(--gold-500);
+  background: var(--primary-500);
   color: var(--on-primary);
 }
 
@@ -225,6 +225,6 @@
 }
 
 .iconGold500 {
-  color: var(--gold-500);
+  color: var(--primary-500);
 }
 

@@ -277,9 +277,19 @@ export const useConnectorsStore = create<ConnectorsState>((set, get) => ({
           connectors: state.connectors.map((c) => {
             const sc = connectorData.connectors.find((sc) => sc.id === c.id);
             if (sc) {
-              return { ...c, connected: sc.connected || false, configured: sc.configured !== false, adminOnly: sc.admin_only === true, docs: sc.docs_indexed || 0 };
+              return {
+                ...c,
+                connected: sc.connected || false,
+                configured: sc.configured !== false,
+                adminOnly: sc.admin_only === true,
+                available: true,
+                experimental: sc.experimental === true,
+                docs: sc.docs_indexed || 0,
+              };
             }
-            return c;
+            // The server answered but does not offer this connector (an
+            // experimental one left off): it is neither connected nor configured.
+            return { ...c, connected: false, configured: false, available: false, docs: 0 };
           }),
         }));
       }

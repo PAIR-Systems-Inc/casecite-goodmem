@@ -161,7 +161,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--gold-400);
+  color: var(--primary-400);
   flex-shrink: 0;
 }
 

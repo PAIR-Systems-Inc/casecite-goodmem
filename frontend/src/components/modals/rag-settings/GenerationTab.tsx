@@ -4,16 +4,16 @@ import type { RagSettings } from '../../../types';
 interface GenerationTabProps {
   local: RagSettings;
   setLocal: (s: RagSettings) => void;
-  s: Record<string, string>;
+  styles: Record<string, string>;
 }
 
-export const GenerationTab = ({ local, setLocal, s }: GenerationTabProps) => {
+export const GenerationTab = ({ local, setLocal, styles }: GenerationTabProps) => {
   const id = useId();
   return (
-  <div className={s.settingsGrid}>
-    <div className={s.settingGroup}>
-      <label className={s.settingLabel} htmlFor={`${id}-llm-model`}>LLM Model</label>
-      <select id={`${id}-llm-model`} className={s.select} value={local.llmModel || 'gpt-5.5'} onChange={e => setLocal({...local, llmModel: e.target.value})}>
+  <div className={styles.settingsGrid}>
+    <div className={styles.settingGroup}>
+      <label className={styles.settingLabel} htmlFor={`${id}-llm-model`}>LLM Model</label>
+      <select id={`${id}-llm-model`} className={styles.select} value={local.llmModel || 'gpt-5.5'} onChange={e => setLocal({...local, llmModel: e.target.value})}>
         <optgroup label="OpenAI">
           <option value="gpt-5.5">GPT-5.5 (Recommended)</option>
           <option value="gpt-5.4-mini">GPT-5.4 Mini (Fast)</option>
@@ -28,18 +28,18 @@ export const GenerationTab = ({ local, setLocal, s }: GenerationTabProps) => {
         </optgroup>
       </select>
     </div>
-    <div className={s.settingGroup}>
-      <div className={s.sliderHeader}>
-        <label className={s.settingLabel} htmlFor={`${id}-temperature`}>Temperature</label>
-        <span className={`${s.sliderValue} mono`}>{(local.temperature ?? 0.1).toFixed(2)}</span>
+    <div className={styles.settingGroup}>
+      <div className={styles.sliderHeader}>
+        <label className={styles.settingLabel} htmlFor={`${id}-temperature`}>Temperature</label>
+        <span className={`${styles.sliderValue} mono`}>{(local.temperature ?? 0.1).toFixed(2)}</span>
       </div>
       {/* `??`, not `||`: 0 (fully deterministic) is a valid choice. */}
       <input id={`${id}-temperature`} type="range" min="0" max="1" step="0.05" value={local.temperature ?? 0.1} onChange={e => setLocal({...local, temperature: parseFloat(e.target.value)})} />
     </div>
-    <div className={s.settingGroup}>
-      <div className={s.sliderHeader}>
-        <label className={s.settingLabel} htmlFor={`${id}-max-tokens`}>Max Tokens</label>
-        <span className={`${s.sliderValue} mono`}>{local.maxTokens || 4096}</span>
+    <div className={styles.settingGroup}>
+      <div className={styles.sliderHeader}>
+        <label className={styles.settingLabel} htmlFor={`${id}-max-tokens`}>Max Tokens</label>
+        <span className={`${styles.sliderValue} mono`}>{local.maxTokens || 4096}</span>
       </div>
       {/* 4096 is the server default; the range covers values saved by earlier builds. */}
       <input id={`${id}-max-tokens`} type="range" min="1024" max="32768" step="512" value={local.maxTokens || 4096} onChange={e => setLocal({...local, maxTokens: parseInt(e.target.value)})} />

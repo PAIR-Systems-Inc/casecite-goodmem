@@ -7,6 +7,11 @@ export interface Connector {
   configured?: boolean;
   /** Uses one firm-wide credential, so only administrators may connect or sync it. */
   adminOnly?: boolean;
+  /** False when the server did not list this connector at all (e.g. an
+   *  experimental one that is switched off), so it must not read as configured. */
+  available?: boolean;
+  /** Implemented against the vendor's API but not validated against a live tenant. */
+  experimental?: boolean;
   docs: number;
 }
 

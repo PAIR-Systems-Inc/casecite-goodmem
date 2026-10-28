@@ -4,7 +4,7 @@ import JudgeSearchPanel from './JudgeSearchPanel';
 
 function defaultProps(overrides: Record<string, any> = {}) {
   return {
-    s: new Proxy({} as Record<string, string>, { get: (_, key) => String(key) }),
+    styles: new Proxy({} as Record<string, string>, { get: (_, key) => String(key) }),
     judgeIntelSearch: '',
     setJudgeIntelSearch: vi.fn(),
     searchJudgesIntel: vi.fn(),

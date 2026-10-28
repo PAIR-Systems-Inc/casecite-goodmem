@@ -7,7 +7,7 @@ import { parseUtcDate } from '../../../utils';
 import type { AdminUser, AuditLogEntry, AuditLogQuery, AuditVerifyResult } from '../../../api/types';
 
 interface AuditTabProps {
-  s: Record<string, string>;
+  styles: Record<string, string>;
 }
 
 // Offered as suggestions; the field accepts any event type the server knows.
@@ -52,7 +52,7 @@ function summarizeDetails(entry: AuditLogEntry): string {
  * chain, and export a range for retention outside the instance. Reading,
  * verifying and exporting the trail are themselves audited by the server.
  */
-export const AuditTab = ({ s }: AuditTabProps) => {
+export const AuditTab = ({ styles }: AuditTabProps) => {
   const id = useId();
   const addToast = useUIStore((st) => st.addToast);
 
@@ -125,59 +125,59 @@ export const AuditTab = ({ s }: AuditTabProps) => {
     entry.user?.email || users.find(u => u.id === entry.user?.id)?.email || entry.user?.id || '—';
 
   return (
-    <div className={s.usersTabContent}>
-      <div className={s.inviteCard}>
-        <div className={s.keyStatusTitle}>Audit Log</div>
-        <span className={s.helpText}>
+    <div className={styles.usersTabContent}>
+      <div className={styles.inviteCard}>
+        <div className={styles.keyStatusTitle}>Audit Log</div>
+        <span className={styles.helpText}>
           Every sign-in, document access, export and administrative change is recorded in a
           hash-chained trail. Dates are UTC. Viewing, verifying and exporting the trail are recorded too.
         </span>
         <form
-          className={s.auditFilters}
+          className={styles.auditFilters}
           onSubmit={e => { e.preventDefault(); search(query()); }}
         >
-          <div className={s.inviteField}>
-            <label className={s.settingLabel} htmlFor={`${id}-from`}>From</label>
-            <input id={`${id}-from`} type="date" className={s.modalInput} value={startDate} max={endDate || undefined}
+          <div className={styles.inviteField}>
+            <label className={styles.settingLabel} htmlFor={`${id}-from`}>From</label>
+            <input id={`${id}-from`} type="date" className={styles.modalInput} value={startDate} max={endDate || undefined}
               onChange={e => setStartDate(e.target.value)} />
           </div>
-          <div className={s.inviteField}>
-            <label className={s.settingLabel} htmlFor={`${id}-to`}>To</label>
-            <input id={`${id}-to`} type="date" className={s.modalInput} value={endDate} min={startDate || undefined}
+          <div className={styles.inviteField}>
+            <label className={styles.settingLabel} htmlFor={`${id}-to`}>To</label>
+            <input id={`${id}-to`} type="date" className={styles.modalInput} value={endDate} min={startDate || undefined}
               onChange={e => setEndDate(e.target.value)} />
           </div>
-          <div className={s.inviteField}>
-            <label className={s.settingLabel} htmlFor={`${id}-event`}>Event type</label>
-            <input id={`${id}-event`} className={s.modalInput} value={eventType} list={`${id}-events`}
+          <div className={styles.inviteField}>
+            <label className={styles.settingLabel} htmlFor={`${id}-event`}>Event type</label>
+            <input id={`${id}-event`} className={styles.modalInput} value={eventType} list={`${id}-events`}
               onChange={e => setEventType(e.target.value)} placeholder="Any" autoComplete="off" />
             <datalist id={`${id}-events`}>
               {EVENT_TYPE_SUGGESTIONS.map(t => <option key={t} value={t} />)}
             </datalist>
           </div>
-          <div className={s.inviteField}>
-            <label className={s.settingLabel} htmlFor={`${id}-user`}>User</label>
-            <select id={`${id}-user`} className={s.select} value={userId} onChange={e => setUserId(e.target.value)}>
+          <div className={styles.inviteField}>
+            <label className={styles.settingLabel} htmlFor={`${id}-user`}>User</label>
+            <select id={`${id}-user`} className={styles.select} value={userId} onChange={e => setUserId(e.target.value)}>
               <option value="">Anyone</option>
               {users.map(u => <option key={u.id} value={u.id}>{u.email}</option>)}
             </select>
           </div>
-          <button type="submit" className={s.btnPrimary} disabled={loading}>
+          <button type="submit" className={styles.btnPrimary} disabled={loading}>
             <Icon name="Search" size={14} /> {loading ? 'Loading…' : 'Search'}
           </button>
         </form>
 
-        <div className={s.boxActions}>
-          <button className={s.btnSecondaryXSmall} onClick={handleVerify} disabled={verifying}>
+        <div className={styles.boxActions}>
+          <button className={styles.btnSecondaryXSmall} onClick={handleVerify} disabled={verifying}>
             <Icon name="ShieldCheck" size={12} /> {verifying ? 'Verifying…' : 'Verify integrity'}
           </button>
-          <button className={s.btnSecondaryXSmall} onClick={handleExport} disabled={exporting}>
+          <button className={styles.btnSecondaryXSmall} onClick={handleExport} disabled={exporting}>
             <Icon name="Download" size={12} /> {exporting ? 'Exporting…' : 'Export (JSONL)'}
           </button>
         </div>
 
         {verifyResult && (
           <div
-            className={`${s.auditResult} ${verifyResult.valid ? s.auditResultOk : s.auditResultBad}`}
+            className={`${styles.auditResult} ${verifyResult.valid ? styles.auditResultOk : styles.auditResultBad}`}
             role={verifyResult.valid ? 'status' : 'alert'}
           >
             {verifyResult.valid ? (
@@ -205,14 +205,14 @@ export const AuditTab = ({ s }: AuditTabProps) => {
       </div>
 
       <div>
-        <div className={s.keyStatusTitle}>
+        <div className={styles.keyStatusTitle}>
           {loaded ? `${logs.length} ${logs.length === 1 ? 'entry' : 'entries'}, newest first` : 'Entries'}
-          {logs.length === PAGE_SIZE && <span className={s.helpText}> — showing the newest {PAGE_SIZE}; narrow the filters or export for the full range</span>}
+          {logs.length === PAGE_SIZE && <span className={styles.helpText}> — showing the newest {PAGE_SIZE}; narrow the filters or export for the full range</span>}
         </div>
-        {loaded && logs.length === 0 && <span className={s.helpText}>No entries match these filters.</span>}
+        {loaded && logs.length === 0 && <span className={styles.helpText}>No entries match these filters.</span>}
         {logs.length > 0 && (
-          <div className={s.permTableWrap}>
-            <table className={s.auditTable}>
+          <div className={styles.permTableWrap}>
+            <table className={styles.auditTable}>
               <thead>
                 <tr>
                   <th>Time</th>
@@ -226,7 +226,7 @@ export const AuditTab = ({ s }: AuditTabProps) => {
                 {logs.map((entry) => (
                   <tr key={entry.id}>
                     <td>{formatTimestamp(entry.timestamp)}</td>
-                    <td className={entry.outcome?.success === false ? s.auditFailed : undefined}>
+                    <td className={entry.outcome?.success === false ? styles.auditFailed : undefined}>
                       {entry.event_type}{entry.outcome?.success === false ? ' (failed)' : ''}
                     </td>
                     <td>{emailFor(entry)}</td>

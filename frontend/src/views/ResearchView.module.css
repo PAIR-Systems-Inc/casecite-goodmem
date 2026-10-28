@@ -310,7 +310,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--gold-400);
+  color: var(--primary-400);
   flex-shrink: 0;
 }
 
@@ -692,7 +692,7 @@
   gap: 12px;
   cursor: pointer;
   z-index: 10;
-  border: 2px dashed var(--gold-500);
+  border: 2px dashed var(--primary-500);
 }
 
 .lockText {
@@ -702,7 +702,7 @@
 
 .lockCta {
   padding: 6px 12px;
-  background: var(--gold-500);
+  background: var(--primary-500);
   color: var(--on-primary);
   border-radius: 6px;
   font-size: 13px;
@@ -712,7 +712,7 @@
 /* Unauthenticated hint */
 
 .unauthHint {
-  color: var(--gold-600);
+  color: var(--primary-600);
 }
 
 /* Case law stat color */
@@ -743,7 +743,7 @@
 /* Lock icon color */
 
 .lockIcon {
-  color: var(--gold-600);
+  color: var(--primary-600);
 }
 
 /* Send button disabled state */

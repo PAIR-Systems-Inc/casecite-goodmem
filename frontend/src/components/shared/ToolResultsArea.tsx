@@ -113,7 +113,7 @@ interface ActiveTool {
 }
 
 interface ToolResultsAreaProps {
-  s: Record<string, string>;
+  styles: Record<string, string>;
   tr: ToolResultData | null;
   activeTool: ActiveTool | null;
   toolInput: string;
@@ -140,7 +140,7 @@ interface ToolResultsAreaProps {
 const joinMeta = (parts: Array<string | null | undefined>) => parts.filter(Boolean).join(' • ');
 
 function ToolResultsArea({
-  s, tr, activeTool, toolInput, toolLoading, toolApiSlow,
+  styles, tr, activeTool, toolInput, toolLoading, toolApiSlow,
   selectedCase, selectedJudge, caseLoading,
   selectedDocket, docketLoading, loadDocketDetail, setSelectedDocket,
   loadPrecedentCase,
@@ -148,10 +148,10 @@ function ToolResultsArea({
   loadMoreResults, setActiveMode, setActiveTool, setToolResult, buildJudgeIntel,
 }: ToolResultsAreaProps) {
   return (
-    <div className={s.trsArea}>
+    <div className={styles.trsArea}>
 
       {tr?.error && (
-        <div className={s.toolErrorBox}>
+        <div className={styles.toolErrorBox}>
           <Icon name="AlertCircle" size={14} />
           <span>{tr.error}</span>
         </div>
@@ -159,10 +159,10 @@ function ToolResultsArea({
 
       {/* CourtListener API Slow Warning - shows during loading after 10s */}
       {(toolApiSlow && toolLoading) && (
-        <div className={s.apiSlowWarning}>
-          <Icon name="Clock" size={16} className={s.apiSlowIcon} />
+        <div className={styles.apiSlowWarning}>
+          <Icon name="Clock" size={16} className={styles.apiSlowIcon} />
           <div>
-            <strong className={s.apiSlowTitle}>CourtListener API is Taking a While</strong>
+            <strong className={styles.apiSlowTitle}>CourtListener API is Taking a While</strong>
             <span>The third-party legal database is taking a while to respond. Please be patient while we wait for their servers.</span>
           </div>
         </div>
@@ -170,32 +170,32 @@ function ToolResultsArea({
 
       {/* Case Search Results */}
       {activeTool?.id === 'case-lookup' && tr?.results && !selectedCase && (
-        <CaseSearchResults s={s} tr={tr} toolLoading={toolLoading} loadCaseDetail={loadCaseDetail} loadMoreResults={loadMoreResults} />
+        <CaseSearchResults styles={styles} tr={tr} toolLoading={toolLoading} loadCaseDetail={loadCaseDetail} loadMoreResults={loadMoreResults} />
       )}
 
       {/* Case Detail View */}
       {activeTool?.id === 'case-lookup' && selectedCase && (
-        <CaseDetailView s={s} selectedCase={selectedCase} caseLoading={caseLoading} setSelectedCase={setSelectedCase} />
+        <CaseDetailView styles={styles} selectedCase={selectedCase} caseLoading={caseLoading} setSelectedCase={setSelectedCase} />
       )}
 
       {/* Citation Validation Result */}
       {activeTool?.id === 'validate-citation' && tr && !tr.error && (
-        <CitationValidationResult s={s} tr={tr} />
+        <CitationValidationResult styles={styles} tr={tr} />
       )}
 
       {/* Judge Search Results - Redirect to full Judge Intel view */}
       {activeTool?.id === 'judge-analyzer' && tr?.judges && !selectedJudge && (
-        <div className={`${s.toolCard} ${s.caseSearchResults}`}>
-          <div className={s.toolOverline}>Judge Intel · CourtListener</div>
-          <div className={s.toolTitle}>"{toolInput}"</div>
-          <div className={s.searchResultsHeader}>
+        <div className={`${styles.toolCard} ${styles.caseSearchResults}`}>
+          <div className={styles.toolOverline}>Judge Intel · CourtListener</div>
+          <div className={styles.toolTitle}>"{toolInput}"</div>
+          <div className={styles.searchResultsHeader}>
             <span>{tr.count || tr.judges.length} judges found</span>
           </div>
-          <div className={s.caseResultsList}>
+          <div className={styles.caseResultsList}>
             {tr.judges.map((j, i) => (
               <div
                 key={`${j.id}-${i}`}
-                className={`case-result ${s.caseResultItem}`}
+                className={`case-result ${styles.caseResultItem}`}
                 onClick={() => {
                   // Switch to full Judge Intel mode in main area
                   setActiveMode('judge-intel');
@@ -204,8 +204,8 @@ function ToolResultsArea({
                   buildJudgeIntel(j.id, j.name || j.name_full || '');
                 }}
               >
-                <div className={s.caseResultName}>{j.name || j.name_full}</div>
-                <div className={s.caseResultMeta}>
+                <div className={styles.caseResultName}>{j.name || j.name_full}</div>
+                <div className={styles.caseResultMeta}>
                   {j.court && <span>{j.court}</span>}
                   {j.position && <span>{j.position}</span>}
                   {j.appointed_by && <span>Appointed by {j.appointed_by}</span>}
@@ -220,7 +220,7 @@ function ToolResultsArea({
       {/* Precedent opinion — one level deep, Back to results returns to the list */}
       {activeTool?.id === 'precedents' && (selectedCase || caseLoading) && (
         <CaseDetailView
-          s={s}
+          styles={styles}
           selectedCase={selectedCase || ({} as CaseInfo)}
           caseLoading={caseLoading}
           setSelectedCase={setSelectedCase}
@@ -229,10 +229,10 @@ function ToolResultsArea({
 
       {/* Precedents Result */}
       {activeTool?.id === 'precedents' && tr?.precedents && !selectedCase && !caseLoading && (
-        <div className={`${s.toolCard} ${s.resultsList}`}>
-          <div className={s.toolOverline}>Precedents · CourtListener</div>
-          <div className={s.toolTitle}>"{toolInput}"</div>
-          <div className={s.resultsCount}>{tr.count || tr.precedents.length} cases found · most cited first</div>
+        <div className={`${styles.toolCard} ${styles.resultsList}`}>
+          <div className={styles.toolOverline}>Precedents · CourtListener</div>
+          <div className={styles.toolTitle}>"{toolInput}"</div>
+          <div className={styles.resultsCount}>{tr.count || tr.precedents.length} cases found · most cited first</div>
           {tr.precedents.map((p, i) => {
             const meta = joinMeta([
               p.citation,
@@ -243,21 +243,21 @@ function ToolResultsArea({
             ]);
             const body = (
               <>
-                <span className={s.resultRank}>{i + 1}</span>
-                <div className={s.resultRowContent}>
-                  <span className={s.resultRowTitle}>{p.case_name}</span>
-                  <span className={s.resultRowMeta}>{meta}</span>
+                <span className={styles.resultRank}>{i + 1}</span>
+                <div className={styles.resultRowContent}>
+                  <span className={styles.resultRowTitle}>{p.case_name}</span>
+                  <span className={styles.resultRowMeta}>{meta}</span>
                   {(p.citations?.length ?? 0) > 1 && (
-                    <span className={s.resultRowMeta}>Also reported at {p.citations!.slice(1).join(', ')}</span>
+                    <span className={styles.resultRowMeta}>Also reported at {p.citations!.slice(1).join(', ')}</span>
                   )}
-                  {p.snippet && <span className={s.resultSnippet}>{p.snippet}</span>}
+                  {p.snippet && <span className={styles.resultSnippet}>{p.snippet}</span>}
                 </div>
               </>
             );
             return p.id ? (
               <div
                 key={i}
-                className={`${s.resultRow} ${s.resultRowLink}`}
+                className={`${styles.resultRow} ${styles.resultRowLink}`}
                 role="button"
                 tabIndex={0}
                 onClick={() => loadPrecedentCase(p.id!)}
@@ -272,17 +272,17 @@ function ToolResultsArea({
                     onClick={(e) => e.stopPropagation()}
                     title="View on CourtListener"
                   >
-                    <Icon name="ExternalLink" size={14} className={s.resultRowLinkIcon} />
+                    <Icon name="ExternalLink" size={14} className={styles.resultRowLinkIcon} />
                   </a>
                 )}
               </div>
             ) : p.url ? (
-              <a key={i} className={`${s.resultRow} ${s.resultRowLink}`} href={safeHttpUrl(p.url) ?? undefined} target="_blank" rel="noopener noreferrer">
+              <a key={i} className={`${styles.resultRow} ${styles.resultRowLink}`} href={safeHttpUrl(p.url) ?? undefined} target="_blank" rel="noopener noreferrer">
                 {body}
-                <Icon name="ExternalLink" size={14} className={s.resultRowLinkIcon} />
+                <Icon name="ExternalLink" size={14} className={styles.resultRowLinkIcon} />
               </a>
             ) : (
-              <div key={i} className={s.resultRow}>{body}</div>
+              <div key={i} className={styles.resultRow}>{body}</div>
             );
           })}
         </div>
@@ -291,7 +291,7 @@ function ToolResultsArea({
       {/* Docket Detail View — opens in-app; CourtListener link demoted to an icon */}
       {activeTool?.id === 'dockets' && (selectedDocket || docketLoading) && (
         <DocketDetailView
-          s={s}
+          styles={styles}
           docket={selectedDocket}
           docketLoading={docketLoading}
           onBack={() => setSelectedDocket(null)}
@@ -300,10 +300,10 @@ function ToolResultsArea({
 
       {/* Docket Search Result */}
       {activeTool?.id === 'dockets' && tr?.dockets && !selectedDocket && !docketLoading && (
-        <div className={`${s.toolCard} ${s.resultsList}`}>
-          <div className={s.toolOverline}>Dockets · CourtListener</div>
-          <div className={s.toolTitle}>"{toolInput}"</div>
-          <div className={s.resultsCount}>{tr.count || tr.dockets.length} dockets found</div>
+        <div className={`${styles.toolCard} ${styles.resultsList}`}>
+          <div className={styles.toolOverline}>Dockets · CourtListener</div>
+          <div className={styles.toolTitle}>"{toolInput}"</div>
+          <div className={styles.resultsCount}>{tr.count || tr.dockets.length} dockets found</div>
           {tr.dockets.map((d, i) => {
             const meta = joinMeta([
               d.court,
@@ -318,12 +318,12 @@ function ToolResultsArea({
               d.jury_demand && d.jury_demand !== 'None' ? `Jury: ${d.jury_demand}` : null,
             ]);
             const body = (
-              <div className={s.resultRowContent}>
-                <span className={s.resultRowTitle}>{d.case_name}</span>
-                <span className={s.resultRowMeta}>{meta}</span>
-                {detail && <span className={s.resultRowMeta}>{detail}</span>}
+              <div className={styles.resultRowContent}>
+                <span className={styles.resultRowTitle}>{d.case_name}</span>
+                <span className={styles.resultRowMeta}>{meta}</span>
+                {detail && <span className={styles.resultRowMeta}>{detail}</span>}
                 {(d.parties?.length ?? 0) > 0 && (
-                  <span className={s.resultSnippet}>
+                  <span className={styles.resultSnippet}>
                     {d.parties!.slice(0, 6).map((p) => p.name).join(' · ')}
                     {d.parties!.length > 6 ? ` · +${d.parties!.length - 6} more` : ''}
                   </span>
@@ -333,7 +333,7 @@ function ToolResultsArea({
             return d.id ? (
               <div
                 key={i}
-                className={`${s.resultRow} ${s.resultRowLink}`}
+                className={`${styles.resultRow} ${styles.resultRowLink}`}
                 role="button"
                 tabIndex={0}
                 onClick={() => loadDocketDetail(d.id!)}
@@ -348,17 +348,17 @@ function ToolResultsArea({
                     onClick={(e) => e.stopPropagation()}
                     title="View on CourtListener"
                   >
-                    <Icon name="ExternalLink" size={14} className={s.resultRowLinkIcon} />
+                    <Icon name="ExternalLink" size={14} className={styles.resultRowLinkIcon} />
                   </a>
                 )}
               </div>
             ) : d.url ? (
-              <a key={i} className={`${s.resultRow} ${s.resultRowLink}`} href={safeHttpUrl(d.url) ?? undefined} target="_blank" rel="noopener noreferrer">
+              <a key={i} className={`${styles.resultRow} ${styles.resultRowLink}`} href={safeHttpUrl(d.url) ?? undefined} target="_blank" rel="noopener noreferrer">
                 {body}
-                <Icon name="ExternalLink" size={14} className={s.resultRowLinkIcon} />
+                <Icon name="ExternalLink" size={14} className={styles.resultRowLinkIcon} />
               </a>
             ) : (
-              <div key={i} className={s.resultRow}>{body}</div>
+              <div key={i} className={styles.resultRow}>{body}</div>
             );
           })}
         </div>
@@ -366,16 +366,16 @@ function ToolResultsArea({
 
       {/* Oral Arguments Result */}
       {activeTool?.id === 'oral-arguments' && tr?.arguments && (
-        <div className={`${s.toolCard} ${s.resultsList}`}>
-          <div className={s.toolOverline}>Oral Arguments · CourtListener</div>
-          <div className={s.toolTitle}>"{toolInput}"</div>
-          <div className={s.resultsCount}>{tr.count || tr.arguments.length} recordings found</div>
-          <div className={s.scrollableList}>
+        <div className={`${styles.toolCard} ${styles.resultsList}`}>
+          <div className={styles.toolOverline}>Oral Arguments · CourtListener</div>
+          <div className={styles.toolTitle}>"{toolInput}"</div>
+          <div className={styles.resultsCount}>{tr.count || tr.arguments.length} recordings found</div>
+          <div className={styles.scrollableList}>
             {tr.arguments.map((a, i) => (
-              <div key={i} className={s.oralArgItem}>
-                <div className={s.resultRowContent}>
-                  <span className={s.resultRowTitle}>{a.case_name}</span>
-                  <span className={s.resultRowMeta}>
+              <div key={i} className={styles.oralArgItem}>
+                <div className={styles.resultRowContent}>
+                  <span className={styles.resultRowTitle}>{a.case_name}</span>
+                  <span className={styles.resultRowMeta}>
                     {joinMeta([
                       a.court,
                       a.date_argued ? `Argued ${a.date_argued}` : null,
@@ -383,23 +383,23 @@ function ToolResultsArea({
                       a.duration_label,
                     ])}
                   </span>
-                  {a.judges && <span className={s.resultRowMeta}>Panel: {a.judges}</span>}
-                  {a.snippet && <span className={s.resultSnippet}>{a.snippet}</span>}
+                  {a.judges && <span className={styles.resultRowMeta}>Panel: {a.judges}</span>}
+                  {a.snippet && <span className={styles.resultSnippet}>{a.snippet}</span>}
                 </div>
                 {a.audio_url ? (
-                  <audio controls preload="none" className={s.audioPlayer}>
+                  <audio controls preload="none" className={styles.audioPlayer}>
                     <source src={a.audio_url} type="audio/mpeg" />
                     Your browser does not support audio.
                   </audio>
                 ) : null}
-                <div className={s.oralArgLinks}>
+                <div className={styles.oralArgLinks}>
                   {a.url && (
-                    <a href={safeHttpUrl(a.url) ?? undefined} target="_blank" rel="noopener noreferrer" className={s.oralArgLink}>
+                    <a href={safeHttpUrl(a.url) ?? undefined} target="_blank" rel="noopener noreferrer" className={styles.oralArgLink}>
                       <Icon name="ExternalLink" size={12} /> {a.audio_url ? 'View on CourtListener' : 'Listen on CourtListener'}
                     </a>
                   )}
                   {a.download_url && a.download_url !== a.audio_url && (
-                    <a href={safeHttpUrl(a.download_url) ?? undefined} target="_blank" rel="noopener noreferrer" className={s.oralArgLink}>
+                    <a href={safeHttpUrl(a.download_url) ?? undefined} target="_blank" rel="noopener noreferrer" className={styles.oralArgLink}>
                       <Icon name="Download" size={12} /> Court's original recording
                     </a>
                   )}
@@ -413,7 +413,7 @@ function ToolResultsArea({
       {/* Trends Result */}
       {activeTool?.id === 'trends' && tr?.years && (
         <TrendChart
-          s={s}
+          styles={styles}
           topic={toolInput}
           years={tr.years}
           totalCases={tr.total_cases}

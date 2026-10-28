@@ -181,13 +181,13 @@ export const useBrandingStore = create<BrandingState>((set, get) => ({
     const b = config || get().branding;
     const root = document.documentElement.style;
 
-    // Primary color shades (gold)
-    root.setProperty('--gold-500', b.primary_color);
-    root.setProperty('--gold-600', darkTone(b.primary_color, 0.08, 0.45));
-    root.setProperty('--gold-700', darkTone(b.primary_color, 0.16, 0.35));
-    root.setProperty('--gold-400', lighten(b.primary_color));
-    root.setProperty('--gold-300', lighten(b.primary_color, 0.2));
-    root.setProperty('--gold-50', tint(b.primary_color, 0.96));
+    // Primary color shades
+    root.setProperty('--primary-500', b.primary_color);
+    root.setProperty('--primary-600', darkTone(b.primary_color, 0.08, 0.45));
+    root.setProperty('--primary-700', darkTone(b.primary_color, 0.16, 0.35));
+    root.setProperty('--primary-400', lighten(b.primary_color));
+    root.setProperty('--primary-300', lighten(b.primary_color, 0.2));
+    root.setProperty('--primary-50', tint(b.primary_color, 0.96));
 
     // Secondary color (navy)
     root.setProperty('--navy-900', b.secondary_color);

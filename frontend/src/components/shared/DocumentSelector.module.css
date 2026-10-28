@@ -296,7 +296,7 @@
 
 .spinnerGold {
   animation: spin 1s linear infinite;
-  color: var(--gold-500);
+  color: var(--primary-500);
 }
 
 @keyframes spin {

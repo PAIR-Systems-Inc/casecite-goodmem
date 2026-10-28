@@ -38,7 +38,7 @@ function defaultProps(overrides: Record<string, any> = {}) {
   return {
     local,
     setLocal: vi.fn(),
-    s: new Proxy({} as Record<string, string>, { get: (_, key) => String(key) }),
+    styles: new Proxy({} as Record<string, string>, { get: (_, key) => String(key) }),
     ...overrides,
   };
 }

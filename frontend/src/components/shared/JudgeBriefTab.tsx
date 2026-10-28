@@ -4,7 +4,7 @@ import { cleanMarkdown } from '../../utils/markdownUtils';
 import type { JudgeIntelProfile, JudgeMessage } from '../../types';
 
 interface JudgeBriefTabProps {
-  s: Record<string, string>;
+  styles: Record<string, string>;
   judgeIntelProfile: JudgeIntelProfile;
   judgeBrief: string | null;
   judgeBriefLoading: boolean;
@@ -17,7 +17,7 @@ interface JudgeBriefTabProps {
 }
 
 function JudgeBriefTab({
-  s,
+  styles,
   judgeIntelProfile,
   judgeBrief,
   judgeBriefLoading,
@@ -29,63 +29,63 @@ function JudgeBriefTab({
   clearJudgeConversation,
 }: JudgeBriefTabProps) {
   return (
-    <div className={s.judgeBriefContent}>
+    <div className={styles.judgeBriefContent}>
       {/* Generated Brief */}
-      <div className={s.judgeProfileSection}>
-        <h3 className={s.judgeProfileSectionTitle}>Judicial Profile Brief</h3>
+      <div className={styles.judgeProfileSection}>
+        <h3 className={styles.judgeProfileSectionTitle}>Judicial Profile Brief</h3>
         {judgeBriefLoading ? (
-          <div className={s.judgeBriefLoading}>
-            <Icon name="Loader2" size={20} className={s.buildingSpinner} />
-            <span className={s.briefLoadingTitle}>Analyzing judge data and generating brief...</span>
-            <span className={s.briefLoadingSubtitle}>This may take 30-60 seconds</span>
+          <div className={styles.judgeBriefLoading}>
+            <Icon name="Loader2" size={20} className={styles.buildingSpinner} />
+            <span className={styles.briefLoadingTitle}>Analyzing judge data and generating brief...</span>
+            <span className={styles.briefLoadingSubtitle}>This may take 30-60 seconds</span>
           </div>
         ) : judgeBrief ? (
           <>
-            <div className={s.judgeBriefText}>
+            <div className={styles.judgeBriefText}>
               {judgeBrief.split('\n').map((line: string, i: number) => {
                 const trimmedLine = line.trim();
-                if (!trimmedLine) return <div key={i} className={s.briefSpacer} />;
+                if (!trimmedLine) return <div key={i} className={styles.briefSpacer} />;
 
                 // Main headers (## or ### SECTION)
                 if (trimmedLine.match(/^#{2,3}\s+/)) {
-                  return <h2 key={i} className={s.briefH2}>{cleanMarkdown(trimmedLine)}</h2>;
+                  return <h2 key={i} className={styles.briefH2}>{cleanMarkdown(trimmedLine)}</h2>;
                 }
                 // Bold-only lines as headers
                 if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**') && !trimmedLine.slice(2, -2).includes('**')) {
-                  return <h3 key={i} className={s.briefH3}>{cleanMarkdown(trimmedLine)}</h3>;
+                  return <h3 key={i} className={styles.briefH3}>{cleanMarkdown(trimmedLine)}</h3>;
                 }
                 // Single hash headers
                 if (trimmedLine.match(/^#\s+/)) {
-                  return <h3 key={i} className={s.briefH3}>{cleanMarkdown(trimmedLine)}</h3>;
+                  return <h3 key={i} className={styles.briefH3}>{cleanMarkdown(trimmedLine)}</h3>;
                 }
                 // Numbered sections (like "1." or "1)")
                 if (trimmedLine.match(/^\d+[.)]\s*/)) {
-                  return <h4 key={i} className={s.briefH4}>{cleanMarkdown(trimmedLine)}</h4>;
+                  return <h4 key={i} className={styles.briefH4}>{cleanMarkdown(trimmedLine)}</h4>;
                 }
                 // Bullet points
                 if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
-                  return <div key={i} className={s.briefBullet}><span className={s.briefBulletDot}>•</span><span>{cleanMarkdown(trimmedLine.substring(2))}</span></div>;
+                  return <div key={i} className={styles.briefBullet}><span className={styles.briefBulletDot}>•</span><span>{cleanMarkdown(trimmedLine.substring(2))}</span></div>;
                 }
                 // Regular paragraphs
-                return <p key={i} className={s.briefParagraph}>{cleanMarkdown(trimmedLine)}</p>;
+                return <p key={i} className={styles.briefParagraph}>{cleanMarkdown(trimmedLine)}</p>;
               })}
               <AiNotice />
             </div>
-            <button className={s.judgeBriefRegenBtn} onClick={() => generateJudgeBrief(judgeIntelProfile)}>
+            <button className={styles.judgeBriefRegenBtn} onClick={() => generateJudgeBrief(judgeIntelProfile)}>
               <Icon name="RefreshCw" size={12} /> Regenerate
             </button>
           </>
         ) : (
-          <div className={s.judgeBriefPlaceholder}>
+          <div className={styles.judgeBriefPlaceholder}>
             <div>
-              <span className={s.placeholderTitle}>AI-Generated Intelligence Brief</span>
-              <span className={s.placeholderDesc}>
+              <span className={styles.placeholderTitle}>AI-Generated Intelligence Brief</span>
+              <span className={styles.placeholderDesc}>
                 An analysis of this judge's background, judicial philosophy, ruling patterns, and practice tips. Uses AI tokens · takes 30-60 seconds.
               </span>
             </div>
             <button
               onClick={() => generateJudgeBrief(judgeIntelProfile)}
-              className={s.generateBriefBtn}
+              className={styles.generateBriefBtn}
             >
               <Icon name="Sparkles" size={14} /> Generate Brief
             </button>
@@ -95,12 +95,12 @@ function JudgeBriefTab({
 
       {/* Ask About This Judge — the input itself is the app-wide floating
           composer rendered by the view; this section holds the conversation. */}
-      <div className={s.judgeProfileSection}>
-        <div className={s.judgeQaHeader}>
-          <h3 className={s.judgeProfileSectionTitle}>Ask About This Judge</h3>
+      <div className={styles.judgeProfileSection}>
+        <div className={styles.judgeQaHeader}>
+          <h3 className={styles.judgeProfileSectionTitle}>Ask About This Judge</h3>
           {judgeMessages.length > 0 && (
             <button
-              className={s.judgeQaClear}
+              className={styles.judgeQaClear}
               onClick={clearJudgeConversation}
               disabled={judgeQueryLoading}
               title="Clear the conversation and start fresh"
@@ -111,36 +111,36 @@ function JudgeBriefTab({
         </div>
 
         {judgeMessages.length > 0 ? (
-          <div className={s.judgeQueryMessages}>
+          <div className={styles.judgeQueryMessages}>
             {judgeMessages.map((msg: JudgeMessage) => (
-              <div key={msg.id} className={`${s.judgeQueryMessage} ${msg.type === 'user' ? s.judgeQueryUserMsg : s.judgeQueryAssistantMsg}`}>
-                <div className={s.judgeQueryMsgContent}>
+              <div key={msg.id} className={`${styles.judgeQueryMessage} ${msg.type === 'user' ? styles.judgeQueryUserMsg : styles.judgeQueryAssistantMsg}`}>
+                <div className={styles.judgeQueryMsgContent}>
                   {msg.type === 'assistant' ? msg.content.split('\n').map((line: string, li: number) => {
                     const clean = cleanMarkdown(line);
                     if (!clean) return <br key={li} />;
-                    if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) return <div key={li} className={s.msgBullet}>• {clean.substring(2)}</div>;
-                    return <div key={li} className={s.msgLine}>{clean}</div>;
+                    if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) return <div key={li} className={styles.msgBullet}>• {clean.substring(2)}</div>;
+                    return <div key={li} className={styles.msgLine}>{clean}</div>;
                   }) : msg.content}
                   {msg.type === 'assistant' && <AiNotice />}
                 </div>
               </div>
             ))}
             {judgeQueryLoading && (
-              <div className={`${s.judgeQueryMessage} ${s.judgeQueryAssistantMsg}`}>
-                <div className={s.judgeQueryMsgContent}>
-                  <Icon name="Loader2" size={14} className={s.spinnerIcon} /> Thinking...
+              <div className={`${styles.judgeQueryMessage} ${styles.judgeQueryAssistantMsg}`}>
+                <div className={styles.judgeQueryMsgContent}>
+                  <Icon name="Loader2" size={14} className={styles.spinnerIcon} /> Thinking...
                 </div>
               </div>
             )}
           </div>
         ) : (
-          <div className={s.judgeQueryHints}>
+          <div className={styles.judgeQueryHints}>
             <span>Try asking:</span>
             {(judgeQueryIncludeDocs
               ? ['How would this judge likely rule on my case?', 'Compare this judge to cases in my documents', 'What should I know before appearing before this judge?']
               : ['What is their judicial philosophy?', 'How do they typically rule on immigration cases?', 'What are their most influential decisions?']
             ).map((hint: string, i: number) => (
-              <button key={i} className={s.judgeQueryHint} onClick={() => setJudgeQueryInput(hint)}>
+              <button key={i} className={styles.judgeQueryHint} onClick={() => setJudgeQueryInput(hint)}>
                 {hint}
               </button>
             ))}

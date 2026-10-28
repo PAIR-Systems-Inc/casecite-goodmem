@@ -75,7 +75,7 @@ function RightPanel() {
               {rightPanelTab === 'history' ? (
                 <>
                   <SearchHistoryList
-                    s={s}
+                    styles={s}
                     sessions={chatSessions}
                     isLoading={isLoadingSessions}
                     currentSessionId={currentSessionId}

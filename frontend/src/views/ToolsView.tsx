@@ -87,7 +87,7 @@ function ToolsView() {
         <>
           <div className={s.resultsScroll}>
             <ToolResultsArea
-              s={rp}
+              styles={rp}
               tr={tr}
               activeTool={activeTool}
               toolInput={toolInput}
