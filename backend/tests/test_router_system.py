@@ -23,7 +23,7 @@ class TestSystemRouter:
             data = resp.json()
             assert data["name"] == "CaseCite"
             assert data["status"] == "running"
-            assert data["version"] == __version__ == "1.2.0"
+            assert data["version"] == __version__ == "1.3.0"
 
     # ==================== Health Check ====================
 

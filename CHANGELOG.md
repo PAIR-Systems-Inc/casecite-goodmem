@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-28
+
 ### Security
 - Connector OAuth callbacks are bound to the browser that started the flow with a signed HttpOnly cookie; a callback arriving without it, or with another user's binding, is refused (403) and audited.
 - Saving admin connector credentials merges into the stored values, so a field omitted from the request keeps its value instead of being blanked; an empty string clears just that field.
@@ -23,7 +25,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - Backend SDKs: openai 3.40, anthropic 2.3, google-genai 2.33, fastapi 0.162, redis 8.1, httpx 0.28.1, tiktoken 0.14; mypy 2.4 (which now checks every file, a comment starting with "type:" had stopped it at the first).
-- `eslint-plugin-react-hooks` 7.1.1: the component-identity and declaration-order findings it raised are fixed; its `set-state-in-effect` rule is off with a tracked follow-up (see `frontend/.eslintrc.cjs`).
+- ESLint 9 with a flat config (`frontend/eslint.config.js`) replaces the end-of-life ESLint 8 and `.eslintrc.cjs`; `typescript-eslint` 8.72, `eslint-plugin-react` 7.37, `eslint-config-prettier` 10. `eslint-plugin-react-hooks` 7.1.1: the component-identity and declaration-order findings it raised are fixed; its `set-state-in-effect` rule is off with a tracked follow-up (see the config).
+- Frontend dev tooling: vite 7.3.7, vitest 4.1.12, and `overrides` pinning `undici` 7.30.1 and `source-map-js` 1.2.2, so `npm audit` is clean for dev dependencies as well as production ones.
 - `GET /documents` returns a real cross-page total; the Knowledge Base, header count and picker imports walk every page instead of showing the newest 50.
 - `GET /tools/cases/{id}?kind=opinion|cluster` tries the stated id kind first and reports `resolved_as`; chat citations carry `opinion_id`, `cluster_id` and `verified` through the strategy brief and case-law builders.
 - Chat retrieval and scoped filters include documents shared through the caller's matters. Strategy briefs scope to every selected folder.
@@ -39,6 +42,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Migration 005 is inspector-guarded so a database built by `create_all` and stamped at 004 no longer crash-loops the container; migration 009's downgrade drops the index by its real name.
 - Caddy's body limit is 100 MiB (was 10^8 bytes, below nginx and `MAX_UPLOAD_SIZE`).
 - `NOTICE.md` is regenerated from the current lock files and CI fails when it goes stale.
+- Playwright end-to-end tests now drive the three critical flows against a mocked API, not only the logged-out shell: sign-in (success and a 401), document upload (indexed and a rejected file type) and a citation check (result with its AI-review notice, and a 502). `PLAYWRIGHT_PORT` overrides the dev-server port for local runs.
+- On a `v*` tag, CI attaches the image's CycloneDX SBOM to the GitHub release instead of leaving it as a 90-day workflow artifact.
 - Public bug reports: the issue template now asks reporters to redact client data.
 
 ## [1.2.0] - 2026-10-04

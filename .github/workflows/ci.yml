@@ -586,7 +586,7 @@ jobs:
     # Trivy-scanned before it merges. Only pushes (main/develop, v* tags) log
     # in to GHCR, push the image and publish its SBOM — see the step `if`s.
     permissions:
-      contents: read
+      contents: write          # attach the SBOM to the release on v* tags
       packages: write          # push the image to GHCR
       security-events: write   # upload the Trivy SARIF
     outputs:
@@ -696,6 +696,18 @@ jobs:
         with:
           name: sbom
           path: sbom.json
+
+      - name: Attach SBOM to the GitHub release
+        # A workflow artifact expires; the release is where an evaluator looks
+        # for the bill of materials of the image a tag refers to.
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+                 --title "$GITHUB_REF_NAME" --notes "See CHANGELOG.md for this release."
+          gh release upload "$GITHUB_REF_NAME" sbom.json --repo "$GITHUB_REPOSITORY" --clobber
 
   # ====================
   # Deployment — intentionally not included here
