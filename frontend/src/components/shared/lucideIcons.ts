@@ -23,6 +23,7 @@ import {
   Upload, User, UserPlus,
   Wand2, Workflow, Wrench,
   X, XCircle, Zap,
+  Activity, CheckCircle2, FileCheck, FileX, FolderInput, FolderKanban, MonitorSmartphone, Text, UserMinus, Users,
 } from 'lucide-react';
 
 /**
@@ -58,4 +59,5 @@ export const lucideIconMap: Record<string, LucideIcon> = {
   Upload, User, UserPlus,
   Wand2, Workflow, Wrench,
   X, XCircle, Zap,
+  Activity, CheckCircle2, FileCheck, FileX, FolderInput, FolderKanban, MonitorSmartphone, Text, UserMinus, Users,
 };
