@@ -62,4 +62,9 @@ from app.models.tracking import (  # noqa: F401
 )
 
 # Workflows (saved, repeatable sequences of the platform's own operations)
-from app.models.workflows import Workflow, WorkflowRun, WorkflowStepRun  # noqa: F401
+from app.models.workflows import (  # noqa: F401
+    Workflow,
+    WorkflowRun,
+    WorkflowStepRun,
+    WorkflowVersion,
+)
