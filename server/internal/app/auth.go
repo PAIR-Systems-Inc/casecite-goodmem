@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/hmac"
@@ -19,12 +20,25 @@ import (
 )
 
 type User struct {
-	ID, Email, Name, Role string
-	MustChangePassword    bool
+	ID, Email, Name, Role                          string
+	MustChangePassword                             bool
+	MFAEnabled, MFAEnrollmentRequired, HasPassword bool
+	Permissions                                    []string
 }
 
 func (u User) public() M {
-	return M{"id": u.ID, "email": u.Email, "name": u.Name, "roles": []string{u.Role}, "must_change_password": u.MustChangePassword, "mfa_enabled": false, "mfa_enrollment_required": false}
+	return M{"id": u.ID, "email": u.Email, "name": u.Name, "roles": []string{u.Role}, "must_change_password": u.MustChangePassword, "mfa_enabled": u.MFAEnabled, "mfa_enrollment_required": u.MFAEnrollmentRequired, "permissions": u.Permissions}
+}
+
+func (s *Server) loadUser(ctx context.Context, id string) (User, error) {
+	u := User{}
+	err := s.db.QueryRowContext(ctx, `SELECT id,email,name,role,must_change_password,mfa_enabled,password_hash<>'' FROM cc_users WHERE id=$1 AND active`, id).Scan(&u.ID, &u.Email, &u.Name, &u.Role, &u.MustChangePassword, &u.MFAEnabled, &u.HasPassword)
+	if err != nil {
+		return u, err
+	}
+	u.MFAEnrollmentRequired = s.cfg.RequireMFA && u.HasPassword && !u.MFAEnabled
+	u.Permissions, err = s.rolePermissions(ctx, u.Role)
+	return u, err
 }
 func digest(s string) string { h := sha256.Sum256([]byte(s)); return hex.EncodeToString(h[:]) }
 func (s *Server) csrfValue() string {
@@ -61,27 +75,45 @@ func (s *Server) authenticate(r *http.Request) (User, error) {
 	if len(t) != 64 {
 		return u, fail(401, "Please sign in")
 	}
-	err := s.db.QueryRowContext(r.Context(), `UPDATE cc_sessions ss SET last_activity=now() FROM cc_users u WHERE ss.token_hash=$1 AND ss.user_id=u.id AND u.active AND ss.expires_at>now() AND ss.last_activity>now()-$2*interval '1 second' RETURNING u.id,u.email,u.name,u.role,u.must_change_password`, digest(t), int(s.cfg.IdleTTL.Seconds())).Scan(&u.ID, &u.Email, &u.Name, &u.Role, &u.MustChangePassword)
+	err := s.db.QueryRowContext(r.Context(), `UPDATE cc_sessions ss SET last_activity=now() FROM cc_users u WHERE ss.token_hash=$1 AND ss.user_id=u.id AND u.active AND ss.expires_at>now() AND ss.last_activity>now()-$2*interval '1 second' RETURNING u.id`, digest(t), int(s.cfg.IdleTTL.Seconds())).Scan(&u.ID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return u, fail(401, "Session expired. Please sign in again.")
 	}
 	if err != nil {
 		return u, fail(503, "Session storage is unavailable")
 	}
-	return u, nil
+	return s.loadUser(r.Context(), u.ID)
 }
-func validPassword(p string) bool { return len(p) >= 12 && len(p) <= 72 }
 func (s *Server) signIn(q request, u User) (any, error) {
-	t := token()
-	expires := time.Now().Add(s.cfg.SessionTTL)
-	_, err := s.db.ExecContext(q.r.Context(), `INSERT INTO cc_sessions(token_hash,user_id,expires_at,ip_address) VALUES($1,$2,$3,$4)`, digest(t), u.ID, expires, remoteIP(q.r))
+	u, err := s.loadUser(q.r.Context(), u.ID)
 	if err != nil {
 		return nil, err
 	}
-	s.setCookie(q.w, "access_token", t, true, expires)
-	s.setCookie(q.w, "_csrf", s.csrfValue(), false, expires)
+	return s.issueSession(q, u, "Web")
+}
+
+func (s *Server) issueSession(q request, u User, client string) (M, error) {
+	t, refresh := token(), token()
+	expires := time.Now().Add(s.cfg.SessionTTL)
+	_, err := s.db.ExecContext(q.r.Context(), `INSERT INTO cc_sessions(token_hash,user_id,expires_at,ip_address,refresh_hash,client) VALUES($1,$2,$3,$4,$5,$6)`, digest(t), u.ID, expires, remoteIP(q.r), digest(refresh), client)
+	if err != nil {
+		return nil, err
+	}
+	if client == "Web" {
+		s.setCookie(q.w, "access_token", t, true, expires)
+		s.setCookie(q.w, "refresh_token", refresh, true, expires)
+		s.setCookie(q.w, "_csrf", s.csrfValue(), false, expires)
+	}
+	_, err = s.db.ExecContext(q.r.Context(), `UPDATE cc_users SET last_login=now() WHERE id=$1`, u.ID)
+	if err != nil {
+		return nil, err
+	}
 	s.audit(q.r.Context(), u.ID, "auth.login", "user", u.ID, M{})
-	return M{"access_token": t, "user": u.public()}, nil
+	result := M{"access_token": t, "token_type": "bearer", "expires_in": int(s.cfg.SessionTTL.Seconds()), "user": u.public()}
+	if client != "Web" {
+		result["refresh_token"] = refresh
+	}
+	return result, nil
 }
 func (s *Server) register(q request) (any, error) {
 	m, err := body(q)
@@ -95,7 +127,7 @@ func (s *Server) register(q request) (any, error) {
 		return nil, bad("A valid email and name are required")
 	}
 	if !validPassword(password) {
-		return nil, bad("Use a password between 12 and 72 bytes")
+		return nil, bad(strings.Join(passwordErrors(password), ". "))
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -116,14 +148,14 @@ func (s *Server) register(q request) (any, error) {
 	role := "attorney"
 	if count == 0 {
 		if s.cfg.BootstrapToken == "" || subtle.ConstantTimeCompare([]byte(str(m, "bootstrap_token")), []byte(s.cfg.BootstrapToken)) != 1 {
-			return nil, fail(403, "A valid installation setup token is required for the first account")
+			return nil, fail(403, "A valid bootstrap token is required for the first administrator account")
 		}
 		role = "admin"
 	} else {
 		return nil, fail(403, "Ask your administrator to invite you")
 	}
 	u := User{ID: uuid(), Email: email, Name: name, Role: role}
-	if _, err = tx.ExecContext(q.r.Context(), `INSERT INTO cc_users(id,email,name,password_hash,role) VALUES($1,$2,$3,$4,$5)`, u.ID, email, name, string(hash), role); err != nil {
+	if _, err = tx.ExecContext(q.r.Context(), `INSERT INTO cc_users(id,email,name,password_hash,role,company) VALUES($1,$2,$3,$4,$5,$6)`, u.ID, email, name, string(hash), role, str(m, "company")); err != nil {
 		return nil, bad("This email cannot be registered")
 	}
 	if err = tx.Commit(); err != nil {
@@ -159,6 +191,17 @@ func (s *Server) login(q request) (any, error) {
 	if _, err = s.db.ExecContext(q.r.Context(), "DELETE FROM cc_kv WHERE key=$1", "login:"+digest(email)); err != nil {
 		return nil, err
 	}
+	u, err = s.loadUser(q.r.Context(), u.ID)
+	if err != nil {
+		return nil, err
+	}
+	if u.MFAEnabled {
+		challenge := token()
+		if err = s.kvSet(q.r.Context(), "mfa-challenge:"+digest(challenge), M{"user_id": u.ID}, 5*time.Minute); err != nil {
+			return nil, err
+		}
+		return M{"mfa_required": true, "mfa_token": challenge}, nil
+	}
 	return s.signIn(q, u)
 }
 func (s *Server) logout(q request) (any, error) {
@@ -172,6 +215,7 @@ func (s *Server) logout(q request) (any, error) {
 		return nil, err
 	}
 	s.setCookie(q.w, "access_token", "", true, time.Unix(1, 0))
+	s.setCookie(q.w, "refresh_token", "", true, time.Unix(1, 0))
 	return M{"status": "logged_out"}, nil
 }
 func (s *Server) sessions(q request) (any, error) {
@@ -197,7 +241,7 @@ func (s *Server) changePassword(q request) (any, error) {
 		return nil, err
 	}
 	if !validPassword(str(m, "new_password")) {
-		return nil, bad("Use a password between 12 and 72 bytes")
+		return nil, bad(strings.Join(passwordErrors(str(m, "new_password")), ". "))
 	}
 	var hash string
 	if err = s.db.QueryRowContext(q.r.Context(), "SELECT password_hash FROM cc_users WHERE id=$1", q.user.ID).Scan(&hash); err != nil {
@@ -215,10 +259,16 @@ func (s *Server) changePassword(q request) (any, error) {
 		return nil, err
 	}
 	defer tx.Rollback()
-	if _, err = tx.ExecContext(q.r.Context(), `UPDATE cc_users SET password_hash=$1,must_change_password=false WHERE id=$2`, string(b), q.user.ID); err != nil {
+	if _, err = tx.ExecContext(q.r.Context(), `UPDATE cc_users SET password_hash=$1,must_change_password=false,password_changed_at=now() WHERE id=$2`, string(b), q.user.ID); err != nil {
 		return nil, err
 	}
 	if _, err = tx.ExecContext(q.r.Context(), `DELETE FROM cc_sessions WHERE user_id=$1 AND token_hash<>$2`, q.user.ID, digest(sessionToken(q.r))); err != nil {
+		return nil, err
+	}
+	if _, err = tx.ExecContext(q.r.Context(), `DELETE FROM cc_kv WHERE key LIKE 'mfa-challenge:%' AND value->>'user_id'=$1`, q.user.ID); err != nil {
+		return nil, err
+	}
+	if _, err = tx.ExecContext(q.r.Context(), `DELETE FROM cc_device_codes WHERE user_id=$1`, q.user.ID); err != nil {
 		return nil, err
 	}
 	return M{"status": "changed"}, tx.Commit()

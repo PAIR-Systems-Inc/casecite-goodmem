@@ -40,16 +40,16 @@ func (s *Server) upload(q request) (any, error) {
 	if len(data) == 0 || int64(len(data)) > s.cfg.MaxUpload {
 		return nil, bad("File is empty or exceeds the upload limit")
 	}
-	ct := mime.TypeByExtension(strings.ToLower(filepath.Ext(name)))
-	if ct == "" {
-		ct = http.DetectContentType(data)
+	ct, err := validateDocumentUpload(data, name)
+	if err != nil {
+		return nil, err
 	}
 	matter := q.r.FormValue("matter_id")
 	if err = s.checkMatter(q.r.Context(), q.user.ID, matter, false); err != nil {
 		return nil, err
 	}
 	id, mid := uuid(), uuid()
-	doc := M{"filename": name, "content_type": ct, "size": len(data), "memory_id": mid, "status": "uploading", "source": "upload", "sha256": digest(string(data))}
+	doc := M{"filename": name, "content_type": ct, "size": len(data), "memory_id": mid, "status": "processing", "source": "local", "sha256": digest(string(data)), "chunk_count": 0, "metadata": M{}, "folder_path": nil}
 	if err = s.saveObject(q.r.Context(), q.user.ID, "document", id, matter, doc); err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (s *Server) refreshDocument(ctx context.Context, doc M) M {
 		doc["indexed_at"] = nowString()
 		delete(doc, "error")
 	case "FAILED":
-		doc["status"] = "error"
+		doc["status"] = "failed"
 		doc["error"] = "GoodMem could not process this document. Delete it and upload a corrected copy."
 	default:
 		doc["status"] = "processing"
@@ -109,9 +109,33 @@ func (s *Server) listDocuments(q request) (any, error) {
 		if m := q.r.URL.Query().Get("matter_id"); m != "" && str(d, "matter_id") != m {
 			continue
 		}
-		out = append(out, s.refreshDocument(q.r.Context(), d))
+		d = s.refreshDocument(q.r.Context(), d)
+		if source := q.r.URL.Query().Get("source"); source != "" && str(d, "source") != source {
+			continue
+		}
+		if status := q.r.URL.Query().Get("status"); status != "" && str(d, "status") != status {
+			continue
+		}
+		out = append(out, d)
 	}
-	return M{"documents": out, "total": len(out)}, nil
+	total := len(out)
+	limit, offset := 100, 0
+	if raw := q.r.URL.Query().Get("limit"); raw != "" {
+		n, err := strconv.Atoi(raw)
+		if err != nil || n < 1 || n > 500 {
+			return nil, bad("limit must be 1–500")
+		}
+		limit = n
+	}
+	if raw := q.r.URL.Query().Get("offset"); raw != "" {
+		n, err := strconv.Atoi(raw)
+		if err != nil || n < 0 {
+			return nil, bad("offset must not be negative")
+		}
+		offset = n
+	}
+	out = out[min(offset, total):min(offset+limit, total)]
+	return M{"documents": out, "total": total, "count": len(out), "limit": limit, "offset": offset}, nil
 }
 func (s *Server) document(q request) (M, error) {
 	return s.getObject(q.r.Context(), q.user.ID, "document", q.r.PathValue("id"))
@@ -127,18 +151,18 @@ func (s *Server) deleteDocument(q request) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err = own(q, d); err != nil {
+	if err = s.canManageDocument(q.r.Context(), q.user.ID, d); err != nil {
 		return nil, err
 	}
 	// Delete remote content first. A retry after a SQL failure is safe (404 is success).
 	if err = s.gm.Delete(q.r.Context(), str(d, "memory_id")); err != nil {
 		return nil, err
 	}
-	_, err = s.db.ExecContext(q.r.Context(), `DELETE FROM cc_objects WHERE kind='document' AND id=$1 AND owner_id=$2`, str(d, "id"), q.user.ID)
+	_, err = s.db.ExecContext(q.r.Context(), `DELETE FROM cc_objects WHERE kind='document' AND id=$1`, str(d, "id"))
 	if err == nil {
 		s.audit(q.r.Context(), q.user.ID, "document.delete", "document", str(d, "id"), M{})
 	}
-	return M{"status": "deleted"}, err
+	return M{"status": "deleted", "id": d["id"]}, err
 }
 func (s *Server) moveDocument(q request) (any, error) {
 	d, err := s.document(q)

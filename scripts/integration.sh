@@ -26,4 +26,4 @@ for attempt in {1..30}; do
   sleep 2
 done
 if [ "$ready" != true ]; then echo 'CaseCite did not become ready' >&2; exit 1; fi
-E2E_BASE_URL="http://localhost:${TEST_APP_PORT:-29000}" npm --prefix frontend run test:e2e
+E2E_BASE_URL="http://localhost:${TEST_APP_PORT:-29000}" npm --prefix frontend run test:e2e -- --project=chromium

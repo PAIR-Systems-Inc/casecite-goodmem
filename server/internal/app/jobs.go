@@ -4,9 +4,47 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
+
+type jobOutputsKey struct{}
+type jobObject struct {
+	User, Kind, ID, Matter string
+	Data                   []byte
+}
+type jobAudit struct {
+	User, Action, Kind, ID string
+	Data                   M
+}
+type jobOutputs struct {
+	sync.Mutex
+	Objects []jobObject
+	Audits  []jobAudit
+}
+
+// Stage durable outputs until the worker commits completion while still owning
+// the job. A cancellation or lost lease must not leave a saved analysis behind.
+func (s *Server) saveJobObject(ctx context.Context, user, kind, id, matter string, data M) error {
+	if outputs, ok := ctx.Value(jobOutputsKey{}).(*jobOutputs); ok {
+		outputs.Lock()
+		defer outputs.Unlock()
+		outputs.Objects = append(outputs.Objects, jobObject{user, kind, id, matter, jsonBytes(data)})
+		return nil
+	}
+	return s.saveObject(ctx, user, kind, id, matter, data)
+}
+func (s *Server) jobAudit(ctx context.Context, user, action, kind, id string, data M) {
+	if outputs, ok := ctx.Value(jobOutputsKey{}).(*jobOutputs); ok {
+		outputs.Lock()
+		defer outputs.Unlock()
+		outputs.Audits = append(outputs.Audits, jobAudit{user, action, kind, id, data})
+		return
+	}
+	s.audit(ctx, user, action, kind, id, data)
+}
 
 func (s *Server) createJob(q request) (any, error) {
 	m, err := body(q)
@@ -18,6 +56,13 @@ func (s *Server) createJob(q request) (any, error) {
 	case "research", "analyze", "draft", "compare", "review":
 	default:
 		return nil, bad("Unknown job kind")
+	}
+	permission := "contracts.use"
+	if kind == "research" {
+		permission = "chat.use"
+	}
+	if err = permit(q, permission); err != nil {
+		return nil, err
 	}
 	prompt := str(m, "prompt")
 	if len(prompt) > 16000 {
@@ -95,10 +140,10 @@ func (s *Server) createJob(q request) (any, error) {
 }
 func (s *Server) getJob(q request) (any, error) {
 	var id, kind, status string
-	var input, result []byte
+	var input, result, progress []byte
 	var errorText *string
 	var created, updated time.Time
-	err := s.db.QueryRowContext(q.r.Context(), `SELECT id,kind,status,input,result,error,created_at,updated_at FROM cc_jobs WHERE id=$1 AND user_id=$2`, q.r.PathValue("id"), q.user.ID).Scan(&id, &kind, &status, &input, &result, &errorText, &created, &updated)
+	err := s.db.QueryRowContext(q.r.Context(), `SELECT id,kind,status,input,result,error,created_at,updated_at,progress FROM cc_jobs WHERE id=$1 AND user_id=$2`, q.r.PathValue("id"), q.user.ID).Scan(&id, &kind, &status, &input, &result, &errorText, &created, &updated, &progress)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +160,11 @@ func (s *Server) getJob(q request) (any, error) {
 			return nil, err
 		}
 	}
-	return M{"job_id": id, "kind": kind, "status": status, "result": out, "error": errorText, "created_at": created, "updated_at": updated}, nil
+	var progressData any
+	if err = json.Unmarshal(progress, &progressData); err != nil {
+		return nil, err
+	}
+	return M{"job_id": id, "kind": kind, "status": status, "result": out, "error": errorText, "created_at": created, "updated_at": updated, "progress": progressData}, nil
 }
 func (s *Server) cancelJob(q request) (any, error) {
 	r, err := s.db.ExecContext(q.r.Context(), `UPDATE cc_jobs SET status='cancelled',error='Cancelled by the user',updated_at=now() WHERE id=$1 AND user_id=$2 AND status IN ('pending','running')`, q.r.PathValue("id"), q.user.ID)
@@ -124,12 +173,20 @@ func (s *Server) cancelJob(q request) (any, error) {
 	}
 	n, _ := r.RowsAffected()
 	if n == 0 {
-		return nil, bad("Job is already finished or unavailable")
+		return nil, fail(404, "Job not found or cannot be cancelled")
 	}
-	return M{"status": "cancelled"}, nil
+	return M{"status": "cancelled", "job_id": q.r.PathValue("id")}, nil
 }
 func (s *Server) listJobs(q request) (any, error) {
-	rows, err := s.db.QueryContext(q.r.Context(), `SELECT id,kind,status,created_at FROM cc_jobs WHERE user_id=$1 AND status IN ('pending','running') ORDER BY created_at DESC LIMIT 20`, q.user.ID)
+	limit := 20
+	if raw := q.r.URL.Query().Get("limit"); raw != "" {
+		n, err := strconv.Atoi(raw)
+		if err != nil || n < 1 || n > 100 {
+			return nil, bad("limit must be between 1 and 100")
+		}
+		limit = n
+	}
+	rows, err := s.db.QueryContext(q.r.Context(), `SELECT id,kind,status,created_at FROM cc_jobs WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2`, q.user.ID, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -143,10 +200,12 @@ func (s *Server) listJobs(q request) (any, error) {
 		}
 		out = append(out, M{"job_id": id, "kind": kind, "status": status, "created_at": created})
 	}
-	return M{"jobs": out}, rows.Err()
+	return M{"jobs": out, "count": len(out)}, rows.Err()
 }
 
 func (s *Server) StartWorkers() {
+	s.wg.Add(1)
+	go s.emailWorker()
 	for i := 0; i < 2; i++ {
 		s.wg.Add(1)
 		go s.worker()
@@ -181,8 +240,14 @@ func (s *Server) worker() {
 	}
 }
 func (s *Server) runJob(id, user, kind, lease string, b []byte) {
-	ctx, cancel := context.WithTimeout(s.ctx, 10*time.Minute)
+	limit := s.cfg.JobTimeout
+	if limit <= 0 {
+		limit = time.Hour
+	}
+	ctx, cancel := context.WithTimeout(s.ctx, limit)
 	defer cancel()
+	outputs := &jobOutputs{}
+	ctx = context.WithValue(ctx, jobOutputsKey{}, outputs)
 	done := make(chan struct{})
 	heartbeatDone := make(chan struct{})
 	go func() {
@@ -232,7 +297,7 @@ func (s *Server) runJob(id, user, kind, lease string, b []byte) {
 			message = ae.message
 		}
 		if errors.Is(err, context.DeadlineExceeded) {
-			message = "The job exceeded its 10 minute limit. Narrow the request and retry."
+			message = "The job exceeded its configured time limit (" + limit.String() + "). Retry with a narrower request or ask the administrator to increase JOB_TIMEOUT_SECONDS."
 		}
 		if errors.Is(err, context.Canceled) {
 			message = "The worker stopped or the job was cancelled. Retry explicitly to avoid duplicate model charges."
@@ -252,8 +317,19 @@ func (s *Server) runJob(id, user, kind, lease string, b []byte) {
 	}
 	n, _ := r.RowsAffected()
 	if n == 1 && err == nil {
-		result["kind"] = kind
-		result["title"] = shortTitle(str(input, "prompt"), kind)
+		for _, output := range outputs.Objects {
+			_, txErr = tx.ExecContext(finish, `INSERT INTO cc_objects(kind,id,owner_id,matter_id,data) VALUES($1,$2,$3,$4,$5)`, output.Kind, output.ID, output.User, nullable(output.Matter), output.Data)
+			if txErr != nil {
+				s.log.Error("job output save failed", "error", txErr)
+				return
+			}
+		}
+		if str(result, "kind") == "" {
+			result["kind"] = kind
+		}
+		if str(result, "title") == "" {
+			result["title"] = shortTitle(fallback(str(input, "prompt"), str(input, "message")), kind)
+		}
 		result["document_ids"] = input["document_ids"]
 		result["access_document_ids"] = input["access_document_ids"]
 		result["prompt"] = input["prompt"]
@@ -266,6 +342,12 @@ func (s *Server) runJob(id, user, kind, lease string, b []byte) {
 	}
 	if txErr = tx.Commit(); txErr != nil {
 		s.log.Error("job commit failed", "error", txErr)
+		return
+	}
+	if n == 1 && err == nil {
+		for _, event := range outputs.Audits {
+			s.audit(finish, event.User, event.Action, event.Kind, event.ID, event.Data)
+		}
 	}
 }
 func (s *Server) executeSafely(ctx context.Context, user, kind string, input M) (out M, err error) {
@@ -289,7 +371,7 @@ func (s *Server) maintenance() {
 			if err != nil {
 				s.log.Error("job recovery failed", "error", err)
 			}
-			for _, query := range []string{`DELETE FROM cc_kv WHERE expires_at<now()`, `DELETE FROM cc_sessions WHERE expires_at<now()`, `DELETE FROM cc_jobs WHERE created_at<now()-interval '30 days' AND status NOT IN ('pending','running')`} {
+			for _, query := range []string{`DELETE FROM cc_kv WHERE expires_at<now()`, `DELETE FROM cc_sessions WHERE expires_at<now()`, `DELETE FROM cc_refresh_used WHERE expires_at<now()`, `DELETE FROM cc_device_codes WHERE expires_at<now()`, `DELETE FROM cc_outbox WHERE created_at<now()-interval '30 days' AND status IN ('sent','failed')`, `DELETE FROM cc_jobs WHERE created_at<now()-interval '30 days' AND status NOT IN ('pending','running')`} {
 				if _, err = s.db.ExecContext(s.ctx, query); err != nil {
 					s.log.Warn("expired state cleanup failed", "error", err)
 				}

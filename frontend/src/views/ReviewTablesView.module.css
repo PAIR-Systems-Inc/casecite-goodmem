@@ -1,0 +1,490 @@
+/* ReviewTablesView styles — the list of review tables and the create form */
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--gray-50);
+  overflow: auto;
+}
+
+.content {
+  padding: 24px 32px;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--navy-800);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--gray-500);
+  margin-top: 4px;
+  max-width: 640px;
+}
+
+.primaryBtn,
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primaryBtn {
+  background: var(--navy-700);
+  color: var(--on-secondary);
+  border: none;
+}
+
+.primaryBtn:disabled,
+.secondaryBtn:disabled {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  color: var(--gray-400);
+  cursor: not-allowed;
+}
+
+.secondaryBtn {
+  background: white;
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+}
+
+.secondaryBtn:hover:not(:disabled) {
+  background: var(--gray-100);
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  background: white;
+  color: var(--gray-600);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.iconBtn:hover:not(:disabled) {
+  background: var(--gray-100);
+}
+
+.createForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  margin-bottom: 20px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+}
+
+.formRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.formLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin-top: 4px;
+}
+
+.formNote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--gray-600);
+  padding: 8px 10px;
+  background: var(--primary-50);
+  border-radius: 8px;
+}
+
+.formActions {
+  display: flex;
+  gap: 8px;
+}
+
+.input,
+.select {
+  flex: 1 1 220px;
+  padding: 8px 10px;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--gray-900);
+  background: white;
+  min-width: 0;
+}
+
+.select {
+  flex: 0 0 120px;
+}
+
+.inputWide {
+  flex: 2 1 320px;
+}
+
+/* Schema editor */
+.schema {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.schemaEmpty {
+  font-size: 12px;
+  color: var(--gray-500);
+  padding: 10px;
+  border: 1px dashed var(--gray-300);
+  border-radius: 8px;
+}
+
+.schemaRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.schemaActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin: 18px 0 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+.card:hover,
+.card:focus-visible {
+  border-color: var(--gray-400);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  outline: none;
+}
+
+.cardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--primary-50);
+  color: var(--gray-700);
+  flex-shrink: 0;
+}
+
+.cardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardDesc {
+  font-size: 12px;
+  color: var(--gray-600);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.roleBadge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  flex-shrink: 0;
+}
+
+.roleOwner {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px;
+  color: var(--gray-500);
+  font-size: 13px;
+  text-align: center;
+  background: white;
+  border: 1px dashed var(--gray-300);
+  border-radius: 10px;
+}
+
+.empty p {
+  margin: 0;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+
+/* ── Templates strip ── */
+.templateStrip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.templateCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+}
+
+.templateCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px 12px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  text-align: left;
+  color: var(--gray-700);
+  cursor: pointer;
+}
+
+.templateCard:hover {
+  border-color: var(--navy-700);
+}
+
+.templateCardBlank {
+  border-style: dashed;
+}
+
+.templateName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.templateCount {
+  font-size: 11px;
+  color: var(--gray-500);
+}
+
+/* ── Schema editor additions ── */
+.templateRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+  background: var(--primary-50);
+  border-radius: 8px;
+}
+
+.templateRow .select {
+  flex: 0 1 260px;
+}
+
+.templateIcon {
+  color: var(--gray-500);
+}
+
+.templateHint {
+  flex-basis: 100%;
+  font-size: 11px;
+  color: var(--gray-500);
+}
+
+.schemaIndex {
+  width: 18px;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-400);
+  text-align: right;
+}
+
+.schemaRowTools {
+  display: inline-flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.templateSave {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.templateSave .input {
+  flex: 0 1 240px;
+}
+
+.templateShare {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--gray-700);
+}
+
+.primaryBtnSm,
+.secondaryBtnSm {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.primaryBtnSm {
+  background: var(--navy-700);
+  color: var(--on-secondary);
+  border: none;
+}
+
+.secondaryBtnSm {
+  background: white;
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+}
+
+.primaryBtnSm:disabled,
+.secondaryBtnSm:disabled {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  color: var(--gray-400);
+  cursor: not-allowed;
+}
+
+/* ── Card review progress ── */
+.cardProgress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.cardProgressTrack {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--gray-200);
+  overflow: hidden;
+}
+
+.cardProgressFill {
+  height: 100%;
+  background: var(--green-600, #16a34a);
+}
+
+.cardProgressLabel {
+  font-size: 11px;
+  color: var(--gray-500);
+  white-space: nowrap;
+}
+
+.cardFlag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--red-600, #dc2626);
+}

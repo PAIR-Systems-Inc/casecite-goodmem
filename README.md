@@ -1,20 +1,18 @@
 # CaseCite GoodMem
 
-A focused legal workspace with a **Go server, embedded React interface, GoodMem, and PostgreSQL**. No Python runtime, Redis, separate vector database, OCR service, file store, or frontend web server is required by CaseCite.
+A legal workspace being ported to a **Go server, the original React interface and Word add-in, GoodMem, and PostgreSQL**. The Go application embeds both interfaces. GoodMem owns document ingestion, original files, page images and retrieval; PostgreSQL replaces Redis for application state and background work.
 
-Derived from [Thomas Unise's CaseCite](https://github.com/thomasunise/casecite), under Apache-2.0. The original uses Python/FastAPI and React/TypeScript. This branch replaces the backend and narrows the interface around the core document workflows. Git history retains the original implementation.
+Derived from [Thomas Unise's CaseCite](https://github.com/thomasunise/casecite), under Apache-2.0, at commit `6605cb3474cf0c2894080af216d5fed2a81fc997`. The original uses Python/FastAPI and React/TypeScript. Git history retains that implementation.
 
-## What works
+## Implementation status
 
-- Accounts, expiring sessions, password changes, administrator-created users, account disabling, and audit events.
-- Private libraries and shared matters with owner-controlled membership.
-- Uploads stored as GoodMem memories, processing status, authenticated original downloads, text view, page-image preview, moves between matters, and deletion.
-- Research over explicitly selected documents, numbered source passages, follow-up questions, optional CourtListener search, and source-only search without a language-model call.
-- Contract reviews, drafting, two-document comparison, and multi-document review tables. Quoted text is verified deterministically against the supplied evidence.
-- Persistent, bounded Postgres jobs with cancellation, worker leases, failure recovery, and saved results.
-- Word, Markdown, JSON, and CSV exports; human approval/flagging of review cells; encrypted personal provider keys.
+**Full feature and UI parity is the requirement, and is not yet complete.** The earlier reduced-scope implementation is preserved at `checkpoint/core-goodmem-a74e09e`; its omissions are not accepted scope for this branch.
 
-This is a working implementation of that scope, **not a claim of measured 90% feature or legal-answer parity**. The deliberate omissions and architectural assessment are in [the migration analysis](docs/migration.md).
+The current port includes local identity, rotating sessions, MFA/recovery, Microsoft OIDC, device authorization, editable permissions, user administration, audit verification, matters, document folders, GoodMem storage/preview, branding and personal settings. The contract pipeline includes original deterministic extractors and clause data, grounded review, saved analyses, comparison, long drafting, reports, and tracked DOCX redlines that preserve the original package.
+
+The original React and Word add-in source and tests are restored. Saved workspace snapshots and shared conversation storage are implemented. Their presence does not establish that every backend workflow works. Connectors, cloud pickers, research/legal tools, review tables, advanced workflows and remaining administration paths still require implementation or integration work. Live provider, Word-host and full browser verification remain open.
+
+See the [parity scope](docs/parity/README.md), [source comparisons and verification evidence](docs/parity/evidence.md), and [architecture assessment](docs/migration.md). Known upstream defects should be fixed, with regression tests and documented differences, rather than reproduced.
 
 ## Use an existing GoodMem installation
 
@@ -86,23 +84,32 @@ go test ./...
 TEST_DATABASE_URL='postgres://postgres:test@localhost:5432/casecite_test?sslmode=disable' go test -race ./...
 ```
 
-A reproducible browser suite runs against **real GoodMem and Postgres**, with a deterministic local embedding/LLM fixture to avoid external API charges:
+The original frontend and add-in unit suites are retained:
+
+```bash
+npm --prefix frontend run typecheck
+npm --prefix frontend test
+npm --prefix word-addin run typecheck
+npm --prefix word-addin test
+```
+
+The integration harness uses **real GoodMem and Postgres**, with a deterministic local embedding/LLM fixture to avoid external API charges:
 
 ```bash
 cd frontend && npm ci --ignore-scripts && npx playwright install chromium && cd ..
 bash scripts/integration.sh
 ```
 
-It builds the actual Docker image, boots an isolated stack, initializes GoodMem, uploads a PDF, opens its page image and text, runs cited research and reviews, exports Word, persists review decisions, and checks session/UI behavior. The test stack is removed afterward. `KEEP_TEST_STACK=true` preserves it for inspection; ports and project name are configurable in the script. The fixture provider must never be used for real legal work.
+It builds the Docker image and tests the restored UI's sign-in, matter creation, membership display, upload/indexing, original-file and text retrieval, persistent login, Word manifest and logout. The original mocked browser suite runs separately without `E2E_BASE_URL`. Neither suite establishes full parity. The test stack is removed afterward. `KEEP_TEST_STACK=true` preserves it for inspection; ports and project name are configurable in the script. The fixture provider must never be used for real legal work.
 
 `TEST_GOODMEM_CONFIG=/path/to/test-connection.json go test -run TestRealGoodMem -v ./internal/app` separately exercises the actual GoodMem document lifecycle. Run it only against a test space; it creates and deletes its own temporary memory.
 
 ## Limits that matter
 
-Whole-document review uses the original PDF, DOCX, or text file retrieved from GoodMem. For files the Go text readers cannot decode, it falls back to **retrieved excerpts and labels that coverage**. It never treats a missing clause in excerpts as proof the full document lacks it. Review is bounded to 12 documents, 120,000 characters per document, and 180,000 total characters; larger work should be split or handled through targeted research. Uploads default to 50 MB.
+Whole-document contract analysis uses original PDF, DOCX or text content retrieved from GoodMem, or explicitly supplied document text. Unsupported extraction fails visibly; additional formats and scanned-document coverage still need work. Contract comparison accepts two to four documents. Long drafting creates a reviewable section plan and generates sections with shared definitions and instructions. Uploads default to 50 MB.
 
 GoodMem performs ingestion, chunking, embeddings, retrieval, and page rendering. Configure the space's embedders to suit the corpus; optional reranking uses `GOODMEM_RERANKER_ID`. CaseCite does not duplicate a vector index or implement its own OCR pipeline. Page images depend on GoodMem's support for the uploaded format.
 
-CourtListener integration provides search excerpts and links, not a full citator or exhaustive research workflow. Word export is a new, clean document; it does not preserve original Word formatting or produce tracked-change redlines. Review-table exports support CSV/JSON, not XLSX. Quotes matching source text does not establish that the model's interpretation is correct.
+The current CourtListener path is not yet the original full legal-research workflow. DOCX redline export preserves the original package and uses native tracked changes; other source formats require a generated DOCX. Exact quotation matches do not establish that the model's interpretation is correct. Real Word-host and visual export verification remain open.
 
 [License](LICENSE) · [Third-party notices](NOTICE.md) · [Architecture and tradeoffs](docs/migration.md) · [Operations](docs/operations.md)

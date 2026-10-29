@@ -6,11 +6,11 @@ Back up both application databases and keep their snapshots coordinated. CaseCit
 
 The fresh Compose setup creates two databases and two ordinary login roles on one PostgreSQL 17 instance with pgvector. CaseCite runs its schema creation against `DATABASE_URL`; GoodMem manages its own schema. Sharing the same instance is supported; sharing GoodMem's tables is not required. For an existing instance, create the CaseCite database/role without rerunning the fresh-volume initialization script.
 
-The initial schema uses idempotent `CREATE TABLE IF NOT EXISTS` under a migration lock. This is version 0.1 with a new database, not an upgrade path for the upstream Python schema. Future schema changes need explicit, versioned migrations before release.
+The initial schema and embedded, numbered SQL migrations run under a migration lock. `cc_migrations` records checksums, and a changed previously applied migration is rejected. This upgrades the Go schema; it is not an importer for the upstream Python database.
 
 ## Jobs and recovery
 
-Two workers per Go process claim durable jobs. At most five pending/running jobs are allowed per user. Jobs have a ten-minute budget, a 30-second lease renewed every five seconds, and explicit cancellation. A process crash leaves the lease to expire; another live instance's maintenance task marks the job failed. Users choose whether to retry. Model charges from an interrupted request cannot be reliably rolled back.
+Two workers per Go process claim durable jobs. At most five pending/running jobs are allowed per user. Jobs have a one-hour default budget (`JOB_TIMEOUT_SECONDS`), a 30-second lease renewed every five seconds, and explicit cancellation. Successful job completion and saved analysis/results commit together. A process crash leaves the lease to expire; another live instance's maintenance task marks the job failed. Users choose whether to retry. Model charges from an interrupted request cannot be reliably rolled back.
 
 Completed jobs are retained for 30 days; their saved results remain until explicitly deleted. Expired KV values and expired sessions are cleaned periodically. Audit events have no automatic deletion policy in this first version. Define a retention policy before a large rollout.
 
@@ -32,9 +32,9 @@ The current rate limiter uses the direct peer IP, ignoring forwarded headers. Be
 
 Original files and page-image bytes are fetched through authenticated CaseCite routes, keeping the GoodMem key server-side. PDF/DOCX/text extraction for whole-document tasks is a lightweight Go reader, separate from ingestion. When it cannot extract usable text, the result labels its coverage as retrieved excerpts. Exact quotation matches establish only that supplied text contains that quote.
 
-AI requests use an OpenAI-compatible `/chat/completions` endpoint with structured JSON for reviews and drafts. Providers must support the configured model, `max_completion_tokens`, and JSON response format. There are no silent retries of billable generation requests. Output-limit failures and invalid structured output fail the job with a clear error.
+AI requests currently use an OpenAI-compatible `/chat/completions` endpoint with structured JSON for reviews and drafts. Providers must support the configured model, `max_completion_tokens`, and JSON response format. Long-draft section generation retries transient failures up to three attempts; those retries may incur provider charges. Other job retries remain explicit. Output-limit failures and invalid structured output are reported, and failed reconciliation preserves the assembled sections.
 
-Exports generate new documents and do not preserve original styling, pagination, or tracked changes. CSV cells are escaped against spreadsheet formula execution. Rendered model text is plain React text, not injected HTML.
+Analysis reports and drafts generate new documents. DOCX redline exports preserve the original package and add native tracked revisions to affected runs; non-DOCX sources use a generated document. Ambiguous or unavailable anchors appear in export notes with the full proposal. Actual Word-host and visual rendering verification remain open. CSV cells are escaped against spreadsheet formula execution. Model content is not trusted HTML.
 
 ## Testing
 

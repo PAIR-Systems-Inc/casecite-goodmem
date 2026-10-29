@@ -1,0 +1,119 @@
+{
+  "vector_db": {
+    "default": "goodmem",
+    "pattern": "^goodmem$"
+  },
+  "index_name": {
+    "default": "casecite-legal-docs",
+    "min_length": 1,
+    "max_length": 100
+  },
+  "embedding_model": {
+    "default": "text-embedding-3-small",
+    "max_length": 100
+  },
+  "dimensions": {
+    "default": 1536,
+    "ge": 256,
+    "le": 4096
+  },
+  "chunk_size": {
+    "default": 512,
+    "ge": 100,
+    "le": 2000
+  },
+  "chunk_overlap": {
+    "default": 128,
+    "ge": 0,
+    "le": 500
+  },
+  "similarity_threshold": {
+    "default": 0.25,
+    "ge": 0.0,
+    "le": 1.0
+  },
+  "top_k": {
+    "default": 10,
+    "ge": 1,
+    "le": 100
+  },
+  "enable_reranking": {
+    "default": true
+  },
+  "hybrid_search": {
+    "default": true
+  },
+  "citation_verification": {
+    "default": true
+  },
+  "context_compression": {
+    "default": false
+  },
+  "query_expansion": {
+    "default": true
+  },
+  "source_tracking": {
+    "default": true
+  },
+  "llm_model": {
+    "default": "gpt-5.5",
+    "max_length": 100
+  },
+  "temperature": {
+    "default": 0.1,
+    "ge": 0.0,
+    "le": 2.0
+  },
+  "max_tokens": {
+    "default": 4096,
+    "ge": 100,
+    "le": 128000
+  },
+  "contract_playbook": {
+    "default": null,
+    "max_length": 20000
+  },
+  "practice_area": {
+    "default": null,
+    "max_length": 200
+  },
+  "practice_profile": {
+    "default": null,
+    "max_length": 20000
+  },
+  "workflow_email_notifications": {
+    "default": true
+  },
+  "custom_system_prompt": {
+    "default": null,
+    "max_length": 50000
+  },
+  "custom_grounding_rules": {
+    "default": null,
+    "max_length": 10000
+  },
+  "custom_factual_prompt": {
+    "default": null,
+    "max_length": 10000
+  },
+  "custom_research_prompt": {
+    "default": null,
+    "max_length": 10000
+  },
+  "custom_case_prompt": {
+    "default": null,
+    "max_length": 10000
+  },
+  "custom_document_prompt": {
+    "default": null,
+    "max_length": 10000
+  },
+  "custom_compliance_prompt": {
+    "default": null,
+    "max_length": 10000
+  },
+  "custom_strategy_prompt": {
+    "default": null,
+    "max_length": 10000
+  }
+}

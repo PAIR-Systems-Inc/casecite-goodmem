@@ -266,13 +266,13 @@ func (f *fixture) call(method, path, token string, in any, want int) M {
 	return out
 }
 func (f *fixture) admin() string {
-	return str(f.call("POST", "/auth/register", "bootstrap", M{"name": "Owner", "email": "owner@example.test", "password": "test-password-123", "bootstrap_token": "setup-token"}, 200), "access_token")
+	return str(f.call("POST", "/auth/register", "bootstrap", M{"name": "Owner", "email": "owner@example.test", "password": "Cedar!Trail7826", "bootstrap_token": "setup-token"}, 200), "access_token")
 }
 func (f *fixture) account(admin, email string) string {
-	f.call("POST", "/users", admin, M{"name": email, "email": email, "password": "test-password-123"}, 200)
-	r := f.call("POST", "/auth/login", "login", M{"email": email, "password": "test-password-123"}, 200)
+	f.call("POST", "/users", admin, M{"name": email, "email": email, "password": "Cedar!Trail7826"}, 200)
+	r := f.call("POST", "/auth/login", "login", M{"email": email, "password": "Cedar!Trail7826"}, 200)
 	token := str(r, "access_token")
-	f.call("POST", "/auth/change-password", token, M{"current_password": "test-password-123", "new_password": "new-password-456"}, 200)
+	f.call("POST", "/auth/change-password", token, M{"current_password": "Cedar!Trail7826", "new_password": "River!Grove4928"}, 200)
 	return token
 }
 func (f *fixture) upload(token, matter, name, content string) M {
@@ -383,7 +383,7 @@ func TestAtomicKVQueueAndCSRF(t *testing.T) {
 	f := newFixture(t)
 	owner := f.admin()
 	f.call("POST", "/matters", "", M{"name": "csrf test"}, 403)
-	f.call("POST", "/auth/register", "register", M{"name": "Intruder", "email": "intruder@example.test", "password": "password-1234"}, 403)
+	f.call("POST", "/auth/register", "register", M{"name": "Intruder", "email": "intruder@example.test", "password": "Cedar!Trail7826"}, 403)
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	wins := 0

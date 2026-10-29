@@ -9,16 +9,17 @@ import (
 )
 
 func (s *Server) userSettings(ctx context.Context, user string) (M, error) {
-	m := M{}
-	err := s.kvGet(ctx, "settings:"+user, &m)
+	m := defaultRAGSettings()
+	stored := M{}
+	err := s.kvGet(ctx, "settings:"+user, &stored)
 	if err != nil && !notFound(err) {
 		return nil, err
 	}
-	if str(m, "llm_model") == "" {
-		m["llm_model"] = s.cfg.LLMModel
+	for k, v := range stored {
+		m[k] = v
 	}
-	if number(m, "top_k", 0) == 0 {
-		m["top_k"] = 8
+	if str(stored, "llm_model") == "" {
+		m["llm_model"] = s.cfg.LLMModel
 	}
 	m["vector_db"] = "goodmem"
 	return m, nil
@@ -200,7 +201,7 @@ func (s *Server) updateUser(q request) (any, error) {
 	return M{"status": "updated"}, nil
 }
 func (s *Server) auditEvents(q request) (any, error) {
-	if err := admin(q); err != nil {
+	if err := permit(q, "admin.audit"); err != nil {
 		return nil, err
 	}
 	rows, err := s.db.QueryContext(q.r.Context(), `SELECT id,COALESCE(user_id,''),event_type,resource_type,resource_id,created_at FROM cc_audit ORDER BY id DESC LIMIT 200`)

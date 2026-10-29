@@ -38,6 +38,9 @@ func OpenDB(ctx context.Context, url string) (*sql.DB, error) {
 		_, err = tx.ExecContext(ctx, schema)
 	}
 	if err == nil {
+		err = migrate(ctx, tx)
+	}
+	if err == nil {
 		err = tx.Commit()
 	}
 	if err != nil {
@@ -173,7 +176,7 @@ func (s *Server) countWindow(ctx context.Context, key string, ttl time.Duration)
 	return n, err
 }
 func (s *Server) audit(ctx context.Context, u, event, kind, id string, details M) {
-	if _, err := s.db.ExecContext(ctx, `INSERT INTO cc_audit(user_id,event_type,resource_type,resource_id,details) VALUES($1,$2,$3,$4,$5)`, nullable(u), event, kind, id, jsonBytes(details)); err != nil {
+	if err := s.appendAudit(ctx, u, event, kind, id, details); err != nil {
 		s.log.Error("audit write failed", "error", err)
 	}
 }

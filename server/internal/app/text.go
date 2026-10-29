@@ -54,39 +54,18 @@ func extractText(data []byte, filename string) (text string, err error) {
 				return "", err
 			}
 			defer r.Close()
-			d := xml.NewDecoder(io.LimitReader(r, 16<<20))
-			var b strings.Builder
-			inText := false
-			for {
-				t, err := d.Token()
-				if err == io.EOF {
-					break
-				}
-				if err != nil {
-					return "", err
-				}
-				switch v := t.(type) {
-				case xml.StartElement:
-					if v.Name.Local == "t" {
-						inText = true
-					}
-					if v.Name.Local == "tab" {
-						b.WriteByte('\t')
-					}
-				case xml.EndElement:
-					if v.Name.Local == "t" {
-						inText = false
-					}
-					if v.Name.Local == "p" {
-						b.WriteByte('\n')
-					}
-				case xml.CharData:
-					if inText {
-						b.Write(v)
-					}
-				}
+			raw, err := io.ReadAll(io.LimitReader(r, (16<<20)+1))
+			if err != nil {
+				return "", err
 			}
-			return b.String(), nil
+			if len(raw) > 16<<20 {
+				return "", errors.New("DOCX text exceeds the 16 MB limit")
+			}
+			root, err := readWordXML(raw)
+			if err != nil {
+				return "", err
+			}
+			return wordVisibleText(root, nil, 0), nil
 		}
 		return "", errors.New("DOCX document body was not found")
 	}
@@ -105,7 +84,11 @@ func wordDocument(title, text string) ([]byte, error) {
 	}
 	var body strings.Builder
 	body.WriteString(`<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>`)
-	for _, line := range strings.Split(title+"\n\n"+text, "\n") {
+	content := text
+	if title != "" {
+		content = title + "\n\n" + text
+	}
+	for _, line := range strings.Split(content, "\n") {
 		var esc bytes.Buffer
 		_ = xml.EscapeText(&esc, []byte(line))
 		body.WriteString(`<w:p><w:r><w:t xml:space="preserve">` + esc.String() + `</w:t></w:r></w:p>`)

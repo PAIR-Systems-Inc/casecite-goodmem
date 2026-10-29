@@ -1,0 +1,424 @@
+{
+  "GET /api/v1/admin/audit/logs": [
+    "admin.audit"
+  ],
+  "GET /api/v1/admin/audit/verify": [
+    "admin.audit"
+  ],
+  "GET /api/v1/admin/audit/export": [
+    "admin.audit"
+  ],
+  "PUT /api/v1/branding": [
+    "admin.settings"
+  ],
+  "POST /api/v1/branding/logo": [
+    "admin.settings"
+  ],
+  "POST /api/v1/branding/reset": [
+    "admin.settings"
+  ],
+  "POST /api/v1/chat/export": [
+    "chat.use"
+  ],
+  "POST /api/v1/chat": [
+    "chat.use"
+  ],
+  "GET /api/v1/chat/sessions": [
+    "chat.use"
+  ],
+  "POST /api/v1/chat/sessions": [
+    "chat.use"
+  ],
+  "GET /api/v1/chat/sessions/{}": [
+    "chat.use"
+  ],
+  "DELETE /api/v1/chat/sessions/{}": [
+    "chat.use"
+  ],
+  "GET /api/v1/connectors": [
+    "connectors.manage"
+  ],
+  "GET /api/v1/connectors/{}/status": [
+    "connectors.manage"
+  ],
+  "GET /api/v1/connectors/{}/auth": [
+    "connectors.manage"
+  ],
+  "POST /api/v1/connectors/{}/disconnect": [
+    "connectors.manage"
+  ],
+  "POST /api/v1/connectors/{}/sync": [
+    "connectors.manage"
+  ],
+  "GET /api/v1/connectors/{}/sync/{}": [
+    "connectors.manage"
+  ],
+  "POST /api/v1/contract-analysis/analyze": [
+    "contracts.use"
+  ],
+  "POST /api/v1/contract-analysis/chat": [
+    "contracts.use"
+  ],
+  "POST /api/v1/contract-analysis/draft/plan": [
+    "contracts.use"
+  ],
+  "POST /api/v1/contract-analysis/draft/generate": [
+    "contracts.use"
+  ],
+  "GET /api/v1/contract-analysis/analyses": [
+    "contracts.use"
+  ],
+  "GET /api/v1/contract-analysis/analyses/{}": [
+    "contracts.use"
+  ],
+  "DELETE /api/v1/contract-analysis/analyses/{}": [
+    "contracts.use"
+  ],
+  "GET /api/v1/contract-analysis/analyses/{}/export": [
+    "contracts.use"
+  ],
+  "POST /api/v1/contract-analysis/practice-profile": [
+    "contracts.use"
+  ],
+  "POST /api/v1/contract-analysis/compare": [
+    "contracts.use"
+  ],
+  "POST /api/v1/contract-analysis/draft-export": [
+    "contracts.use"
+  ],
+  "POST /api/v1/contract-analysis/analyses/{}/redline-export": [
+    "contracts.use"
+  ],
+  "GET /api/v1/contract-analysis/analyses/{}/redline-export": [
+    "contracts.use"
+  ],
+  "POST /api/v1/deep-research/plan": [
+    "chat.use"
+  ],
+  "POST /api/v1/deep-research/run": [
+    "chat.use"
+  ],
+  "GET /api/v1/deep-research": [
+    "chat.use"
+  ],
+  "GET /api/v1/deep-research/{}": [
+    "chat.use"
+  ],
+  "DELETE /api/v1/deep-research/{}": [
+    "chat.use"
+  ],
+  "POST /api/v1/documents": [
+    "documents.upload"
+  ],
+  "GET /api/v1/documents": [
+    "documents.view"
+  ],
+  "GET /api/v1/documents/tree": [
+    "documents.view"
+  ],
+  "GET /api/v1/documents/folders": [
+    "documents.view"
+  ],
+  "POST /api/v1/documents/folders": [
+    "documents.upload"
+  ],
+  "DELETE /api/v1/documents/folders": [
+    "documents.delete"
+  ],
+  "POST /api/v1/documents/{}/move": [
+    "documents.upload"
+  ],
+  "GET /api/v1/documents/{}/content": [
+    "documents.view"
+  ],
+  "GET /api/v1/documents/{}/file": [
+    "documents.view"
+  ],
+  "GET /api/v1/documents/{}": [
+    "documents.view"
+  ],
+  "DELETE /api/v1/documents/{}": [
+    "documents.delete"
+  ],
+  "GET /api/v1/admin/integrations/courtlistener": [
+    "admin.settings"
+  ],
+  "POST /api/v1/admin/integrations/courtlistener": [
+    "admin.settings"
+  ],
+  "DELETE /api/v1/admin/integrations/courtlistener": [
+    "admin.settings"
+  ],
+  "GET /api/v1/admin/integrations/connectors": [
+    "admin.settings"
+  ],
+  "POST /api/v1/admin/integrations/connectors/{}": [
+    "admin.settings"
+  ],
+  "DELETE /api/v1/admin/integrations/connectors/{}": [
+    "admin.settings"
+  ],
+  "GET /api/v1/admin/integrations/local-llm": [
+    "admin.settings"
+  ],
+  "POST /api/v1/admin/integrations/local-llm": [
+    "admin.settings"
+  ],
+  "DELETE /api/v1/admin/integrations/local-llm": [
+    "admin.settings"
+  ],
+  "GET /api/v1/judge-intel/search": [
+    "judge_intel.use"
+  ],
+  "POST /api/v1/judge-intel/build/{}": [
+    "judge_intel.use"
+  ],
+  "GET /api/v1/judge-intel/profile/{}": [
+    "judge_intel.use"
+  ],
+  "GET /api/v1/judge-intel/profile/{}/opinions": [
+    "judge_intel.use"
+  ],
+  "GET /api/v1/judge-intel/profile/{}/opinion/{}": [
+    "judge_intel.use"
+  ],
+  "GET /api/v1/judge-intel/profile/{}/stats": [
+    "judge_intel.use"
+  ],
+  "GET /api/v1/judge-intel/profile/{}/metrics": [
+    "judge_intel.use"
+  ],
+  "POST /api/v1/legal-docs/extract-text": [
+    "documents.view",
+    "contracts.use"
+  ],
+  "POST /api/v1/legal-docs/convert-to-pdf": [
+    "documents.view",
+    "contracts.use"
+  ],
+  "GET /api/v1/matters/all": [
+    "admin.users"
+  ],
+  "POST /api/v1/matters": [
+    "matters.manage"
+  ],
+  "POST /api/v1/matters/{}/members": [
+    "matters.manage"
+  ],
+  "DELETE /api/v1/matters/{}/members/{}": [
+    "matters.manage"
+  ],
+  "DELETE /api/v1/matters/{}": [
+    "matters.manage"
+  ],
+  "PATCH /api/v1/matters/{}": [
+    "matters.manage"
+  ],
+  "POST /api/v1/matters/{}/transfer": [
+    "matters.manage"
+  ],
+  "POST /api/v1/matters/{}/documents/move": [
+    "documents.upload"
+  ],
+  "POST /api/v1/pickers/google/import": [
+    "documents.upload"
+  ],
+  "POST /api/v1/pickers/microsoft/import": [
+    "documents.upload"
+  ],
+  "POST /api/v1/pickers/box/import": [
+    "documents.upload"
+  ],
+  "POST /api/v1/pickers/dropbox/import": [
+    "documents.upload"
+  ],
+  "GET /api/v1/review-tables/schemas": [
+    "contracts.use"
+  ],
+  "POST /api/v1/review-tables/schemas": [
+    "contracts.use"
+  ],
+  "PATCH /api/v1/review-tables/schemas/{}": [
+    "contracts.use"
+  ],
+  "DELETE /api/v1/review-tables/schemas/{}": [
+    "contracts.use"
+  ],
+  "GET /api/v1/review-tables": [
+    "contracts.use"
+  ],
+  "POST /api/v1/review-tables": [
+    "contracts.use"
+  ],
+  "GET /api/v1/review-tables/{}": [
+    "contracts.use"
+  ],
+  "PATCH /api/v1/review-tables/{}": [
+    "contracts.use"
+  ],
+  "DELETE /api/v1/review-tables/{}": [
+    "contracts.use"
+  ],
+  "GET /api/v1/review-tables/{}/estimate": [
+    "contracts.use"
+  ],
+  "POST /api/v1/review-tables/{}/run": [
+    "contracts.use"
+  ],
+  "GET /api/v1/review-tables/{}/runs": [
+    "contracts.use"
+  ],
+  "PATCH /api/v1/review-tables/{}/cells/{}/{}": [
+    "contracts.use"
+  ],
+  "POST /api/v1/review-tables/{}/cells/bulk": [
+    "contracts.use"
+  ],
+  "POST /api/v1/review-tables/{}/documents": [
+    "contracts.use"
+  ],
+  "DELETE /api/v1/review-tables/{}/documents/{}": [
+    "contracts.use"
+  ],
+  "GET /api/v1/review-tables/{}/documents/{}/text": [
+    "contracts.use"
+  ],
+  "GET /api/v1/review-tables/{}/export": [
+    "contracts.use"
+  ],
+  "POST /api/v1/settings/reindex": [
+    "documents.upload"
+  ],
+  "POST /api/v1/settings/clear": [
+    "documents.delete"
+  ],
+  "POST /api/v1/strategy/brief": [
+    "chat.use"
+  ],
+  "GET /api/v1/tools/cases/search": [
+    "tools.research"
+  ],
+  "GET /api/v1/tools/cases/{}": [
+    "tools.research"
+  ],
+  "GET /api/v1/tools/validate-citation": [
+    "tools.research"
+  ],
+  "GET /api/v1/tools/precedents": [
+    "tools.research"
+  ],
+  "GET /api/v1/tools/dockets": [
+    "tools.research"
+  ],
+  "GET /api/v1/tools/dockets/{}": [
+    "tools.research"
+  ],
+  "GET /api/v1/tools/oral-arguments": [
+    "tools.research"
+  ],
+  "GET /api/v1/tools/trends": [
+    "tools.research"
+  ],
+  "GET /api/v1/admin/users": [
+    "admin.users"
+  ],
+  "POST /api/v1/admin/users/invite": [
+    "admin.users"
+  ],
+  "GET /api/v1/admin/users/roles": [
+    "admin.users"
+  ],
+  "PUT /api/v1/admin/users/roles/{}": [
+    "admin.users"
+  ],
+  "POST /api/v1/admin/users/roles/reset": [
+    "admin.users"
+  ],
+  "PATCH /api/v1/admin/users/{}/role": [
+    "admin.users"
+  ],
+  "PATCH /api/v1/admin/users/{}/active": [
+    "admin.users"
+  ],
+  "POST /api/v1/admin/users/{}/sessions/revoke": [
+    "admin.users"
+  ],
+  "POST /api/v1/admin/users/{}/mfa/reset": [
+    "admin.users"
+  ],
+  "GET /api/v1/admin/users/{}/export": [
+    "admin.users"
+  ],
+  "DELETE /api/v1/admin/users/{}": [
+    "admin.users"
+  ],
+  "GET /api/v1/workflows": [
+    "contracts.use"
+  ],
+  "POST /api/v1/workflows": [
+    "contracts.use"
+  ],
+  "POST /api/v1/workflows/validate": [
+    "contracts.use"
+  ],
+  "GET /api/v1/workflows/templates": [
+    "contracts.use"
+  ],
+  "GET /api/v1/workflows/runs": [
+    "contracts.use"
+  ],
+  "POST /api/v1/workflows/from-template/{}": [
+    "contracts.use"
+  ],
+  "GET /api/v1/workflows/{}": [
+    "contracts.use"
+  ],
+  "PATCH /api/v1/workflows/{}": [
+    "contracts.use"
+  ],
+  "DELETE /api/v1/workflows/{}": [
+    "contracts.use"
+  ],
+  "POST /api/v1/workflows/{}/duplicate": [
+    "contracts.use"
+  ],
+  "POST /api/v1/workflows/{}/archive": [
+    "contracts.use"
+  ],
+  "POST /api/v1/workflows/{}/unarchive": [
+    "contracts.use"
+  ],
+  "GET /api/v1/workflows/{}/versions": [
+    "contracts.use"
+  ],
+  "GET /api/v1/workflows/{}/versions/{}": [
+    "contracts.use"
+  ],
+  "POST /api/v1/workflows/{}/versions/{}/restore": [
+    "contracts.use"
+  ],
+  "POST /api/v1/workflows/{}/run": [
+    "contracts.use"
+  ],
+  "GET /api/v1/workflows/{}/runs": [
+    "contracts.use"
+  ],
+  "GET /api/v1/workflows/{}/runs/{}": [
+    "contracts.use"
+  ],
+  "POST /api/v1/workflows/{}/runs/{}/resume": [
+    "contracts.use"
+  ],
+  "POST /api/v1/workflows/{}/runs/{}/steps/{}/retry": [
+    "contracts.use"
+  ],
+  "POST /api/v1/workflows/{}/runs/{}/steps/{}/skip": [
+    "contracts.use"
+  ],
+  "POST /api/v1/workflows/{}/runs/{}/approve": [
+    "contracts.use"
+  ],
+  "POST /api/v1/workflows/{}/runs/{}/reject": [
+    "contracts.use"
+  ]
+}

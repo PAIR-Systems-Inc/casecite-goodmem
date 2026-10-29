@@ -5,12 +5,21 @@ RUN npm ci --ignore-scripts
 COPY frontend/ ./
 RUN npm run build
 
+FROM node:24-bookworm-slim AS wordaddin
+WORKDIR /addin
+COPY word-addin/package*.json ./
+RUN npm ci --ignore-scripts
+COPY word-addin/ ./
+RUN npm run build -- --base /word-addin/
+
 FROM golang:1.26.10-alpine AS server
 WORKDIR /src
 COPY server/go.mod server/go.sum ./
 RUN go mod download
 COPY server/ ./
 COPY --from=frontend /web/dist/ ./web/assets/
+COPY --from=wordaddin /addin/dist/ ./web/assets/word-addin/
+COPY word-addin/manifest.xml ./web/assets/word-addin/manifest.template.xml
 COPY NOTICE.md ./web/assets/third-party-notices.txt
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /casecite ./cmd/casecite
 
