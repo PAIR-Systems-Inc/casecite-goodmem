@@ -61,11 +61,14 @@ export function ReviewSchemaEditor({
     onChange(replace ? t.fields.map((f) => ({ name: f.name, description: f.description || '', type: f.type })) : mergeTemplateFields(fields, t.fields));
   };
   const submitSave = async () => {
-    if (!onSaveTemplate) return;
+    if (!onSaveTemplate || saving || disabled || !templateName.trim()) return;
     setSaving(true);
-    const result = await onSaveTemplate(templateName, share);
-    setSaving(false);
-    if (result) { setSaveOpen(false); setTemplateName(''); }
+    try {
+      const result = await onSaveTemplate(templateName.trim(), share);
+      if (result) { setSaveOpen(false); setTemplateName(''); }
+    } finally {
+      setSaving(false);
+    }
   };
   const selectedTemplate = templates?.find((t) => t.id === templateId);
 
@@ -159,18 +162,18 @@ export function ReviewSchemaEditor({
         )}
       </div>
       {saveOpen && (
-        <form className={styles.templateSave} onSubmit={(e) => { e.preventDefault(); void submitSave(); }}>
-          <input className={styles.input} placeholder="Template name" value={templateName} onChange={(e) => setTemplateName(e.target.value)} aria-label="Template name" autoFocus />
+        <div className={styles.templateSave} role="group" aria-label="Save review template">
+          <input className={styles.input} placeholder="Template name" value={templateName} onChange={(e) => setTemplateName(e.target.value)} aria-label="Template name" autoFocus onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); void submitSave(); } }} />
           {canShareWithMatter && (
             <label className={styles.templateShare}>
               <input type="checkbox" checked={share} onChange={(e) => setShare(e.target.checked)} /> Share with the active matter
             </label>
           )}
-          <button type="submit" className={styles.primaryBtnSm} disabled={saving || !templateName.trim()}>
+          <button type="button" className={styles.primaryBtnSm} onClick={() => void submitSave()} disabled={saving || !templateName.trim()}>
             <Icon name={saving ? 'Loader2' : 'Check'} size={12} className={saving ? styles.spin : undefined} /> Save
           </button>
           <button type="button" className={styles.secondaryBtnSm} onClick={() => setSaveOpen(false)}>Cancel</button>
-        </form>
+        </div>
       )}
     </div>
   );

@@ -26,7 +26,8 @@ be fixed; intentional differences need tests and an explanation.
 | Sessions and expiring state | Redis and application coordination | PostgreSQL sessions, expiring JSONB records, counters and one-time tokens |
 | Background work | Python task machinery | PostgreSQL queue, worker leases, progress and cancellation; workers run inside Go |
 | Authentication | Local login, Microsoft SSO, MFA and device flow | Same required capabilities, with Go protocol and integration tests |
-| Connectors, legal tools, review tables and workflows | Original implementations | Required ports; unfinished work remains explicitly tracked |
+| Tabular review | Python extraction, review persistence and workbook generation | Go extraction with verified quotes, PostgreSQL review/history, original grid UI and cited workbook exports |
+| Connectors, legal tools and workflows | Original implementations | Required ports; unfinished work remains explicitly tracked |
 | Tracked DOCX export | Reconstructed plain-text document with revisions | Edits to the original OOXML package, retaining unrelated formatting and parts |
 
 The bundled steady-state deployment has three services: CaseCite, GoodMem and
@@ -68,8 +69,10 @@ not eliminate provider charges or make extraction/semantic quality automatic.
 Sharing PostgreSQL also shares resource contention and failure modes.
 
 Durable jobs use `FOR UPDATE SKIP LOCKED`, short renewable leases, progress,
-explicit cancellation and bounded concurrency. Application results commit with
-successful job completion. Expired worker leases fail visibly instead of
+explicit cancellation and bounded concurrency. Saved analyses commit with
+successful job completion. Review tables retain completed document rows during
+a run, as upstream does; each row write checks the current job lease, table
+scope and permissions. Expired worker leases fail visibly instead of
 silently replaying potentially billable model calls.
 
 An existing Python database is not migrated by pointing this binary at it.

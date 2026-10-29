@@ -1,0 +1,342 @@
+[
+  {
+    "id": "builtin:nda",
+    "name": "Non-disclosure agreement",
+    "description": "The terms that decide whether an NDA is acceptable: who is bound, for how long, and what is carved out.",
+    "fields": [
+      {
+        "key": "parties",
+        "name": "Parties",
+        "type": "text",
+        "description": "The disclosing and receiving parties as named in the preamble"
+      },
+      {
+        "key": "effective_date",
+        "name": "Effective date",
+        "type": "date",
+        "description": "The date the agreement takes effect"
+      },
+      {
+        "key": "mutual_or_one_way",
+        "name": "Mutual or one-way",
+        "type": "text",
+        "description": "Whether both parties disclose (mutual) or only one"
+      },
+      {
+        "key": "purpose",
+        "name": "Purpose",
+        "type": "text",
+        "description": "The stated purpose for which confidential information may be used"
+      },
+      {
+        "key": "confidentiality_term",
+        "name": "Confidentiality term",
+        "type": "duration",
+        "description": "How long the confidentiality obligations last after disclosure or termination"
+      },
+      {
+        "key": "agreement_term",
+        "name": "Agreement term",
+        "type": "duration",
+        "description": "How long the agreement itself runs"
+      },
+      {
+        "key": "standard_exclusions",
+        "name": "Standard exclusions",
+        "type": "boolean",
+        "description": "Are the usual carve-outs present (public domain, already known, independently developed, third-party source)?"
+      },
+      {
+        "key": "compelled_disclosure",
+        "name": "Compelled disclosure",
+        "type": "boolean",
+        "description": "May information be disclosed when required by law or court order, with notice?"
+      },
+      {
+        "key": "residuals_clause",
+        "name": "Residuals clause",
+        "type": "boolean",
+        "description": "May the recipient use information retained in unaided memory?"
+      },
+      {
+        "key": "return_or_destruction",
+        "name": "Return or destruction",
+        "type": "text",
+        "description": "What must happen to the information on request or termination"
+      },
+      {
+        "key": "governing_law",
+        "name": "Governing law",
+        "type": "text",
+        "description": "The state or country whose law governs"
+      },
+      {
+        "key": "injunctive_relief",
+        "name": "Injunctive relief",
+        "type": "boolean",
+        "description": "Does the agreement acknowledge that equitable relief is available for breach?"
+      }
+    ],
+    "is_builtin": true,
+    "matter_id": null,
+    "owner_id": null,
+    "role": "builtin",
+    "created_at": null,
+    "updated_at": null
+  },
+  {
+    "id": "builtin:msa",
+    "name": "Master services agreement",
+    "description": "Commercial, risk and exit terms of a services agreement.",
+    "fields": [
+      {
+        "key": "parties",
+        "name": "Parties",
+        "type": "text",
+        "description": "The customer and the provider as named in the preamble"
+      },
+      {
+        "key": "effective_date",
+        "name": "Effective date",
+        "type": "date",
+        "description": "The date the agreement takes effect"
+      },
+      {
+        "key": "initial_term",
+        "name": "Initial term",
+        "type": "duration",
+        "description": "The length of the initial term"
+      },
+      {
+        "key": "auto_renewal",
+        "name": "Auto-renewal",
+        "type": "boolean",
+        "description": "Does the agreement renew automatically?"
+      },
+      {
+        "key": "termination_for_convenience_notice",
+        "name": "Termination for convenience notice",
+        "type": "duration",
+        "description": "Notice required to terminate without cause, and by whom"
+      },
+      {
+        "key": "payment_terms",
+        "name": "Payment terms",
+        "type": "text",
+        "description": "When invoices are due, e.g. net 30, and any late-payment interest"
+      },
+      {
+        "key": "liability_cap",
+        "name": "Liability cap",
+        "type": "money",
+        "description": "The cap on each party's aggregate liability (amount or formula, e.g. fees paid in the prior 12 months)"
+      },
+      {
+        "key": "liability_cap_exclusions",
+        "name": "Liability cap exclusions",
+        "type": "text",
+        "description": "What is carved out of the cap (confidentiality, indemnities, gross negligence, IP)"
+      },
+      {
+        "key": "indemnities",
+        "name": "Indemnities",
+        "type": "text",
+        "description": "Who indemnifies whom, and for what (IP infringement, third-party claims, data breach)"
+      },
+      {
+        "key": "service_levels",
+        "name": "Service levels",
+        "type": "text",
+        "description": "Any uptime or response commitments and the remedy for missing them"
+      },
+      {
+        "key": "ip_ownership",
+        "name": "IP ownership",
+        "type": "text",
+        "description": "Who owns deliverables and work product"
+      },
+      {
+        "key": "governing_law",
+        "name": "Governing law",
+        "type": "text",
+        "description": "The state or country whose law governs"
+      }
+    ],
+    "is_builtin": true,
+    "matter_id": null,
+    "owner_id": null,
+    "role": "builtin",
+    "created_at": null,
+    "updated_at": null
+  },
+  {
+    "id": "builtin:lease",
+    "name": "Commercial lease",
+    "description": "The economic and control terms of a commercial lease.",
+    "fields": [
+      {
+        "key": "landlord",
+        "name": "Landlord",
+        "type": "text",
+        "description": "The landlord as named in the lease"
+      },
+      {
+        "key": "tenant",
+        "name": "Tenant",
+        "type": "text",
+        "description": "The tenant as named in the lease"
+      },
+      {
+        "key": "premises",
+        "name": "Premises",
+        "type": "text",
+        "description": "The address and area of the leased premises"
+      },
+      {
+        "key": "commencement_date",
+        "name": "Commencement date",
+        "type": "date",
+        "description": "The date the term begins"
+      },
+      {
+        "key": "lease_term",
+        "name": "Lease term",
+        "type": "duration",
+        "description": "The length of the initial term"
+      },
+      {
+        "key": "base_rent",
+        "name": "Base rent",
+        "type": "money",
+        "description": "The base rent and the period it is stated for (per month or per year)"
+      },
+      {
+        "key": "rent_escalation",
+        "name": "Rent escalation",
+        "type": "text",
+        "description": "How and when base rent increases (fixed percentage, CPI, stepped)"
+      },
+      {
+        "key": "security_deposit",
+        "name": "Security deposit",
+        "type": "money",
+        "description": "The security deposit amount"
+      },
+      {
+        "key": "renewal_options",
+        "name": "Renewal options",
+        "type": "text",
+        "description": "Any option to renew, its length and the notice required"
+      },
+      {
+        "key": "permitted_use",
+        "name": "Permitted use",
+        "type": "text",
+        "description": "The use the premises may be put to"
+      },
+      {
+        "key": "assignment_and_subletting",
+        "name": "Assignment and subletting",
+        "type": "text",
+        "description": "Whether assignment or subletting is permitted and on what consent"
+      },
+      {
+        "key": "repair_and_maintenance",
+        "name": "Repair and maintenance",
+        "type": "text",
+        "description": "Which party is responsible for repairs, structure, HVAC and common areas"
+      }
+    ],
+    "is_builtin": true,
+    "matter_id": null,
+    "owner_id": null,
+    "role": "builtin",
+    "created_at": null,
+    "updated_at": null
+  },
+  {
+    "id": "builtin:employment",
+    "name": "Employment agreement",
+    "description": "Compensation, restrictive covenants and exit terms of an employment agreement.",
+    "fields": [
+      {
+        "key": "employee",
+        "name": "Employee",
+        "type": "text",
+        "description": "The employee's name"
+      },
+      {
+        "key": "employer",
+        "name": "Employer",
+        "type": "text",
+        "description": "The employing entity"
+      },
+      {
+        "key": "position",
+        "name": "Position",
+        "type": "text",
+        "description": "The title or role"
+      },
+      {
+        "key": "start_date",
+        "name": "Start date",
+        "type": "date",
+        "description": "The employment start date"
+      },
+      {
+        "key": "base_salary",
+        "name": "Base salary",
+        "type": "money",
+        "description": "The base salary and its period"
+      },
+      {
+        "key": "bonus",
+        "name": "Bonus",
+        "type": "text",
+        "description": "Any bonus, its target and the conditions for earning it"
+      },
+      {
+        "key": "equity",
+        "name": "Equity",
+        "type": "text",
+        "description": "Any equity grant, its size and vesting schedule"
+      },
+      {
+        "key": "non_compete",
+        "name": "Non-compete",
+        "type": "duration",
+        "description": "The length of any post-employment non-compete, and its scope"
+      },
+      {
+        "key": "non_solicit",
+        "name": "Non-solicit",
+        "type": "duration",
+        "description": "The length of any non-solicitation of employees or customers"
+      },
+      {
+        "key": "termination_notice",
+        "name": "Termination notice",
+        "type": "duration",
+        "description": "Notice required to terminate, by either side"
+      },
+      {
+        "key": "severance",
+        "name": "Severance",
+        "type": "text",
+        "description": "Severance payable on termination without cause, and any conditions (release, good reason)"
+      },
+      {
+        "key": "governing_law",
+        "name": "Governing law",
+        "type": "text",
+        "description": "The state or country whose law governs"
+      }
+    ],
+    "is_builtin": true,
+    "matter_id": null,
+    "owner_id": null,
+    "role": "builtin",
+    "created_at": null,
+    "updated_at": null
+  }
+]

@@ -19,6 +19,7 @@ type Config struct {
 	Debug                                                      bool
 	SessionTTL, IdleTTL                                        time.Duration
 	JobTimeout                                                 time.Duration
+	ReviewConcurrency                                          int
 	MaxUpload                                                  int64
 	RequireMFA                                                 bool
 	AuditFailClosed                                            bool
@@ -44,6 +45,7 @@ func LoadConfig() (Config, error) {
 		CourtListenerToken: os.Getenv("COURTLISTENER_API_TOKEN"), Debug: env("DEBUG", "false") == "true",
 		SessionTTL: 8 * time.Hour, IdleTTL: 2 * time.Hour, MaxUpload: 50 << 20,
 		JobTimeout:        time.Hour,
+		ReviewConcurrency: 4,
 		RequireMFA:        env("REQUIRE_MFA", "false") == "true",
 		AuditFailClosed:   env("AUDIT_FAIL_CLOSED", "false") == "true",
 		MicrosoftClientID: os.Getenv("MICROSOFT_CLIENT_ID"), MicrosoftTenantID: os.Getenv("MICROSOFT_TENANT_ID"), MicrosoftRedirectURI: os.Getenv("MICROSOFT_REDIRECT_URI"),
@@ -118,6 +120,13 @@ func LoadConfig() (Config, error) {
 			return c, errors.New("JOB_TIMEOUT_SECONDS must be between 1 and 86400")
 		}
 		c.JobTimeout = time.Duration(n) * time.Second
+	}
+	if raw := os.Getenv("REVIEW_TABLE_CONCURRENCY"); raw != "" {
+		n, err := strconv.Atoi(raw)
+		if err != nil || n < 1 || n > 32 {
+			return c, errors.New("REVIEW_TABLE_CONCURRENCY must be between 1 and 32")
+		}
+		c.ReviewConcurrency = n
 	}
 	return c, nil
 }

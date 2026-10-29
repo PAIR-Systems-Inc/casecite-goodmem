@@ -11,6 +11,8 @@ import (
 )
 
 type jobOutputsKey struct{}
+type jobLeaseKey struct{}
+type jobLease struct{ ID, Token string }
 type jobObject struct {
 	User, Kind, ID, Matter string
 	Data                   []byte
@@ -248,6 +250,7 @@ func (s *Server) runJob(id, user, kind, lease string, b []byte) {
 	defer cancel()
 	outputs := &jobOutputs{}
 	ctx = context.WithValue(ctx, jobOutputsKey{}, outputs)
+	ctx = context.WithValue(ctx, jobLeaseKey{}, jobLease{id, lease})
 	done := make(chan struct{})
 	heartbeatDone := make(chan struct{})
 	go func() {

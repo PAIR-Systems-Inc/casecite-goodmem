@@ -98,6 +98,9 @@ func (s *Server) llm(ctx context.Context, user, system, prompt string, jsonMode 
 }
 
 func (s *Server) execute(ctx context.Context, user, kind string, input M) (M, error) {
+	if kind == "review_table.run" {
+		return s.executeReviewTable(ctx, user, input)
+	}
 	if strings.HasPrefix(kind, "contract.") {
 		return s.executeContract(ctx, user, kind, input)
 	}

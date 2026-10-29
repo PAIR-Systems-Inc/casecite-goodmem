@@ -62,6 +62,12 @@ func main() {
 				json.Unmarshal([]byte(prompt[i+len("Evidence JSON:\n"):]), &docs)
 			}
 			out := map[string]any{"answer": "Test review: verify the notice period before termination.", "findings": []any{}}
+			if strings.Contains(prompt, "Extract the fields below from the labelled excerpts") {
+				out = map[string]any{"fields": map[string]any{
+					"notice":        map[string]any{"value": "30 days", "quote": "Notice is 30 days."},
+					"liability_cap": map[string]any{"value": "USD 1 million", "quote": "Liability is capped at one million dollars."},
+				}}
+			}
 			if len(docs) > 0 {
 				out["findings"] = []any{map[string]any{"title": "Notice period", "severity": "minor", "document_id": docs[0]["id"], "quote": "Notice is 30 days.", "explanation": "Send notice before the deadline.", "proposed_language": "Notice must be delivered in writing."}}
 			}

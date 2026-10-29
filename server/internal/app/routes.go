@@ -26,6 +26,7 @@ func (s *Server) routes() {
 	s.documentWorkspaceRoutes()
 	s.contractRoutes()
 	s.workspaceSessionRoutes()
+	s.reviewTableRoutes()
 	s.api("GET /api/v1/settings", false, s.settings)
 	s.api("PUT /api/v1/settings", false, s.settings)
 	s.api("PUT /api/v1/keys/{provider}", false, s.saveKey)

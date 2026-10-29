@@ -14,6 +14,10 @@ Two workers per Go process claim durable jobs. At most five pending/running jobs
 
 Completed jobs are retained for 30 days; their saved results remain until explicitly deleted. Expired KV values and expired sessions are cleaned periodically. Audit events have no automatic deletion policy in this first version. Define a retention policy before a large rollout.
 
+Review-table runs commit one document at a time so the grid shows partial progress. `REVIEW_TABLE_CONCURRENCY` controls document concurrency (default 4, range 1–32); one table has at most one active run. Cancellation retains rows already committed and prevents subsequent writes. Table/schema edits and human cell reviews serialize with extraction writes, preserving overrides, notes and approvals. A changed model value reopens review only when there is no override. Run history follows queue completion/cancellation/lease expiry transactionally and survives the queue's 30-day cleanup.
+
+Review-table prompt estimates use the original 30,000-character excerpt budget and field overhead. GoodMem does not expose the original application's chunk count; without a measured text length, the estimate uses the excerpt ceiling instead of inventing a chunk count. Each run still makes at most one extraction call per selected document. This is an input-token budget, not a price quote.
+
 Uploads can report `upload_uncertain` if the browser/server connection ends around GoodMem's acceptance of the file. Refresh attempts to reconcile the preallocated memory ID. If GoodMem never received it, delete the application record and upload again. A failed processing state is explicit; the user can inspect the original, delete it, and upload a corrected copy. There is no automatic, paid re-embedding loop.
 
 ## Access and deployment
