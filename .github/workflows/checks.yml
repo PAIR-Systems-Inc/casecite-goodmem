@@ -1,5 +1,12 @@
 name: Go and browser checks
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -11,8 +18,9 @@ jobs:
         env:
           POSTGRES_PASSWORD: integration-only
           POSTGRES_DB: casecite_test
+          PGUSER: postgres
         ports: ['5432:5432']
-        options: --health-cmd='pg_isready -U postgres' --health-interval=3s --health-timeout=3s --health-retries=20
+        options: --health-cmd=pg_isready --health-interval=3s --health-timeout=3s --health-retries=20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-go@v6
