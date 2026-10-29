@@ -448,6 +448,130 @@ class ReviewCellResponse(BaseModel):
     error: str | None = None
     model_used: str | None = None
     updated_at: datetime | None = None
+    # Human review layer. ``effective_value`` is the override when set, else ``value``.
+    override_value: str | None = None
+    effective_value: str | None = None
+    review_status: str = "pending"
+    note: str | None = None
+    reviewed_by: str | None = None
+    reviewed_at: datetime | None = None
+    history: list[dict[str, Any]] = Field(default_factory=list)
+
+
+ReviewStatus = Literal["pending", "approved", "flagged"]
+
+
+class ReviewCellReviewRequest(BaseModel):
+    """Override, approve, flag or annotate one cell. A field left out keeps its
+    value; ``override_value: null`` clears the override."""
+
+    override_value: str | None = Field(None, max_length=1000)
+    review_status: ReviewStatus | None = None
+    note: str | None = Field(None, max_length=2000)
+
+    @model_validator(mode="after")
+    def _something_given(self) -> "ReviewCellReviewRequest":
+        if not self.model_fields_set:
+            raise ValueError("Nothing to change.")
+        return self
+
+
+class ReviewCellRef(BaseModel):
+    document_id: str = Field(..., max_length=64)
+    field_key: str = Field(..., max_length=80)
+
+
+class ReviewCellBulkRequest(ReviewCellReviewRequest):
+    """The same change applied to many cells at once."""
+
+    cells: list[ReviewCellRef] = Field(..., min_length=1, max_length=5000)
+
+    @model_validator(mode="after")
+    def _something_given(self) -> "ReviewCellBulkRequest":
+        if self.model_fields_set <= {"cells"}:
+            raise ValueError("Nothing to change.")
+        return self
+
+
+class ReviewCellBulkResponse(BaseModel):
+    updated: int
+    cells: list[ReviewCellResponse]
+
+
+class ReviewSchemaCreateRequest(BaseModel):
+    """Save a field schema for reuse; with a matter it is shared with the matter."""
+
+    name: str = Field(..., min_length=1, max_length=300)
+    description: str | None = Field(None, max_length=2000)
+    matter_id: str | None = Field(None, max_length=36)
+    fields: list[ReviewFieldSpec] = Field(..., min_length=1, max_length=40)
+
+    @field_validator("fields")
+    @classmethod
+    def _keys_unique(cls, v: list[ReviewFieldSpec]) -> list[ReviewFieldSpec]:
+        return _unique_field_keys(v)
+
+
+class ReviewSchemaUpdateRequest(BaseModel):
+    name: str | None = Field(None, min_length=1, max_length=300)
+    description: str | None = Field(None, max_length=2000)
+    matter_id: str | None = Field(None, max_length=36)
+    fields: list[ReviewFieldSpec] | None = Field(None, min_length=1, max_length=40)
+
+    @field_validator("fields")
+    @classmethod
+    def _keys_unique(cls, v: list[ReviewFieldSpec] | None) -> list[ReviewFieldSpec] | None:
+        return _unique_field_keys(v) if v is not None else None
+
+
+class ReviewSchemaResponse(BaseModel):
+    id: str
+    name: str
+    description: str | None = None
+    matter_id: str | None = None
+    owner_id: str | None = None
+    role: str  # "owner" | "member" | "builtin"
+    is_builtin: bool = False
+    fields: list[ReviewFieldSpec]
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class ReviewSchemaListResponse(BaseModel):
+    schemas: list[ReviewSchemaResponse]
+
+
+class ReviewRunResponse(BaseModel):
+    id: str
+    table_id: str
+    runner_id: str
+    scope: dict[str, Any] = Field(default_factory=dict)
+    status: str
+    job_id: str | None = None
+    counts: dict[str, Any] | None = None
+    error: str | None = None
+    started_at: datetime
+    finished_at: datetime | None = None
+
+
+class ReviewRunListResponse(BaseModel):
+    runs: list[ReviewRunResponse]
+
+
+class ReviewTableAddDocumentsRequest(BaseModel):
+    """Add documents to a table's scope; ``run`` extracts just the new rows."""
+
+    document_ids: list[str] = Field(..., min_length=1, max_length=1000)
+    run: bool = False
+
+
+class ReviewDocumentTextResponse(BaseModel):
+    """The indexed text of one document in a table, exactly as the cells' offsets see it."""
+
+    document_id: str
+    filename: str
+    text: str
+    length: int
 
 
 class ReviewTableDocument(BaseModel):
@@ -468,6 +592,8 @@ class ReviewTableSummary(BaseModel):
     field_count: int
     document_count: int
     cell_count: int = 0
+    approved_count: int = 0
+    flagged_count: int = 0
     last_run_at: datetime | None = None
     created_at: datetime
     updated_at: datetime | None = None
@@ -499,6 +625,13 @@ class ReviewTableRunStarted(BaseModel):
     poll_url: str
     documents: int
     fields: int
+    run_id: str | None = None
+
+
+class ReviewTableDocumentsAdded(BaseModel):
+    added: list[str]
+    table: "ReviewTableDetailResponse"
+    run: ReviewTableRunStarted | None = None
 
 
 # ---- Deep research (planned, multi-step, source-verified research) ----

@@ -459,6 +459,17 @@ export interface ReviewFieldSpec {
 
 export type ReviewCellStatus = 'extracted' | 'unverified' | 'not_found' | 'error' | string;
 
+export type ReviewStatus = 'pending' | 'approved' | 'flagged';
+
+/** One change to a cell: the model's value, an override, an approval, a flag or a clear. */
+export interface ReviewCellHistoryEntry {
+  at: string;
+  by: string;
+  kind: 'model' | 'override' | 'approve' | 'flag' | 'clear' | string;
+  value?: string | null;
+  status?: string | null;
+}
+
 export interface ReviewCell {
   document_id: string;
   field_key: string;
@@ -471,6 +482,78 @@ export interface ReviewCell {
   error: string | null;
   model_used: string | null;
   updated_at: string | null;
+  /** Human review layer: the override replaces the model's value when set. */
+  override_value: string | null;
+  effective_value: string | null;
+  review_status: ReviewStatus | string;
+  note: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  history: ReviewCellHistoryEntry[];
+}
+
+/** A change a reviewer makes to a cell; a field left out keeps its value. */
+export interface ReviewCellReviewInput {
+  override_value?: string | null;
+  review_status?: ReviewStatus;
+  note?: string | null;
+}
+
+export interface ReviewCellRef {
+  document_id: string;
+  field_key: string;
+}
+
+export interface ReviewSchemaTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  matter_id: string | null;
+  owner_id: string | null;
+  role: 'owner' | 'member' | 'builtin' | string;
+  is_builtin: boolean;
+  fields: ReviewFieldSpec[];
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface ReviewSchemaCreateInput {
+  name: string;
+  description?: string | null;
+  matter_id?: string | null;
+  fields: ReviewFieldSpec[];
+}
+
+export interface ReviewRun {
+  id: string;
+  table_id: string;
+  runner_id: string;
+  scope: { document_ids?: string[] | null; field_keys?: string[] | null };
+  status: 'running' | 'completed' | 'failed' | 'cancelled' | string;
+  job_id: string | null;
+  counts: ReviewTableRunResult | null;
+  error: string | null;
+  started_at: string;
+  finished_at: string | null;
+}
+
+export type ReviewExportFormat = 'xlsx' | 'csv' | 'json';
+
+export interface ReviewExportOptions {
+  format: ReviewExportFormat;
+  /** Field keys to include; empty = all. */
+  fields?: string[];
+  reviewed_only?: boolean;
+  include_quotes?: boolean;
+  /** Extraction or review statuses to include; empty = all. */
+  statuses?: string[];
+}
+
+export interface ReviewDocumentText {
+  document_id: string;
+  filename: string;
+  text: string;
+  length: number;
 }
 
 export interface ReviewTableDocument {
@@ -491,6 +574,8 @@ export interface ReviewTableSummary {
   field_count: number;
   document_count: number;
   cell_count: number;
+  approved_count: number;
+  flagged_count: number;
   last_run_at: string | null;
   created_at: string;
   updated_at: string | null;
@@ -516,6 +601,13 @@ export interface ReviewTableRunStarted {
   poll_url: string;
   documents: number;
   fields: number;
+  run_id?: string | null;
+}
+
+export interface ReviewTableDocumentsAdded {
+  added: string[];
+  table: ReviewTableDetail;
+  run: ReviewTableRunStarted | null;
 }
 
 export interface ReviewTableRunResult {
@@ -527,6 +619,8 @@ export interface ReviewTableRunResult {
   unverified?: number;
   not_found?: number;
   errors?: number;
+  /** Cells whose model value differed from the previous run. */
+  changed?: number;
 }
 
 export interface ReviewTableJob {
@@ -1561,7 +1655,17 @@ export interface ApiClient {
   estimateReviewTable(tableId: string): Promise<ReviewTableEstimate>;
   runReviewTable(tableId: string, scope?: { document_ids?: string[]; field_keys?: string[] }): Promise<ReviewTableRunStarted>;
   getReviewTableJob(jobId: string): Promise<ReviewTableJob>;
-  exportReviewTable(tableId: string, format: 'xlsx' | 'csv'): Promise<Blob>;
+  exportReviewTable(tableId: string, options: ReviewExportOptions | ReviewExportFormat): Promise<Blob>;
+  reviewCell(tableId: string, documentId: string, fieldKey: string, change: ReviewCellReviewInput): Promise<ReviewCell>;
+  bulkReviewCells(tableId: string, cells: ReviewCellRef[], change: ReviewCellReviewInput): Promise<{ updated: number; cells: ReviewCell[] }>;
+  listReviewSchemas(): Promise<{ schemas: ReviewSchemaTemplate[] }>;
+  createReviewSchema(input: ReviewSchemaCreateInput): Promise<ReviewSchemaTemplate>;
+  updateReviewSchema(schemaId: string, changes: Partial<ReviewSchemaCreateInput>): Promise<ReviewSchemaTemplate>;
+  deleteReviewSchema(schemaId: string): Promise<{ status: string; id: string }>;
+  addReviewDocuments(tableId: string, documentIds: string[], run?: boolean): Promise<ReviewTableDocumentsAdded>;
+  removeReviewDocument(tableId: string, documentId: string): Promise<ReviewTableDetail>;
+  getReviewDocumentText(tableId: string, documentId: string): Promise<ReviewDocumentText>;
+  listReviewRuns(tableId: string, limit?: number): Promise<{ runs: ReviewRun[] }>;
 
   // Deep research
   planDeepResearch(input: DeepResearchPlanInput): Promise<DeepResearchPlanResponse>;
