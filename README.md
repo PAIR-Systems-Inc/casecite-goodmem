@@ -1,6 +1,6 @@
 # CaseCite — Private Legal RAG
 
-If you need help installing it on your infrastructure, contact me at https://thomasunise.com
+If you need help setting up or installing this on your infrastructure, contact me at https://thomasunise.com
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
