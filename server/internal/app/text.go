@@ -1,0 +1,128 @@
+package app
+
+import (
+	"archive/zip"
+	"bytes"
+	"encoding/xml"
+	"errors"
+	"io"
+	"path/filepath"
+	"strings"
+	"unicode/utf8"
+
+	"github.com/ledongthuc/pdf"
+)
+
+// Full-document features read the original stored in GoodMem. These lightweight
+// readers do not create another search index and are not part of ingestion.
+func extractText(data []byte, filename string) (text string, err error) {
+	defer func() {
+		if recover() != nil {
+			text = ""
+			err = errors.New("the document reader could not decode this file")
+		}
+	}()
+	if bytes.HasPrefix(data, []byte("%PDF-")) {
+		r, err := pdf.NewReader(bytes.NewReader(data), int64(len(data)))
+		if err != nil {
+			return "", err
+		}
+		reader, err := r.GetPlainText()
+		if err != nil {
+			return "", err
+		}
+		b, err := io.ReadAll(io.LimitReader(reader, (4<<20)+1))
+		if len(b) > 4<<20 {
+			return "", errors.New("extracted text exceeds the 4 MB limit")
+		}
+		return string(b), err
+	}
+	if strings.EqualFold(filepath.Ext(filename), ".docx") {
+		z, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+		if err != nil {
+			return "", err
+		}
+		for _, f := range z.File {
+			if f.Name != "word/document.xml" {
+				continue
+			}
+			if f.UncompressedSize64 > 16<<20 {
+				return "", errors.New("DOCX text exceeds the 16 MB limit")
+			}
+			r, err := f.Open()
+			if err != nil {
+				return "", err
+			}
+			defer r.Close()
+			d := xml.NewDecoder(io.LimitReader(r, 16<<20))
+			var b strings.Builder
+			inText := false
+			for {
+				t, err := d.Token()
+				if err == io.EOF {
+					break
+				}
+				if err != nil {
+					return "", err
+				}
+				switch v := t.(type) {
+				case xml.StartElement:
+					if v.Name.Local == "t" {
+						inText = true
+					}
+					if v.Name.Local == "tab" {
+						b.WriteByte('\t')
+					}
+				case xml.EndElement:
+					if v.Name.Local == "t" {
+						inText = false
+					}
+					if v.Name.Local == "p" {
+						b.WriteByte('\n')
+					}
+				case xml.CharData:
+					if inText {
+						b.Write(v)
+					}
+				}
+			}
+			return b.String(), nil
+		}
+		return "", errors.New("DOCX document body was not found")
+	}
+	if utf8.Valid(data) && !bytes.Contains(data, []byte{0}) {
+		return string(data), nil
+	}
+	return "", errors.New("full-text review supports PDF, DOCX, and text files; this file remains available for GoodMem search and page preview")
+}
+
+func wordDocument(title, text string) ([]byte, error) {
+	var out bytes.Buffer
+	z := zip.NewWriter(&out)
+	files := map[string]string{
+		"[Content_Types].xml": `<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`,
+		"_rels/.rels":         `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`,
+	}
+	var body strings.Builder
+	body.WriteString(`<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>`)
+	for _, line := range strings.Split(title+"\n\n"+text, "\n") {
+		var esc bytes.Buffer
+		_ = xml.EscapeText(&esc, []byte(line))
+		body.WriteString(`<w:p><w:r><w:t xml:space="preserve">` + esc.String() + `</w:t></w:r></w:p>`)
+	}
+	body.WriteString(`<w:sectPr/></w:body></w:document>`)
+	files["word/document.xml"] = body.String()
+	for name, content := range files {
+		w, err := z.Create(name)
+		if err != nil {
+			return nil, err
+		}
+		if _, err = w.Write([]byte(content)); err != nil {
+			return nil, err
+		}
+	}
+	if err := z.Close(); err != nil {
+		return nil, err
+	}
+	return out.Bytes(), nil
+}

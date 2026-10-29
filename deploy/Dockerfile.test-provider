@@ -1,0 +1,7 @@
+FROM golang:1.26.10-alpine AS build
+WORKDIR /src
+COPY server/cmd/testprovider/main.go ./main.go
+RUN CGO_ENABLED=0 go build -o /provider main.go
+FROM scratch
+COPY --from=build /provider /provider
+ENTRYPOINT ["/provider"]

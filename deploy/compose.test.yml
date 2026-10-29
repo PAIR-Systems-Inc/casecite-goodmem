@@ -1,0 +1,61 @@
+# Isolated integration stack. All credentials and model output are test fixtures.
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.1-pg17
+    environment:
+      POSTGRES_PASSWORD: test-admin-password
+      CASECITE_DB_PASSWORD: test-casecite-password
+      GOODMEM_DB_PASSWORD: test-goodmem-password
+    volumes:
+      - test-db:/var/lib/postgresql/data
+      - ./init-databases.sh:/docker-entrypoint-initdb.d/10-casecite.sh:ro
+    ports: ['127.0.0.1:${TEST_DB_PORT:-29432}:5432']
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  goodmem:
+    image: ghcr.io/pair-systems-inc/goodmem/server@sha256:162b02ebefae8c84db2e00856ead6c7d6e465d5afb8e6d68d5cc8e063b61a53b
+    depends_on:
+      postgres: {condition: service_healthy}
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/goodmem
+      DB_USER: goodmem
+      DB_PASSWORD: test-goodmem-password
+      GOODMEM_TLS_DISABLED: 'true'
+      JAVA_TOOL_OPTIONS: -Xmx1g
+    ports: ['127.0.0.1:${TEST_GOODMEM_PORT:-29080}:8080']
+  provider:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.test-provider
+  setup:
+    build: ..
+    command: [setup-goodmem, /data/goodmem.json]
+    environment:
+      GOODMEM_BASE_URL: http://goodmem:8080
+      GOODMEM_INITIALIZE: 'true'
+      EMBEDDING_BASE_URL: http://provider:8080/v1
+      EMBEDDING_MODEL: test-embedding
+      EMBEDDING_DIMENSIONS: 16
+      EMBEDDING_API_KEY: test-provider-only
+    volumes: [test-connection:/data]
+  app:
+    build: ..
+    environment:
+      DATABASE_URL: postgres://casecite:test-casecite-password@postgres:5432/casecite?sslmode=disable
+      GOODMEM_CONFIG_FILE: /data/goodmem.json
+      GOODMEM_BASE_URL: http://goodmem:8080
+      SECRET_KEY: casecite-integration-secret-not-for-production-123
+      REGISTRATION_BOOTSTRAP_TOKEN: integration-bootstrap
+      DEBUG: 'true'
+      PUBLIC_URL: http://localhost:${TEST_APP_PORT:-29000}
+      OPENAI_BASE_URL: http://provider:8080/v1
+      OPENAI_API_KEY: test-provider-only
+      LLM_MODEL: test-model
+    ports: ['127.0.0.1:${TEST_APP_PORT:-29000}:8000']
+    volumes: [test-connection:/data:ro]
+volumes:
+  test-db:
+  test-connection:

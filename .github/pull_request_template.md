@@ -1,18 +1,14 @@
-## Summary
-<!-- Brief description of changes -->
+## Change
 
-## Changes
--
+Describe the concrete problem and resulting behavior. Call out changes to source access, GoodMem contracts, or product scope.
 
-## Test plan
-- [ ] Manual verification
-- [ ] Backend tests pass (`cd backend && python -m pytest tests/`)
-- [ ] Frontend tests, lint and types pass (`cd frontend && npm test && npm run lint && npx tsc --noEmit`)
+## Validation
 
-## Checklist
-- [ ] Every commit is signed off (`git commit -s`) — see CONTRIBUTING.md, Developer Certificate of Origin
-- [ ] No new dependency with a GPL/AGPL/SSPL license; `NOTICE.md` regenerated if dependencies changed
-- [ ] CHANGELOG.md updated under `[Unreleased]`
+- Go formatting, vet, and relevant tests
+- Frontend typecheck/build
+- Docker/browser integration when API or UI flows change
+- Updated dependency notices when shipped dependencies change
 
-## Notes
-<!-- Anything reviewers should know -->
+## Limits
+
+State any remaining gaps or behavior requiring real-provider/corpus validation.

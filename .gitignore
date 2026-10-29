@@ -61,6 +61,11 @@ user_settings/
 # Keep example env files
 !.env.example
 
+# Go binary and generated embedded frontend
+/bin/
+/server/web/assets/*
+!/server/web/assets/.keep
+
 # Playwright artifacts
 frontend/test-results/
 frontend/playwright-report/
