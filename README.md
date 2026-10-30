@@ -6,7 +6,7 @@ Derived from [Thomas Unise's CaseCite](https://github.com/thomasunise/casecite),
 
 Generation supports native Claude/Gemini and OpenAI-compatible endpoints, including keyless local models. The original admin endpoint and CourtListener controls persist encrypted settings in PostgreSQL. Clause embeddings use a separate OpenAI/Voyage/Cohere or local provider; GoodMem retains document indexing and retrieval. See [provider configuration](docs/providers.md).
 
-Search-index rebuilds run as durable PostgreSQL jobs, check replacement GoodMem indexes before switching, and reuse completed OCR. Owner-only clearing, health/readiness and JSON/Prometheus metrics are implemented. See [administration and remaining settings integration](docs/administration.md).
+Search-index rebuilds run as durable PostgreSQL jobs, check replacement GoodMem indexes before switching, and reuse completed OCR. Per-user model and chunk settings reach GoodMem; older indexes remain searchable across model changes. Owner-only clearing, health/readiness and JSON/Prometheus metrics are implemented. See [administration and index settings](docs/administration.md).
 
 Native Go readers cover Word, spreadsheets, presentations, OpenDocument, email, RTF and text formats. The original extraction and PDF-preview APIs are available; scanned PDFs use GoodMem OCR. See [document formats, comparisons and remaining fidelity work](docs/document-formats.md).
 
@@ -26,7 +26,7 @@ Judge intelligence includes all eight original routes: name search, durable prof
 
 Shared chat now supports scoped GoodMem retrieval, per-file answers, strategy briefs, bounded case-law research, verified quotations and support checks, transactional conversation history, cancellation, and Word/PDF/Markdown exports. The browser uses durable PostgreSQL jobs. See [chat behavior and limits](docs/chat.md).
 
-All eight connector adapters and four file pickers are implemented in Go, including OAuth, rotating grants, encrypted instance credentials, pagination, incremental sync and GoodMem OCR imports. See [connector configuration and verification limits](docs/connectors.md). Per-user embedding/chunking integration, full judge-chat consumer acceptance, remaining document-format fidelity, and data import still require implementation or integration work. Live provider, Word-host and complete browser verification remain open.
+All eight connector adapters and four file pickers are implemented in Go, including OAuth, rotating grants, encrypted instance credentials, pagination, incremental sync and GoodMem OCR imports. See [connector configuration and verification limits](docs/connectors.md). Full judge-chat consumer acceptance, remaining document-format fidelity, and data import still require implementation or integration work. Live provider, Word-host and complete browser verification remain open.
 
 See the [parity scope](docs/parity/README.md), [source comparisons and verification evidence](docs/parity/evidence.md), and [architecture assessment](docs/migration.md). Known upstream defects should be fixed, with regression tests and documented differences, rather than reproduced.
 

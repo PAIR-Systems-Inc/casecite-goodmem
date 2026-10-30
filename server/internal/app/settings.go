@@ -34,6 +34,9 @@ func (s *Server) userSettingsWithRuntime(ctx context.Context, user string, runti
 	if str(stored, "embedding_model") == "" && s.cfg.EmbeddingModel != "" {
 		m["embedding_model"] = s.cfg.EmbeddingModel
 	}
+	if str(m, "embedding_model") == "cohere-embed-v3" {
+		m["embedding_model"] = "embed-english-v3.0"
+	}
 	m["vector_db"] = "goodmem"
 	return m, nil
 }
@@ -47,7 +50,11 @@ func (s *Server) settings(q request) (any, error) {
 		if model == "" || len(model) > 200 {
 			return nil, bad("A model name is required")
 		}
-		m := M{"llm_model": model, "top_k": max(1, min(20, number(in, "top_k", 8)))}
+		m, err := s.userSettings(q.r.Context(), q.user.ID)
+		if err != nil {
+			return nil, err
+		}
+		m["llm_model"], m["top_k"] = model, max(1, min(20, number(in, "top_k", 8)))
 		if err = s.kvSet(q.r.Context(), "settings:"+q.user.ID, m, 0); err != nil {
 			return nil, err
 		}

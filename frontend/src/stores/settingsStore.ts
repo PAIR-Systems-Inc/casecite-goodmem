@@ -10,7 +10,7 @@ const defaultRagSettings: RagSettings = {
   vectorDb: 'goodmem', indexName: 'casecite-legal-docs', embeddingModel: 'text-embedding-3-small',
   // 0.25: text-embedding-3 similarities run low (relevant ≈ 0.30-0.50) — a
   // higher floor silently discards real matches.
-  dimensions: 1536, chunkSize: 512, chunkOverlap: 128, similarityThreshold: 0.25,
+  documentEmbedderId: '', dimensions: 1536, chunkSize: 1800, chunkOverlap: 200, similarityThreshold: 0.25,
   topK: 10, enableReranking: true, hybridSearch: true, citationVerification: true,
   contextCompression: false, queryExpansion: true, sourceTracking: true,
   // 4096 matches the server-side default (RAGSettings.max_tokens).
@@ -41,6 +41,7 @@ function mapServerSettings(server: Record<string, unknown>): RagSettings {
     vectorDb: pick(server.vector_db, defaultRagSettings.vectorDb),
     indexName: pick(server.index_name, defaultRagSettings.indexName),
     embeddingModel: pick(server.embedding_model, defaultRagSettings.embeddingModel),
+    documentEmbedderId: pick(server.document_embedder_id, ''),
     dimensions: pick(server.dimensions, defaultRagSettings.dimensions),
     chunkSize: pick(server.chunk_size, defaultRagSettings.chunkSize),
     chunkOverlap: pick(server.chunk_overlap, defaultRagSettings.chunkOverlap),
@@ -152,6 +153,7 @@ export const useSettingsStore = create<SettingsState>((set, _get) => ({
         vector_db: newSettings.vectorDb,
         index_name: newSettings.indexName,
         embedding_model: newSettings.embeddingModel,
+        document_embedder_id: newSettings.documentEmbedderId ?? '',
         dimensions: newSettings.dimensions,
         chunk_size: newSettings.chunkSize,
         chunk_overlap: newSettings.chunkOverlap,

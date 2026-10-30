@@ -19,7 +19,7 @@ import { api } from '../api';
 
 const defaultRagSettings = {
   vectorDb: 'goodmem', indexName: 'casecite-legal-docs', embeddingModel: 'text-embedding-3-small',
-  dimensions: 1536, chunkSize: 512, chunkOverlap: 128, similarityThreshold: 0.25,
+  documentEmbedderId: '', dimensions: 1536, chunkSize: 1800, chunkOverlap: 200, similarityThreshold: 0.25,
   topK: 10, enableReranking: true, hybridSearch: true, citationVerification: true,
   contextCompression: false, queryExpansion: true, sourceTracking: true,
   llmModel: 'gpt-5.5', temperature: 0.1, maxTokens: 4096,

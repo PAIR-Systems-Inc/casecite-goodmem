@@ -192,10 +192,8 @@ func (s *Server) research(ctx context.Context, user string, input M) (M, error) 
 	if err != nil {
 		return nil, err
 	}
-	ids := []string{}
 	byMemory := map[string]M{}
 	for _, d := range docs {
-		ids = append(ids, documentSearchMemory(d))
 		byMemory[documentSearchMemory(d)] = d
 	}
 	settings, err := s.userSettings(ctx, user)
@@ -203,7 +201,7 @@ func (s *Server) research(ctx context.Context, user string, input M) (M, error) 
 		return nil, err
 	}
 	k := max(1, min(number(settings, "top_k", 8), 20))
-	hits, err := s.gm.Search(ctx, str(input, "prompt"), ids, k)
+	hits, err := s.searchDocumentIndexes(ctx, str(input, "prompt"), docs, k, true)
 	if err != nil {
 		return nil, err
 	}

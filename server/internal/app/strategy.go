@@ -10,17 +10,16 @@ import (
 )
 
 func (s *Server) strategyCoverage(ctx context.Context, user, question string, docs []M) ([]M, []M, error) {
-	memoryIDs, ids := []string{}, []string{}
+	ids := []string{}
 	byMemory := map[string]M{}
 	for _, doc := range docs {
 		id := documentSearchMemory(doc)
 		if id != "" {
-			memoryIDs = append(memoryIDs, id)
 			byMemory[id] = doc
 		}
 		ids = append(ids, str(doc, "id"))
 	}
-	hits, err := s.gm.SearchWithRerank(ctx, question, memoryIDs, min(200, max(50, len(docs)*6)), false)
+	hits, err := s.searchDocumentIndexes(ctx, question, docs, min(200, max(50, len(docs)*6)), false)
 	if ctx.Err() != nil {
 		return nil, nil, ctx.Err()
 	}
@@ -43,7 +42,7 @@ func (s *Server) strategyCoverage(ctx context.Context, user, question string, do
 		// first-chunk fallback. A cache/native-text fallback remains available
 		// when the index has no searchable chunks for the file.
 		if memory := documentSearchMemory(doc); memory != "" {
-			own, err := s.gm.SearchWithRerank(ctx, question, []string{memory}, 3, false)
+			own, err := s.searchDocumentIndexes(ctx, question, []M{doc}, 3, false)
 			if err == nil {
 				for _, hit := range own {
 					if hit.MemoryID == memory && strings.TrimSpace(hit.Text) != "" {

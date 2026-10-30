@@ -105,6 +105,19 @@ func (s *Server) ragSettings(q request) (any, error) {
 	if number(m, "chunk_overlap", 0) >= number(m, "chunk_size", 512) {
 		return nil, bad("Chunk overlap must be less than chunk size")
 	}
+	if id := str(m, "document_embedder_id"); id != "" && in["document_embedder_id"] != nil {
+		catalog, err := s.documentEmbeddingCatalog(q.r.Context())
+		if err != nil {
+			return nil, err
+		}
+		found := false
+		for _, model := range maps(catalog["models"]) {
+			found = found || str(model, "id") == id
+		}
+		if !found {
+			return nil, bad("Choose an enabled document embedding model")
+		}
+	}
 	if err = s.kvSet(q.r.Context(), "settings:"+q.user.ID, m, 0); err != nil {
 		return nil, err
 	}
@@ -191,6 +204,9 @@ func (s *Server) platformRoutes() {
 	s.api("POST /api/v1/branding/logo", false, s.brandingLogo)
 	s.api("GET /api/v1/branding/assets/{filename}", true, s.brandingAsset)
 	s.api("GET /api/v1/settings/rag", false, s.ragSettings)
+	s.api("GET /api/v1/settings/document-embedders", false, func(q request) (any, error) {
+		return s.documentEmbeddingCatalog(q.r.Context())
+	})
 	s.api("PUT /api/v1/settings/rag", false, s.ragSettings)
 	s.api("GET /api/v1/settings/prompts/defaults", false, func(q request) (any, error) { return defaultPrompts(), nil })
 	s.api("GET /api/v1/user/keys/status", false, s.userKeys)

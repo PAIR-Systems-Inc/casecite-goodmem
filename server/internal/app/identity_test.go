@@ -35,7 +35,10 @@ func TestMFAChallengeRecoveryAndEnrollmentGate(t *testing.T) {
 	admin := f.admin()
 	other := str(f.call("POST", "/auth/login", "login", M{"email": "owner@example.test", "password": "Cedar!Trail7826"}, 200), "access_token")
 	setup := f.call("POST", "/auth/mfa/setup", admin, nil, 200)
-	code, err := totpCode(str(setup, "secret"), time.Now().Unix()/30-1, 6)
+	// Start at the current step: a previous-step enrollment code can expire
+	// between generation and the HTTP request at a 30-second boundary.
+	enrollmentStep := time.Now().Unix() / 30
+	code, err := totpCode(str(setup, "secret"), enrollmentStep, 6)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +52,7 @@ func TestMFAChallengeRecoveryAndEnrollmentGate(t *testing.T) {
 	if challenge["mfa_required"] != true || str(challenge, "access_token") != "" {
 		t.Fatal("MFA login issued a session", challenge)
 	}
-	code, _ = totpCode(str(setup, "secret"), time.Now().Unix()/30, 6)
+	code, _ = totpCode(str(setup, "secret"), enrollmentStep+1, 6)
 	verified := f.call("POST", "/auth/mfa/verify", "login", M{"mfa_token": str(challenge, "mfa_token"), "code": code}, 200)
 	logged := str(verified, "access_token")
 	f.call("GET", "/auth/me", logged, nil, 200)

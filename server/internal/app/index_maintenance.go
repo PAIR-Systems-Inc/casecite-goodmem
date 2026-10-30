@@ -6,9 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"slices"
-	"strings"
 	"time"
 )
 
@@ -56,6 +54,10 @@ func (s *Server) reindexDocuments(q request) (any, error) {
 		return nil, err
 	}
 	ctx := q.r.Context()
+	settings, err := s.userSettings(ctx, q.user.ID)
+	if err != nil {
+		return nil, err
+	}
 	// A second click/reconnected browser attaches to the existing rebuild. Keep
 	// the same per-user lock and quota as every other durable job submission.
 	tx, err := s.db.BeginTx(ctx, nil)
@@ -88,7 +90,7 @@ func (s *Server) reindexDocuments(q request) (any, error) {
 			return nil, err
 		}
 		id = uuid()
-		input := M{"reindex_document_ids": ids, "job_id": id}
+		input := M{"reindex_document_ids": ids, "job_id": id, "index_settings": indexSettings(settings)}
 		if _, err = tx.ExecContext(ctx, `INSERT INTO cc_jobs(id,user_id,kind,input) VALUES($1,$2,'document.reindex',$3)`, id, q.user.ID, jsonBytes(input)); err != nil {
 			return nil, err
 		}
@@ -121,31 +123,6 @@ func (s *Server) reindexDocuments(q request) (any, error) {
 	}
 }
 
-func (s *Server) indexModel(ctx context.Context) string {
-	space, err := s.gm.JSON(ctx, "GET", "/v1/spaces/"+url.PathEscape(s.gm.Space), nil)
-	if err != nil {
-		return "GoodMem"
-	}
-	models := []string{}
-	for _, entry := range maps(space["spaceEmbedders"]) {
-		id := str(entry, "embedderId")
-		if id == "" {
-			continue
-		}
-		model, e := s.gm.JSON(ctx, "GET", "/v1/embedders/"+url.PathEscape(id), nil)
-		if e != nil {
-			continue
-		}
-		if name := str(model, "modelIdentifier"); name != "" {
-			models = append(models, name)
-		}
-	}
-	if len(models) == 0 {
-		return "GoodMem"
-	}
-	return strings.Join(models, ", ")
-}
-
 func reindexSummary(count int, failures []string, model string) M {
 	if failures == nil {
 		failures = []string{}
@@ -157,10 +134,15 @@ func (s *Server) executeReindex(ctx context.Context, user string, input M) (M, e
 	if err := s.maintenanceAllowed(ctx, user, "documents.upload"); err != nil {
 		return nil, err
 	}
-	modelCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	model := s.indexModel(modelCtx)
-	cancel()
 	ids := stringsOf(input["reindex_document_ids"])
+	if len(ids) == 0 {
+		return reindexSummary(0, nil, "GoodMem"), nil
+	}
+	profile, err := s.resolveIndexProfile(ctx, object(input["index_settings"]))
+	if err != nil {
+		return nil, err
+	}
+	model := str(profile, "model")
 	count := 0
 	failures := []string{}
 	for i, id := range ids {
@@ -174,7 +156,7 @@ func (s *Server) executeReindex(ctx context.Context, user string, input M) (M, e
 		}
 		if err == nil {
 			s.jobProgress(ctx, str(input, "job_id"), fmt.Sprintf("Rebuilding %s (%d of %d)…", name, i+1, len(ids)), float64(i)/float64(max(1, len(ids))))
-			err = s.rebuildDocument(ctx, user, doc)
+			err = s.rebuildDocument(ctx, user, doc, profile)
 		}
 		if err != nil {
 			if ctx.Err() != nil || errors.Is(err, context.Canceled) {
@@ -198,7 +180,7 @@ func (s *Server) executeReindex(ctx context.Context, user string, input M) (M, e
 	return reindexSummary(count, failures, model), nil
 }
 
-func (s *Server) rebuildDocument(ctx context.Context, user string, doc M) error {
+func (s *Server) rebuildDocument(ctx context.Context, user string, doc, profile M) error {
 	id, original, oldIndex := str(doc, "id"), str(doc, "memory_id"), documentSearchMemory(doc)
 	if str(doc, "status") == "deleting" {
 		return fail(409, "document deletion is in progress")
@@ -245,7 +227,8 @@ func (s *Server) rebuildDocument(ctx context.Context, user string, doc M) error 
 	if err = s.maintenanceAllowed(ctx, user, "documents.upload"); err != nil {
 		return err
 	}
-	if _, err = s.gm.CreateReindex(ctx, index, id, original, str(doc, "filename"), contentType, data, ocr); err != nil {
+	indexClient := s.gm.withIndexProfile(profile)
+	if _, err = indexClient.CreateReindex(ctx, index, id, original, str(doc, "filename"), contentType, data, ocr); err != nil {
 		return err
 	}
 	if _, err = s.gm.Wait(ctx, index); err != nil {
@@ -253,7 +236,7 @@ func (s *Server) rebuildDocument(ctx context.Context, user string, doc M) error 
 	}
 	// A COMPLETED memory must also return a searchable chunk. This catches an
 	// empty extraction instead of replacing a working index with zero passages.
-	hits, err := s.gm.SearchWithRerank(ctx, str(doc, "filename"), []string{index}, 1, false)
+	hits, err := indexClient.SearchWithRerank(ctx, str(doc, "filename"), []string{index}, 1, false)
 	if err != nil {
 		return err
 	}
@@ -281,6 +264,7 @@ func (s *Server) rebuildDocument(ctx context.Context, user string, doc M) error 
 		return context.Canceled
 	}
 	patch := M{"index_memory_id": index, "status": "indexed", "indexed_at": nowString(), "error": nil, "processing_status": "COMPLETED", "ingest_job_id": nil, "chunk_count": 0, "chunk_count_known": false}
+	patch["index_profile"] = profile
 	r, err := tx.ExecContext(ctx, `UPDATE cc_objects SET data=data || $5::jsonb,updated_at=now() WHERE kind='document' AND id=$1 AND owner_id=$2 AND data->>'memory_id'=$3 AND COALESCE(NULLIF(data->>'index_memory_id',''),data->>'memory_id')=$4 AND data->>'status'<>'deleting' AND EXISTS(SELECT 1 FROM cc_users WHERE id=$2 AND active)`, id, user, original, oldIndex, jsonBytes(patch))
 	if err != nil {
 		return err

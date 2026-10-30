@@ -27,8 +27,17 @@ func (s *Server) beginDocumentIngest(ctx context.Context, user, matter, id, name
 	if err != nil {
 		return nil, false, err
 	}
+	settings, err := s.userSettings(ctx, user)
+	if err != nil {
+		return nil, false, err
+	}
+	profile, err := s.resolveIndexProfile(ctx, settings)
+	if err != nil {
+		return nil, false, err
+	}
 	mid := uuid()
 	doc := M{"filename": name, "content_type": ct, "size": len(data), "memory_id": mid, "status": "processing", "source": source, "source_id": nullable(sourceID), "sha256": digest(string(data)), "chunk_count": 0, "metadata": metadata, "folder_path": nil}
+	doc["index_profile"] = profile
 	if documentNeedsOCR(data) {
 		doc["ocr_required"] = true
 		doc["index_memory_id"] = uuid()
@@ -47,7 +56,7 @@ func (s *Server) beginDocumentIngest(ctx context.Context, user, matter, id, name
 		}
 		return current, false, nil
 	}
-	_, createErr := s.gm.Create(ctx, mid, id, name, ct, data)
+	_, createErr := s.gm.withIndexProfile(profile).Create(ctx, mid, id, name, ct, data)
 	finish, cancel := context.WithTimeout(s.ctx, 5*time.Second)
 	defer cancel()
 	if createErr != nil {

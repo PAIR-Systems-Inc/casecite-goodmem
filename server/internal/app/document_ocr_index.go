@@ -134,7 +134,7 @@ func (s *Server) executeDocumentOCR(ctx context.Context, user string, input M) (
 			return nil, context.Canceled
 		}
 		s.jobProgress(ctx, job.ID, "Indexing OCR text in GoodMem…", 0.8)
-		if _, e = s.gm.CreateOCRIndex(ctx, index, id, original, str(doc, "filename"), []byte(text)); e != nil {
+		if _, e = s.gm.withIndexProfile(object(doc["index_profile"])).CreateOCRIndex(ctx, index, id, original, str(doc, "filename"), []byte(text)); e != nil {
 			return nil, e
 		}
 	}

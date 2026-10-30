@@ -141,7 +141,9 @@ func newFixture(t *testing.T) *fixture {
 		}
 		switch {
 		case r.URL.Path == "/v1/spaces/space":
-			writeJSON(w, 200, M{"spaceId": "space"})
+			writeJSON(w, 200, M{"spaceId": "space", "spaceEmbedders": []M{{"embedderId": "fixture"}}})
+		case r.URL.Path == "/v1/embedders/fixture":
+			writeJSON(w, 200, M{"embedderId": "fixture", "modelIdentifier": "fixture-model", "endpointUrl": "http://local-model:8000/v1"})
 		case r.Method == "POST" && r.URL.Path == "/v1/memories":
 			if err := r.ParseMultipartForm(1 << 20); err != nil {
 				t.Error(err)

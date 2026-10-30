@@ -110,7 +110,7 @@ func (s *Server) retrieveChatDocuments(ctx context.Context, user, query string, 
 }
 
 func (s *Server) searchChatDocuments(ctx context.Context, query string, filters chatSearchQuery, docs []M, explicit bool, settings M, count int) ([]M, []string, error) {
-	ids, memoryIDs := []string{}, []string{}
+	ids := []string{}
 	byMemory := map[string]M{}
 	for _, doc := range docs {
 		mid := documentSearchMemory(doc)
@@ -118,14 +118,13 @@ func (s *Server) searchChatDocuments(ctx context.Context, query string, filters 
 			continue
 		}
 		ids = append(ids, str(doc, "id"))
-		memoryIDs = append(memoryIDs, mid)
 		byMemory[mid] = doc
 	}
 	pool := count
 	if settings["hybrid_search"] == true || settings["enable_reranking"] == true {
 		pool = max(count, 20)
 	}
-	hits, err := s.gm.SearchWithRerank(ctx, query, memoryIDs, pool, false)
+	hits, err := s.searchDocumentIndexes(ctx, query, docs, pool, false)
 	if err != nil {
 		return nil, nil, fail(502, "The GoodMem document index could not be queried. Retry or ask the administrator to check GoodMem.")
 	}
@@ -157,7 +156,7 @@ func (s *Server) searchChatDocuments(ctx context.Context, query string, filters 
 			if perDoc[str(doc, "id")] >= floor {
 				continue
 			}
-			own, err := s.gm.SearchWithRerank(ctx, query, []string{documentSearchMemory(doc)}, pool, false)
+			own, err := s.searchDocumentIndexes(ctx, query, []M{doc}, pool, false)
 			if err != nil {
 				return nil, nil, fail(502, "GoodMem could not search every selected document. Retry the request.")
 			}
@@ -192,7 +191,7 @@ func (s *Server) searchChatDocuments(ctx context.Context, query string, filters 
 		// GoodMem's rerank response contains reranker scores, not vector
 		// similarities. Keep the first retrieval for thresholding/provenance
 		// and use this response only to order those authorized candidates.
-		ranked, rerankErr := s.gm.SearchWithRerank(ctx, query, memoryIDs, pool, true)
+		ranked, rerankErr := s.searchDocumentIndexes(ctx, query, docs, pool, true)
 		if ctx.Err() != nil {
 			return nil, nil, ctx.Err()
 		}

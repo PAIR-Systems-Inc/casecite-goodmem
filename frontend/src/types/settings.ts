@@ -2,6 +2,7 @@ export interface RagSettings {
   vectorDb: string;
   indexName: string;
   embeddingModel: string;
+  documentEmbedderId?: string;
   dimensions: number;
   chunkSize: number;
   chunkOverlap: number;

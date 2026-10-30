@@ -19,6 +19,7 @@ for attempt in {1..60}; do
 done
 if [ "$ready" != true ]; then echo 'GoodMem did not become ready' >&2; exit 1; fi
 "${compose[@]}" run --rm setup
+"${compose[@]}" run --rm --entrypoint cat setup /data/goodmem.json | node scripts/test-index-model.mjs "http://localhost:${TEST_GOODMEM_PORT:-29080}"
 "${compose[@]}" up -d app
 ready=false
 for attempt in {1..30}; do

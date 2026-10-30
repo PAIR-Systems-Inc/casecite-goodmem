@@ -78,16 +78,14 @@ func (r *researchRunner) documents(ctx context.Context, step, query string) (int
 	if err != nil {
 		return 0, err
 	}
-	ids := []string{}
 	byMemory := map[string]M{}
 	for _, doc := range docs {
 		memory := documentSearchMemory(doc)
 		if memory != "" {
-			ids = append(ids, memory)
 			byMemory[memory] = doc
 		}
 	}
-	hits, err := r.s.gm.Search(ctx, query, ids, 6)
+	hits, err := r.s.searchDocumentIndexes(ctx, query, docs, 6, true)
 	if err != nil {
 		return 0, err
 	}

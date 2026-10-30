@@ -21,6 +21,7 @@ type GoodMem struct {
 	URL, Key, Space, Reranker string
 	Client                    *http.Client
 	OCRTimeout                time.Duration
+	Chunking                  M
 }
 type GoodMemError struct{ Status int }
 
@@ -96,6 +97,9 @@ func (g *GoodMem) createMemory(ctx context.Context, id, docID, filename, content
 	var buffer bytes.Buffer
 	w := multipart.NewWriter(&buffer)
 	request := M{"memoryId": id, "spaceId": g.Space, "contentType": contentType, "extractPageImages": true, "metadata": M{"title": filename, "filename": filename, "casecite_document_id": docID, "casecite_memory_id": id}, "chunkingConfig": M{"recursive": M{"chunkSize": 1800, "chunkOverlap": 200, "lengthMeasurement": "CHARACTER_COUNT", "keepStrategy": "KEEP_END"}}}
+	if g.Chunking != nil {
+		request["chunkingConfig"] = g.Chunking
+	}
 	if original != "" {
 		object(request["metadata"])["casecite_source_memory_id"] = original
 		object(request["metadata"])["text_extraction"] = "goodmem_ocr"
@@ -228,6 +232,10 @@ func (g *GoodMem) Search(ctx context.Context, query string, memoryIDs []string, 
 // Reranking is a per-request choice. In particular, the chat UI's toggle must
 // not silently inherit an instance-wide postprocessor when switched off.
 func (g *GoodMem) SearchWithRerank(ctx context.Context, query string, memoryIDs []string, k int, rerank bool) ([]Hit, error) {
+	return g.searchWithSpaces(ctx, query, memoryIDs, nil, k, rerank)
+}
+
+func (g *GoodMem) searchWithSpaces(ctx context.Context, query string, memoryIDs []string, spaces map[string]string, k int, rerank bool) ([]Hit, error) {
 	if len(memoryIDs) == 0 {
 		return []Hit{}, nil
 	}
@@ -237,13 +245,19 @@ func (g *GoodMem) SearchWithRerank(ctx context.Context, query string, memoryIDs 
 	out := []Hit{}
 	for start := 0; start < len(memoryIDs); start += 100 {
 		ids := memoryIDs[start:min(start+100, len(memoryIDs))]
-		quoted := make([]string, len(ids))
+		grouped := map[string][]string{}
 		allowed := map[string]bool{}
-		for i, id := range ids {
-			quoted[i] = "'" + strings.ReplaceAll(id, "'", "''") + "'"
+		for _, id := range ids {
+			space := fallback(spaces[id], g.Space)
+			grouped[space] = append(grouped[space], "'"+strings.ReplaceAll(id, "'", "''")+"'")
 			allowed[id] = true
 		}
-		body := M{"message": query, "spaceKeys": []M{{"spaceId": g.Space, "filter": "CAST(val('$.casecite_memory_id') AS TEXT) IN (" + strings.Join(quoted, ",") + ")"}}, "requestedSize": k, "fetchMemory": true}
+		keys := []M{}
+		for space, quoted := range grouped {
+			keys = append(keys, M{"spaceId": space, "filter": "CAST(val('$.casecite_memory_id') AS TEXT) IN (" + strings.Join(quoted, ",") + ")"})
+		}
+		sort.Slice(keys, func(i, j int) bool { return str(keys[i], "spaceId") < str(keys[j], "spaceId") })
+		body := M{"message": query, "spaceKeys": keys, "requestedSize": k, "fetchMemory": true}
 		if rerank && g.Reranker != "" {
 			body["requestedSize"] = max(k, 30)
 			body["postProcessor"] = M{"name": "com.goodmem.retrieval.postprocess.ChatPostProcessorFactory", "config": M{"reranker_id": g.Reranker, "max_results": k}}
@@ -259,7 +273,7 @@ func (g *GoodMem) SearchWithRerank(ctx context.Context, query string, memoryIDs 
 		}
 		out = append(out, hits...)
 	}
-	// Scores are comparable across batches using the same space and postprocessor.
+	// GoodMem queries each space with its own embedder, then merges results.
 	sort.SliceStable(out, func(i, j int) bool {
 		if out[i].Stage == "rerank" && out[j].Stage == "rerank" {
 			return out[i].Score > out[j].Score

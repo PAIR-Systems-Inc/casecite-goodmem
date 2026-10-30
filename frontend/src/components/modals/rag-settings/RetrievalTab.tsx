@@ -37,17 +37,18 @@ export const RetrievalTab = ({ local, setLocal, styles }: RetrievalTabProps) => 
     </div>
     <div className={styles.settingGroup}>
       <div className={styles.sliderHeader}>
-        <label className={styles.settingLabel} htmlFor={`${id}-chunk-size`}>Chunk Size (tokens)</label>
+        <label className={styles.settingLabel} htmlFor={`${id}-chunk-size`}>Chunk Size (characters)</label>
         <span className={`${styles.sliderValue} mono`}>{local.chunkSize}</span>
       </div>
-      <input id={`${id}-chunk-size`} type="range" min="200" max="2000" step="100" value={local.chunkSize} onChange={e => setLocal({...local, chunkSize: parseInt(e.target.value)})} />
+      <input id={`${id}-chunk-size`} type="range" min="100" max="8000" step="100" value={local.chunkSize} onChange={e => { const size = parseInt(e.target.value); setLocal({...local, chunkSize: size, chunkOverlap: Math.min(local.chunkOverlap, size - 1)}); }} />
     </div>
     <div className={styles.settingGroup}>
       <div className={styles.sliderHeader}>
-        <label className={styles.settingLabel} htmlFor={`${id}-chunk-overlap`}>Chunk Overlap</label>
+        <label className={styles.settingLabel} htmlFor={`${id}-chunk-overlap`}>Chunk Overlap (characters)</label>
         <span className={`${styles.sliderValue} mono`}>{local.chunkOverlap}</span>
       </div>
-      <input id={`${id}-chunk-overlap`} type="range" min="0" max="500" step="20" value={local.chunkOverlap} onChange={e => setLocal({...local, chunkOverlap: parseInt(e.target.value)})} />
+      <input id={`${id}-chunk-overlap`} type="range" min="0" max={Math.min(2000, local.chunkSize - 1)} step="1" value={local.chunkOverlap} onChange={e => setLocal({...local, chunkOverlap: parseInt(e.target.value)})} />
+      <p className={styles.settingHint}>New uploads use these settings. Rebuild the index in Advanced to update existing documents.</p>
     </div>
   </div>
   );
