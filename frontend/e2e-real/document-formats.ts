@@ -13,6 +13,22 @@ export async function exerciseDocumentFormats(page: Page, request: APIRequestCon
     expect(response.status(), await response.text()).toBe(200);
     expect(await response.json()).toMatchObject({ success: true, text: fixture.improved_text ?? fixture.text, tables_found: fixture.tables, page_count: fixture.pages, ocr_used: false, truncated: false });
   }
+  const pdfTables = JSON.parse(await readFile('../server/internal/app/testdata/pdf_tables.json', 'utf8')) as {
+    cases: Array<{ name: string; content: string; tables: string[]; needs_ocr: boolean }>;
+  };
+  for (const fixture of pdfTables.cases.filter(c => !c.needs_ocr)) {
+    const response = await request.post('/api/v1/legal-docs/extract-text', {
+      headers, multipart: { file: { name: `${fixture.name}.pdf`, mimeType: 'application/pdf', buffer: Buffer.from(fixture.content, 'base64') } },
+    });
+    expect(response.status(), await response.text()).toBe(200);
+    const extracted = await response.json();
+    expect(extracted).toMatchObject({ tables_found: fixture.tables.length, ocr_used: false, page_count: 1 });
+    if (fixture.name !== 'literal-punctuation') {
+      for (const table of fixture.tables) expect(extracted.text).toContain(table);
+    } else {
+      expect(extracted.text).toContain('A\\|B and C\\\\D');
+    }
+  }
   const source = corpus.cases.find(c => c.name === 'agreement.docx')!;
   // Inspect the actual Blob handed to the viewer. Chromium's network body
   // capture can omit inline PDF bytes, and CSP intentionally disallows a new
@@ -63,4 +79,30 @@ export async function exerciseDocumentFormats(page: Page, request: APIRequestCon
   await expect.poll(async () => (await (await request.get(`/api/v1/documents/${doc.id}`, { headers })).json()).status, { timeout: 90_000 }).toBe('indexed');
   const original = await request.get(`/api/v1/documents/${doc.id}/file`, { headers });
   expect(await original.body()).toEqual(Buffer.from(source.content, 'base64'));
+
+  const table = pdfTables.cases.find(c => c.name === 'merged-vertical')!;
+  const tableUpload = page.waitForResponse(r => r.request().method() === 'POST' && new URL(r.url()).pathname === '/api/v1/documents');
+  await page.getByLabel('Upload a contract', { exact: true }).setInputFiles({ name: 'native-table.pdf', mimeType: 'application/pdf', buffer: Buffer.from(table.content, 'base64') });
+  const tableResponse = await tableUpload;
+  expect(tableResponse.status()).toBe(200);
+  const tableDoc = await tableResponse.json() as { id: string; ocr_required?: boolean };
+  expect(tableDoc.ocr_required).not.toBe(true);
+  await viewer.getByRole('button', { name: 'Text', exact: true }).click();
+  await expect(viewer.getByRole('table')).toBeVisible();
+  await expect(viewer.getByRole('columnheader')).toHaveText(['Term', 'Value']);
+  await expect(viewer.getByRole('cell')).toHaveText(['Timing', '30 days', '', '60 days']);
+  await page.screenshot({ path: testInfo.outputPath('pdf-table-desktop.png'), fullPage: true, animations: 'disabled' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(viewer).toContainText('60 days');
+  await page.screenshot({ path: testInfo.outputPath('pdf-table-mobile.png'), fullPage: true, animations: 'disabled' });
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await expect.poll(async () => (await (await request.get(`/api/v1/documents/${tableDoc.id}`, { headers })).json()).status, { timeout: 90_000 }).toBe('indexed');
+  const tableText = await request.get(`/api/v1/documents/${tableDoc.id}/content`, { headers });
+  expect((await tableText.json()).text).toContain(table.tables[0]);
+  const tableOriginal = await request.get(`/api/v1/documents/${tableDoc.id}/file`, { headers });
+  expect(await tableOriginal.body()).toEqual(Buffer.from(table.content, 'base64'));
+  const tableImage = await request.get(`/api/v1/documents/${tableDoc.id}/pages/0/image`, { headers });
+  expect(tableImage.status()).toBe(200);
+  expect(tableImage.headers()['content-type']).toMatch(/^image\//);
+  await writeFile(testInfo.outputPath('pdf-table-goodmem.png'), await tableImage.body());
 }

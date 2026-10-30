@@ -97,12 +97,27 @@ func nativePDFPages(content []byte) (pages []textPage, err error) {
 		// Match the original reader's 50-character sparse-page threshold, and
 		// cover image-bearing pages even when their searchable text is longer.
 		needsOCR := e != nil || !utf8.ValidString(text) || len([]rune(strings.TrimSpace(text))) < 50 || pdfImageResources(resources, 0) || pdfInlineImages(page.V.Key("Contents"), 0)
+		var tables []string
+		if !needsOCR {
+			previousSize := len(text)
+			text, tables, e = nativePDFTableText(page, text)
+			var limit *apiError
+			if errors.As(e, &limit) && limit.status == 422 {
+				return nil, e
+			}
+			needsOCR = e != nil
+			total += len(text) - previousSize
+			if total > 4<<20 {
+				return nil, fail(422, "Extracted text exceeds the 4 MB document limit")
+			}
+		}
 		method := "native"
 		if needsOCR {
 			method = "goodmem_ocr"
 			text = ""
+			tables = nil
 		}
-		pages = append(pages, textPage{Index: i - 1, Text: text, Method: method, Failed: needsOCR})
+		pages = append(pages, textPage{Index: i - 1, Text: text, Method: method, Failed: needsOCR, Tables: tables})
 	}
 	return pages, nil
 }
@@ -153,6 +168,10 @@ func (s *Server) readDocumentText(ctx context.Context, doc M) (extractedDocument
 	native := []textPage{}
 	if format == "PDF" {
 		native, err = nativePDFPages(content)
+		var limit *apiError
+		if errors.As(err, &limit) && limit.status == 422 {
+			return extractedDocument{}, err
+		}
 		if err == nil {
 			result := assembleText(native)
 			if result.Complete {

@@ -425,3 +425,33 @@ final built-image browser run passed in 2.0 minutes, including seven-section
 brief generation, selected-document Q&A, history reopen/continued save, and
 cancellation. Desktop and phone brief/Q&A views were inspected. External judge
 data and model responses remain controlled fixtures.
+
+## Native PDF and GoodMem OCR tables
+
+Compared 12 independently generated PDFs with the pinned Python pdfplumber
+reader. Native Go extraction retains ruled and rectangle grids, joined rules,
+transforms, merged cells, wrapped/empty cells and punctuation. Text between
+tables stays in its physical position, correcting the original reader's ordering.
+An isolated box is not reported as a table. Embedded forms and rotated text go
+through GoodMem OCR rather than producing partial headers or reversed letters.
+Every source PDF page was rendered and visually inspected.
+
+GoodMem's `DotsPrompts.PROMPT_LAYOUT_ALL_EN` requests HTML for table cells, and
+`OcrServiceImpl` retains that text. The Go reader now normalizes supported HTML
+tables before calculating UTF-16 offsets and indexing. Tests cover entities,
+row/column spans, captions, malformed structures and offset consistency. Unknown
+structures retain the complete original text. There is no additional model call.
+
+The Contracts text viewer renders a grid while retaining canonical text for
+editing/export, maps cell selections to source offsets, preserves single-cell
+redlines and keeps cross-cell replacements intact. Exact whitespace-normalized
+highlight boundaries fix an original 40-character overrun. Frontend tests cover
+these interactions, escaped delimiters and literal HTML content.
+
+The complete PostgreSQL Go race suite passed in 225.759 seconds; Go vet, frontend
+typecheck/lint and 89 files / 720 frontend tests passed. The built-image Chromium
+156 run passed in 2.0 minutes with real GoodMem/PostgreSQL. It checks all ten
+native PDF API cases, uploads and displays a table through the original UI,
+confirms no OCR job was needed, retrieves the identical original and obtains its
+GoodMem page image. Desktop and phone table views were inspected. OCR protocol
+fixtures establish integration behavior, not live-model transcription quality.

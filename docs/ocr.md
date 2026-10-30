@@ -63,7 +63,14 @@ when native extraction is unavailable. The OCR client supports GoodMem's PDF,
 TIFF, PNG, JPEG and BMP inputs; this does not expand the UI's upload-format
 allowlist. Unsupported rendering formats fail explicitly.
 
-Layout-cell text supplies the reading order; Markdown is a fallback. Page
+Layout-cell text supplies the reading order; Markdown is a fallback. GoodMem's
+dots.ocr prompt emits tables as HTML. Supported tables are converted to the same
+Markdown representation used by native readers, retaining merged-cell values,
+captions, empty cells and literal delimiters. Unknown or malformed structures
+retain their entire original text. This conversion uses no extra model call and
+occurs before indexing and offset calculation, so readers share one source text.
+The text viewer renders supported tables as a grid; original files and page
+images remain available from GoodMem. Page
 boundaries use two newlines. Quote and page offsets are UTF-16 units, matching
 the browser and Word client. Source panels identify OCR-derived text and its
 page. Quote verification checks the extracted text; it does not prove that the
@@ -106,6 +113,11 @@ purge and deletion during a remote create. The browser suite uses the built Go
 image and real GoodMem with an isolated dots.ocr protocol fixture. Its fixed
 transcription verifies rendering, API integration and citation plumbing; it
 does **not** establish recognition quality for the intended on-premise model.
+
+Table tests cross-check GoodMem's `DotsPrompts` and `OcrServiceImpl` contract,
+cover HTML entities, spans, malformed tables and UTF-16 offsets after conversion,
+and compare native PDF grids against the original Python reader. Native tables
+avoid OCR work; unsupported forms/rotated text use the existing GoodMem path.
 
 Cross-checks: upstream CaseCite `services/text_extraction.py`, especially
 `_needs_ocr`, `_extract_pdf_pdfplumber`, `_pdf_result` and `_OcrSession`; GoodMem

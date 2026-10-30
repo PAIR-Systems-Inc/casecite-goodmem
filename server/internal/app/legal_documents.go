@@ -88,11 +88,16 @@ func (s *Server) fileToolExtraction(q request, data []byte, name string) (fileTo
 	out := fileToolText{}
 	if bytes.HasPrefix(bytes.TrimSpace(data), []byte("%PDF-")) {
 		pages, err := nativePDFPages(data)
+		var limit *apiError
+		if errors.As(err, &limit) && limit.status == 422 {
+			return out, err
+		}
 		if err == nil && assembleText(pages).Complete {
 			result := assembleText(pages)
 			out.Text = result.Text
 			for _, p := range pages {
 				out.Pages = append(out.Pages, p.Text)
+				out.Tables = append(out.Tables, p.Tables...)
 			}
 			return out, nil
 		}

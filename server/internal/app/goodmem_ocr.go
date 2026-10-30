@@ -163,16 +163,18 @@ func (g *GoodMem) OCR(ctx context.Context, content []byte, format string, start,
 			continue
 		}
 		page := textPage{Index: *result.Index, Method: "goodmem_ocr"}
-		// Layout cells are already in reading order. Prefer their plain text so
-		// synthetic Markdown markers cannot change quote/highlight offsets.
+		// Layout cells are already in reading order. Normalize their HTML tables
+		// before offsets/indexing; retain every other cell's source text rather
+		// than accepting a different page-level Markdown rendering.
 		if result.Page.Layout != nil {
 			parts := []string{}
 			for _, cell := range result.Page.Layout.Cells {
 				if strings.TrimSpace(cell.Text) != "" {
-					parts = append(parts, cell.Text)
 					if cell.Category == "OCR_CATEGORY_TABLE" || cell.Category == "TABLE" || cell.Category == float64(9) {
+						cell.Text = normalizeOCRTable(cell.Text)
 						page.Tables = append(page.Tables, cell.Text)
 					}
+					parts = append(parts, cell.Text)
 				}
 			}
 			page.Text = strings.Join(parts, "\n")

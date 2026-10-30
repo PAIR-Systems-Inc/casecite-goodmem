@@ -6,7 +6,7 @@ readers do not add a second document store or an office-conversion service.
 
 | Format | Go extraction |
 | --- | --- |
-| PDF | Native text where readable; GoodMem's on-premise OCR for scanned or mixed pages |
+| PDF | Native text and ruled tables, including merged cells, wrapped text and transformed grids; GoodMem's on-premise OCR for scans, forms and unsupported text layouts |
 | DOCX | Canonical visible text for exact redline anchors; interleaved paragraphs, headings and tables for upload extraction and PDF previews |
 | DOC | Word 97–2003 OLE piece tables, including mixed Windows-1252 and UTF-16 runs; RTF/DOCX files saved with a `.doc` name are recognized |
 | XLSX | All worksheets, cached formula values and formatted cell values |
@@ -39,8 +39,19 @@ Improvements over the original include preserving visible HTML after void
 `meta`/`link` tags, retaining spaces between inline elements, escaping literal
 pipe characters in table cells, retaining Word tables in PDF previews and
 reporting truncated legacy Word streams instead of silently dropping text.
+Native PDF extraction keeps paragraphs between tables in their physical reading
+order; the original reader moved all surrounding text before the tables. PDF
+forms and rotated text use GoodMem OCR instead of accepting incomplete headers
+or incorrectly ordered letters. Recognized native tables need no OCR call.
 Word redline extraction keeps the existing canonical text convention so these
 presentation changes do not invalidate tracked-edit anchors.
+
+The Contracts text viewer renders extracted Markdown tables as rows and columns,
+including escaped literal pipes and backslashes. Cell selections map back to the
+canonical source; citation highlights and single-cell redlines remain anchored.
+An edit crossing table delimiters retains a verbatim view so its replacement
+stays intact. The editor and downloads keep the complete source text. Normalized
+quote highlighting now stops at the exact boundary instead of extending beyond it.
 
 Processing is bounded: file-type caps are 50 MB for PDF, 25 MB for office/email/RTF
 and 10 MB for plain-text formats, further limited by the instance upload setting.
@@ -54,9 +65,10 @@ BIFF8 and less common RTF encodings remain outside the native reader's coverage.
 PDF preview is a readable rendering, not a reproduction of Word pagination,
 images or typography; originals and GoodMem page images remain available. The
 embedded PDF fonts have the script limits described in [chat exports](chat.md).
-Native PDF table reconstruction and complete Word-host/browser acceptance remain
-open parity work. Table categories supplied by GoodMem OCR are retained and
-counted, while native PDF text is not assigned invented table counts.
+Unruled or unusual PDF table layouts and complete Word-host/browser acceptance
+remain open fidelity work. Native table counts come from detected grids;
+GoodMem's table categories are retained and counted. GoodMem OCR's HTML tables
+are normalized before indexing and offset calculation, without another model call.
 
 ## Source comparison and validation
 
@@ -68,13 +80,22 @@ output and the corrected expectation with an explanation. The court list is
 generated from the same pinned source. Python is development-only; ordinary Go
 tests use checked-in data.
 
+`scripts/parity/pdf_table_fixtures.py` adds 12 independently generated PDF cases
+compared with the original pdfplumber path: ruled/rectangle/transformed grids,
+split rules, horizontal and vertical merged cells, wrapped/empty cells, multiple
+tables, punctuation, an isolated box, embedded forms and rotated text. Tests
+check exact cell values, physical text order, conservative OCR routing and text
+limits without unnecessary OCR work. Every fixture page was rendered and inspected.
+
 Additional PostgreSQL/API tests check authentication and custom permissions,
 type/size validation, original-PDF pass-through, rendered text, GoodMem OCR page
 coverage and tables, absence of permanent objects for temporary extraction, and
 malformed archives/RTF/Word streams. Existing redline tests exercise the unchanged
 canonical text path. The browser suite uses real GoodMem/PostgreSQL and the
 original Contracts UI to upload Word, open its PDF preview, switch to text and
-verify byte-identical original retrieval.
+verify byte-identical original retrieval. It also displays a native PDF table on
+desktop and phone, checks all ten native PDF cases through the API, and retrieves
+the original PDF and its page image from real GoodMem.
 
 The legacy Excel reader is the pure-Go
 [go-excel-reader](https://github.com/jloor/go-excel-reader) package, pinned to
