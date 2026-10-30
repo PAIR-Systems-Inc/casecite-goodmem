@@ -10,9 +10,14 @@ import (
 // GoodMem's original-file ingestion and its OCR API are separate in the pinned
 // release. Scanned/mixed PDFs therefore keep the original memory for download
 // and page images and use a second GoodMem memory for the complete OCR text.
+// Older Excel files use this same durable path with native decoded text.
 // GoodMem still owns all chunking, embeddings, storage and search.
 func documentSearchMemory(doc M) string {
 	return fallback(str(doc, "index_memory_id"), str(doc, "memory_id"))
+}
+
+func documentRequiresTextIndex(doc M) bool {
+	return doc["ocr_required"] == true || doc["text_index_required"] == true
 }
 
 func documentNeedsOCR(content []byte) bool {
@@ -42,14 +47,14 @@ func (s *Server) enqueueDocumentOCR(ctx context.Context, user, id string, retry 
 		return nil, err
 	}
 	if owner != user {
-		return nil, fail(403, "Only the owner may retry document OCR")
+		return nil, fail(403, "Only the owner may retry document indexing")
 	}
 	doc := M{}
 	if err = json.Unmarshal(raw, &doc); err != nil {
 		return nil, err
 	}
-	if doc["ocr_required"] != true {
-		return nil, bad("This document does not require an OCR index")
+	if !documentRequiresTextIndex(doc) {
+		return nil, bad("This document does not require a separate text index")
 	}
 	if str(doc, "status") == "deleting" {
 		return nil, fail(409, "Document deletion is in progress")
@@ -133,8 +138,12 @@ func (s *Server) executeDocumentOCR(ctx context.Context, user string, input M) (
 		if !valid {
 			return nil, context.Canceled
 		}
-		s.jobProgress(ctx, job.ID, "Indexing OCR text in GoodMem…", 0.8)
-		if _, e = s.gm.withIndexProfile(object(doc["index_profile"])).CreateOCRIndex(ctx, index, id, original, str(doc, "filename"), []byte(text)); e != nil {
+		s.jobProgress(ctx, job.ID, "Indexing document text in GoodMem…", 0.8)
+		method := "native"
+		if doc["ocr_required"] == true {
+			method = "goodmem_ocr"
+		}
+		if _, e = s.gm.withIndexProfile(object(doc["index_profile"])).CreateTextIndex(ctx, index, id, original, str(doc, "filename"), []byte(text), method); e != nil {
 			return nil, e
 		}
 	}

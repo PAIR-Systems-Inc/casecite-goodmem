@@ -41,6 +41,17 @@ func (s *Server) beginDocumentIngest(ctx context.Context, user, matter, id, name
 	if documentNeedsOCR(data) {
 		doc["ocr_required"] = true
 		doc["index_memory_id"] = uuid()
+	} else if strings.EqualFold(filepath.Ext(name), ".xls") {
+		version, err := excelBIFFVersion(data)
+		if err != nil {
+			return nil, false, fail(422, err.Error())
+		}
+		if version < 8 {
+			// The pinned GoodMem/Tika ingestion rejects raw BIFF2–4. Keep its
+			// original memory and index the complete native decoding separately.
+			doc["text_index_required"] = true
+			doc["index_memory_id"] = uuid()
+		}
 	}
 	r, err := s.db.ExecContext(ctx, `INSERT INTO cc_objects(kind,id,owner_id,matter_id,data) SELECT 'document',$1,id,$3,$4 FROM cc_users WHERE id=$2 AND active ON CONFLICT(kind,id) DO NOTHING`, id, user, nullable(matter), jsonBytes(doc))
 	if err != nil {
@@ -75,7 +86,7 @@ func (s *Server) beginDocumentIngest(ctx context.Context, user, matter, id, name
 			return nil, true, e
 		}
 	}
-	if createErr == nil && doc["ocr_required"] == true {
+	if createErr == nil && documentRequiresTextIndex(doc) {
 		if _, err = s.enqueueDocumentOCR(finish, user, id, false); err != nil {
 			return nil, true, err
 		}

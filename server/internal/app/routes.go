@@ -65,6 +65,7 @@ func (s *Server) routes() {
 	s.api("DELETE /api/v1/documents/{id}", false, s.deleteDocument)
 	s.api("PATCH /api/v1/documents/{id}", false, s.moveDocument)
 	s.api("POST /api/v1/documents/{id}/retry-ocr", false, s.retryDocumentOCR)
+	s.api("POST /api/v1/documents/{id}/retry-index", false, s.retryDocumentOCR)
 	s.api("GET /api/v1/documents/{id}/content", false, s.documentContent)
 	s.api("GET /api/v1/documents/{id}/file", false, s.documentFile)
 	s.api("GET /api/v1/documents/{id}/pages", false, s.pages)

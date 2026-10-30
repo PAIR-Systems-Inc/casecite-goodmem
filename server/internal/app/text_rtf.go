@@ -9,11 +9,6 @@ import (
 
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/charmap"
-	"golang.org/x/text/encoding/japanese"
-	"golang.org/x/text/encoding/korean"
-	"golang.org/x/text/encoding/simplifiedchinese"
-	"golang.org/x/text/encoding/traditionalchinese"
-	textunicode "golang.org/x/text/encoding/unicode"
 )
 
 // A bounded RTF text reader. Groups scope destinations, character encoding and
@@ -25,11 +20,15 @@ func rtfText(data []byte) (string, error) {
 		return "", errors.New("Invalid RTF document")
 	}
 	type state struct {
-		skip     bool
-		fallback int
-		encoding encoding.Encoding
+		skip      bool
+		fontTable bool
+		font      int
+		fallback  int
+		encoding  encoding.Encoding
 	}
 	current := state{fallback: 1, encoding: charmap.Windows1252}
+	defaultFont := 0
+	fonts := map[int]encoding.Encoding{}
 	stack := []state{}
 	units := []uint16{}
 	skipBytes := 0
@@ -38,7 +37,14 @@ func rtfText(data []byte) (string, error) {
 		if len(encoded) == 0 {
 			return nil
 		}
-		decoded, err := current.encoding.NewDecoder().Bytes(encoded)
+		charset := current.encoding
+		if fontEncoding, declared := fonts[current.font]; declared {
+			if fontEncoding == nil {
+				return errors.New("Unsupported RTF font character set; save as DOCX or UTF-8 text")
+			}
+			charset = fontEncoding
+		}
+		decoded, err := charset.NewDecoder().Bytes(encoded)
 		encoded = nil
 		if err == nil {
 			units = append(units, utf16.Encode([]rune(string(decoded)))...)
@@ -168,9 +174,50 @@ func rtfText(data []byte) (string, error) {
 			}
 			if destinations[control] {
 				current.skip = true
+				if control == "fonttbl" {
+					current.fontTable = true
+				}
 				continue
 			}
 			switch control {
+			case "deff":
+				if !hasNumber || n < 0 || n > 65535 {
+					return "", errors.New("Invalid default RTF font")
+				}
+				defaultFont, current.font = n, n
+			case "f":
+				if !hasNumber || n < 0 || n > 65535 {
+					return "", errors.New("Invalid RTF font")
+				}
+				current.font = n
+			case "plain":
+				current.font = defaultFont
+			case "fcharset":
+				if current.fontTable {
+					code, known := map[int]int{0: 1252, 1: 0, 2: 1252, 42: 1252, 77: 10000, 84: 10007, 128: 932, 129: 949, 134: 936, 136: 950, 161: 1253, 162: 1254, 163: 1258, 177: 1255, 178: 1256, 186: 1257, 204: 1251, 222: 874, 238: 1250, 254: 437, 255: 850}[n]
+					if n == 1 {
+						delete(fonts, current.font)
+					} else if known {
+						fonts[current.font] = documentCodepage(code)
+					} else {
+						fonts[current.font] = nil
+					}
+					if len(fonts) > 4096 {
+						return "", errors.New("RTF has too many fonts")
+					}
+				}
+			case "cpg":
+				if current.fontTable {
+					fonts[current.font] = documentCodepage(n)
+				}
+			case "ansi":
+				current.encoding = charmap.Windows1252
+			case "mac":
+				current.encoding = charmap.Macintosh
+			case "pc":
+				current.encoding = charmap.CodePage437
+			case "pca":
+				current.encoding = charmap.CodePage850
 			case "bin":
 				if !hasNumber || n < 0 || n > len(data)-i {
 					return "", errors.New("Truncated RTF binary payload")
@@ -190,14 +237,17 @@ func rtfText(data []byte) (string, error) {
 				}
 				skipBytes = current.fallback
 			case "ansicpg":
-				encodings := map[int]encoding.Encoding{1250: charmap.Windows1250, 1251: charmap.Windows1251, 1252: charmap.Windows1252, 1253: charmap.Windows1253, 1254: charmap.Windows1254, 1255: charmap.Windows1255, 1256: charmap.Windows1256, 1257: charmap.Windows1257, 1258: charmap.Windows1258, 437: charmap.CodePage437, 850: charmap.CodePage850, 932: japanese.ShiftJIS, 936: simplifiedchinese.GBK, 949: korean.EUCKR, 950: traditionalchinese.Big5, 65001: textunicode.UTF8, 10000: charmap.Macintosh, 28591: charmap.ISO8859_1, 20866: charmap.KOI8R}
-				if encoding := encodings[n]; encoding != nil {
+				if encoding := documentCodepage(n); encoding != nil {
 					current.encoding = encoding
 				} else {
 					return "", errors.New("Unsupported RTF code page; save as DOCX or UTF-8 text")
 				}
 			case "par", "line", "row":
 				if err := put("\n"); err != nil {
+					return "", err
+				}
+			case "page", "sect":
+				if err := put("\n\n"); err != nil {
 					return "", err
 				}
 			case "tab", "cell":

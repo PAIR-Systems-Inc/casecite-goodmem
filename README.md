@@ -8,7 +8,7 @@ Generation supports native Claude/Gemini and OpenAI-compatible endpoints, includ
 
 Search-index rebuilds run as durable PostgreSQL jobs, check replacement GoodMem indexes before switching, and reuse completed OCR. Per-user model and chunk settings reach GoodMem; older indexes remain searchable across model changes. Owner-only clearing, health/readiness and JSON/Prometheus metrics are implemented. See [administration and index settings](docs/administration.md).
 
-Native Go readers cover Word, spreadsheets, presentations, OpenDocument, email, RTF and text formats, including ruled PDF tables. The original extraction and PDF-preview APIs are available; scans and unsupported PDF layouts use GoodMem OCR. Its HTML tables are normalized without another model call, and the text viewer displays structured rows and columns. See [document formats, comparisons and remaining fidelity work](docs/document-formats.md).
+Native Go readers cover Word, spreadsheets, presentations, OpenDocument, email, RTF and text formats, including ruled PDF tables and Excel 2–95 workbooks. The original extraction and PDF-preview APIs are available; scans and unsupported PDF layouts use GoodMem OCR. Its HTML tables are normalized without another model call, and the text viewer displays structured rows and columns. Older Excel files reuse the durable GoodMem text-index path without an OCR call. See [document formats, comparisons and remaining fidelity work](docs/document-formats.md).
 
 ## Implementation status
 

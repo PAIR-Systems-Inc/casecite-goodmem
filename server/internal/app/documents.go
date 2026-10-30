@@ -56,7 +56,7 @@ func (s *Server) refreshDocument(ctx context.Context, doc M) M {
 	if state != "processing" && state != "uploading" && state != "upload_uncertain" {
 		return doc
 	}
-	if doc["ocr_required"] == true && str(doc, "ingest_job_id") != "" {
+	if documentRequiresTextIndex(doc) && str(doc, "ingest_job_id") != "" {
 		// The OCR job, not the original memory's text-layer ingestion, owns
 		// this status. In particular a failed original scan can still be OCRed.
 		return doc
@@ -65,7 +65,7 @@ func (s *Server) refreshDocument(ctx context.Context, doc M) M {
 	if err != nil {
 		return doc
 	}
-	if doc["ocr_required"] == true {
+	if documentRequiresTextIndex(doc) {
 		if _, err = s.enqueueDocumentOCR(ctx, str(doc, "user_id"), str(doc, "id"), false); err == nil {
 			if current, e := s.getObject(ctx, str(doc, "user_id"), "document", str(doc, "id")); e == nil {
 				return current

@@ -5,13 +5,38 @@ export async function exerciseDocumentFormats(page: Page, request: APIRequestCon
   const corpus = JSON.parse(await readFile('../server/internal/app/testdata/text_extraction.json', 'utf8')) as {
     cases: Array<{ name: string; content: string; text: string; improved_text?: string; tables: number; pages: number }>;
   };
-  for (const name of ['agreement.docx', 'workbook.xlsx', 'workbook.xls', 'presentation.pptx', 'legacy.doc', 'message.msg', 'message.eml']) {
+  for (const name of ['agreement.docx', 'workbook.xlsx', 'workbook.xls', 'presentation.pptx', 'legacy.doc', 'message.msg', 'message.eml', ...corpus.cases.filter(c => c.name.startsWith('biff') || c.name.startsWith('codepage-') || c.name.startsWith('font-charset-')).map(c => c.name)]) {
     const fixture = corpus.cases.find(c => c.name === name)!;
     const response = await request.post('/api/v1/legal-docs/extract-text', {
       headers, multipart: { file: { name, mimeType: 'application/octet-stream', buffer: Buffer.from(fixture.content, 'base64') } },
     });
     expect(response.status(), await response.text()).toBe(200);
     expect(await response.json()).toMatchObject({ success: true, text: fixture.improved_text ?? fixture.text, tables_found: fixture.tables, page_count: fixture.pages, ocr_used: false, truncated: false });
+  }
+  for (const name of ['biff2-notice.xls', 'biff5-cached-values.xls']) {
+    const fixture = corpus.cases.find(c => c.name === name)!;
+    const response = await request.post('/api/v1/documents', {
+      headers, multipart: { file: { name, mimeType: 'application/vnd.ms-excel', buffer: Buffer.from(fixture.content, 'base64') } },
+    });
+    expect(response.status(), await response.text()).toBe(200);
+    const document = await response.json();
+    expect(document.text_index_required).toBe(true);
+    expect(document.ocr_required).not.toBe(true);
+    expect(document.index_memory_id).not.toBe(document.memory_id);
+    await expect.poll(async () => (await (await request.get(`/api/v1/documents/${document.id}`, { headers })).json()).status, { timeout: 90_000 }).toMatch(/^(indexed|failed)$/);
+    const indexed = await (await request.get(`/api/v1/documents/${document.id}`, { headers })).json();
+    expect(indexed.status, JSON.stringify(indexed)).toBe('indexed');
+    const content = await (await request.get(`/api/v1/documents/${document.id}/content`, { headers })).json();
+    expect(content.text).toBe(fixture.improved_text ?? fixture.text);
+    expect(content.extraction.method).toBe('native');
+    expect(await (await request.get(`/api/v1/documents/${document.id}/file`, { headers })).body()).toEqual(Buffer.from(fixture.content, 'base64'));
+    if (name === 'biff2-notice.xls') {
+      const answer = await request.post('/api/v1/chat', { headers, data: { query: 'What notice is required?', mode: 'research', include_documents: true, include_citations: true, document_filter: { document_ids: [document.id] } } });
+      expect(answer.status(), await answer.text()).toBe(200);
+      const result = await answer.json();
+      expect(result.content).toContain('30 days');
+      expect(result.citations).toEqual(expect.arrayContaining([expect.objectContaining({ document_id: document.id, source: name })]));
+    }
   }
   const pdfTables = JSON.parse(await readFile('../server/internal/app/testdata/pdf_tables.json', 'utf8')) as {
     cases: Array<{ name: string; content: string; tables: string[]; needs_ocr: boolean }>;

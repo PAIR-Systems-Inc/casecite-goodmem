@@ -29,7 +29,7 @@ be fixed; intentional differences need tests and an explanation.
 | Authentication | Local login, Microsoft SSO, MFA and device flow | Same required capabilities, with Go protocol and integration tests |
 | Tabular review | Python extraction, review persistence and workbook generation | Go extraction with verified quotes, PostgreSQL review/history, original grid UI and cited workbook exports |
 | Saved workflows | Python orchestration, versions, approvals and notifications | Go step adapters, frozen versions, transactional PostgreSQL queue/approval decisions, and encrypted email outbox |
-| Connectors and standalone legal tools | Original implementations | Required ports; unfinished work remains explicitly tracked |
+| Connectors and standalone legal tools | Original implementations | Eight connector adapters, four file pickers and all legal-tool routes implemented in Go; live tenant acceptance remains open |
 | Tracked DOCX export | Reconstructed plain-text document with revisions | Edits to the original OOXML package, retaining unrelated formatting and parts |
 
 The bundled application deployment has three services: CaseCite, GoodMem and
@@ -59,11 +59,43 @@ The databases share one PostgreSQL instance while retaining distinct roles,
 schemas, connection pools and application ownership. No Redis extension or
 access to GoodMem's internal tables is needed.
 
+## Measured footprint
+
+Snapshot of the legacy-format implementation on 2026-10-30, compared with the
+pinned original commit. These are current measurements, not a promise of
+completed parity, lower latency or tenfold development savings.
+
+| Measure | Original | Go/GoodMem port | Practical benefit |
+|---|---|---|---|
+| Application server | Python/FastAPI | Go | One compiled application executable, including workers and built interfaces |
+| Server source files | 208 | 118 | A smaller application codebase to maintain |
+| Physical server source lines | 58,135 | 30,488 | About 48% fewer lines in the measured server directories |
+| Core persistent services, excluding TLS and model runtimes | 3: application, PostgreSQL, Redis | 3: application, GoodMem, PostgreSQL | Redis is removed; GoodMem centralizes the document subsystem |
+| Application runtime | Python and installed packages; application container also serves assets with nginx | Go executable serving API, workers and embedded assets | No Python, Node or nginx runtime inside the application container |
+| Redis deployment | Required | None | Expiring keys, sessions and job coordination share PostgreSQL |
+| Document persistence | Application upload directory and Chroma, plus PostgreSQL | GoodMem API and shared PostgreSQL instance | One document service owns originals, page images and search indexes |
+| Application OCR dependency | Tesseract integration | GoodMem on-premise OCR API | Reuses the organization's OCR service and its model deployment |
+
+Line counts include comments and blank lines. The original scope is
+`backend/app/**/*.py`; the Go scope is `server/internal/app/**/*.go` and
+`server/cmd/casecite/**/*.go`, excluding `*_test.go`. Both exclude the UI,
+build tools and test corpus; the Go count excludes SQL/assets and GoodMem's own
+implementation. Delegating code to GoodMem shifts maintenance rather than making
+that code disappear. These counts should not be read as an equal-feature
+complexity benchmark until acceptance is complete.
+
+The original production Compose file has four long-running containers when
+Caddy is included, plus a one-time UI build. This port also needs TLS termination
+in production. Counting that consistently gives four services on each side;
+the OCR model and generation/embedding endpoints are additional dependencies.
+The benefit is consolidation and reuse, not a demonstrated “five servers to two.”
+
 ## Boundaries that stay explicit
 
 CaseCite stores ownership, matter membership, settings, sessions, jobs and
 workflow state. Each document record points to its original GoodMem memory;
-scanned/mixed PDFs also have a GoodMem memory for searchable OCR text. Access
+scanned/mixed PDFs and older Excel files also have a GoodMem memory for their
+searchable extracted text. Access
 checks happen before fetching originals/page images and before retrieval;
 returned memory IDs are checked against the authorized scope. Moving a
 document between matters does not require re-embedding it.
@@ -95,8 +127,9 @@ GoodMem removes a substantial duplicated document subsystem. Go consolidates
 application deployment and workers into one executable, and shared PostgreSQL
 removes a separate Redis dependency. Those are concrete architectural benefits.
 
-Full feature parity still requires connectors, identity, legal tools, workflow
-execution, the Word experience and UI verification. The savings come from
+The ports of connectors, identity, legal tools, workflows and the Word experience
+are implemented, with protocol, database and browser tests. Complete live-provider,
+Word-host and UI acceptance still remain. The savings come from
 reusing GoodMem and the existing React/add-in code, not from deleting those
 features. It is reasonable to pursue this architecture, but it would be
 misleading to promise a tenfold total implementation saving before the port

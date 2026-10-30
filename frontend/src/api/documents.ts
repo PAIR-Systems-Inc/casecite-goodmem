@@ -60,6 +60,10 @@ Object.assign(api, {
     return api.request(`/documents/${encodeURIComponent(documentId)}/retry-ocr`, { method: 'POST' });
   },
 
+  async retryDocumentIndex(documentId: string): Promise<{ job_id: string; status: string }> {
+    return api.request(`/documents/${encodeURIComponent(documentId)}/retry-index`, { method: 'POST' });
+  },
+
   // ── Knowledge-base folders ──────────────────────────────────────
   async listFolders(): Promise<{ folders: string[] }> {
     return api.request('/documents/folders');

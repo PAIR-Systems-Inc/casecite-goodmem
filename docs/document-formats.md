@@ -10,14 +10,14 @@ readers do not add a second document store or an office-conversion service.
 | DOCX | Canonical visible text for exact redline anchors; interleaved paragraphs, headings and tables for upload extraction and PDF previews |
 | DOC | Word 97–2003 OLE piece tables, including mixed Windows-1252 and UTF-16 runs; RTF/DOCX files saved with a `.doc` name are recognized |
 | XLSX | All worksheets, cached formula values and formatted cell values |
-| XLS | Excel 97–2003 BIFF8 worksheets, shared strings and typed values |
+| XLS | Excel 2–95 BIFF2/3/4/4W/5 and Excel 97–2003 BIFF8; raw or OLE workbooks, worksheets, cached formula results and typed values |
 | PPTX | Presentation order, grouped shape text, tables and speaker notes; slide boundaries remain available for citations |
 | ODT | Paragraphs, headings, inline text, explicit spaces, tabs and line breaks |
 | CSV / TSV | Quoted cells, variable row widths and Markdown tables |
 | HTML | Visible text, entities, paragraph boundaries and inline whitespace |
 | EML | Decoded headers, MIME bodies, preferred plain-text alternatives and attachment names |
 | MSG | Outlook property streams, message headers/date/body and attachment names |
-| RTF | Scoped groups, code pages, Unicode/surrogate pairs, table separators and displayed field results |
+| RTF | Scoped groups, document and per-font code pages, Unicode/surrogate pairs, table separators and displayed field results |
 | TXT / Markdown / JSON | UTF-8, BOM-marked UTF-16, Windows-1252 and Latin-1 |
 
 `POST /api/v1/legal-docs/extract-text` accepts multipart field `file` and returns
@@ -46,6 +46,14 @@ or incorrectly ordered letters. Recognized native tables need no OCR call.
 Word redline extraction keeps the existing canonical text convention so these
 presentation changes do not invalidate tracked-edit anchors.
 
+Older Excel files reuse the durable text-index job used for scans. GoodMem keeps
+the original workbook while a second memory indexes the complete native Go
+decoding. This handles files rejected by GoodMem's default parser without an OCR
+call or an additional service. Search citations still identify the original
+document; retry, rebuild and deletion cover both memories. The Knowledge Base
+offers **Retry indexing** for a failed native index. Macros, formula programs and
+external workbook links are never executed; only stored formula results are read.
+
 The Contracts text viewer renders extracted Markdown tables as rows and columns,
 including escaped literal pipes and backslashes. Cell selections map back to the
 canonical source; citation highlights and single-cell redlines remain anchored.
@@ -60,8 +68,8 @@ entries and excessive XML nesting are rejected. Full text is limited to 4 MB.
 Large tables have explicit row/column limits. Password protection must be removed
 before importing.
 
-This is not a claim of universal format fidelity. Legacy XLS versions before
-BIFF8 and less common RTF encodings remain outside the native reader's coverage.
+This is not a claim of universal format fidelity. Unmapped legacy character
+encodings fail explicitly and recommend conversion instead of corrupting text.
 PDF preview is a readable rendering, not a reproduction of Word pagination,
 images or typography; originals and GoodMem page images remain available. The
 embedded PDF fonts have the script limits described in [chat exports](chat.md).
@@ -73,12 +81,21 @@ are normalized before indexing and offset calculation, without another model cal
 ## Source comparison and validation
 
 `scripts/parity/text_extraction_fixtures.py` executes the pinned original
-`text_extraction.py` against 39 fixtures written independently with Python office
+`text_extraction.py` against 57 fixtures written independently with Python office
 libraries or a small CFB fixture writer. Fixtures include real DOCX, XLSX, XLS,
 PPTX, DOC and MSG containers. Intentional improvements record both the Python
 output and the corrected expectation with an explanation. The court list is
 generated from the same pinned source. Python is development-only; ordinary Go
 tests use checked-in data.
+
+The legacy Excel cases include raw BIFF2/3/4, BIFF4W, OLE and raw BIFF5,
+multiple worksheets, cached formula strings/values, continuation records,
+embedded charts and Cyrillic/Japanese/Macintosh code pages. RTF cases include
+per-font encodings and corrections to the original reader's raw-markup fallback
+for valid code pages. A separate optional comparison also passed against the five
+[published OpenOffice Excel samples](https://www.openoffice.org/sc/testdocs/filetype/).
+These external binaries are not redistributed. The bounded legacy parser passed
+328,533 fuzz inputs in 20 seconds, as well as malformed-record regression tests.
 
 `scripts/parity/pdf_table_fixtures.py` adds 12 independently generated PDF cases
 compared with the original pdfplumber path: ruled/rectangle/transformed grids,
@@ -96,8 +113,13 @@ original Contracts UI to upload Word, open its PDF preview, switch to text and
 verify byte-identical original retrieval. It also displays a native PDF table on
 desktop and phone, checks all ten native PDF cases through the API, and retrieves
 the original PDF and its page image from real GoodMem.
+It also indexes legacy Excel through real GoodMem, reads the complete native
+text, retrieves byte-identical originals and answers a document-scoped question
+with a citation to the original workbook.
 
-The legacy Excel reader is the pure-Go
+The BIFF8 reader is the pure-Go
 [go-excel-reader](https://github.com/jloor/go-excel-reader) package, pinned to
-v0.3.0. Other native readers use existing Go dependencies and the standard
-library. Its MIT/ExcelDataReader attribution is included in `NOTICE.md`.
+v0.3.0. The bounded BIFF2–5 reader follows the
+[OpenOffice file-format specification](https://www.openoffice.org/sc/excelfileformat.pdf).
+Other native readers use existing Go dependencies and the standard library.
+The package's MIT/ExcelDataReader attribution is included in `NOTICE.md`.

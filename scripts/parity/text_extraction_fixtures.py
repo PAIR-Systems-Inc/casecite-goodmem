@@ -132,6 +132,11 @@ for i, raw in enumerate([r'{\rtf1\ansi Rent is \b due\b0 .\par Second paragraph.
 for codepage, encoding in [(932,'cp932'),(65001,'utf-8')]:
     encoded='契約'.encode(encoding)
     add(f'codepage-{codepage}.rtf',r'{\rtf1\ansi\ansicpg'+str(codepage)+' '+''.join("\\'%02x"%b for b in encoded)+'.}')
+for codepage, encoding, text in [(874,'cp874','สัญญา'),(852,'cp852','Příloha'),(866,'cp866','Договор'),(21866,'koi8_u','Угода'),(28592,'iso8859_2','Příloha')]:
+    add(f'codepage-{codepage}.rtf',r'{\rtf1\ansi\ansicpg'+str(codepage)+' '+''.join("\\'%02x"%b for b in text.encode(encoding))+'.}',expected=text+'.',reason='Decode the declared code page, including ISO/KOI8 identifiers that are not Python cp aliases, instead of falling back to raw RTF.')
+for charset,codec,text in [(204,'cp1251','Договор'),(128,'cp932','契約'),(238,'cp1250','Příloha')]:
+    escaped=''.join("\\'%02x"%b for b in text.encode(codec))
+    add(f'font-charset-{charset}.rtf',r'{\rtf1\ansi\deff0{\fonttbl{\f0\fnil\fcharset0 Arial;}{\f1\fnil\fcharset'+str(charset)+r' Arial;}}\f0 Agreement: {\f1 '+escaped+r'}\f0 signed.}')
 add('message.eml','From: Counsel <counsel@example.test>\nTo: Client <client@example.test>\nSubject: =?UTF-8?B?Q2Fmw6kgdGVybXM=?=\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary="m"\n\n--m\nContent-Type: multipart/alternative; boundary="a"\n\n--a\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: quoted-printable\n\nPayment is due in 30 days.\n--a\nContent-Type: text/html\n\n<p>HTML alternative</p>\n--a--\n--m\nContent-Type: application/pdf\nContent-Disposition: attachment; filename="agreement.pdf"\nContent-Transfer-Encoding: base64\n\nYnl0ZXM=\n--m--\n')
 add('html-mail.eml','From: a@example.test\nSubject: Terms\nContent-Type: text/html; charset=utf-8\n\n<p>Payment <b>due</b>.</p>')
 odt = archive({'mimetype':'application/vnd.oasis.opendocument.text','content.xml':'<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><office:text><text:h>Terms</text:h><text:p>Payment <text:span>due</text:span> today.</text:p></office:text></office:body></office:document-content>'})
@@ -157,6 +162,75 @@ for name, rows in [('Invoices',[['Party','Amount'],['Acme',1250],['Beta',40.5]])
         for c,value in enumerate(row): ws.write(r,c,value)
 buffer=io.BytesIO(); wb.save(buffer)
 add('workbook.xls',buffer.getvalue(),expected='## Invoices\n\n| Party | Amount |\n| --- | --- |\n| Acme | 1250 |\n| Beta | 40.5 |\n\n## Terms\n\n| Notice | Days |\n| --- | --- |\n| Written | 30 |',reason='Whole-number Excel values use their displayed number rather than an artificial .0 suffix.')
+
+# Independent byte-level fixtures for the pre-1997 formats xlrd accepts. The
+# expected values come from the pinned Python service and xlrd, never the Go
+# reader. Format layout reference: https://www.openoffice.org/sc/excelfileformat.pdf
+import xlrd
+def record(kind, body=b''): return struct.pack('<HH',kind,len(body))+body
+def bof(version, kind=0x10):
+    if version == 2: return record(0x9,struct.pack('<HH',2,kind))
+    if version in (3,4): return record({3:0x209,4:0x409}[version],struct.pack('<HHH',version<<8,kind,0))
+    return record(0x809,struct.pack('<HHHH',0x500,kind,2412,1993))
+def xf(version): return b'' if version==2 else record({3:0x243,4:0x443,5:0xe0}[version],bytes(16 if version==5 else 12))
+def cell(version,row,col): return struct.pack('<HH',row,col)+bytes(3 if version==2 else 2)
+def label(version,row,col,value,codec='cp1252'):
+    data=value.encode(codec)
+    return record(4 if version==2 else 0x204,cell(version,row,col)+struct.pack('<B' if version==2 else '<H',len(data))+data)
+def legacy_sheet(version,codepage=1252,codec='cp1252',label_text='Café',extra=b''):
+    return (bof(version)+record(0x42,struct.pack('<H',codepage))+xf(version)
+        +label(version,0,0,'Party')+label(version,0,1,'Amount')
+        +label(version,1,0,label_text,codec)+record(3 if version==2 else 0x203,cell(version,1,1)+struct.pack('<d',40.5))
+        +extra+record(0xa))
+def legacy_book(sheets,codepage=1252):
+    start=bof(5,5)+record(0x42,struct.pack('<H',codepage))+xf(5)
+    names=[name.encode('cp1252') for name,_ in sheets]
+    offset=len(start)+sum(4+7+len(name) for name in names)+4
+    bounds=[]
+    for name,(_,data) in zip(names,sheets):
+        bounds.append(record(0x85,struct.pack('<IBBB',offset,0,0,len(name))+name)); offset+=len(data)
+    return start+b''.join(bounds)+record(0xa)+b''.join(data for _,data in sheets)
+def add_legacy(name,data):
+    wb=xlrd.open_workbook(file_contents=data,logfile=io.StringIO())
+    parts=[]
+    for ws in wb.sheets():
+        rows=[]
+        for row in ws.get_rows():
+            cells=[]
+            for c in row:
+                if c.ctype==xlrd.XL_CELL_BOOLEAN: value='TRUE' if c.value else 'FALSE'
+                elif c.ctype==xlrd.XL_CELL_ERROR: value=xlrd.error_text_from_code[c.value]
+                elif c.ctype==xlrd.XL_CELL_NUMBER: value=str(int(c.value)) if c.value.is_integer() else str(c.value)
+                else: value=str(c.value).strip()
+                cells.append(value)
+            if any(cells): rows.append(cells)
+        if rows: parts.append(f'## {ws.name}\n\n'+service._rows_to_markdown(rows))
+    add(name,data,expected='\n\n'.join(parts),reason='Keep all independently decoded cells; display whole numbers, booleans and Excel errors as readable values instead of numeric type codes.')
+    if cases[-1]['error']: raise ValueError(f'Upstream rejected {name}')
+for version in (2,3,4): add_legacy(f'biff{version}.xls',legacy_sheet(version))
+add_legacy('biff2-notice.xls',legacy_sheet(2,label_text='Notice is 30 days.'))
+for cp,codec,text in [(1251,'cp1251','Договор'),(932,'cp932','契約'),(10000,'mac_roman','Café')]:
+    add_legacy(f'biff5-codepage-{cp}.xls',compound({'Book':legacy_book([('Terms',legacy_sheet(5,cp,codec,text))],cp)}))
+extra=(label(5,2,0,'Boolean')+record(0x205,cell(5,2,1)+bytes([1,0]))
+    +label(5,3,0,'Error')+record(0x205,cell(5,3,1)+bytes([7,1]))
+    +label(5,4,0,'Scaled number')+record(0x27e,cell(5,4,1)+struct.pack('<I',(12345<<2)|3))
+    +record(0xbd,struct.pack('<HH',5,0)+struct.pack('<HIHIH',0,(-2<<2 & 0xffffffff)|2,0,(30<<2)|2,1))
+    +label(5,6,0,'Cached formula')+record(6,cell(5,6,1)+struct.pack('<d',12.5)+bytes(8))
+    +label(5,7,0,'Cached text')+record(6,cell(5,7,1)+bytes([0,0,0,0,0,0,255,255])+bytes(8))
+    +record(0x207,struct.pack('<H',300)+b'A'*100)+record(0x3c,b'A'*200)
+    +bof(5,0x20)+record(0xa)+label(5,8,0,'After embedded chart')+label(5,8,1,'Preserved'))
+book=legacy_book([('First',legacy_sheet(5,extra=extra)),('Second',legacy_sheet(5,label_text='Other'))])
+add_legacy('biff5-cached-values.xls',compound({'Book':book}))
+add_legacy('biff5-raw.xls',book)
+names=[b'First',b'Second']
+prefix=bof(4,0x100)+record(0x42,struct.pack('<H',1252))
+bounds=b''.join(record(0x85,bytes([len(n)])+n) for n in names)
+header=prefix+record(0x8e,struct.pack('<I',len(prefix)+8+len(bounds)))+bounds
+body=b''
+for n in names:
+    sheet=legacy_sheet(4)
+    body+=record(0x8f,struct.pack('<I',len(sheet))+bytes([len(n)])+n)+sheet
+add_legacy('biff4-workbook.xls',header+body+record(0xa))
 from pptx import Presentation
 from pptx.util import Inches
 prs=Presentation(); slide=prs.slides.add_slide(prs.slide_layouts[5]); slide.shapes.title.text='Terms'

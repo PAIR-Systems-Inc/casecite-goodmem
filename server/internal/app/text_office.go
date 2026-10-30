@@ -90,6 +90,9 @@ func spreadsheetText(data []byte, ext string) (nativeDocument, error) {
 			}
 		}
 	} else {
+		if handled, err := legacySpreadsheet(data, add); handled || err != nil {
+			return out, err
+		}
 		wb, err := excel.OpenXLS(bytes.NewReader(data), excel.WithErrorValues(true))
 		if err != nil {
 			return out, err

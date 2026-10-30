@@ -69,10 +69,11 @@ function RagDocsView() {
   const retryOCR = async (doc: RagDocument) => {
     setRetrying((state) => ({ ...state, [doc.id]: true }));
     try {
-      await api.retryDocumentOCR(doc.id);
+      if (doc.ocr_required) await api.retryDocumentOCR(doc.id);
+      else await api.retryDocumentIndex(doc.id);
       await loadRagDocuments();
     } catch (error) {
-      useUIStore.getState().addToast(`Could not retry OCR: ${(error as Error).message}`, 'error');
+      useUIStore.getState().addToast(`Could not retry indexing: ${(error as Error).message}`, 'error');
     } finally {
       setRetrying((state) => ({ ...state, [doc.id]: false }));
     }
@@ -116,9 +117,9 @@ function RagDocsView() {
           </div>
         )}
       </div>
-      {doc.status === 'failed' && doc.ocr_required && doc.user_id === userId && (
-        <button className={s.refreshBtn} type="button" disabled={retrying[doc.id]} onClick={() => void retryOCR(doc)} aria-label={`Retry OCR for ${doc.filename}`}>
-          <Icon name={retrying[doc.id] ? 'Loader2' : 'RefreshCw'} size={14} /> Retry OCR
+      {doc.status === 'failed' && (doc.ocr_required || doc.text_index_required) && doc.user_id === userId && (
+        <button className={s.refreshBtn} type="button" disabled={retrying[doc.id]} onClick={() => void retryOCR(doc)} aria-label={`Retry ${doc.ocr_required ? 'OCR' : 'indexing'} for ${doc.filename}`}>
+          <Icon name={retrying[doc.id] ? 'Loader2' : 'RefreshCw'} size={14} /> Retry {doc.ocr_required ? 'OCR' : 'indexing'}
         </button>
       )}
       <button

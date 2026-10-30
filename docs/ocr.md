@@ -50,6 +50,12 @@ becomes searchable only after this derived memory finishes indexing. Search
 uses the derived memory and maps every hit back to the original document ID;
 download and page-preview routes continue using the original memory.
 
+Older Excel workbooks also use this durable derived-index path when GoodMem's
+default parser cannot read them. Their text comes from Go's native decoder;
+these jobs do not call OCR. They retain native extraction metadata and expose
+`POST /api/v1/documents/{id}/retry-index` and a **Retry indexing** button.
+The original OCR retry route remains available for existing clients.
+
 This also covers mixed PDFs whose searchable headings would otherwise allow
 incomplete native text to be indexed. Pages with usable native text and no
 images use the Go reader. Sparse pages retain the original application's

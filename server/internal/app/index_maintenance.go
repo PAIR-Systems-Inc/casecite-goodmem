@@ -191,7 +191,7 @@ func (s *Server) rebuildDocument(ctx context.Context, user string, doc, profile 
 			return err
 		}
 		if busy {
-			return fail(409, "initial OCR is still in progress; try again after it finishes")
+			return fail(409, "initial document indexing is still in progress; try again after it finishes")
 		}
 	}
 	data, err := s.gm.Content(ctx, original)
@@ -200,7 +200,7 @@ func (s *Server) rebuildDocument(ctx context.Context, user string, doc, profile 
 	}
 	contentType := str(doc, "content_type")
 	ocr := doc["ocr_required"] == true
-	if ocr {
+	if documentRequiresTextIndex(doc) {
 		text, current, e := s.documentText(ctx, user, id)
 		if e != nil {
 			return e

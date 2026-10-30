@@ -413,6 +413,7 @@ interface RagDocumentItem {
   source_id?: string | null;
   status: 'pending' | 'processing' | 'indexed' | 'failed';
   ocr_required?: boolean;
+  text_index_required?: boolean;
   error?: string | null;
   chunk_count: number;
   created_at: string;
@@ -1764,6 +1765,7 @@ export interface ApiClient {
   getDocumentTree(): Promise<DocumentTree>;
   getDocumentContent(documentId: string): Promise<DocumentContent>;
   retryDocumentOCR(documentId: string): Promise<{ job_id: string; status: string }>;
+  retryDocumentIndex(documentId: string): Promise<{ job_id: string; status: string }>;
   deleteDocument(documentId: string): Promise<MessageResponse>;
   listFolders(): Promise<{ folders: string[] }>;
   createFolder(name: string): Promise<{ path: string; folders: string[] }>;

@@ -83,8 +83,8 @@ func (g *GoodMem) Check(ctx context.Context) error {
 func (g *GoodMem) Create(ctx context.Context, id, docID, filename, contentType string, data []byte) (M, error) {
 	return g.createMemory(ctx, id, docID, filename, contentType, data, "")
 }
-func (g *GoodMem) CreateOCRIndex(ctx context.Context, id, docID, original, filename string, data []byte) (M, error) {
-	return g.createMemory(ctx, id, docID, filename, "text/plain", data, original)
+func (g *GoodMem) CreateTextIndex(ctx context.Context, id, docID, original, filename string, data []byte, method string) (M, error) {
+	return g.createMemory(ctx, id, docID, filename, "text/plain", data, original, M{"text_extraction": method})
 }
 func (g *GoodMem) CreateReindex(ctx context.Context, id, docID, original, filename, contentType string, data []byte, ocr bool) (M, error) {
 	extraction := "native"

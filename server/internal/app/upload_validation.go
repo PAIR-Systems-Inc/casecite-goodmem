@@ -69,6 +69,11 @@ func validateDocumentUpload(data []byte, name string) (string, error) {
 	legacyTypes := map[string]string{".doc": "application/msword", ".xls": "application/vnd.ms-excel", ".ppt": "application/vnd.ms-powerpoint", ".msg": "application/vnd.ms-outlook"}
 	if ct, ok := legacyTypes[ext]; ok {
 		if !bytes.HasPrefix(data, []byte{0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1}) {
+			if ext == ".xls" {
+				if _, err := spreadsheetText(data, ext); err == nil {
+					return ct, nil
+				}
+			}
 			return "", fail(415, "Invalid legacy Office document")
 		}
 		return ct, nil
