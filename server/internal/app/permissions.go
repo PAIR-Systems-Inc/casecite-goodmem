@@ -27,6 +27,8 @@ func routePermissions(pattern string) []string {
 	}
 	// Compatibility routes retained from the first Go implementation.
 	switch pattern {
+	case "POST /api/v1/workflows/{id}/{action}":
+		return []string{"contracts.use"}
 	case "POST /api/v1/documents", "PATCH /api/v1/documents/{id}":
 		return []string{"documents.upload"}
 	case "GET /api/v1/documents/{id}/pages", "GET /api/v1/documents/{id}/pages/{index}/image", "GET /api/v1/documents/{id}/file":

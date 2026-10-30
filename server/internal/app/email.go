@@ -15,13 +15,20 @@ import (
 	"time"
 )
 
-type outboundEmail struct{ To, Subject, Body string }
+type outboundEmail struct {
+	To, Subject, Body string
+	HTML              bool
+}
 
 func (s *Server) queueEmail(ctx context.Context, tx *sql.Tx, to, subject, body string) error {
+	return s.queueEmailMessage(ctx, tx, outboundEmail{To: to, Subject: subject, Body: body})
+}
+func (s *Server) queueEmailMessage(ctx context.Context, tx *sql.Tx, message outboundEmail) error {
+	to := message.To
 	if _, err := mail.ParseAddress(to); err != nil {
 		return bad("Invalid recipient email address")
 	}
-	encrypted, err := s.crypt(string(jsonBytes(outboundEmail{To: to, Subject: subject, Body: body})), false)
+	encrypted, err := s.crypt(string(jsonBytes(message)), false)
 	if err != nil {
 		return err
 	}
@@ -38,6 +45,9 @@ func (s *Server) emailWorker() {
 		case <-s.ctx.Done():
 			return
 		case <-ticker.C:
+		}
+		if err := s.deliverWorkflowNotification(s.ctx); err != nil && s.ctx.Err() == nil {
+			s.log.Warn("workflow notification queue failed", "error", err)
 		}
 		if err := s.deliverNextEmail(s.ctx); err != nil && s.ctx.Err() == nil {
 			s.log.Warn("email delivery attempt failed", "error", err)
@@ -139,7 +149,11 @@ func (s *Server) sendEmail(ctx context.Context, message outboundEmail) error {
 		return err
 	}
 	body := strings.ReplaceAll(strings.ReplaceAll(message.Body, "\r\n", "\n"), "\n", "\r\n")
-	_, err = fmt.Fprintf(w, "From: %s\r\nTo: %s\r\nSubject: %s\r\nDate: %s\r\nMessage-ID: <%s@casecite>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n%s\r\n", from.String(), to.String(), mime.QEncoding.Encode("UTF-8", message.Subject), time.Now().Format(time.RFC1123Z), uuid(), body)
+	contentType := "text/plain"
+	if message.HTML {
+		contentType = "text/html"
+	}
+	_, err = fmt.Fprintf(w, "From: %s\r\nTo: %s\r\nSubject: %s\r\nDate: %s\r\nMessage-ID: <%s@casecite>\r\nMIME-Version: 1.0\r\nContent-Type: %s; charset=UTF-8\r\n\r\n%s\r\n", from.String(), to.String(), mime.QEncoding.Encode("UTF-8", message.Subject), time.Now().Format(time.RFC1123Z), uuid(), contentType, body)
 	if err != nil {
 		return err
 	}

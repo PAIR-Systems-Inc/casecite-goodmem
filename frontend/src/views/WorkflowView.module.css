@@ -1606,6 +1606,18 @@
 
 @media (max-width: 760px) {
   .compareSides { grid-template-columns: 1fr; }
+  .content { padding: 16px; }
+  .headerRow { flex-direction: column; }
+  .titleBlock { width: 100%; }
+  .titleRow { flex-wrap: wrap; }
+  .title { max-width: 100%; }
+  .headerActions { justify-content: flex-start; max-width: 100%; }
+  .runBar { flex-wrap: wrap; }
+  .runInfo { flex-basis: 100%; }
+  .approvalActions { flex-wrap: wrap; }
+  .approvalActions > .input { flex-basis: 100%; min-width: 0; }
+  .stepRunHead, .runDetailHead, .outputHead { flex-wrap: wrap; }
+  .stepRunName { overflow-wrap: anywhere; }
 }
 
 .compareQuote {

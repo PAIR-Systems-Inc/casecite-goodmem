@@ -11,24 +11,30 @@ import (
 )
 
 type Config struct {
-	Address, DatabaseURL, Secret, BootstrapToken, PublicURL    string
-	GoodMemURL, GoodMemKey, GoodMemSpace, RerankerID           string
-	LLMURL, LLMKey, LLMModel, CourtListenerToken               string
-	LLMUtilityModel                                            string
-	LLMContextWindow                                           int
-	Debug                                                      bool
-	SessionTTL, IdleTTL                                        time.Duration
-	JobTimeout                                                 time.Duration
-	ReviewConcurrency                                          int
-	MaxUpload                                                  int64
-	RequireMFA                                                 bool
-	AuditFailClosed                                            bool
-	MicrosoftClientID, MicrosoftTenantID, MicrosoftRedirectURI string
-	AzureAutoProvision                                         bool
-	AzureDefaultRole                                           string
-	SMTPHost, SMTPPort, SMTPUser, SMTPPassword, SMTPFrom       string
-	SMTPTLS                                                    bool
-	AddinOrigins                                               []string
+	Address, DatabaseURL, Secret, BootstrapToken, PublicURL            string
+	GoodMemURL, GoodMemKey, GoodMemSpace, RerankerID                   string
+	LLMURL, LLMKey, LLMModel, CourtListenerToken                       string
+	CourtListenerURL                                                   string
+	LLMUtilityModel                                                    string
+	LLMContextWindow                                                   int
+	Debug                                                              bool
+	SessionTTL, IdleTTL                                                time.Duration
+	JobTimeout                                                         time.Duration
+	ReviewConcurrency                                                  int
+	WorkflowMaxSteps, WorkflowMaxDocuments, WorkflowMaxCitations       int
+	WorkflowMaxOutputBytes                                             int
+	WorkflowNotifications                                              bool
+	ResearchMaxSubquestions, ResearchMaxToolCalls, ResearchMaxPassages int
+	ResearchConcurrency, ResearchFollowupDepth                         int
+	MaxUpload                                                          int64
+	RequireMFA                                                         bool
+	AuditFailClosed                                                    bool
+	MicrosoftClientID, MicrosoftTenantID, MicrosoftRedirectURI         string
+	AzureAutoProvision                                                 bool
+	AzureDefaultRole                                                   string
+	SMTPHost, SMTPPort, SMTPUser, SMTPPassword, SMTPFrom               string
+	SMTPTLS                                                            bool
+	AddinOrigins                                                       []string
 }
 
 func LoadConfig() (Config, error) {
@@ -43,9 +49,13 @@ func LoadConfig() (Config, error) {
 		LLMKey:     os.Getenv("OPENAI_API_KEY"), LLMModel: env("LLM_MODEL", "gpt-5.5"),
 		LLMUtilityModel:    env("OPENAI_UTILITY_MODEL", "gpt-5.4-mini"),
 		CourtListenerToken: os.Getenv("COURTLISTENER_API_TOKEN"), Debug: env("DEBUG", "false") == "true",
-		SessionTTL: 8 * time.Hour, IdleTTL: 2 * time.Hour, MaxUpload: 50 << 20,
+		CourtListenerURL: strings.TrimRight(env("COURTLISTENER_BASE_URL", "https://www.courtlistener.com/api/rest/v4"), "/"),
+		SessionTTL:       8 * time.Hour, IdleTTL: 2 * time.Hour, MaxUpload: 50 << 20,
 		JobTimeout:        time.Hour,
 		ReviewConcurrency: 4,
+		WorkflowMaxSteps:  12, WorkflowMaxDocuments: 25, WorkflowMaxCitations: 10, WorkflowMaxOutputBytes: 524288,
+		WorkflowNotifications:   env("WORKFLOW_NOTIFICATIONS", "false") == "true",
+		ResearchMaxSubquestions: 8, ResearchMaxToolCalls: 24, ResearchMaxPassages: 60, ResearchConcurrency: 3, ResearchFollowupDepth: 1,
 		RequireMFA:        env("REQUIRE_MFA", "false") == "true",
 		AuditFailClosed:   env("AUDIT_FAIL_CLOSED", "false") == "true",
 		MicrosoftClientID: os.Getenv("MICROSOFT_CLIENT_ID"), MicrosoftTenantID: os.Getenv("MICROSOFT_TENANT_ID"), MicrosoftRedirectURI: os.Getenv("MICROSOFT_REDIRECT_URI"),
@@ -85,7 +95,7 @@ func LoadConfig() (Config, error) {
 	if c.GoodMemKey == "" || c.GoodMemSpace == "" {
 		return c, errors.New("GOODMEM_API_KEY and GOODMEM_SPACE_ID (or GOODMEM_CONFIG_FILE) are required")
 	}
-	for _, raw := range []string{c.PublicURL, c.GoodMemURL, c.LLMURL} {
+	for _, raw := range []string{c.PublicURL, c.GoodMemURL, c.LLMURL, c.CourtListenerURL} {
 		u, err := url.Parse(raw)
 		if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
 			return c, errors.New("service URLs must be absolute HTTP(S) URLs")
@@ -127,6 +137,29 @@ func LoadConfig() (Config, error) {
 			return c, errors.New("REVIEW_TABLE_CONCURRENCY must be between 1 and 32")
 		}
 		c.ReviewConcurrency = n
+	}
+	for _, field := range []struct {
+		key       string
+		target    *int
+		low, high int
+	}{
+		{"WORKFLOW_MAX_STEPS", &c.WorkflowMaxSteps, 1, 50},
+		{"WORKFLOW_MAX_DOCUMENTS_PER_STEP", &c.WorkflowMaxDocuments, 1, 1000},
+		{"WORKFLOW_MAX_CITATIONS_PER_STEP", &c.WorkflowMaxCitations, 1, 1000},
+		{"WORKFLOW_MAX_OUTPUT_BYTES", &c.WorkflowMaxOutputBytes, 4096, 16 << 20},
+		{"DEEP_RESEARCH_MAX_SUBQUESTIONS", &c.ResearchMaxSubquestions, 1, 50},
+		{"DEEP_RESEARCH_MAX_TOOL_CALLS", &c.ResearchMaxToolCalls, 1, 1000},
+		{"DEEP_RESEARCH_MAX_PASSAGES", &c.ResearchMaxPassages, 1, 1000},
+		{"DEEP_RESEARCH_CONCURRENCY", &c.ResearchConcurrency, 1, 32},
+		{"DEEP_RESEARCH_FOLLOWUP_DEPTH", &c.ResearchFollowupDepth, 0, 1},
+	} {
+		if raw := os.Getenv(field.key); raw != "" {
+			n, err := strconv.Atoi(raw)
+			if err != nil || n < field.low || n > field.high {
+				return c, errors.New(field.key + " is outside its supported range")
+			}
+			*field.target = n
+		}
 	}
 	return c, nil
 }

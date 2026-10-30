@@ -27,7 +27,8 @@ be fixed; intentional differences need tests and an explanation.
 | Background work | Python task machinery | PostgreSQL queue, worker leases, progress and cancellation; workers run inside Go |
 | Authentication | Local login, Microsoft SSO, MFA and device flow | Same required capabilities, with Go protocol and integration tests |
 | Tabular review | Python extraction, review persistence and workbook generation | Go extraction with verified quotes, PostgreSQL review/history, original grid UI and cited workbook exports |
-| Connectors, legal tools and workflows | Original implementations | Required ports; unfinished work remains explicitly tracked |
+| Saved workflows | Python orchestration, versions, approvals and notifications | Go step adapters, frozen versions, transactional PostgreSQL queue/approval decisions, and encrypted email outbox |
+| Connectors and standalone legal tools | Original implementations | Required ports; unfinished work remains explicitly tracked |
 | Tracked DOCX export | Reconstructed plain-text document with revisions | Edits to the original OOXML package, retaining unrelated formatting and parts |
 
 The bundled steady-state deployment has three services: CaseCite, GoodMem and
@@ -74,6 +75,11 @@ successful job completion. Review tables retain completed document rows during
 a run, as upstream does; each row write checks the current job lease, table
 scope and permissions. Expired worker leases fail visibly instead of
 silently replaying potentially billable model calls.
+
+Workflow runs publish each step's outputs and generated work products together.
+Completed steps survive failure; resuming reuses them. Approval decisions and
+continuation jobs commit together, so concurrent approvals cannot enqueue the
+same continuation twice. Waiting for approval uses no worker or expiring lease.
 
 An existing Python database is not migrated by pointing this binary at it.
 An importer requires an explicit source schema/corpus and validation. Until

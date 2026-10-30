@@ -1,0 +1,291 @@
+[
+  {
+    "key": "nda_intake",
+    "name": "NDA intake",
+    "description": "Extract the key terms of every incoming NDA, run the full contract review on each, and check any authorities the review cites.",
+    "steps": [
+      {
+        "name": "extract",
+        "kind": "extract_fields",
+        "params": {
+          "fields": [
+            {
+              "key": "counterparty",
+              "name": "Counterparty",
+              "description": "The other party to the agreement",
+              "type": "text"
+            },
+            {
+              "key": "effective_date",
+              "name": "Effective date",
+              "description": "When the agreement takes effect",
+              "type": "date"
+            },
+            {
+              "key": "term",
+              "name": "Term",
+              "description": "How long confidentiality obligations last",
+              "type": "duration"
+            },
+            {
+              "key": "mutual",
+              "name": "Mutual",
+              "description": "Do both parties disclose and receive?",
+              "type": "boolean"
+            },
+            {
+              "key": "governing_law",
+              "name": "Governing law",
+              "description": "State or country whose law governs",
+              "type": "text"
+            },
+            {
+              "key": "residuals_clause",
+              "name": "Residuals clause",
+              "description": "May the recipient use information retained in unaided memory?",
+              "type": "boolean"
+            }
+          ],
+          "table_name": null
+        },
+        "inputs": {
+          "source": "run",
+          "document_ids": [],
+          "step": null
+        },
+        "condition": null
+      },
+      {
+        "name": "review",
+        "kind": "analyze_contract",
+        "params": {
+          "contract_type": "nda",
+          "jurisdiction": null,
+          "representing": null,
+          "posture": "balanced",
+          "instructions": null
+        },
+        "inputs": {
+          "source": "run",
+          "document_ids": [],
+          "step": null
+        },
+        "condition": null
+      },
+      {
+        "name": "citations",
+        "kind": "citation_check",
+        "params": {
+          "citations": [],
+          "from_steps": [
+            "review"
+          ]
+        },
+        "inputs": {
+          "source": "run",
+          "document_ids": [],
+          "step": null
+        },
+        "condition": null
+      }
+    ]
+  },
+  {
+    "key": "lease_review",
+    "name": "Lease review",
+    "description": "Extract the commercial terms of each lease, compare every lease clause by clause against the first one as the baseline, and draft a summary of the differences.",
+    "steps": [
+      {
+        "name": "extract",
+        "kind": "extract_fields",
+        "params": {
+          "fields": [
+            {
+              "key": "landlord",
+              "name": "Landlord",
+              "description": "",
+              "type": "text"
+            },
+            {
+              "key": "tenant",
+              "name": "Tenant",
+              "description": "",
+              "type": "text"
+            },
+            {
+              "key": "premises",
+              "name": "Premises",
+              "description": "Address or description of the space",
+              "type": "text"
+            },
+            {
+              "key": "commencement_date",
+              "name": "Commencement date",
+              "description": "",
+              "type": "date"
+            },
+            {
+              "key": "term",
+              "name": "Term",
+              "description": "",
+              "type": "duration"
+            },
+            {
+              "key": "base_rent",
+              "name": "Base rent",
+              "description": "Monthly or annual base rent",
+              "type": "money"
+            },
+            {
+              "key": "renewal_option",
+              "name": "Renewal option",
+              "description": "Does the tenant have an option to renew?",
+              "type": "boolean"
+            },
+            {
+              "key": "assignment",
+              "name": "Assignment",
+              "description": "May the tenant assign or sublet without consent?",
+              "type": "boolean"
+            }
+          ],
+          "table_name": null
+        },
+        "inputs": {
+          "source": "run",
+          "document_ids": [],
+          "step": null
+        },
+        "condition": null
+      },
+      {
+        "name": "compare",
+        "kind": "compare_contracts",
+        "params": {
+          "baseline": "first_input",
+          "baseline_document_id": null,
+          "focus": "rent, term, renewal, assignment and repair obligations"
+        },
+        "inputs": {
+          "source": "run",
+          "document_ids": [],
+          "step": null
+        },
+        "condition": null
+      },
+      {
+        "name": "summary",
+        "kind": "draft_document",
+        "params": {
+          "instructions": "Write a lease comparison memo for the supervising attorney. Open with a table of the extracted terms, then summarise the material differences the comparison found, clause by clause, and close with the points that need negotiation. Extracted terms: {{extract.data.values}}",
+          "include_outputs_from": [
+            "compare"
+          ],
+          "reference_document_ids": []
+        },
+        "inputs": {
+          "source": "run",
+          "document_ids": [],
+          "step": null
+        },
+        "condition": null
+      }
+    ]
+  },
+  {
+    "key": "due_diligence",
+    "name": "Due-diligence pass",
+    "description": "Extract the deal-relevant terms from a data-room batch, research the change-of-control and assignment exposure across the batch and the case law, and draft a findings memo.",
+    "steps": [
+      {
+        "name": "extract",
+        "kind": "extract_fields",
+        "params": {
+          "fields": [
+            {
+              "key": "counterparty",
+              "name": "Counterparty",
+              "description": "",
+              "type": "text"
+            },
+            {
+              "key": "contract_type",
+              "name": "Contract type",
+              "description": "e.g. MSA, SaaS, supply, employment",
+              "type": "text"
+            },
+            {
+              "key": "term",
+              "name": "Term",
+              "description": "",
+              "type": "duration"
+            },
+            {
+              "key": "change_of_control",
+              "name": "Change of control",
+              "description": "Does a change of control need consent or trigger termination?",
+              "type": "boolean"
+            },
+            {
+              "key": "exclusivity",
+              "name": "Exclusivity",
+              "description": "Any exclusivity or non-compete?",
+              "type": "boolean"
+            },
+            {
+              "key": "liability_cap",
+              "name": "Liability cap",
+              "description": "",
+              "type": "money"
+            },
+            {
+              "key": "governing_law",
+              "name": "Governing law",
+              "description": "",
+              "type": "text"
+            }
+          ],
+          "table_name": null
+        },
+        "inputs": {
+          "source": "run",
+          "document_ids": [],
+          "step": null
+        },
+        "condition": null
+      },
+      {
+        "name": "research",
+        "kind": "deep_research",
+        "params": {
+          "question": "Across these contracts, which agreements need counterparty consent on a change of control or assignment, and how have courts treated anti-assignment and change-of-control clauses in a sale of the business? Extracted terms: {{extract.data.values}}",
+          "tools": null
+        },
+        "inputs": {
+          "source": "run",
+          "document_ids": [],
+          "step": null
+        },
+        "condition": null
+      },
+      {
+        "name": "memo",
+        "kind": "draft_document",
+        "params": {
+          "instructions": "Draft a due-diligence findings memo. Summarise the extracted terms by contract, set out the change-of-control and assignment exposure the research found with its sources, and list the consents and notices the transaction will need. Research answer: {{research.data.answer}}",
+          "include_outputs_from": [
+            "extract",
+            "research"
+          ],
+          "reference_document_ids": []
+        },
+        "inputs": {
+          "source": "run",
+          "document_ids": [],
+          "step": null
+        },
+        "condition": null
+      }
+    ]
+  }
+]

@@ -68,6 +68,9 @@ func main() {
 					"liability_cap": map[string]any{"value": "USD 1 million", "quote": "Liability is capped at one million dollars."},
 				}}
 			}
+			if strings.Contains(prompt, "INSTRUCTIONS:\n") {
+				out = map[string]any{"title": "Workflow memo", "text": "The agreement requires 30 days of notice. Counsel approved this draft after reviewing the extracted terms."}
+			}
 			if len(docs) > 0 {
 				out["findings"] = []any{map[string]any{"title": "Notice period", "severity": "minor", "document_id": docs[0]["id"], "quote": "Notice is 30 days.", "explanation": "Send notice before the deadline.", "proposed_language": "Notice must be delivered in writing."}}
 			}
