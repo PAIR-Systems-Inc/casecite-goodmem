@@ -5,12 +5,15 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"math"
 	"regexp"
 	"slices"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/xuri/excelize/v2"
+	"golang.org/x/text/width"
 )
 
 var reviewCitationHeaders = []string{"Document", "Field", "Value", "Quote", "Span start", "Span end", "Verified", "Status", "Error"}
@@ -168,6 +171,54 @@ func reviewJSON(table M, fields, docs, cells []M, quotes bool) ([]byte, error) {
 	return json.MarshalIndent(M{"table": M{"id": table["id"], "name": table["name"], "description": table["description"]}, "fields": fields, "documents": docs, "cells": out, "summary": reviewExportSummary(fields, cells)}, "", "  ")
 }
 
+// Excel has no stored "autofit rows" command. Give wrapped text a conservative
+// initial height, including explicit line breaks, long identifiers and wide
+// characters. Keep the complete value even when Excel's 409-point height limit
+// is reached; it remains available in the formula bar and CSV/JSON exports.
+func reviewRowHeight(text string, columns float64) float64 {
+	capacity := math.Max(1, columns*1.05-2)
+	lines := 0
+	for _, paragraph := range strings.Split(strings.ReplaceAll(text, "\r\n", "\n"), "\n") {
+		lines++
+		used := 0.0
+		for _, word := range strings.Fields(paragraph) {
+			units := 0.0
+			for _, r := range word {
+				if unicode.Is(unicode.Mn, r) || unicode.Is(unicode.Me, r) {
+					continue
+				}
+				switch width.LookupRune(r).Kind() {
+				case width.EastAsianWide, width.EastAsianFullwidth:
+					units += 2
+				default:
+					if strings.ContainsRune("MW@%", r) {
+						units += 1.5
+					} else if unicode.IsUpper(r) {
+						units += 1.15
+					} else {
+						units++
+					}
+				}
+			}
+			if used > 0 {
+				if used+1+units > capacity {
+					lines++
+					used = 0
+				} else {
+					used++
+				}
+			}
+			used += units
+			if used > capacity {
+				extra := math.Ceil(used/capacity) - 1
+				lines += int(extra)
+				used -= extra * capacity
+			}
+		}
+	}
+	return math.Min(409, float64(lines)*15+6)
+}
+
 func reviewXLSX(name string, fields, docs, cells []M, quotes bool) ([]byte, error) {
 	w := excelize.NewFile()
 	defer w.Close()
@@ -182,9 +233,18 @@ func reviewXLSX(name string, fields, docs, cells []M, quotes bool) ([]byte, erro
 		_, err := w.NewSheet(sheet)
 		check(err)
 	}
-	style := func(v *excelize.Style) int { id, err := w.NewStyle(v); check(err); return id }
-	header := style(&excelize.Style{Font: &excelize.Font{Bold: true}, Fill: excelize.Fill{Type: "pattern", Pattern: 1, Color: []string{"E8ECF2"}}})
-	wrap := style(&excelize.Style{Alignment: &excelize.Alignment{WrapText: true, Vertical: "top"}})
+	style := func(v *excelize.Style) int {
+		if v.Font == nil {
+			v.Font = &excelize.Font{}
+		}
+		v.Font.Family, v.Font.Size = "Arial", 11
+		id, err := w.NewStyle(v)
+		check(err)
+		return id
+	}
+	alignment := &excelize.Alignment{WrapText: true, Vertical: "top"}
+	header := style(&excelize.Style{Font: &excelize.Font{Bold: true}, Fill: excelize.Fill{Type: "pattern", Pattern: 1, Color: []string{"E8ECF2"}}, Alignment: alignment})
+	wrap := style(&excelize.Style{Alignment: alignment})
 	cellStyle := map[string]int{}
 	for _, override := range []bool{false, true} {
 		for _, status := range []string{"extracted", "unverified", "error", "not_found"} {
@@ -192,7 +252,7 @@ func reviewXLSX(name string, fields, docs, cells []M, quotes bool) ([]byte, erro
 			if override {
 				font = &excelize.Font{Color: "0F766E", Bold: true}
 			}
-			s := &excelize.Style{Font: font}
+			s := &excelize.Style{Font: font, Alignment: alignment}
 			if status == "unverified" {
 				s.Fill = excelize.Fill{Type: "pattern", Pattern: 1, Color: []string{"FFF4D6"}}
 			}
@@ -202,6 +262,11 @@ func reviewXLSX(name string, fields, docs, cells []M, quotes bool) ([]byte, erro
 			cellStyle[fmt.Sprint(override)+status] = style(s)
 		}
 	}
+	widths := map[string][]float64{"Results": {36}, "Citations": {36, 24, 28, 60, 10, 10, 9, 11, 30}, "Review": {36, 24, 28, 28, 28, 14, 24, 26, 40}, "Summary": {28, 10, 11, 10, 8, 10, 9, 11}}
+	for range fields {
+		widths["Results"] = append(widths["Results"], 28)
+	}
+	heights := map[string]map[int]float64{}
 	set := func(sheet string, row, col int, value any) string {
 		axis, err := excelize.CoordinatesToCellName(col, row)
 		check(err)
@@ -212,6 +277,15 @@ func reviewXLSX(name string, fields, docs, cells []M, quotes bool) ([]byte, erro
 		} else {
 			check(w.SetCellValue(sheet, axis, value))
 		}
+		check(w.SetCellStyle(sheet, axis, axis, wrap))
+		if heights[sheet] == nil {
+			heights[sheet] = map[int]float64{}
+		}
+		text := ""
+		if value != nil {
+			text = fmt.Sprint(value)
+		}
+		heights[sheet][row] = max(heights[sheet][row], reviewRowHeight(text, widths[sheet][col-1]))
 		return axis
 	}
 	headers := map[string][]string{"Results": {"Document"}, "Citations": reviewCitationHeaders, "Review": reviewReviewHeaders, "Summary": reviewSummaryHeaders}
@@ -253,8 +327,6 @@ func reviewXLSX(name string, fields, docs, cells []M, quotes bool) ([]byte, erro
 			}
 			check(w.SetCellHyperLink("Results", axis, fmt.Sprintf("'Citations'!A%d", citationRow), "Location"))
 			check(w.SetCellStyle("Results", axis, axis, cellStyle[fmt.Sprint(c["override_value"] != nil)+str(c, "status")]))
-			quoteAxis := fmt.Sprintf("D%d", citationRow)
-			check(w.SetCellStyle("Citations", quoteAxis, quoteAxis, wrap))
 			citationRow++
 		}
 	}
@@ -263,15 +335,14 @@ func reviewXLSX(name string, fields, docs, cells []M, quotes bool) ([]byte, erro
 			set("Summary", i+2, j+1, row[k])
 		}
 	}
-	widths := map[string][]float64{"Results": {36}, "Citations": {36, 24, 28, 60, 10, 10, 9, 11, 30}, "Review": {36, 24, 28, 28, 28, 14, 24, 20, 40}, "Summary": {28, 10, 11, 10, 8, 10, 9, 11}}
-	for range fields {
-		widths["Results"] = append(widths["Results"], 28)
-	}
 	for _, sheet := range []string{"Results", "Citations", "Review", "Summary"} {
 		for i, width := range widths[sheet] {
 			col, err := excelize.ColumnNumberToName(i + 1)
 			check(err)
 			check(w.SetColWidth(sheet, col, col, width))
+		}
+		for row, height := range heights[sheet] {
+			check(w.SetRowHeight(sheet, row, height))
 		}
 	}
 	check(w.SetDocProps(&excelize.DocProperties{Title: name, Creator: "CaseCite"}))

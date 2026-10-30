@@ -61,7 +61,7 @@ access to GoodMem's internal tables is needed.
 
 ## Measured footprint
 
-Snapshot of the legacy-format implementation on 2026-10-30, compared with the
+Snapshot of the legacy-format implementation at `c7222a3` on 2026-10-30, compared with the
 pinned original commit. These are current measurements, not a promise of
 completed parity, lower latency or tenfold development savings.
 

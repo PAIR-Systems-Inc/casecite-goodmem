@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -140,6 +141,27 @@ func TestReviewExportsCitationsOverridesAndFormulaSafety(t *testing.T) {
 	for _, c := range maps(out["cells"]) {
 		if _, exists := c["quote"]; exists {
 			t.Fatal("quotes were not excluded")
+		}
+	}
+	// Optional visual fixture uses the actual exporter. CI does not require an
+	// office/rendering runtime; content, links and formula safety are checked above.
+	if dir := os.Getenv("PARITY_ARTIFACT_DIR"); dir != "" {
+		fields[1]["name"] = "Annual price and reimbursement obligations"
+		docs[0]["filename"] = "2026-amended-master-services-agreement-for-regional-operations.docx"
+		cells[0]["reviewed_by"] = "395a280e-1e3e-40ea-9939-e93cac052765"
+		cells[0]["reviewed_at"] = "2026-10-30T05:53:15.855767685Z"
+		cells[0]["note"] = "Counsel approved the amendment after reviewing the governing-law provision.\nThe original quotation remains available on the Citations sheet."
+		cells[0]["quote"] = "The laws of Delaware apply to this agreement, including its construction, performance and enforcement. Any dispute must be considered with the related amendment and the complete notice provisions.\nThe parties retain their existing rights under the signed document."
+		cells[1]["note"] = "Пример для проверки переноса строк. 日本語の引用も保持されます。"
+		visual, err := reviewXLSX("Review export layout", fields, docs, cells, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, "review-layout.xlsx"), visual, 0600); err != nil {
+			t.Fatal(err)
 		}
 	}
 }

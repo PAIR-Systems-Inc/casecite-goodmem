@@ -239,8 +239,10 @@ Passing fixtures proves only the tested cases. Live Microsoft SSO, connector
 accounts, Word host editing, model semantic quality, every original upload
 format/OCR path, and end-to-end UI parity are not yet verified. The bundled
 artifact-runtime LibreOffice successfully rendered the new conversation export
-samples and the two-page contract report/tracked-change variants; every Word/PDF
-page was inspected. Other specialized export layouts still need acceptance.
+samples, the two-page contract report/tracked-change variants and a workflow
+draft; every Word/PDF page was inspected. A representative four-sheet review
+workbook was checked in two independent renderers. Broader export-layout
+coverage and live Microsoft Office acceptance remain open.
 
 Live connector-account verification and remaining document-format fidelity still
 have implementation or integration work. Restored buttons are not evidence
@@ -523,3 +525,28 @@ frontend typecheck, changed-file lint and all 723 frontend tests passed. The fin
 built-image browser run with real GoodMem/PostgreSQL passed in 2.4 minutes.
 Provider/model responses remain fixtures; this does not establish live-model OCR
 recognition quality or universal document-format fidelity.
+
+## Review workbook and workflow-draft layouts
+
+The original `review_tables/export.py` wraps only the quotation column. The port
+now wraps headers, filenames, values, notes and reviewer metadata, with bounded
+row sizing and a consistent font. This fixes clipped IDs/timestamps and makes
+long evidence readable while preserving the original Results, Citations, Review
+and Summary sheets, frozen panes, status colors and internal citation links.
+Excel's row-height limit still applies to very long text; stored values remain
+complete. CSV/JSON are available when a flat representation is preferable.
+
+The existing export test can write a representative workbook with
+`PARITY_ARTIFACT_DIR`: long filenames/headers, multiline quotations and notes,
+full reviewer IDs/timestamps, Cyrillic/Japanese, overrides, missing values and
+literal formula-like text. The review PostgreSQL/race suite passed in 21.558
+seconds. Export/oracle checks were rerun after final layout adjustments. An
+independent openpyxl reader confirmed full values, the internal citation target
+and zero executable formulas.
+
+All four sheets were rendered and inspected with Artifact Tool and LibreOffice.
+Artifact Tool incorrectly displayed empty shared-string references as numbers;
+independent OOXML/openpyxl reads and LibreOffice confirmed that the actual cells
+are blank. The workflow DOCX downloaded by the real browser test was also
+rendered independently and its complete page inspected. These are sample-based
+layout checks, not a substitute for live Microsoft Office acceptance.
