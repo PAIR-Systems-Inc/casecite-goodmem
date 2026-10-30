@@ -37,12 +37,26 @@ func (s *Server) documentText(ctx context.Context, user, id string) (string, M, 
 	if err != nil {
 		return "", nil, err
 	}
-	content, err := s.gm.Content(ctx, str(doc, "memory_id"))
+	result, err := s.readDocumentText(ctx, doc)
+	if err != nil {
+		return "", doc, err
+	}
+	if err = result.fullTextError(); err != nil {
+		return "", doc, err
+	}
+	current, err := s.getObject(ctx, user, "document", id)
 	if err != nil {
 		return "", nil, err
 	}
-	text, err := extractText(content, str(doc, "filename"))
-	return text, doc, err
+	if str(current, "memory_id") != str(doc, "memory_id") {
+		return "", nil, fail(409, "Document changed during text extraction. Reopen it.")
+	}
+	pages := []M{}
+	for _, page := range result.Pages {
+		pages = append(pages, M{"page_index": page.Index, "span_start": page.Start, "span_end": page.End, "method": page.Method})
+	}
+	current["text_extraction"] = M{"method": result.Method, "complete": result.Complete, "page_count": len(result.Pages), "failed_pages": result.FailedPages, "pages": pages}
+	return result.Text, current, nil
 }
 
 func groundSpan(item M, text, quoteKey string) bool {
@@ -76,7 +90,7 @@ func (s *Server) queueTask(q request, kind string, input M) (any, error) {
 		return nil, err
 	}
 	var queued int
-	if err = tx.QueryRowContext(q.r.Context(), `SELECT count(*) FROM cc_jobs WHERE user_id=$1 AND status IN ('pending','running')`, q.user.ID).Scan(&queued); err != nil {
+	if err = tx.QueryRowContext(q.r.Context(), `SELECT count(*) FROM cc_jobs WHERE user_id=$1 AND kind<>'document.ocr_index' AND status IN ('pending','running')`, q.user.ID).Scan(&queued); err != nil {
 		return nil, err
 	}
 	if queued >= 5 {
@@ -401,7 +415,7 @@ func (s *Server) exportContractRedlines(q request, analysis M) (any, error) {
 			return nil, err
 		}
 		if !strings.EqualFold(filepath.Ext(str(doc, "filename")), ".docx") {
-			text, err := extractText(source, str(doc, "filename"))
+			text, _, err := s.documentText(q.r.Context(), q.user.ID, id)
 			if err != nil {
 				return nil, err
 			}

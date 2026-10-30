@@ -146,7 +146,7 @@ Object.assign(api, {
   },
 
   async getReviewDocumentText(tableId: string, documentId: string): Promise<ReviewDocumentText> {
-    return api.request(tablePath(tableId, `/documents/${enc(documentId)}/text`));
+    return api.request(tablePath(tableId, `/documents/${enc(documentId)}/text`), { timeout: 600_000 });
   },
 
   async listReviewRuns(tableId: string, limit = 50): Promise<{ runs: ReviewRun[] }> {

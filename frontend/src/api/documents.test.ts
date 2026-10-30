@@ -102,7 +102,7 @@ describe('api/documents', () => {
   it('getDocumentContent calls GET /documents/:id/content', async () => {
     (api.request as any).mockResolvedValue({ text: 'content' });
     await (api as any).getDocumentContent('doc1');
-    expect(api.request).toHaveBeenCalledWith('/documents/doc1/content');
+    expect(api.request).toHaveBeenCalledWith('/documents/doc1/content', { timeout: 600_000 });
   });
 
   it('deleteDocument calls DELETE /documents/:id', async () => {

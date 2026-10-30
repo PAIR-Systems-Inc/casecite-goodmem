@@ -331,7 +331,7 @@ func (s *Server) startResearch(q request) (any, error) {
 		return nil, err
 	}
 	var queued int
-	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM cc_jobs WHERE user_id=$1 AND status IN ('pending','running')`, user).Scan(&queued); err != nil {
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM cc_jobs WHERE user_id=$1 AND kind<>'document.ocr_index' AND status IN ('pending','running')`, user).Scan(&queued); err != nil {
 		return nil, err
 	}
 	if queued >= 5 {

@@ -3,9 +3,14 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
 	"log"
 	"math"
 	"net/http"
@@ -15,6 +20,49 @@ import (
 )
 
 func main() {
+	// This endpoint is an on-network dots.ocr protocol fixture. GoodMem still
+	// decodes the PDF, renders each page, calls OCR and returns page/layout data.
+	// The fixed transcription tests that plumbing, not model OCR accuracy.
+	http.HandleFunc("/ocr/v1/chat/completions", func(w http.ResponseWriter, r *http.Request) {
+		var input struct {
+			Messages []struct {
+				Content []struct {
+					Type  string `json:"type"`
+					Image struct {
+						URL string `json:"url"`
+					} `json:"image_url"`
+				} `json:"content"`
+			} `json:"messages"`
+		}
+		if json.NewDecoder(http.MaxBytesReader(w, r.Body, 32<<20)).Decode(&input) != nil {
+			http.Error(w, "Invalid multimodal OCR request", 400)
+			return
+		}
+		valid := false
+		for _, message := range input.Messages {
+			for _, part := range message.Content {
+				if part.Type != "image_url" {
+					continue
+				}
+				parts := strings.SplitN(part.Image.URL, ",", 2)
+				if len(parts) != 2 || !strings.HasPrefix(parts[0], "data:image/") || !strings.HasSuffix(parts[0], ";base64") {
+					continue
+				}
+				data, err := base64.StdEncoding.DecodeString(parts[1])
+				if err != nil {
+					continue
+				}
+				config, _, err := image.DecodeConfig(bytes.NewReader(data))
+				valid = err == nil && config.Width > 100 && config.Height > 100
+			}
+		}
+		if !valid {
+			http.Error(w, "Expected a real rendered image", 400)
+			return
+		}
+		answer := `[{"bbox":[120,170,1000,215],"category":"Title","text":"SCANNED AGREEMENT"},{"bbox":[120,270,1000,315],"category":"Text","text":"Notice is 30 days."},{"bbox":[120,330,1000,375],"category":"Text","text":"Payment is due monthly."}]`
+		write(w, map[string]any{"id": "test-ocr", "choices": []any{map[string]any{"index": 0, "message": map[string]any{"role": "assistant", "content": answer}, "finish_reason": "stop"}}})
+	})
 	judgeProvider := map[string]any{}
 	if raw, err := os.ReadFile("/fixtures/judge.json"); err == nil {
 		var fixture map[string]any

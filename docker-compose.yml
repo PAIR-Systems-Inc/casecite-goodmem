@@ -25,7 +25,10 @@ services:
       DB_USER: goodmem
       DB_PASSWORD: ${GOODMEM_DB_PASSWORD}
       GOODMEM_TLS_DISABLED: 'true'
+      GOODMEM_OCR_BASE_URL: ${GOODMEM_OCR_BASE_URL:-http://host.docker.internal:8001/v1}
       JAVA_TOOL_OPTIONS: -Xmx2g
+    extra_hosts:
+      - host.docker.internal:host-gateway
     restart: unless-stopped
   setup:
     build: .

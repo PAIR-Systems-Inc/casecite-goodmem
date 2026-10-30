@@ -50,6 +50,10 @@ func (s *Server) upload(q request) (any, error) {
 	}
 	id, mid := uuid(), uuid()
 	doc := M{"filename": name, "content_type": ct, "size": len(data), "memory_id": mid, "status": "processing", "source": "local", "sha256": digest(string(data)), "chunk_count": 0, "metadata": M{}, "folder_path": nil}
+	if documentNeedsOCR(data) {
+		doc["ocr_required"] = true
+		doc["index_memory_id"] = uuid()
+	}
 	if err = s.saveObject(q.r.Context(), q.user.ID, "document", id, matter, doc); err != nil {
 		return nil, err
 	}
@@ -64,8 +68,21 @@ func (s *Server) upload(q request) (any, error) {
 	} else {
 		doc["status"] = "processing"
 	}
-	if saveErr := s.saveObject(ctx, q.user.ID, "document", id, matter, doc); saveErr != nil {
+	// Update only upload state, preserving concurrent moves/index reservations.
+	r, saveErr := s.db.ExecContext(ctx, `UPDATE cc_objects SET data=data || $3::jsonb WHERE kind='document' AND id=$1 AND data->>'memory_id'=$2 AND data->>'ingest_job_id' IS NULL`, id, mid, jsonBytes(M{"status": doc["status"], "error": doc["error"]}))
+	if saveErr != nil {
 		return nil, saveErr
+	}
+	if n, _ := r.RowsAffected(); n == 0 {
+		if _, e := s.getObject(ctx, q.user.ID, "document", id); e != nil {
+			_ = s.scheduleMemoryDeletion(ctx, mid)
+			return nil, e
+		}
+	}
+	if err == nil && doc["ocr_required"] == true {
+		if _, err = s.enqueueDocumentOCR(ctx, q.user.ID, id, false); err != nil {
+			return nil, err
+		}
 	}
 	s.audit(ctx, q.user.ID, "document.upload", "document", id, M{"matter_id": matter, "size": len(data)})
 	return s.getObject(ctx, q.user.ID, "document", id)
@@ -76,8 +93,21 @@ func (s *Server) refreshDocument(ctx context.Context, doc M) M {
 	if state != "processing" && state != "uploading" && state != "upload_uncertain" {
 		return doc
 	}
+	if doc["ocr_required"] == true && str(doc, "ingest_job_id") != "" {
+		// The OCR job, not the original memory's text-layer ingestion, owns
+		// this status. In particular a failed original scan can still be OCRed.
+		return doc
+	}
 	m, err := s.gm.Memory(ctx, str(doc, "memory_id"))
 	if err != nil {
+		return doc
+	}
+	if doc["ocr_required"] == true {
+		if _, err = s.enqueueDocumentOCR(ctx, str(doc, "user_id"), str(doc, "id"), false); err == nil {
+			if current, e := s.getObject(ctx, str(doc, "user_id"), "document", str(doc, "id")); e == nil {
+				return current
+			}
+		}
 		return doc
 	}
 	switch str(m, "processingStatus") {
@@ -154,9 +184,36 @@ func (s *Server) deleteDocument(q request) (any, error) {
 	if err = s.canManageDocument(q.r.Context(), q.user.ID, d); err != nil {
 		return nil, err
 	}
+	// Keep a delayed deletion record across worker/process/account removal.
+	// It catches a remote memory create that completes after cancellation.
+	for _, memory := range []string{str(d, "memory_id"), str(d, "index_memory_id")} {
+		if err = s.scheduleMemoryDeletion(q.r.Context(), memory); err != nil {
+			return nil, err
+		}
+	}
+	if job := str(d, "ingest_job_id"); job != "" {
+		tx, e := s.db.BeginTx(q.r.Context(), nil)
+		if e != nil {
+			return nil, e
+		}
+		defer tx.Rollback()
+		if _, e = tx.ExecContext(q.r.Context(), `UPDATE cc_jobs SET status='cancelled',error='Document deleted',updated_at=now() WHERE id=$1 AND status IN ('pending','running')`, job); e != nil {
+			return nil, e
+		}
+		if _, e = tx.ExecContext(q.r.Context(), `UPDATE cc_objects SET data=data || '{"status":"deleting"}'::jsonb WHERE kind='document' AND id=$1`, str(d, "id")); e != nil {
+			return nil, e
+		}
+		if e = tx.Commit(); e != nil {
+			return nil, e
+		}
+	}
 	// Delete remote content first. A retry after a SQL failure is safe (404 is success).
-	if err = s.gm.Delete(q.r.Context(), str(d, "memory_id")); err != nil {
-		return nil, err
+	for _, memory := range []string{str(d, "memory_id"), str(d, "index_memory_id")} {
+		if memory != "" {
+			if err = s.gm.Delete(q.r.Context(), memory); err != nil {
+				return nil, err
+			}
+		}
 	}
 	_, err = s.db.ExecContext(q.r.Context(), `DELETE FROM cc_objects WHERE kind='document' AND id=$1`, str(d, "id"))
 	if err == nil {
@@ -190,15 +247,11 @@ func (s *Server) documentContent(q request) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	b, err := s.gm.Content(q.r.Context(), str(d, "memory_id"))
+	t, doc, err := s.documentText(q.r.Context(), q.user.ID, str(d, "id"))
 	if err != nil {
 		return nil, err
 	}
-	t, err := extractText(b, str(d, "filename"))
-	if err != nil {
-		return nil, fail(422, err.Error())
-	}
-	return M{"document_id": d["id"], "filename": d["filename"], "text": t}, nil
+	return M{"document_id": d["id"], "filename": d["filename"], "text": t, "extraction": doc["text_extraction"]}, nil
 }
 func (s *Server) documentFile(q request) (any, error) {
 	d, err := s.document(q)
@@ -312,23 +365,13 @@ func (s *Server) fullDocuments(ctx context.Context, user string, input M, query 
 	out := []SourceDocument{}
 	total := 0
 	for _, d := range docs {
-		b, err := s.gm.Content(ctx, str(d, "memory_id"))
+		t, doc, err := s.documentText(ctx, user, str(d, "id"))
 		if err != nil {
 			return nil, err
 		}
-		t, readErr := extractText(b, str(d, "filename"))
 		coverage := "full text"
-		if readErr != nil || strings.TrimSpace(t) == "" {
-			hits, err := s.gm.Search(ctx, query, []string{str(d, "memory_id")}, 20)
-			if err != nil {
-				return nil, err
-			}
-			parts := []string{}
-			for _, h := range hits {
-				parts = append(parts, h.Text)
-			}
-			t = strings.Join(parts, "\n\n")
-			coverage = "retrieved excerpts only"
+		if method := str(object(doc["text_extraction"]), "method"); strings.Contains(method, "goodmem_ocr") {
+			coverage = "full text (GoodMem OCR)"
 		}
 		if len(t) == 0 {
 			return nil, bad("No readable text is available for " + str(d, "filename"))

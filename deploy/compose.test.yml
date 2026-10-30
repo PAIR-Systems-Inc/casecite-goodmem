@@ -24,6 +24,7 @@ services:
       DB_USER: goodmem
       DB_PASSWORD: test-goodmem-password
       GOODMEM_TLS_DISABLED: 'true'
+      GOODMEM_OCR_BASE_URL: http://provider:8080/ocr/v1
       JAVA_TOOL_OPTIONS: -Xmx1g
     ports: ['127.0.0.1:${TEST_GOODMEM_PORT:-29080}:8080']
   provider:

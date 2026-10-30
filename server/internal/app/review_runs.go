@@ -84,7 +84,7 @@ func (s *Server) startReviewRun(q request, id string, in M) (M, error) {
 		return nil, bad("None of the given fields is in this table.")
 	}
 	var count int
-	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM cc_jobs WHERE user_id=$1 AND status IN ('pending','running')`, user).Scan(&count); err != nil {
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM cc_jobs WHERE user_id=$1 AND kind<>'document.ocr_index' AND status IN ('pending','running')`, user).Scan(&count); err != nil {
 		return nil, err
 	}
 	if count >= 5 {

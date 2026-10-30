@@ -407,6 +407,8 @@ interface RagDocumentItem {
   source: string;
   source_id?: string | null;
   status: 'pending' | 'processing' | 'indexed' | 'failed';
+  ocr_required?: boolean;
+  error?: string | null;
   chunk_count: number;
   created_at: string;
   indexed_at?: string | null;
@@ -562,6 +564,13 @@ export interface ReviewDocumentText {
   filename: string;
   text: string;
   length: number;
+  extraction?: {
+    method: 'native' | 'goodmem_ocr' | 'native_and_goodmem_ocr';
+    complete: boolean;
+    page_count: number;
+    failed_pages: number[];
+    pages: Array<{ page_index: number; span_start: number; span_end: number; method: 'native' | 'goodmem_ocr' }>;
+  };
 }
 
 export interface ReviewTableDocument {
@@ -1749,6 +1758,7 @@ export interface ApiClient {
   getAllDocuments(): Promise<DocumentListResponse['documents']>;
   getDocumentTree(): Promise<DocumentTree>;
   getDocumentContent(documentId: string): Promise<DocumentContent>;
+  retryDocumentOCR(documentId: string): Promise<{ job_id: string; status: string }>;
   deleteDocument(documentId: string): Promise<MessageResponse>;
   listFolders(): Promise<{ folders: string[] }>;
   createFolder(name: string): Promise<{ path: string; folders: string[] }>;

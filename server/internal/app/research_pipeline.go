@@ -81,7 +81,7 @@ func (r *researchRunner) documents(ctx context.Context, step, query string) (int
 	ids := []string{}
 	byMemory := map[string]M{}
 	for _, doc := range docs {
-		memory := str(doc, "memory_id")
+		memory := documentSearchMemory(doc)
 		if memory != "" {
 			ids = append(ids, memory)
 			byMemory[memory] = doc

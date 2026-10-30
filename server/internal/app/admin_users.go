@@ -293,7 +293,7 @@ func (s *Server) deleteUser(q request) (any, error) {
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
-	rows, err := s.db.QueryContext(q.r.Context(), `SELECT data->>'memory_id' FROM cc_objects WHERE kind='document' AND owner_id=$1`, id)
+	rows, err := s.db.QueryContext(q.r.Context(), `SELECT DISTINCT memory FROM cc_objects CROSS JOIN LATERAL (VALUES (data->>'memory_id'),(data->>'index_memory_id')) AS memories(memory) WHERE kind='document' AND owner_id=$1`, id)
 	if err != nil {
 		return nil, err
 	}
@@ -314,6 +314,9 @@ func (s *Server) deleteUser(q request) (any, error) {
 	}
 	rows.Close()
 	for _, memory := range memories {
+		if err = s.scheduleMemoryDeletion(q.r.Context(), memory); err != nil {
+			return nil, err
+		}
 		if err = s.gm.Delete(q.r.Context(), memory); err != nil {
 			return nil, err
 		}

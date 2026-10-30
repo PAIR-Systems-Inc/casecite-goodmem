@@ -29,7 +29,7 @@ func routePermissions(pattern string) []string {
 	switch pattern {
 	case "POST /api/v1/workflows/{id}/{action}":
 		return []string{"contracts.use"}
-	case "POST /api/v1/documents", "PATCH /api/v1/documents/{id}":
+	case "POST /api/v1/documents", "PATCH /api/v1/documents/{id}", "POST /api/v1/documents/{id}/retry-ocr":
 		return []string{"documents.upload"}
 	case "GET /api/v1/documents/{id}/pages", "GET /api/v1/documents/{id}/pages/{index}/image", "GET /api/v1/documents/{id}/file":
 		return []string{"documents.view"}

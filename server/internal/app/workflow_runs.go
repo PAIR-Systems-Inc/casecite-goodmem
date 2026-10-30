@@ -207,7 +207,7 @@ func workflowQueueLock(ctx context.Context, tx *sql.Tx, user string) error {
 
 func queueWorkflow(ctx context.Context, tx *sql.Tx, user string, w, run M, start int) (M, error) {
 	var count int
-	if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM cc_jobs WHERE user_id=$1 AND status IN ('pending','running')`, user).Scan(&count); err != nil {
+	if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM cc_jobs WHERE user_id=$1 AND kind<>'document.ocr_index' AND status IN ('pending','running')`, user).Scan(&count); err != nil {
 		return nil, err
 	}
 	if count >= 5 {

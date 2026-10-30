@@ -3,6 +3,8 @@ import { useRagDocsStore } from '../stores/ragDocsStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useAuthStore } from '../stores/authStore';
 import { useConnectorsStore } from '../stores/connectorsStore';
+import { useUIStore } from '../stores/uiStore';
+import { api } from '../api';
 import { Icon } from '../components';
 import type { RagDocument, Connector } from '../types';
 import s from './RagDocsView.module.css';
@@ -49,12 +51,32 @@ function RagDocsView() {
   const { ragSettings } = useSettingsStore();
   const { connectors, handleConnectorClick, init: initConnectors } = useConnectorsStore();
   const isAdmin = useAuthStore((st) => (st.user?.roles ?? []).includes('admin') || st.user?.role === 'admin');
+  const userId = useAuthStore((st) => st.user?.id);
   useEffect(() => { init(); initConnectors(); }, [init, initConnectors]);
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({});
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  const [retrying, setRetrying] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (ragDocsLoading || !ragDocs.some((doc) => ['pending', 'processing'].includes(doc.status))) return;
+    const timer = setInterval(() => { void loadRagDocuments(); }, 3000);
+    return () => clearInterval(timer);
+  }, [ragDocs, ragDocsLoading, loadRagDocuments]);
+
+  const retryOCR = async (doc: RagDocument) => {
+    setRetrying((state) => ({ ...state, [doc.id]: true }));
+    try {
+      await api.retryDocumentOCR(doc.id);
+      await loadRagDocuments();
+    } catch (error) {
+      useUIStore.getState().addToast(`Could not retry OCR: ${(error as Error).message}`, 'error');
+    } finally {
+      setRetrying((state) => ({ ...state, [doc.id]: false }));
+    }
+  };
 
   const generalDocs = ragDocsFiltered.filter((d: RagDocument) => !d.folder_path);
   const docsInFolder = (path: string) =>
@@ -83,8 +105,9 @@ function RagDocsView() {
         <div className={s.docFilename}>{doc.filename}</div>
         <div className={`${s.docMetaText} ${doc.status === 'failed' ? s.docMetaError : ''}`}>
           {doc.status === 'failed'
-            ? String(doc.metadata?.error || 'Failed to index')
-            : `${doc.chunk_count || 0} chunks`}
+            ? String(doc.error || doc.metadata?.error || 'Failed to index')
+            : doc.status !== 'indexed' ? (doc.ocr_required ? 'Reading scanned pages and indexing…' : 'Indexing…')
+              : doc.ocr_required ? 'Indexed with OCR' : doc.chunk_count ? `${doc.chunk_count} chunks` : 'Indexed'}
           {doc.created_at && ` · ${new Date(doc.created_at).toLocaleDateString()}`}
         </div>
         {doc.status !== 'failed' && typeof doc.metadata?.extraction_warning === 'string' && doc.metadata.extraction_warning && (
@@ -93,6 +116,11 @@ function RagDocsView() {
           </div>
         )}
       </div>
+      {doc.status === 'failed' && doc.ocr_required && doc.user_id === userId && (
+        <button className={s.refreshBtn} type="button" disabled={retrying[doc.id]} onClick={() => void retryOCR(doc)} aria-label={`Retry OCR for ${doc.filename}`}>
+          <Icon name={retrying[doc.id] ? 'Loader2' : 'RefreshCw'} size={14} /> Retry OCR
+        </button>
+      )}
       <button
         onClick={() => handleRagDocDelete(doc)}
         disabled={ragDocsDeleting[doc.id]}

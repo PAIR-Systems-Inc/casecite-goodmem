@@ -124,7 +124,7 @@ func (s *Server) createJob(q request) (any, error) {
 		return nil, err
 	}
 	var count int
-	if err = tx.QueryRowContext(q.r.Context(), `SELECT count(*) FROM cc_jobs WHERE user_id=$1 AND status IN ('pending','running')`, q.user.ID).Scan(&count); err != nil {
+	if err = tx.QueryRowContext(q.r.Context(), `SELECT count(*) FROM cc_jobs WHERE user_id=$1 AND kind<>'document.ocr_index' AND status IN ('pending','running')`, q.user.ID).Scan(&count); err != nil {
 		return nil, err
 	}
 	if count >= 5 {
@@ -322,7 +322,7 @@ func (s *Server) runJob(id, user, kind, lease string, b []byte) {
 		return
 	}
 	n, _ := r.RowsAffected()
-	if n == 1 && err == nil {
+	if n == 1 && err == nil && kind != "document.ocr_index" {
 		for _, output := range outputs.Judges {
 			r, saveErr := tx.ExecContext(finish, `UPDATE cc_judge_cache SET profile=$3,records=$4,metrics=NULL,updated_at=now() WHERE judge_id=$1 AND generation=$2 AND build_job_id=$5`, output.ID, output.Generation, jsonBytes(output.Profile), jsonBytes(output.Records), id)
 			if saveErr != nil {
@@ -384,6 +384,7 @@ func (s *Server) maintenance() {
 		case <-s.ctx.Done():
 			return
 		case <-t.C:
+			s.cleanupDocumentOCR(s.ctx)
 			_, err := s.db.ExecContext(s.ctx, `UPDATE cc_jobs SET status='failed',error='Worker lease expired. Retry explicitly; the previous request may have incurred a model charge.',updated_at=now() WHERE status='running' AND lease_until<now()`)
 			if err != nil {
 				s.log.Error("job recovery failed", "error", err)

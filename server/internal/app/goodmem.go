@@ -20,6 +20,7 @@ import (
 type GoodMem struct {
 	URL, Key, Space, Reranker string
 	Client                    *http.Client
+	OCRTimeout                time.Duration
 }
 type GoodMemError struct{ Status int }
 
@@ -34,7 +35,7 @@ type Hit struct {
 }
 
 func NewGoodMem(c Config) *GoodMem {
-	return &GoodMem{c.GoodMemURL, c.GoodMemKey, c.GoodMemSpace, c.RerankerID, &http.Client{Timeout: 120 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}
+	return &GoodMem{URL: c.GoodMemURL, Key: c.GoodMemKey, Space: c.GoodMemSpace, Reranker: c.RerankerID, OCRTimeout: 10 * time.Minute, Client: &http.Client{Timeout: 120 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}
 }
 
 func (g *GoodMem) do(ctx context.Context, method, p string, body io.Reader, contentType string) (*http.Response, error) {
@@ -79,9 +80,20 @@ func (g *GoodMem) Check(ctx context.Context) error {
 	return err
 }
 func (g *GoodMem) Create(ctx context.Context, id, docID, filename, contentType string, data []byte) (M, error) {
+	return g.createMemory(ctx, id, docID, filename, contentType, data, "")
+}
+func (g *GoodMem) CreateOCRIndex(ctx context.Context, id, docID, original, filename string, data []byte) (M, error) {
+	return g.createMemory(ctx, id, docID, filename, "text/plain", data, original)
+}
+func (g *GoodMem) createMemory(ctx context.Context, id, docID, filename, contentType string, data []byte, original string) (M, error) {
 	var buffer bytes.Buffer
 	w := multipart.NewWriter(&buffer)
 	request := M{"memoryId": id, "spaceId": g.Space, "contentType": contentType, "extractPageImages": true, "metadata": M{"title": filename, "filename": filename, "casecite_document_id": docID, "casecite_memory_id": id}, "chunkingConfig": M{"recursive": M{"chunkSize": 1800, "chunkOverlap": 200, "lengthMeasurement": "CHARACTER_COUNT", "keepStrategy": "KEEP_END"}}}
+	if original != "" {
+		object(request["metadata"])["casecite_source_memory_id"] = original
+		object(request["metadata"])["text_extraction"] = "goodmem_ocr"
+		request["extractPageImages"] = false
+	}
 	if err := w.WriteField("request", string(jsonBytes(request))); err != nil {
 		return nil, err
 	}

@@ -59,6 +59,8 @@ export function ReviewSourcePanel({
   const status = cell?.status || 'pending';
   const text = source?.status === 'ready' ? source.data.text : null;
   const highlight = text ? locateQuote(text, cell) : null;
+  const extraction = source?.status === 'ready' ? source.data.extraction : undefined;
+  const sourcePage = extraction?.pages.find((page) => cell?.span_start != null && cell.span_start >= page.span_start && cell.span_start < page.span_end);
   const approved = cell?.review_status === 'approved';
   const flagged = cell?.review_status === 'flagged';
 
@@ -169,6 +171,11 @@ export function ReviewSourcePanel({
           </span>
           {cell?.quote && !text && <span className={styles.muted}>quote only</span>}
         </div>
+        {(sourcePage?.method ?? extraction?.method)?.includes('goodmem_ocr') && (
+          <div className={styles.sourceMeta}>
+            Text extracted using OCR{sourcePage ? ` · page ${sourcePage.page_index + 1}` : ''}
+          </div>
+        )}
         {source?.status === 'loading' && <div className={styles.sourceEmpty}><Icon name="Loader2" size={13} className={styles.spin} /> Loading document text…</div>}
         {source?.status === 'error' && (
           <div className={styles.sourceEmpty}>

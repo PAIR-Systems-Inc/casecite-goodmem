@@ -529,7 +529,7 @@ func (s *Server) reviewTableText(q request) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return M{"document_id": id, "filename": doc["filename"], "text": text, "length": byteToUTF16(text, len(text))}, nil
+	return M{"document_id": id, "filename": doc["filename"], "text": text, "length": byteToUTF16(text, len(text)), "extraction": doc["text_extraction"]}, nil
 }
 
 func (s *Server) reviewTableRoutes() {

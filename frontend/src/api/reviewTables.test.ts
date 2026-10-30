@@ -131,7 +131,7 @@ describe('api/reviewTables', () => {
     await a.removeReviewDocument('t1', 'd2');
     expect(api.request).toHaveBeenLastCalledWith('/review-tables/t1/documents/d2', { method: 'DELETE' });
     await a.getReviewDocumentText('t1', 'd2');
-    expect(api.request).toHaveBeenLastCalledWith('/review-tables/t1/documents/d2/text');
+    expect(api.request).toHaveBeenLastCalledWith('/review-tables/t1/documents/d2/text', { timeout: 600_000 });
     await a.listReviewRuns('t1', 10);
     expect(api.request).toHaveBeenLastCalledWith('/review-tables/t1/runs?limit=10');
   });

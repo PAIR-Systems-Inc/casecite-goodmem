@@ -98,6 +98,9 @@ func (s *Server) llm(ctx context.Context, user, system, prompt string, jsonMode 
 }
 
 func (s *Server) execute(ctx context.Context, user, kind string, input M) (M, error) {
+	if kind == "document.ocr_index" {
+		return s.executeDocumentOCR(ctx, user, input)
+	}
 	if kind == "judge.build" {
 		return s.executeJudgeBuild(ctx, user, input)
 	}
@@ -247,8 +250,8 @@ func (s *Server) research(ctx context.Context, user string, input M) (M, error) 
 	ids := []string{}
 	byMemory := map[string]M{}
 	for _, d := range docs {
-		ids = append(ids, str(d, "memory_id"))
-		byMemory[str(d, "memory_id")] = d
+		ids = append(ids, documentSearchMemory(d))
+		byMemory[documentSearchMemory(d)] = d
 	}
 	settings, err := s.userSettings(ctx, user)
 	if err != nil {

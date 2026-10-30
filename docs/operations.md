@@ -50,7 +50,7 @@ The current rate limiter uses the direct peer IP, ignoring forwarded headers. Be
 
 ## Coverage and API boundaries
 
-Original files and page-image bytes are fetched through authenticated CaseCite routes, keeping the GoodMem key server-side. PDF/DOCX/text extraction for whole-document tasks is a lightweight Go reader, separate from ingestion. When it cannot extract usable text, the result labels its coverage as retrieved excerpts. Exact quotation matches establish only that supplied text contains that quote.
+Original files and page-image bytes are fetched through authenticated CaseCite routes, keeping the GoodMem key server-side. Native PDF/DOCX/text readers share a GoodMem OCR fallback. Scanned/mixed PDFs receive a durable OCR indexing job; GoodMem stores and searches the extracted text while retaining the original and its page images. Missing pages block full-document analysis. PostgreSQL caches successful OCR pages and coalesces readers. See [on-premise OCR](ocr.md) for the required model endpoint, permissions, retry behavior, limits and cleanup. Exact quotation matches establish only that the extracted text contains that quote.
 
 AI requests currently use an OpenAI-compatible `/chat/completions` endpoint with structured JSON for reviews and drafts. Providers must support the configured model, `max_completion_tokens`, and JSON response format. Long-draft section generation retries transient failures up to three attempts; those retries may incur provider charges. Other job retries remain explicit. Output-limit failures and invalid structured output are reported, and failed reconciliation preserves the assembled sections.
 

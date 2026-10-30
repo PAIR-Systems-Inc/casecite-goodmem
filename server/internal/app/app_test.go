@@ -153,7 +153,7 @@ func newFixture(t *testing.T) *fixture {
 			if err := json.Unmarshal([]byte(r.FormValue("request")), &m); err != nil {
 				t.Error(err)
 			}
-			if m["extractPageImages"] != true {
+			if m["extractPageImages"] != true && str(object(m["metadata"]), "casecite_source_memory_id") == "" {
 				t.Error("page extraction not requested")
 			}
 			file, _, err := r.FormFile("file")

@@ -22,6 +22,7 @@ be fixed; intentional differences need tests and an explanation.
 | Word add-in | Separate add-in build and deployment | Original add-in embedded at `/word-addin/`, with a deployment-specific manifest |
 | Ingestion, chunking, embedding and vector retrieval | Application integrations and local processing | GoodMem memory and retrieval APIs |
 | Original files and page images | Application-managed storage and rendering | GoodMem content and page-image APIs |
+| Scanned and mixed PDFs | Optional local Tesseract fallback, with sparse-page heuristics | GoodMem on-premise OCR API, complete-page checks, shared text cache and durable indexing back into GoodMem |
 | Application records | Application PostgreSQL database | Separate CaseCite database/role on the same PostgreSQL instance as GoodMem |
 | Sessions and expiring state | Redis and application coordination | PostgreSQL sessions, expiring JSONB records, counters and one-time tokens |
 | Background work | Python task machinery | PostgreSQL queue, worker leases, progress and cancellation; workers run inside Go |
@@ -31,10 +32,11 @@ be fixed; intentional differences need tests and an explanation.
 | Connectors and standalone legal tools | Original implementations | Required ports; unfinished work remains explicitly tracked |
 | Tracked DOCX export | Reconstructed plain-text document with revisions | Edits to the original OOXML package, retaining unrelated formatting and parts |
 
-The bundled steady-state deployment has three services: CaseCite, GoodMem and
-PostgreSQL, plus a one-time setup command. The application is one binary; that
-does not make the entire system one process. Existing TLS infrastructure and
-model providers are external dependencies.
+The bundled application deployment has three services: CaseCite, GoodMem and
+PostgreSQL, plus a one-time setup command. GoodMem's OCR model/add-on must also
+run on the local infrastructure. The application is one binary; that does not
+make the entire system one process. Existing TLS infrastructure, OCR compute,
+and embedding/generation models remain dependencies.
 
 Line counts and “10× less effort” are not acceptance criteria. A short rewrite
 that omits features is not an equivalent implementation. Do not compare the
@@ -48,6 +50,7 @@ flowchart LR
   App --> CC[(CaseCite database)]
   App --> GM[GoodMem API]
   GM --> GDB[(GoodMem database)]
+  GM --> OCR[On-premise GoodMem OCR model]
   App --> Providers[Model and legal-research providers]
   App --> Connectors[External document services]
 ```
@@ -59,12 +62,13 @@ access to GoodMem's internal tables is needed.
 ## Boundaries that stay explicit
 
 CaseCite stores ownership, matter membership, settings, sessions, jobs and
-workflow state. Each document record points to its GoodMem memory. Access
+workflow state. Each document record points to its original GoodMem memory;
+scanned/mixed PDFs also have a GoodMem memory for searchable OCR text. Access
 checks happen before fetching originals/page images and before retrieval;
 returned memory IDs are checked against the authorized scope. Moving a
 document between matters does not require re-embedding it.
 
-GoodMem performs ingestion, embeddings, retrieval and page rendering. Its full
+GoodMem performs ingestion, OCR, embeddings, retrieval and page rendering. Its full
 document and page-image APIs replace duplicate application storage. This does
 not eliminate provider charges or make extraction/semantic quality automatic.
 Sharing PostgreSQL also shares resource contention and failure modes.

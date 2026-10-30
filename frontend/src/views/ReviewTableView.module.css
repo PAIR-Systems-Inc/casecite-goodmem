@@ -1390,7 +1390,7 @@
 .sourceMeta {
   display: flex;
   gap: 10px;
-  color: var(--gray-400);
+  color: var(--gray-600);
   font-size: 11px;
 }
 

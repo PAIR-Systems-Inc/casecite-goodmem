@@ -49,11 +49,15 @@ Object.assign(api, {
   },
 
   async getDocumentContent(documentId: string): Promise<DocumentContent> {
-    return api.request(`/documents/${documentId}/content`);
+    return api.request(`/documents/${documentId}/content`, { timeout: 600_000 });
   },
 
   async deleteDocument(documentId: string): Promise<MessageResponse> {
     return api.request(`/documents/${documentId}`, { method: 'DELETE' });
+  },
+
+  async retryDocumentOCR(documentId: string): Promise<{ job_id: string; status: string }> {
+    return api.request(`/documents/${encodeURIComponent(documentId)}/retry-ocr`, { method: 'POST' });
   },
 
   // ── Knowledge-base folders ──────────────────────────────────────

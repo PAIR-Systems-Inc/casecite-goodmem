@@ -1,6 +1,6 @@
 # CaseCite GoodMem
 
-A legal workspace being ported to a **Go server, the original React interface and Word add-in, GoodMem, and PostgreSQL**. The Go application embeds both interfaces. GoodMem owns document ingestion, original files, page images and retrieval; PostgreSQL replaces Redis for application state and background work.
+A legal workspace being ported to a **Go server, the original React interface and Word add-in, GoodMem, and PostgreSQL**. The Go application embeds both interfaces. GoodMem owns document ingestion, original files, page images, OCR and retrieval; PostgreSQL replaces Redis for application state and background work.
 
 Derived from [Thomas Unise's CaseCite](https://github.com/thomasunise/casecite), under Apache-2.0, at commit `6605cb3474cf0c2894080af216d5fed2a81fc997`. The original uses Python/FastAPI and React/TypeScript. Git history retains that implementation.
 
@@ -67,7 +67,7 @@ docker compose up --build -d app
 
 Open `http://localhost:8000`. The installation token is `REGISTRATION_BOOTSTRAP_TOKEN` in your local `.env`. `init-env.mjs` refuses to overwrite an existing file and generates independent database passwords and application secrets.
 
-The steady-state stack has three services. Postgres hosts separate `goodmem` and `casecite` databases with separate logins. The one-time `setup` container stores the GoodMem connection in a private volume. The GoodMem image is pinned to the tested v1.0.334 digest. Setup on a fresh instance uses GoodMem's initial administrative credential; provision a suitably restricted application credential before a wider rollout.
+The application stack has three services. Postgres hosts separate `goodmem` and `casecite` databases with separate logins. The one-time `setup` container stores the GoodMem connection in a private volume. The GoodMem image is pinned to the tested v1.0.334 digest. OCR additionally needs GoodMem's on-premise model service, configured with `GOODMEM_OCR_BASE_URL`; see [OCR setup and behavior](docs/ocr.md). Setup on a fresh instance uses GoodMem's initial administrative credential; provision a suitably restricted application credential before a wider rollout.
 
 The default port is bound to localhost. For production, set `DEBUG=false`, use an HTTPS `PUBLIC_URL`, and put the app behind your existing TLS reverse proxy. GoodMem and Postgres stay on the internal network. See [operations](docs/operations.md) for backup, restart, and migration behavior.
 
@@ -112,7 +112,7 @@ It builds the Docker image and tests the restored UI's sign-in, matter creation,
 
 ## Limits that matter
 
-Whole-document contract analysis uses original PDF, DOCX or text content retrieved from GoodMem, or explicitly supplied document text. Unsupported extraction fails visibly; additional formats and scanned-document coverage still need work. Contract comparison accepts two to four documents. Long drafting creates a reviewable section plan and generates sections with shared definitions and instructions. Uploads default to 50 MB.
+Whole-document contract analysis uses original PDF, DOCX or text content retrieved from GoodMem, or explicitly supplied document text. Scanned/mixed PDFs use GoodMem OCR with page coverage, PostgreSQL caching and durable indexing of the extracted text back into GoodMem. Missing pages block full-document analysis. Other binary formats can use GoodMem's completed page images; full format parity remains unverified. Contract comparison accepts two to four documents. Long drafting creates a reviewable section plan and generates sections with shared definitions and instructions. Uploads default to 50 MB.
 
 GoodMem performs ingestion, chunking, embeddings, retrieval, and page rendering. Configure the space's embedders to suit the corpus; optional reranking uses `GOODMEM_RERANKER_ID`. CaseCite does not duplicate a vector index or implement its own OCR pipeline. Page images depend on GoodMem's support for the uploaded format.
 
