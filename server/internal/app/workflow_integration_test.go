@@ -196,17 +196,24 @@ func TestWorkflowFailedPreflightIsAtomicAndResumeReusesWork(t *testing.T) {
 		t.Fatal(run)
 	}
 	finished := str(rows[0], "finished_at")
+	failedCalls := calls.Load()
+	if failedCalls != 3 {
+		t.Fatal("unexpected shared provider retry budget", failedCalls)
+	}
+	configuredEndpoint1 := f.s.cfg.LLMURL
+	f.s.cfg.LLMURL = "https://api.openai.com/v1"
 	f.s.cfg.LLMKey = ""
 	f.call("POST", path+"/resume", owner, nil, 400)
 	if str(f.call("GET", path, owner, nil, 200), "status") != "failed" {
 		t.Fatal("failed preflight mutated state")
 	}
+	f.s.cfg.LLMURL = configuredEndpoint1
 	f.s.cfg.LLMKey = "llm-fixture"
 	failing.Store(false)
 	resumed := f.call("POST", path+"/resume", owner, nil, 202)
 	runReviewJob(t, f, owner, str(resumed, "job_id"))
 	run = f.call("GET", path, owner, nil, 200)
-	if str(run, "status") != "completed" || str(maps(run["step_runs"])[0], "finished_at") != finished || calls.Load() != 2 {
+	if str(run, "status") != "completed" || str(maps(run["step_runs"])[0], "finished_at") != finished || calls.Load() != failedCalls+1 {
 		t.Fatal(run, calls.Load())
 	}
 	// Approval transition also rolls back when the queue is full.
@@ -237,8 +244,11 @@ func TestWorkflowFailedPreflightIsAtomicAndResumeReusesWork(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	configuredEndpoint2 := f.s.cfg.LLMURL
+	f.s.cfg.LLMURL = "https://api.openai.com/v1"
 	f.s.cfg.LLMKey = ""
 	f.call("POST", path+"/approve", owner, nil, 400)
+	f.s.cfg.LLMURL = configuredEndpoint2
 	f.s.cfg.LLMKey = "llm-fixture"
 	approved := f.call("POST", path+"/approve", owner, M{"note": "Proceed"}, 202)
 	runReviewJob(t, f, owner, str(approved, "job_id"))

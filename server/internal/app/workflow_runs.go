@@ -186,12 +186,8 @@ func (s *Server) workflowPreflight(ctx context.Context, user string, run M, star
 		if kind == "citation_check" {
 			continue
 		}
-		key, err := s.providerKey(ctx, user, "openai", s.cfg.LLMKey)
-		if err != nil {
+		if err := s.requireResearchModel(ctx, user); err != nil {
 			return err
-		}
-		if key == "" {
-			return bad("Configure an OpenAI-compatible API key in Settings before running model steps.")
 		}
 		break
 	}

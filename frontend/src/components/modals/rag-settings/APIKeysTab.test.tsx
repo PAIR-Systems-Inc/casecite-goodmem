@@ -3,6 +3,7 @@ import { render, fireEvent, act } from '@testing-library/react';
 import { APIKeysTab } from './APIKeysTab';
 import { api } from '../../../api/client';
 import type { RagSettings } from '../../../types';
+import { useUIStore } from '../../../stores/uiStore';
 
 vi.mock('../../../api/client', () => ({
   api: { request: vi.fn().mockResolvedValue({}) },
@@ -112,6 +113,46 @@ describe('APIKeysTab', () => {
 
       const badge = Array.from(container.querySelectorAll('div')).find((el) => el.className.includes('keyBadge') && el.textContent === 'Local Model');
       expect(badge?.className).toContain('keyBadgeActive');
+    });
+
+    it('cancels a pending endpoint edit when restoring deployment defaults', async () => {
+      vi.useFakeTimers();
+      const original = { configured: true, base_url: 'http://local:8080/v1', chat_model: 'local-model', utility_model: 'local-model' };
+      (api.request as ReturnType<typeof vi.fn>).mockImplementation((ep: string) => Promise.resolve(ep.includes('local-llm') ? original : {}));
+      const { getByLabelText, getByRole } = render(<APIKeysTab {...defaultProps()} />);
+      await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+      fireEvent.change(getByLabelText('Chat Model'), { target: { value: 'pending-model' } });
+      fireEvent.click(getByRole('button', { name: 'Revert to deployment defaults' }));
+      await act(async () => {
+        useUIStore.getState().handleConfirm();
+        await vi.advanceTimersByTimeAsync(2000);
+      });
+      expect(getByLabelText('Chat Model')).toHaveValue('local-model');
+      const writes = (api.request as ReturnType<typeof vi.fn>).mock.calls.filter(([ep, opts]) => ep.includes('local-llm') && opts?.method);
+      expect(writes.map(([, opts]) => opts.method)).toEqual(['DELETE']);
+    });
+
+    it('orders a reset after an in-flight save', async () => {
+      vi.useFakeTimers();
+      let finishSave!: (value: Record<string, unknown>) => void;
+      const methods: string[] = [];
+      const original = { configured: true, base_url: 'http://local:8080/v1', chat_model: 'local-model', utility_model: 'local-model' };
+      (api.request as ReturnType<typeof vi.fn>).mockImplementation((ep: string, opts?: { method?: string }) => {
+        if (!ep.includes('local-llm')) return Promise.resolve({});
+        if (opts?.method) methods.push(opts.method);
+        if (opts?.method === 'POST') return new Promise((resolve) => { finishSave = resolve; });
+        return Promise.resolve(original);
+      });
+      const { getByLabelText, getByRole } = render(<APIKeysTab {...defaultProps()} />);
+      await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+      fireEvent.change(getByLabelText('Chat Model'), { target: { value: 'new-model' } });
+      await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+      fireEvent.click(getByRole('button', { name: 'Revert to deployment defaults' }));
+      await act(async () => { useUIStore.getState().handleConfirm(); });
+      expect(methods).toEqual(['POST']);
+      await act(async () => { finishSave({ ...original, chat_model: 'new-model' }); });
+      expect(methods).toEqual(['POST', 'DELETE']);
+      expect(getByLabelText('Chat Model')).toHaveValue('local-model');
     });
   });
 

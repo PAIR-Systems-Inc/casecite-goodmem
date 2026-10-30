@@ -181,9 +181,12 @@ func TestDeepResearchValidationAndAtomicQueueAdmission(t *testing.T) {
 	}
 	f.s.cfg.ResearchMaxSubquestions = 1
 	f.call("POST", "/deep-research/run", owner, M{"question": researchQuestion, "plan": []M{{"id": "a", "question": "Question one?", "tools": []string{"documents"}}, {"id": "b", "question": "Question two?", "tools": []string{"documents"}}}}, 400)
+	configuredEndpoint1 := f.s.cfg.LLMURL
+	f.s.cfg.LLMURL = "https://api.openai.com/v1"
 	f.s.cfg.LLMKey = ""
 	f.call("POST", "/deep-research/run", owner, M{"question": researchQuestion, "plan": editedResearchPlan()}, 400)
 	f.call("POST", "/deep-research/plan", owner, M{"question": researchQuestion}, 400)
+	f.s.cfg.LLMURL = configuredEndpoint1
 	f.s.cfg.LLMKey = "test-key"
 	for range 5 {
 		if _, err := f.s.db.Exec(`INSERT INTO cc_jobs(id,user_id,kind,input) VALUES($1,$2,'fixture','{}')`, uuid(), user); err != nil {

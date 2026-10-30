@@ -86,7 +86,7 @@ func applyReviewModel(c, result M, model string, textLength int, user string) bo
 	for _, key := range []string{"value", "quote", "span_start", "span_end", "verified", "status", "error"} {
 		c[key] = result[key]
 	}
-	c["model_used"], c["updated_at"] = model, nowString()
+	c["model_used"], c["updated_at"] = fallback(str(result, "model_used"), model), nowString()
 	if str(result, "status") == "error" {
 		c["model_used"] = nil
 	}

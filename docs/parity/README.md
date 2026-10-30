@@ -29,7 +29,7 @@ Implementation groups:
   citations, ingestion status, cloud pickers, all eight connector families and
   their incremental synchronization and credential management.
 - Matters: membership, ownership transfer, activity and shared resources.
-- Research: streaming chat, saved conversations, case-law tools, deep research,
+- Research: synchronous/queued chat, saved conversations, case-law tools, deep research,
   strategy briefs, judge intelligence, grounded quotations and exports.
 - Contracts: deterministic clause analysis, AI review, instructions, drafting,
   comparison, obligations, deadlines, parties, defined terms, and exact tracked

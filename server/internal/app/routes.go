@@ -22,6 +22,7 @@ func (s *Server) routes() {
 	s.api("POST /api/v1/auth/change-password", false, s.changePassword)
 	s.identityRoutes()
 	s.platformRoutes()
+	s.llmRoutes()
 	s.matterRoutes()
 	s.documentWorkspaceRoutes()
 	s.contractRoutes()

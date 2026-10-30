@@ -1,14 +1,11 @@
 package app
 
 import (
-	"bytes"
 	"context"
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"io"
 	"math"
-	"net/http"
 	"regexp"
 	"slices"
 	"strings"
@@ -159,59 +156,6 @@ func keywordOverlap(text string, words []string) float64 {
 	return float64(hits) / float64(len(words))
 }
 
-func (s *Server) contractEmbeddings(ctx context.Context, user string, texts []string) ([][]float64, error) {
-	key, err := s.providerKey(ctx, user, "openai", s.cfg.LLMKey)
-	if err != nil {
-		return nil, err
-	}
-	if key == "" {
-		return nil, bad("No embedding provider configured")
-	}
-	settings, err := s.userSettings(ctx, user)
-	if err != nil {
-		return nil, err
-	}
-	model := fallback(str(settings, "embedding_model"), "text-embedding-3-small")
-	result := [][]float64{}
-	for start := 0; start < len(texts); start += 64 {
-		batch := texts[start:min(start+64, len(texts))]
-		payload := M{"model": model, "input": batch}
-		req, err := http.NewRequestWithContext(ctx, "POST", s.cfg.LLMURL+"/embeddings", bytes.NewReader(jsonBytes(payload)))
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+key)
-		resp, err := s.client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		var decoded struct {
-			Data []struct {
-				Index     int       `json:"index"`
-				Embedding []float64 `json:"embedding"`
-			} `json:"data"`
-		}
-		err = json.NewDecoder(io.LimitReader(resp.Body, 32<<20)).Decode(&decoded)
-		resp.Body.Close()
-		if resp.StatusCode != 200 || err != nil {
-			return nil, fail(502, "Clause embedding provider could not process the request")
-		}
-		if len(decoded.Data) != len(batch) {
-			return nil, fail(502, "Clause embedding provider omitted a segment")
-		}
-		ordered := make([][]float64, len(batch))
-		for _, d := range decoded.Data {
-			if d.Index < 0 || d.Index >= len(batch) || len(d.Embedding) == 0 || ordered[d.Index] != nil {
-				return nil, fail(502, "Invalid clause embedding response")
-			}
-			ordered[d.Index] = d.Embedding
-		}
-		result = append(result, ordered...)
-	}
-	return result, nil
-}
-
 func (s *Server) clauseIntelligence(ctx context.Context, user, text, contractType, jurisdiction string) (M, error) {
 	segments := clauseSegments(text)
 	canonicals := maps(contractTaxonomy["CANONICAL_CLAUSES"])
@@ -219,18 +163,20 @@ func (s *Server) clauseIntelligence(ctx context.Context, user, text, contractTyp
 	segmentVectors := [][]float64{}
 	warnings := []string{}
 	if len(segments) > 0 {
-		settings, err := s.userSettings(ctx, user)
-		if err != nil {
-			return nil, err
+		route, routeErr := s.clauseEmbeddingRoute(ctx, user)
+		cacheKey := "clause-embeddings:" + digest(route.Provider+"|"+route.Endpoint+"|"+route.Model+"|"+digest(route.Key)+"|"+string(contractTaxonomyJSON))
+		err := routeErr
+		if err == nil {
+			err = s.kvGet(ctx, cacheKey, &canonicalVectors)
 		}
-		cacheKey := "clause-embeddings:" + digest(s.cfg.LLMURL+str(settings, "embedding_model")+string(contractTaxonomyJSON))
-		err = s.kvGet(ctx, cacheKey, &canonicalVectors)
 		if err != nil || len(canonicalVectors) != len(canonicals) {
 			texts := []string{}
 			for _, c := range canonicals {
 				texts = append(texts, str(c, "market_standard_text"))
 			}
-			canonicalVectors, err = s.contractEmbeddings(ctx, user, texts)
+			if routeErr == nil {
+				canonicalVectors, err = s.contractEmbeddingsAt(ctx, route, texts)
+			}
 			if err == nil {
 				if e := s.kvSet(ctx, cacheKey, canonicalVectors, 0); e != nil {
 					s.log.Warn("clause embedding cache write failed", "error", e)
@@ -242,7 +188,7 @@ func (s *Server) clauseIntelligence(ctx context.Context, user, text, contractTyp
 			for _, seg := range segments {
 				texts = append(texts, seg.Text)
 			}
-			segmentVectors, err = s.contractEmbeddings(ctx, user, texts)
+			segmentVectors, err = s.contractEmbeddingsAt(ctx, route, texts)
 		}
 		if err != nil {
 			if ctx.Err() != nil {

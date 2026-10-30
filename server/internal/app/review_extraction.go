@@ -180,7 +180,7 @@ func (s *Server) extractReviewDocument(ctx context.Context, user, id string, fie
 	if err == nil {
 		_ = json.Unmarshal(raw, &tags)
 	}
-	answer, err := s.structured(ctx, user, "Perform schema-driven tabular review. Every extracted value must carry a source quote.", reviewPrompt(fields, reviewExcerpts(text, fields, tags)))
+	answer, stats, err := s.structuredWithStats(ctx, user, "Perform schema-driven tabular review. Every extracted value must carry a source quote.", reviewPrompt(fields, reviewExcerpts(text, fields, tags)))
 	if err != nil {
 		s.log.Warn("review extraction failed", "document", id, "error", err)
 		return failAll("The model could not extract this document. Retry the row.")
@@ -191,6 +191,7 @@ func (s *Server) extractReviewDocument(ctx context.Context, user, id string, fie
 	}
 	for _, f := range fields {
 		results[str(f, "key")] = reviewModelCell(text, answers[str(f, "key")])
+		results[str(f, "key")]["model_used"] = stats["model"]
 	}
 	return results, len([]rune(text))
 }

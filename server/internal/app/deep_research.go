@@ -270,14 +270,8 @@ func (s *Server) researchScope(ctx context.Context, user, matter string, ids []s
 }
 
 func (s *Server) requireResearchModel(ctx context.Context, user string) error {
-	key, err := s.providerKey(ctx, user, "openai", s.cfg.LLMKey)
-	if err != nil {
-		return err
-	}
-	if key == "" {
-		return bad("An OpenAI API key or a custom LLM endpoint is required. Configure one in Settings.")
-	}
-	return nil
+	_, err := s.utilityModel(ctx, user)
+	return err
 }
 
 func (s *Server) researchPlan(q request) (any, error) {
@@ -296,13 +290,13 @@ func (s *Server) researchPlan(q request) (any, error) {
 	if err = s.requireResearchModel(q.r.Context(), q.user.ID); err != nil {
 		return nil, err
 	}
-	plan, err := s.planDeepResearch(q.r.Context(), q.user.ID, question)
+	plan, stats, err := s.planDeepResearchWithStats(q.r.Context(), q.user.ID, question)
 	if err != nil {
 		s.log.Warn("research planning failed", "error", err)
 		return nil, fail(502, "The research plan could not be drafted. Please try again.")
 	}
 	scope, err := s.researchScope(q.r.Context(), q.user.ID, str(in, "matter_id"), ids, count)
-	return M{"question": question, "plan": plan, "scope": scope, "caps": s.researchCaps(), "model": s.cfg.LLMUtilityModel}, err
+	return M{"question": question, "plan": plan, "scope": scope, "caps": s.researchCaps(), "model": stats["model"]}, err
 }
 
 func (s *Server) startResearch(q request) (any, error) {

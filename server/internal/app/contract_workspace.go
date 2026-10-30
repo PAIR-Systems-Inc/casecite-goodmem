@@ -14,12 +14,17 @@ import (
 const docxMIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
 func (s *Server) structured(ctx context.Context, user, instructions, prompt string) (M, error) {
+	result, _, err := s.structuredWithStats(ctx, user, instructions, prompt)
+	return result, err
+}
+
+func (s *Server) structuredWithStats(ctx context.Context, user, instructions, prompt string) (M, M, error) {
 	if _, ok := ctx.Value(llmOptionsKey{}).(llmOptions); !ok {
-		ctx = withLLMOptions(ctx, llmOptions{Model: s.cfg.LLMUtilityModel})
+		ctx = withLLMOptions(ctx, llmOptions{Utility: true})
 	}
-	answer, _, err := s.llm(ctx, user, legalSystem+"\n"+instructions, prompt, true)
+	answer, stats, err := s.llm(ctx, user, legalSystem+"\n"+instructions, prompt, true)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	answer = strings.TrimSpace(answer)
 	answer = strings.TrimPrefix(answer, "```json")
@@ -27,9 +32,12 @@ func (s *Server) structured(ctx context.Context, user, instructions, prompt stri
 	answer = strings.TrimSuffix(answer, "```")
 	var result M
 	if err = json.Unmarshal([]byte(answer), &result); err != nil {
-		return nil, fail(502, "The model returned an invalid structured response. Please retry.")
+		return nil, nil, fail(502, "The model returned an invalid structured response. Please retry.")
 	}
-	return result, nil
+	if result == nil {
+		return nil, nil, fail(502, "The model returned an empty structured response. Please retry.")
+	}
+	return result, stats, nil
 }
 
 func (s *Server) documentText(ctx context.Context, user, id string) (string, M, error) {
@@ -180,7 +188,7 @@ func (s *Server) contractRequest(q request) (any, error) {
 		if len([]rune(area)) < 2 || len([]rune(area)) > 200 {
 			return nil, bad("Enter a practice area up to 200 characters")
 		}
-		profile, _, err := s.llm(withLLMOptions(q.r.Context(), llmOptions{Model: s.cfg.LLMUtilityModel}), q.user.ID, legalSystem, "An attorney practicing in "+area+" is configuring their document-review assistant. Write their editable PRACTICE PROFILE: a concise practical brief of 300–500 words. Cover document types, clause types and provisions that matter in this practice, recurring red flags and traps, deadlines and notice requirements, and what a careful attorney always checks. Use plain prose and short lists, specific to their practice, with no generic commercial boilerplate. Do not assume a jurisdiction or invent client preferences.", false)
+		profile, _, err := s.llm(withLLMOptions(q.r.Context(), llmOptions{Utility: true}), q.user.ID, legalSystem, "An attorney practicing in "+area+" is configuring their document-review assistant. Write their editable PRACTICE PROFILE: a concise practical brief of 300–500 words. Cover document types, clause types and provisions that matter in this practice, recurring red flags and traps, deadlines and notice requirements, and what a careful attorney always checks. Use plain prose and short lists, specific to their practice, with no generic commercial boilerplate. Do not assume a jurisdiction or invent client preferences.", false)
 		return M{"practice_area": area, "profile": profile}, err
 	}
 	if strings.HasSuffix(path, "/draft-export") {

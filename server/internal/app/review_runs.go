@@ -30,7 +30,8 @@ func (s *Server) reviewTableEstimate(q request) (any, error) {
 		chars := number(doc, "review_text_length", reviewExcerptBudget)
 		tokens += reviewEstimateTokens(chars, fields)
 	}
-	return M{"documents": documents, "fields": fields, "cells": documents * fields, "llm_calls": documents, "approx_input_tokens": tokens, "model": s.cfg.LLMUtilityModel}, nil
+	model, err := s.utilityModelName(q.r.Context(), q.user.ID)
+	return M{"documents": documents, "fields": fields, "cells": documents * fields, "llm_calls": documents, "approx_input_tokens": tokens, "model": model}, err
 }
 
 func (s *Server) startReviewRun(q request, id string, in M) (M, error) {
@@ -43,12 +44,8 @@ func (s *Server) startReviewRun(q request, id string, in M) (M, error) {
 	if err != nil {
 		return nil, err
 	}
-	key, err := s.providerKey(ctx, user, "openai", s.cfg.LLMKey)
-	if err != nil {
+	if err = s.requireResearchModel(ctx, user); err != nil {
 		return nil, err
-	}
-	if key == "" {
-		return nil, bad("An OpenAI API key or a custom LLM endpoint is required. Configure one in Settings.")
 	}
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {

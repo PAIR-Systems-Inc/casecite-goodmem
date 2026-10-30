@@ -11,7 +11,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"time"
 )
 
 type draftReference struct{ Label, Text string }
@@ -339,33 +338,20 @@ func (s *Server) generateContractDraft(ctx context.Context, user, instructions s
 			}
 			prefix += shared
 			prompt := prefix + fmt.Sprintf("\n\nYOUR SECTION: %d. %s\nBRIEF: %s\nTARGET LENGTH: about %d words.\nEXCLUDE (owned by other sections): %s", number(section, "number", 0), str(section, "title"), str(section, "brief"), number(section, "target_words", 0), str(section, "exclude"))
-			for attempt := 0; attempt < 3; attempt++ {
-				content, e := s.draftChat(ctx, user, contractPrompts["_SECTION_SYSTEM"], prompt, false, max(8000, number(section, "target_words", 150)*4))
-				if e == nil && content != "" {
-					errs[i] = nil
-					drafted[i] = M{"number": section["number"], "title": section["title"], "text": ensureSectionHeading(content, section)}
-					count := completed.Add(1)
-					s.jobProgress(ctx, str(input, "job_id"), fmt.Sprintf("Drafted section %d of %d: %s", count, len(sections), str(section, "title")), 0.1+0.7*float64(count)/float64(len(sections)))
-					return
-				}
+			// The shared provider transport owns the retry budget. Retrying here
+			// would multiply upstream requests and repeat refusals/partial output.
+			content, e := s.draftChat(ctx, user, contractPrompts["_SECTION_SYSTEM"], prompt, false, max(8000, number(section, "target_words", 150)*4))
+			if e != nil {
 				errs[i] = e
-				if e == nil {
-					errs[i] = fail(502, "The model returned an empty section")
-				}
-				if ctx.Err() != nil {
-					return
-				}
-				if attempt < 2 {
-					timer := time.NewTimer(time.Duration(attempt+1) * 2 * time.Second)
-					select {
-					case <-timer.C:
-					case <-ctx.Done():
-						timer.Stop()
-						errs[i] = ctx.Err()
-						return
-					}
-				}
+				return
 			}
+			if content == "" {
+				errs[i] = fail(502, "The model returned an empty section")
+				return
+			}
+			drafted[i] = M{"number": section["number"], "title": section["title"], "text": ensureSectionHeading(content, section)}
+			count := completed.Add(1)
+			s.jobProgress(ctx, str(input, "job_id"), fmt.Sprintf("Drafted section %d of %d: %s", count, len(sections), str(section, "title")), 0.1+0.7*float64(count)/float64(len(sections)))
 		}(i, sec)
 	}
 	wg.Wait()

@@ -277,7 +277,7 @@ func (r *researchRunner) synthesize(ctx context.Context, question string, steps 
 		findings = append(findings, "["+str(step, "id")+"] "+str(step, "question")+"\n"+fallback(str(step, "answer"), "(no answer)"))
 	}
 	prompt := strings.NewReplacer("__QUESTION__", researchNeutralize(question), "__FINDINGS__", researchNeutralize(strings.Join(findings, "\n\n")), "__PASSAGES__", researchNeutralize(researchPassageLines(passages, 120000))).Replace(str(researchPrompts, "synthesis"))
-	data, err := r.s.structured(ctx, r.user, legalSystem, prompt)
+	data, stats, err := r.s.structuredWithStats(ctx, r.user, legalSystem, prompt)
 	if err != nil {
 		return nil, nil, bad("The research synthesis could not be completed. Please try again.")
 	}
@@ -319,25 +319,29 @@ func (r *researchRunner) synthesize(ctx context.Context, question string, steps 
 	if strings.TrimSpace(answer) == "" {
 		return nil, nil, bad("The research synthesis returned no answer. Retry the run.")
 	}
-	return M{"answer": answer, "key_findings": keyFindings, "open_questions": open, "cited_refs": uniqueWorkflowStrings(cited), "invalid_refs_stripped": stripped, "case_references_removed": removed}, all, nil
+	return M{"answer": answer, "key_findings": keyFindings, "open_questions": open, "cited_refs": uniqueWorkflowStrings(cited), "invalid_refs_stripped": stripped, "case_references_removed": removed, "model": stats["model"]}, all, nil
 }
 
 func (s *Server) researchCaps() M {
 	return M{"max_subquestions": positive(s.cfg.ResearchMaxSubquestions, 8), "max_tool_calls": positive(s.cfg.ResearchMaxToolCalls, 24), "max_passages": positive(s.cfg.ResearchMaxPassages, 60), "concurrency": positive(s.cfg.ResearchConcurrency, 3), "followup_depth": s.cfg.ResearchFollowupDepth}
 }
 func (s *Server) planDeepResearch(ctx context.Context, user, question string) ([]M, error) {
+	plan, _, err := s.planDeepResearchWithStats(ctx, user, question)
+	return plan, err
+}
+func (s *Server) planDeepResearchWithStats(ctx context.Context, user, question string) ([]M, M, error) {
 	cap := number(s.researchCaps(), "max_subquestions", 8)
 	prompt := strings.Replace(str(researchPrompts, "plan"), "3-8 distinct", fmt.Sprintf("%d-%d distinct", min(3, cap), cap), 1)
 	prompt = strings.ReplaceAll(prompt, "__QUESTION__", researchNeutralize(question))
-	data, err := s.structured(ctx, user, legalSystem, prompt)
+	data, stats, err := s.structuredWithStats(ctx, user, legalSystem, prompt)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	plan := normalizeResearchPlan(data, M{"documents": true, "case_law": true}, cap)
 	if len(plan) == 0 {
-		return nil, fail(502, "The planner returned no usable sub-questions. Please try again.")
+		return nil, nil, fail(502, "The planner returned no usable sub-questions. Please try again.")
 	}
-	return plan, nil
+	return plan, stats, nil
 }
 
 func (s *Server) runDeepResearch(ctx context.Context, user, question, matter string, plan []M, ids []string) (M, error) {
@@ -466,7 +470,7 @@ func (s *Server) runDeepResearch(ctx context.Context, user, question, matter str
 			}
 		}
 	}
-	return M{"question": question, "answer": synthesis["answer"], "key_findings": synthesis["key_findings"], "open_questions": synthesis["open_questions"], "sub_questions": steps, "sources": sources, "scope": scope, "verification": M{"quotes_verified": verified, "quotes_unverified": unverified, "invalid_refs_stripped": invalid, "case_references_removed": synthesis["case_references_removed"], "citations_checked": len(checks)}, "model": s.cfg.LLMUtilityModel, "notice": aiReviewNotice}, nil
+	return M{"question": question, "answer": synthesis["answer"], "key_findings": synthesis["key_findings"], "open_questions": synthesis["open_questions"], "sub_questions": steps, "sources": sources, "scope": scope, "verification": M{"quotes_verified": verified, "quotes_unverified": unverified, "invalid_refs_stripped": invalid, "case_references_removed": synthesis["case_references_removed"], "citations_checked": len(checks)}, "model": synthesis["model"], "notice": aiReviewNotice}, nil
 }
 
 func (s *Server) workflowDeepResearch(ctx context.Context, user string, w, run, step, outputs M, ids []string) (M, error) {

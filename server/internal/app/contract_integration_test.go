@@ -95,6 +95,7 @@ func contractFixture(t *testing.T, hooks ...func(string)) (*fixture, *[]string, 
 	}))
 	t.Cleanup(provider.Close)
 	f.s.cfg.LLMURL = provider.URL
+	f.s.cfg.EmbeddingURL = provider.URL
 	return f, &calls, mu
 }
 func TestCancelledAnalysisCannotPublishSavedResults(t *testing.T) {

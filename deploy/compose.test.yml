@@ -53,8 +53,13 @@ services:
       DEBUG: 'true'
       PUBLIC_URL: http://localhost:${TEST_APP_PORT:-29000}
       OPENAI_BASE_URL: http://provider:8080/v1
-      OPENAI_API_KEY: test-provider-only
+      OPENAI_API_KEY: ''
       LLM_MODEL: test-model
+      EMBEDDING_BASE_URL: http://provider:8080/v1
+      EMBEDDING_MODEL: test-embedding
+      EMBEDDING_API_KEY: test-provider-only
+      HIPAA_ENFORCEMENT_ENABLED: 'true'
+      APPROVED_AI_PROVIDERS: self_hosted
       COURTLISTENER_BASE_URL: http://provider:8080/api/rest/v4
       COURTLISTENER_API_TOKEN: test-court-only
       WIKIPEDIA_API_URL: http://provider:8080/wiki

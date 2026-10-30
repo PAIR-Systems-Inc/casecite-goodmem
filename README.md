@@ -4,6 +4,8 @@ A legal workspace being ported to a **Go server, the original React interface an
 
 Derived from [Thomas Unise's CaseCite](https://github.com/thomasunise/casecite), under Apache-2.0, at commit `6605cb3474cf0c2894080af216d5fed2a81fc997`. The original uses Python/FastAPI and React/TypeScript. Git history retains that implementation.
 
+Generation supports native Claude/Gemini and OpenAI-compatible endpoints, including keyless local models. The original admin endpoint and CourtListener controls persist encrypted settings in PostgreSQL. Clause embeddings use a separate OpenAI/Voyage/Cohere or local provider; GoodMem retains document indexing and retrieval. See [provider configuration](docs/providers.md).
+
 ## Implementation status
 
 **Full feature and UI parity is the requirement, and is not yet complete.** The earlier reduced-scope implementation is preserved at `checkpoint/core-goodmem-a74e09e`; its omissions are not accepted scope for this branch.
@@ -16,7 +18,7 @@ Saved workflows now include all seven original step types, the three original te
 
 The eight legal-tool routes cover case search and pagination, separate opinion/cluster lookups, citation checks, precedents, docket search/details, oral arguments, and yearly trends. Shared CourtListener pacing and retries apply across tools and research; expiring trend and court-name caches use PostgreSQL.
 
-Judge intelligence includes all eight original routes: name search, durable profile builds/refreshes, biography and career, filtered opinions/full text, statistics, all nine computed metrics with methodology, and administrator deletion. Profiles and metrics use PostgreSQL. The original screens show build progress, data coverage and partial-data warnings. Connectors, cloud pickers, streaming research/chat (including judge briefs and Q&A) and remaining administration paths still require implementation or integration work. Live provider, Word-host and full browser verification remain open.
+Judge intelligence includes all eight original routes: name search, durable profile builds/refreshes, biography and career, filtered opinions/full text, statistics, all nine computed metrics with methodology, and administrator deletion. Profiles and metrics use PostgreSQL. The original screens show build progress, data coverage and partial-data warnings. Connectors, cloud pickers, shared research/chat and strategy (including judge briefs and Q&A), and remaining administration paths still require implementation or integration work. Live provider, Word-host and full browser verification remain open.
 
 See the [parity scope](docs/parity/README.md), [source comparisons and verification evidence](docs/parity/evidence.md), and [architecture assessment](docs/migration.md). Known upstream defects should be fixed, with regression tests and documented differences, rather than reproduced.
 

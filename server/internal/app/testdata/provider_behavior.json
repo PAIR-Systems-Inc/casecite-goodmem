@@ -1,0 +1,1066 @@
+{
+  "baseline": "6605cb3474cf0c2894080af216d5fed2a81fc997",
+  "sources": {
+    "backend/app/services/provider_policy.py": "a9f8ed7dd44ea14d3dc04fde34e1e7c23a71f92c5e385da34a1a0b2c53a65ffa",
+    "backend/app/services/rag/generation.py": "fe9153d8ce84b56c5d0f5e25283212e06dd61b865f00d683a29bcb4257966ab3",
+    "backend/app/services/llm_clients.py": "47300ea2f7caf1a4b0a0fe8adba98075cd5a174be7d972fe4b0b5072552aea2b"
+  },
+  "fixtures": [
+    {
+      "kind": "endpoint",
+      "input": "",
+      "expected": "openai"
+    },
+    {
+      "kind": "endpoint",
+      "input": "https://api.openai.com/v1",
+      "expected": "openai"
+    },
+    {
+      "kind": "endpoint",
+      "input": "https://API.OPENAI.COM/v1/",
+      "expected": "openai"
+    },
+    {
+      "kind": "endpoint",
+      "input": "http://localhost:11434/v1",
+      "expected": "self_hosted"
+    },
+    {
+      "kind": "endpoint",
+      "input": "http://host.docker.internal:8080/v1",
+      "expected": "self_hosted"
+    },
+    {
+      "kind": "endpoint",
+      "input": "http://ollama:11434/v1",
+      "expected": "self_hosted"
+    },
+    {
+      "kind": "endpoint",
+      "input": "http://127.0.0.1/v1",
+      "expected": "self_hosted"
+    },
+    {
+      "kind": "endpoint",
+      "input": "http://10.20.1.2/v1",
+      "expected": "self_hosted"
+    },
+    {
+      "kind": "endpoint",
+      "input": "http://172.16.8.1/v1",
+      "expected": "self_hosted"
+    },
+    {
+      "kind": "endpoint",
+      "input": "http://192.168.1.2/v1",
+      "expected": "self_hosted"
+    },
+    {
+      "kind": "endpoint",
+      "input": "http://169.254.12.1/v1",
+      "expected": "self_hosted"
+    },
+    {
+      "kind": "endpoint",
+      "input": "http://[::1]/v1",
+      "expected": "self_hosted"
+    },
+    {
+      "kind": "endpoint",
+      "input": "http://[fd01::1]/v1",
+      "expected": "self_hosted"
+    },
+    {
+      "kind": "endpoint",
+      "input": "https://api.groq.com/openai/v1",
+      "expected": "api.groq.com"
+    },
+    {
+      "kind": "endpoint",
+      "input": "https://openrouter.ai/api/v1",
+      "expected": "openrouter.ai"
+    },
+    {
+      "kind": "endpoint",
+      "input": "https://api.openai.com.attacker.example/v1",
+      "expected": "api.openai.com.attacker.example"
+    },
+    {
+      "kind": "endpoint",
+      "input": "https://8.8.8.8/v1",
+      "expected": "8.8.8.8"
+    },
+    {
+      "kind": "model",
+      "input": "",
+      "expected": "openai"
+    },
+    {
+      "kind": "model",
+      "input": "gpt-5.5",
+      "expected": "openai"
+    },
+    {
+      "kind": "model",
+      "input": "claude-sonnet-4-6",
+      "expected": "anthropic"
+    },
+    {
+      "kind": "model",
+      "input": "ANTHROPIC/CLAUDE",
+      "expected": "anthropic"
+    },
+    {
+      "kind": "model",
+      "input": "gemini-2.5-pro",
+      "expected": "google"
+    },
+    {
+      "kind": "model",
+      "input": "models/gemini-flash",
+      "expected": "google"
+    },
+    {
+      "kind": "model",
+      "input": "llama3.1",
+      "expected": "openai"
+    },
+    {
+      "kind": "model",
+      "input": "custom-gpt",
+      "expected": "openai"
+    },
+    {
+      "kind": "model",
+      "input": "gemini-claude",
+      "expected": "anthropic"
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [],
+      "input": "openai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [],
+      "input": "anthropic",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [],
+      "input": "google",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [],
+      "input": "self_hosted",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [],
+      "input": "api.groq.com",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [],
+      "input": "openrouter.ai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "openai"
+      ],
+      "input": "openai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "openai"
+      ],
+      "input": "anthropic",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "openai"
+      ],
+      "input": "google",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "openai"
+      ],
+      "input": "self_hosted",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "openai"
+      ],
+      "input": "api.groq.com",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "openai"
+      ],
+      "input": "openrouter.ai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "self_hosted"
+      ],
+      "input": "openai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "self_hosted"
+      ],
+      "input": "anthropic",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "self_hosted"
+      ],
+      "input": "google",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "self_hosted"
+      ],
+      "input": "self_hosted",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "self_hosted"
+      ],
+      "input": "api.groq.com",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "self_hosted"
+      ],
+      "input": "openrouter.ai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        " LOCAL "
+      ],
+      "input": "openai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        " LOCAL "
+      ],
+      "input": "anthropic",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        " LOCAL "
+      ],
+      "input": "google",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        " LOCAL "
+      ],
+      "input": "self_hosted",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        " LOCAL "
+      ],
+      "input": "api.groq.com",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        " LOCAL "
+      ],
+      "input": "openrouter.ai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "self-hosted"
+      ],
+      "input": "openai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "self-hosted"
+      ],
+      "input": "anthropic",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "self-hosted"
+      ],
+      "input": "google",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "self-hosted"
+      ],
+      "input": "self_hosted",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "self-hosted"
+      ],
+      "input": "api.groq.com",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "self-hosted"
+      ],
+      "input": "openrouter.ai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "selfhosted"
+      ],
+      "input": "openai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "selfhosted"
+      ],
+      "input": "anthropic",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "selfhosted"
+      ],
+      "input": "google",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "selfhosted"
+      ],
+      "input": "self_hosted",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "selfhosted"
+      ],
+      "input": "api.groq.com",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "selfhosted"
+      ],
+      "input": "openrouter.ai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "anthropic",
+        "google"
+      ],
+      "input": "openai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "anthropic",
+        "google"
+      ],
+      "input": "anthropic",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "anthropic",
+        "google"
+      ],
+      "input": "google",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "anthropic",
+        "google"
+      ],
+      "input": "self_hosted",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "anthropic",
+        "google"
+      ],
+      "input": "api.groq.com",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "anthropic",
+        "google"
+      ],
+      "input": "openrouter.ai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "api.groq.com"
+      ],
+      "input": "openai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "api.groq.com"
+      ],
+      "input": "anthropic",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "api.groq.com"
+      ],
+      "input": "google",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "api.groq.com"
+      ],
+      "input": "self_hosted",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "api.groq.com"
+      ],
+      "input": "api.groq.com",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": false,
+      "approved": [
+        "api.groq.com"
+      ],
+      "input": "openrouter.ai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [],
+      "input": "openai",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [],
+      "input": "anthropic",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [],
+      "input": "google",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [],
+      "input": "self_hosted",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [],
+      "input": "api.groq.com",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [],
+      "input": "openrouter.ai",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "openai"
+      ],
+      "input": "openai",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "openai"
+      ],
+      "input": "anthropic",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "openai"
+      ],
+      "input": "google",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "openai"
+      ],
+      "input": "self_hosted",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "openai"
+      ],
+      "input": "api.groq.com",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "openai"
+      ],
+      "input": "openrouter.ai",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "self_hosted"
+      ],
+      "input": "openai",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "self_hosted"
+      ],
+      "input": "anthropic",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "self_hosted"
+      ],
+      "input": "google",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "self_hosted"
+      ],
+      "input": "self_hosted",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "self_hosted"
+      ],
+      "input": "api.groq.com",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "self_hosted"
+      ],
+      "input": "openrouter.ai",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        " LOCAL "
+      ],
+      "input": "openai",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        " LOCAL "
+      ],
+      "input": "anthropic",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        " LOCAL "
+      ],
+      "input": "google",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        " LOCAL "
+      ],
+      "input": "self_hosted",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        " LOCAL "
+      ],
+      "input": "api.groq.com",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        " LOCAL "
+      ],
+      "input": "openrouter.ai",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "self-hosted"
+      ],
+      "input": "openai",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "self-hosted"
+      ],
+      "input": "anthropic",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "self-hosted"
+      ],
+      "input": "google",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "self-hosted"
+      ],
+      "input": "self_hosted",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "self-hosted"
+      ],
+      "input": "api.groq.com",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "self-hosted"
+      ],
+      "input": "openrouter.ai",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "selfhosted"
+      ],
+      "input": "openai",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "selfhosted"
+      ],
+      "input": "anthropic",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "selfhosted"
+      ],
+      "input": "google",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "selfhosted"
+      ],
+      "input": "self_hosted",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "selfhosted"
+      ],
+      "input": "api.groq.com",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "selfhosted"
+      ],
+      "input": "openrouter.ai",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "anthropic",
+        "google"
+      ],
+      "input": "openai",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "anthropic",
+        "google"
+      ],
+      "input": "anthropic",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "anthropic",
+        "google"
+      ],
+      "input": "google",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "anthropic",
+        "google"
+      ],
+      "input": "self_hosted",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "anthropic",
+        "google"
+      ],
+      "input": "api.groq.com",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "anthropic",
+        "google"
+      ],
+      "input": "openrouter.ai",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "api.groq.com"
+      ],
+      "input": "openai",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "api.groq.com"
+      ],
+      "input": "anthropic",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "api.groq.com"
+      ],
+      "input": "google",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "api.groq.com"
+      ],
+      "input": "self_hosted",
+      "expected": false
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "api.groq.com"
+      ],
+      "input": "api.groq.com",
+      "expected": true
+    },
+    {
+      "kind": "policy",
+      "enabled": true,
+      "approved": [
+        "api.groq.com"
+      ],
+      "input": "openrouter.ai",
+      "expected": false
+    },
+    {
+      "kind": "adapt",
+      "input": {
+        "model": "test",
+        "max_tokens": 1024,
+        "temperature": 0.1
+      },
+      "message": "Unsupported parameter: max_tokens",
+      "expected": {
+        "model": "test",
+        "temperature": 0.1,
+        "max_completion_tokens": 1024
+      },
+      "changed": true
+    },
+    {
+      "kind": "adapt",
+      "input": {
+        "model": "test",
+        "max_tokens": 1024,
+        "temperature": 0.1
+      },
+      "message": "Unsupported value: temperature",
+      "expected": {
+        "model": "test",
+        "max_tokens": 1024
+      },
+      "changed": true
+    },
+    {
+      "kind": "adapt",
+      "input": {
+        "model": "test",
+        "max_tokens": 1024,
+        "temperature": 0.1
+      },
+      "message": "Invalid model",
+      "expected": {
+        "model": "test",
+        "max_tokens": 1024,
+        "temperature": 0.1
+      },
+      "changed": false
+    },
+    {
+      "kind": "adapt",
+      "input": {
+        "model": "test",
+        "max_tokens": 1024,
+        "temperature": 0.1
+      },
+      "message": "Invalid API key",
+      "expected": {
+        "model": "test",
+        "max_tokens": 1024,
+        "temperature": 0.1
+      },
+      "changed": false
+    },
+    {
+      "kind": "adapt",
+      "input": {
+        "model": "test",
+        "max_tokens": 1024,
+        "temperature": 0.1
+      },
+      "message": "Maximum context length exceeded",
+      "expected": {
+        "model": "test",
+        "max_tokens": 1024,
+        "temperature": 0.1
+      },
+      "changed": false
+    }
+  ]
+}

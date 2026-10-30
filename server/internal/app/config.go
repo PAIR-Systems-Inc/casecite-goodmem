@@ -17,6 +17,10 @@ type Config struct {
 	CourtListenerURL                                                   string
 	WikipediaURL                                                       string
 	LLMUtilityModel                                                    string
+	AnthropicKey, GoogleKey                                            string
+	EmbeddingURL, EmbeddingKey, EmbeddingModel, VoyageKey, CohereKey   string
+	ProviderPolicyEnabled                                              bool
+	ApprovedAIProviders                                                []string
 	LLMContextWindow                                                   int
 	Debug                                                              bool
 	SessionTTL, IdleTTL                                                time.Duration
@@ -48,8 +52,12 @@ func LoadConfig() (Config, error) {
 		RerankerID: os.Getenv("GOODMEM_RERANKER_ID"),
 		LLMURL:     strings.TrimRight(env("OPENAI_BASE_URL", "https://api.openai.com/v1"), "/"),
 		LLMKey:     os.Getenv("OPENAI_API_KEY"), LLMModel: env("LLM_MODEL", "gpt-5.5"),
-		LLMUtilityModel:    env("OPENAI_UTILITY_MODEL", "gpt-5.4-mini"),
-		CourtListenerToken: os.Getenv("COURTLISTENER_API_TOKEN"), Debug: env("DEBUG", "false") == "true",
+		LLMUtilityModel: env("OPENAI_UTILITY_MODEL", "gpt-5.4-mini"),
+		AnthropicKey:    os.Getenv("ANTHROPIC_API_KEY"), GoogleKey: env("GOOGLE_API_KEY", os.Getenv("GEMINI_API_KEY")),
+		EmbeddingURL: strings.TrimSpace(os.Getenv("EMBEDDING_BASE_URL")), EmbeddingKey: os.Getenv("EMBEDDING_API_KEY"), EmbeddingModel: env("EMBEDDING_MODEL", "text-embedding-3-small"),
+		VoyageKey: os.Getenv("VOYAGE_API_KEY"), CohereKey: os.Getenv("COHERE_API_KEY"),
+		ProviderPolicyEnabled: env("HIPAA_ENFORCEMENT_ENABLED", "false") == "true",
+		CourtListenerToken:    os.Getenv("COURTLISTENER_API_TOKEN"), Debug: env("DEBUG", "false") == "true",
 		CourtListenerURL: strings.TrimRight(env("COURTLISTENER_BASE_URL", "https://www.courtlistener.com/api/rest/v4"), "/"),
 		WikipediaURL:     env("WIKIPEDIA_API_URL", "https://en.wikipedia.org/w/api.php"),
 		SessionTTL:       8 * time.Hour, IdleTTL: 2 * time.Hour, MaxUpload: 50 << 20,
@@ -63,6 +71,14 @@ func LoadConfig() (Config, error) {
 		MicrosoftClientID: os.Getenv("MICROSOFT_CLIENT_ID"), MicrosoftTenantID: os.Getenv("MICROSOFT_TENANT_ID"), MicrosoftRedirectURI: os.Getenv("MICROSOFT_REDIRECT_URI"),
 		AzureAutoProvision: env("AZURE_SSO_AUTO_PROVISION", "true") == "true", AzureDefaultRole: env("AZURE_SSO_DEFAULT_ROLE", "viewer"),
 		SMTPHost: os.Getenv("SMTP_HOST"), SMTPPort: env("SMTP_PORT", "587"), SMTPUser: os.Getenv("SMTP_USER"), SMTPPassword: os.Getenv("SMTP_PASSWORD"), SMTPFrom: os.Getenv("SMTP_FROM"), SMTPTLS: env("SMTP_TLS", "false") == "true",
+	}
+	approved := strings.TrimSpace(os.Getenv("APPROVED_AI_PROVIDERS"))
+	if strings.HasPrefix(approved, "[") {
+		if err := json.Unmarshal([]byte(approved), &c.ApprovedAIProviders); err != nil {
+			return c, errors.New("APPROVED_AI_PROVIDERS must be a JSON array of strings or a comma-separated list")
+		}
+	} else {
+		c.ApprovedAIProviders = strings.Split(approved, ",")
 	}
 	if file := os.Getenv("GOODMEM_CONFIG_FILE"); file != "" {
 		b, err := os.ReadFile(file)

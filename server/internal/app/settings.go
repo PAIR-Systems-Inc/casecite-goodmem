@@ -9,6 +9,13 @@ import (
 )
 
 func (s *Server) userSettings(ctx context.Context, user string) (M, error) {
+	runtime, err := s.llmRuntime(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return s.userSettingsWithRuntime(ctx, user, runtime)
+}
+func (s *Server) userSettingsWithRuntime(ctx context.Context, user string, runtime llmRuntime) (M, error) {
 	m := defaultRAGSettings()
 	stored := M{}
 	err := s.kvGet(ctx, "settings:"+user, &stored)
@@ -19,7 +26,10 @@ func (s *Server) userSettings(ctx context.Context, user string) (M, error) {
 		m[k] = v
 	}
 	if str(stored, "llm_model") == "" {
-		m["llm_model"] = s.cfg.LLMModel
+		m["llm_model"] = runtime.ChatModel
+	}
+	if str(stored, "embedding_model") == "" && s.cfg.EmbeddingModel != "" {
+		m["embedding_model"] = s.cfg.EmbeddingModel
 	}
 	m["vector_db"] = "goodmem"
 	return m, nil
@@ -60,6 +70,10 @@ func (s *Server) providerKey(ctx context.Context, user, provider, fallback strin
 	var enc string
 	err := s.kvGet(ctx, "credential:"+user+":"+provider, &enc)
 	if notFound(err) {
+		if provider == "courtlistener" {
+			key, _, err := s.instanceCourtToken(ctx)
+			return key, err
+		}
 		return fallback, nil
 	}
 	if err != nil {

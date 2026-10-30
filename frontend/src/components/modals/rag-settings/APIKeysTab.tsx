@@ -222,54 +222,63 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
 
   // ----- Local model endpoint (auto-save, debounced) -----
   const llmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Preserve edit order when one save is slow, including a subsequent reset.
+  const llmWrites = useRef<Promise<void>>(Promise.resolve());
   const autoSaveLlm = (next: { baseUrl: string; chatModel: string; utilityModel: string }) => {
     if (llmTimer.current) clearTimeout(llmTimer.current);
     // Needs both a base URL and a chat model to be a valid endpoint.
     if (next.baseUrl.trim().length < 4 || !next.chatModel.trim()) return;
     markSaved('local', 'saving');
-    llmTimer.current = setTimeout(async () => {
-      try {
-        const saved = await api.setLocalLlm({
-          baseUrl: next.baseUrl.trim(),
-          chatModel: next.chatModel.trim(),
-          utilityModel: next.utilityModel.trim() || null,
-        });
-        setLlmStatus((prev) => ({
-          ...prev,
-          ...saved,
-          configured: saved.configured ?? true,
-          base_url: saved.base_url ?? next.baseUrl.trim(),
-          chat_model: saved.chat_model ?? next.chatModel.trim(),
-          utility_model: saved.utility_model ?? (next.utilityModel.trim() || null),
-        }));
-        markSaved('local', 'saved');
-      } catch (e) {
-        markSaved('local', 'error');
-        addToast(e instanceof Error ? e.message : 'Failed to save endpoint', 'error');
-      }
+    llmTimer.current = setTimeout(() => {
+      llmWrites.current = llmWrites.current.then(async () => {
+        try {
+          const saved = await api.setLocalLlm({
+            baseUrl: next.baseUrl.trim(),
+            chatModel: next.chatModel.trim(),
+            utilityModel: next.utilityModel.trim() || null,
+          });
+          setLlmStatus((prev) => ({
+            ...prev,
+            ...saved,
+            configured: saved.configured ?? true,
+            base_url: saved.base_url ?? next.baseUrl.trim(),
+            chat_model: saved.chat_model ?? next.chatModel.trim(),
+            utility_model: saved.utility_model ?? (next.utilityModel.trim() || null),
+          }));
+          markSaved('local', 'saved');
+        } catch (e) {
+          markSaved('local', 'error');
+          addToast(e instanceof Error ? e.message : 'Failed to save endpoint', 'error');
+        }
+      });
     }, 1000);
   };
 
   const handleClearLlm = () => {
     showConfirm({
-      title: 'Revert to OpenAI',
-      message: 'Remove the local endpoint and revert to the default OpenAI models?',
+      title: 'Revert to deployment defaults',
+      message: 'Remove this override and restore the endpoint and models configured by your administrator? This may be a local endpoint.',
       confirmText: 'Revert',
       onConfirm: async () => {
-        try {
-          const cleared = await api.clearLocalLlm();
-          if (typeof cleared?.configured === 'boolean') {
-            setLlmStatus((prev) => ({ ...prev, ...cleared }));
-            setBaseUrl(cleared.base_url || '');
-            setChatModel(cleared.chat_model || '');
-            setUtilityModel(cleared.utility_model || '');
-          } else {
-            await loadIntegrations();
+        if (llmTimer.current) clearTimeout(llmTimer.current);
+        llmWrites.current = llmWrites.current.then(async () => {
+          try {
+            const cleared = await api.clearLocalLlm();
+            if (typeof cleared?.configured === 'boolean') {
+              setLlmStatus((prev) => ({ ...prev, ...cleared }));
+              setBaseUrl(cleared.base_url || '');
+              setChatModel(cleared.chat_model || '');
+              setUtilityModel(cleared.utility_model || '');
+            } else {
+              await loadIntegrations();
+            }
+            markSaved('local', 'saved');
+            addToast('Restored deployment defaults', 'success');
+          } catch (e) {
+            addToast(e instanceof Error ? e.message : 'Failed to revert', 'error');
           }
-          addToast('Reverted to default models', 'success');
-        } catch (e) {
-          addToast(e instanceof Error ? e.message : 'Failed to revert', 'error');
-        }
+        });
+        await llmWrites.current;
       },
     });
   };
@@ -485,7 +494,7 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
         <Icon name="Layers" size={13} /> Embedding Models
       </div>
       <div className={styles.sectionSubtext}>
-        Dedicated embedding providers for vector search. OpenAI (above) supplies the default embeddings.
+        These keys support clause comparisons. Document search uses the embedder configured for this GoodMem space.
       </div>
 
       {/* Voyage */}
@@ -556,7 +565,9 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
         </div>
         <p className={styles.localModelDesc}>
           Point the app at any OpenAI-compatible endpoint — Ollama, LM Studio, vLLM, or hosted gateways
-          (Together, Groq, OpenRouter). Leave blank to use the default OpenAI models above.
+          (Together, Groq, OpenRouter). Local models can run without an API key.
+          Use the reset button to restore deployment defaults; clearing a field does not reset the server.
+          Claude and Gemini use their provider keys when present. Choose a local model for on-premise generation.
         </p>
 
         <div>
@@ -594,7 +605,7 @@ export const APIKeysTab = ({ local: _local, setLocal: _setLocal, showKeys, setSh
 
         {llmStatus?.configured && (
           <div className={styles.boxActions}>
-            <button className={styles.brandingResetBtn} onClick={handleClearLlm}>Revert to OpenAI</button>
+            <button className={styles.brandingResetBtn} onClick={handleClearLlm}>Revert to deployment defaults</button>
           </div>
         )}
       </div>
