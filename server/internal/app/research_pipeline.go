@@ -327,7 +327,7 @@ func (s *Server) researchCaps() M {
 }
 func (s *Server) planDeepResearch(ctx context.Context, user, question string) ([]M, error) {
 	cap := number(s.researchCaps(), "max_subquestions", 8)
-	prompt := strings.Replace(str(researchPrompts, "plan"), "3-8 distinct", fmt.Sprintf("3-%d distinct", cap), 1)
+	prompt := strings.Replace(str(researchPrompts, "plan"), "3-8 distinct", fmt.Sprintf("%d-%d distinct", min(3, cap), cap), 1)
 	prompt = strings.ReplaceAll(prompt, "__QUESTION__", researchNeutralize(question))
 	data, err := s.structured(ctx, user, legalSystem, prompt)
 	if err != nil {
@@ -335,7 +335,7 @@ func (s *Server) planDeepResearch(ctx context.Context, user, question string) ([
 	}
 	plan := normalizeResearchPlan(data, M{"documents": true, "case_law": true}, cap)
 	if len(plan) == 0 {
-		return nil, bad("The planner returned no usable sub-questions. Please try again.")
+		return nil, fail(502, "The planner returned no usable sub-questions. Please try again.")
 	}
 	return plan, nil
 }
@@ -457,6 +457,15 @@ func (s *Server) runDeepResearch(ctx context.Context, user, question, matter str
 		inScope = len(ids)
 	}
 	scope := M{"matter_id": nullable(matter), "document_ids": ids, "documents_in_scope": inScope, "case_law_searched": caseLaw, "courtlistener_contacted": courtContacted.Load(), "tool_calls": runner.used, "tool_call_cap": runner.maxCalls, "passages_collected": len(passages), "passages_dropped_over_cap": runner.dropped, "passages_cited": len(sources), "steps_failed": failed, "coverage_note": fmt.Sprintf("Answered from %s out of %d retrieved across %s and %s. Documents were searched, not read in full; opinions were read in the passage cited, not in full.", workflowPlural(len(sources), "cited passage"), len(passages), workflowPlural(len(plan), "sub-question"), workflowPlural(runner.used, "tool call"))}
+	// Access can change while a provider is generating an answer, including
+	// when the original request selected all readable documents (nil scope).
+	for _, passage := range runner.forStep("") {
+		if id := str(passage, "document_id"); id != "" {
+			if _, err := s.getObject(ctx, user, "document", id); err != nil {
+				return nil, fail(403, "A research source is deleted or no longer accessible")
+			}
+		}
+	}
 	return M{"question": question, "answer": synthesis["answer"], "key_findings": synthesis["key_findings"], "open_questions": synthesis["open_questions"], "sub_questions": steps, "sources": sources, "scope": scope, "verification": M{"quotes_verified": verified, "quotes_unverified": unverified, "invalid_refs_stripped": invalid, "case_references_removed": synthesis["case_references_removed"], "citations_checked": len(checks)}, "model": s.cfg.LLMUtilityModel, "notice": aiReviewNotice}, nil
 }
 
@@ -495,6 +504,7 @@ func (s *Server) workflowDeepResearch(ctx context.Context, user string, w, run, 
 		return nil, err
 	}
 	id := uuid()
+	result["run_id"] = id
 	object(result["scope"])["workflow_run_id"] = run["id"]
 	data := M{"question": question, "plan": plan, "status": "completed", "result": result, "scope": result["scope"], "error": nil, "completed_at": nowString(), "document_ids": ids}
 	if err = s.saveJobObject(ctx, user, "research_run", id, str(run, "matter_id"), data); err != nil {

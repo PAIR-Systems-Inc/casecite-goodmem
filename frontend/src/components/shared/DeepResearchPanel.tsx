@@ -81,7 +81,7 @@ export function DeepResearchPanel({ docFilter }: DeepResearchPanelProps) {
         <span>
           Documents searched: {scopeLabel}
           {planScope ? ` (${planScope.documents_in_scope} indexed)` : ''}.
-          {planScope && !planScope.case_law_available ? ' Case-law search is unavailable on this server.' : ' Case law is searched on CourtListener.'}
+          {planScope && !planScope.case_law_available ? ' Case-law search is unavailable on this server.' : ' Case-law search is available through CourtListener.'}
         </span>
       </div>
       {planError && <div className={s.error}>{planError}</div>}

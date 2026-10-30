@@ -28,6 +28,7 @@ func (s *Server) routes() {
 	s.workspaceSessionRoutes()
 	s.reviewTableRoutes()
 	s.workflowRoutes()
+	s.deepResearchRoutes()
 	s.api("GET /api/v1/settings", false, s.settings)
 	s.api("PUT /api/v1/settings", false, s.settings)
 	s.api("PUT /api/v1/keys/{provider}", false, s.saveKey)

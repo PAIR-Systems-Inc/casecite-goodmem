@@ -13,6 +13,7 @@ export function treatmentLabel(t: DeepResearchTreatment | undefined): { text: st
   if (!t) return null;
   if (t.status === 'unavailable') return { text: 'Treatment not checked (no CourtListener token)', tone: 'muted' };
   if (t.status !== 'checked') return { text: 'Treatment check failed', tone: 'muted' };
+  if (t.warning_level === 'unknown') return { text: 'Treatment undetermined', tone: 'muted' };
   if (t.warning_level && t.warning_level !== 'none') {
     const n = (t.negative || 0) + (t.caution || 0);
     return { text: `Treatment language found in ${n} citing opinion${n === 1 ? '' : 's'} — read before relying`, tone: 'warn' };

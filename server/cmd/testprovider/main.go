@@ -71,6 +71,17 @@ func main() {
 			if strings.Contains(prompt, "INSTRUCTIONS:\n") {
 				out = map[string]any{"title": "Workflow memo", "text": "The agreement requires 30 days of notice. Counsel approved this draft after reviewing the extracted terms."}
 			}
+			switch {
+			case strings.Contains(prompt, "Break it into"):
+				out = map[string]any{"sub_questions": []any{
+					map[string]any{"question": "What notice is required?", "tools": []string{"documents"}},
+					map[string]any{"question": "What payment terms apply?", "tools": []string{"documents"}},
+				}}
+			case strings.Contains(prompt, "Answer the sub-question using ONLY"):
+				out = map[string]any{"answer": "Notice is 30 days. [P1]", "claims": []any{map[string]any{"text": "Notice period", "quote": "Notice is 30 days.", "refs": []string{"P1"}}}}
+			case strings.Contains(prompt, "senior legal researcher"):
+				out = map[string]any{"answer": "The agreement requires 30 days of notice. [P1]", "key_findings": []any{map[string]any{"text": "The notice period is 30 days.", "refs": []string{"P1"}}}, "open_questions": []string{"When was notice delivered?"}}
+			}
 			if len(docs) > 0 {
 				out["findings"] = []any{map[string]any{"title": "Notice period", "severity": "minor", "document_id": docs[0]["id"], "quote": "Notice is 30 days.", "explanation": "Send notice before the deadline.", "proposed_language": "Notice must be delivered in writing."}}
 			}

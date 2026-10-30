@@ -98,6 +98,9 @@ func (s *Server) llm(ctx context.Context, user, system, prompt string, jsonMode 
 }
 
 func (s *Server) execute(ctx context.Context, user, kind string, input M) (M, error) {
+	if kind == "deep_research.run" {
+		return s.executeDeepResearch(ctx, user, input)
+	}
 	if kind == "workflow.run" {
 		return s.executeWorkflow(ctx, user, input)
 	}
