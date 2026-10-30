@@ -8,7 +8,6 @@ import (
 	"io"
 	"path/filepath"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/ledongthuc/pdf"
 )
@@ -38,11 +37,11 @@ func extractText(data []byte, filename string) (text string, err error) {
 		return string(b), err
 	}
 	if strings.EqualFold(filepath.Ext(filename), ".docx") {
-		z, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+		z, err := openDocumentArchive(data)
 		if err != nil {
 			return "", err
 		}
-		for _, f := range z.File {
+		for _, f := range z {
 			if f.Name != "word/document.xml" {
 				continue
 			}
@@ -69,10 +68,8 @@ func extractText(data []byte, filename string) (text string, err error) {
 		}
 		return "", errors.New("DOCX document body was not found")
 	}
-	if utf8.Valid(data) && !bytes.Contains(data, []byte{0}) {
-		return string(data), nil
-	}
-	return "", errors.New("full-text review supports PDF, DOCX, and text files; this file remains available for GoodMem search and page preview")
+	result, err := extractNativeDocument(data, filename)
+	return result.Text, err
 }
 
 func wordDocument(title, text string) ([]byte, error) {

@@ -83,7 +83,7 @@ const HEADING_RE = /^\s*(?:(?:ARTICLE|SECTION|EXHIBIT|SCHEDULE|APPENDIX)\s+[\dIV
    paragraphs; a short line in caps or numbered like "7.2 Termination" is a
    heading. Rendering paragraphs with normal whitespace re-flows the
    extraction's hard-wrapped lines back into real paragraphs. */
-function buildBlocks(text: string): Block[] {
+function buildBlocks(text: string, wordParagraphs: boolean): Block[] {
   const blocks: Block[] = [];
   let cursor = 0;
   let paraStart = -1;
@@ -103,6 +103,10 @@ function buildBlocks(text: string): Block[] {
       continue;
     }
     if (paraStart < 0) paraStart = start;
+    // Canonical Word text uses a newline for a paragraph, while PDF text can
+    // contain hard-wrapped lines. Preserve Word paragraphs without changing
+    // the source string or the offsets used by selection and tracked edits.
+    if (wordParagraphs) flush(end);
   }
   flush(text.length);
   return blocks;
@@ -231,7 +235,7 @@ export function ContractTextViewer({
     for (const edit of activeRedlines) map[edit.ref] = edit;
     return map;
   }, [activeRedlines]);
-  const blocks = useMemo(() => buildBlocks(text), [text]);
+  const blocks = useMemo(() => buildBlocks(text, /\.docx?$/i.test(filename)), [text, filename]);
   const spans = useMemo(
     () => buildMarkSpans(text, highlights, activeRedlines),
     [text, highlights, activeRedlines],

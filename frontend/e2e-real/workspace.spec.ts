@@ -6,6 +6,7 @@ import { exerciseProviderSettings } from './providers';
 import { exerciseChat } from './chat';
 import { exerciseConnectors } from './connectors';
 import { exerciseAdministration } from './administration';
+import { exerciseDocumentFormats } from './document-formats';
 
 // Real Go API and GoodMem; the external connector consent page is simulated.
 // scripts/integration.sh provisions disposable databases and a test provider.
@@ -265,6 +266,7 @@ test('original UI manages matters, GoodMem documents and cited tabular review', 
   await exerciseProviderSettings(page, request, headers, testInfo);
   await exerciseConnectors(page, request, headers, testInfo);
   await exerciseAdministration(page, request, headers, testInfo);
+  await exerciseDocumentFormats(page, request, headers, testInfo);
 
   const manifest = await request.get('/word-addin/manifest.xml');
   expect(manifest.status()).toBe(200);

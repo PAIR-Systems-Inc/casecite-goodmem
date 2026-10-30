@@ -160,6 +160,15 @@ func (s *Server) readDocumentText(ctx context.Context, doc M) (extractedDocument
 			}
 		}
 	} else if format == "" {
+		if strings.HasSuffix(strings.ToLower(str(doc, "filename")), ".pptx") {
+			if native, e := extractNativeDocument(content, str(doc, "filename")); e == nil && len(native.Pages) > 0 && strings.TrimSpace(native.Text) != "" {
+				pages := make([]textPage, len(native.Pages))
+				for i, text := range native.Pages {
+					pages[i] = textPage{Index: i, Text: text, Method: "native"}
+				}
+				return assembleText(pages), nil
+			}
+		}
 		text, e := extractText(content, str(doc, "filename"))
 		if e == nil && strings.TrimSpace(text) != "" {
 			return assembleText([]textPage{{Index: 0, Text: text, Method: "native"}}), nil

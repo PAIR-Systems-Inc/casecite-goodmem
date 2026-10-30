@@ -515,3 +515,11 @@
   font-size: 11px;
   color: var(--gray-400);
 }
+
+@media (max-width: 600px) {
+  .header { flex-wrap: wrap; }
+  .filename { flex: 1 1 calc(100% - 32px); }
+  .viewToggle { flex-shrink: 0; }
+  .highlightCount { white-space: normal; margin-left: 0; }
+  .body { padding: 20px; }
+}

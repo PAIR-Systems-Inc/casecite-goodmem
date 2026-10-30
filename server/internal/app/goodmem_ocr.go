@@ -14,12 +14,13 @@ import (
 )
 
 type textPage struct {
-	Index  int    `json:"page_index"`
-	Text   string `json:"text"`
-	Method string `json:"method"`
-	Failed bool   `json:"failed,omitempty"`
-	Start  int    `json:"span_start"`
-	End    int    `json:"span_end"`
+	Index  int      `json:"page_index"`
+	Text   string   `json:"text"`
+	Method string   `json:"method"`
+	Failed bool     `json:"failed,omitempty"`
+	Start  int      `json:"span_start"`
+	End    int      `json:"span_end"`
+	Tables []string `json:"tables,omitempty"`
 }
 type extractedDocument struct {
 	Text        string     `json:"text"`
@@ -124,7 +125,8 @@ func (g *GoodMem) OCR(ctx context.Context, content []byte, format string, start,
 				Markdown *string `json:"markdown"`
 				Layout   *struct {
 					Cells []struct {
-						Text string `json:"text"`
+						Text     string `json:"text"`
+						Category any    `json:"category"`
 					} `json:"cells"`
 				} `json:"layout"`
 			} `json:"page"`
@@ -168,6 +170,9 @@ func (g *GoodMem) OCR(ctx context.Context, content []byte, format string, start,
 			for _, cell := range result.Page.Layout.Cells {
 				if strings.TrimSpace(cell.Text) != "" {
 					parts = append(parts, cell.Text)
+					if cell.Category == "OCR_CATEGORY_TABLE" || cell.Category == "TABLE" || cell.Category == float64(9) {
+						page.Tables = append(page.Tables, cell.Text)
+					}
 				}
 			}
 			page.Text = strings.Join(parts, "\n")

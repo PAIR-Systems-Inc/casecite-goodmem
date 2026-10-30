@@ -32,6 +32,7 @@ func (s *Server) routes() {
 	s.workflowRoutes()
 	s.deepResearchRoutes()
 	s.legalToolRoutes()
+	s.legalDocumentRoutes()
 	s.judgeRoutes()
 	s.connectorRoutes()
 	s.pickerRoutes()

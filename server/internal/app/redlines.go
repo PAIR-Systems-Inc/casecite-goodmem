@@ -42,6 +42,9 @@ func readWordXML(data []byte) (*wordNode, error) {
 		}
 		switch v := t.(type) {
 		case xml.StartElement:
+			if len(stack) > 256 {
+				return nil, bad("Document XML is nested too deeply")
+			}
 			p := stack[len(stack)-1]
 			n := &wordNode{Name: v.Name, Attrs: v.Attr, Start: start, OpenEnd: end, Parent: p}
 			p.Children = append(p.Children, n)
