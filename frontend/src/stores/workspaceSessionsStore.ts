@@ -118,10 +118,13 @@ export const useWorkspaceSessionsStore = create<WorkspaceSessionsState>((set, ge
         await useDraftingStore.getState().restoreWorkspaceSession(payload);
         appNavigate('/drafting');
       } else if (detail.surface === 'judge') {
-        boundIds['judge'] = id;
         const { useJudgeIntelStore } = await import('./judgeIntelStore');
-        await useJudgeIntelStore.getState().restoreWorkspaceSession(payload);
-        appNavigate('/judge-intel');
+        if (await useJudgeIntelStore.getState().restoreWorkspaceSession(payload)) {
+          // Building the cached profile resets this binding. Rebind only after
+          // that build succeeds and remains the profile the user is viewing.
+          boundIds['judge'] = id;
+          appNavigate('/judge-intel');
+        }
       } else if (detail.surface === 'case') {
         boundIds['case'] = id;
         const { useCaseViewStore } = await import('./caseViewStore');

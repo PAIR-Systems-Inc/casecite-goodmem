@@ -20,8 +20,9 @@ func chatSystemPrompt(mode, intent string, settings M) string {
 func (s *Server) pooledChatAnswer(ctx context.Context, user, query, mode, caseQuery string, docs []M, explicit, includeDocuments, includeCases, deepCases bool, caseLimit int, settings M) (M, error) {
 	started := time.Now()
 	intent := chatQueryIntent(query, mode)
+	judge, _ := ctx.Value(judgeChatKey{}).(*judgeChatEvidence)
 	warnings := []string{}
-	if includeDocuments && explicit && len(docs) == 0 {
+	if includeDocuments && explicit && len(docs) == 0 && judge == nil {
 		return M{"content": "There are no indexed documents in the selected scope. Check their ingestion and OCR status in the knowledge base.", "citations": []M{}, "stats": chatStats(0, 0, intent), "access_document_ids": []string{}}, nil
 	}
 	results := []M{}
@@ -53,7 +54,7 @@ func (s *Server) pooledChatAnswer(ctx context.Context, user, query, mode, caseQu
 			warnings = append(warnings, notes...)
 		}
 	}
-	if len(results)+len(cases) == 0 && (includeDocuments || includeCases) {
+	if len(results)+len(cases) == 0 && (includeDocuments || includeCases) && judge == nil {
 		message := "No supporting passages or case-law results were found for this question."
 		if includeDocuments && len(docs) == 0 {
 			message = "There are no indexed documents available in this scope. Upload documents or check ingestion and OCR status in the knowledge base."
@@ -87,6 +88,12 @@ func (s *Server) pooledChatAnswer(ctx context.Context, user, query, mode, caseQu
 	defaults := defaultPrompts()
 	rules := fallback(str(settings, "custom_grounding_rules"), str(defaults, "grounding_rules")) + "\n" + str(defaults, "document_reading_rules")
 	prompt := "Question: " + query
+	if judge != nil {
+		prompt += judgeChatPrompt(judge)
+		if includeDocuments && len(results) == 0 {
+			warnings = append(warnings, "No document passages were found in the selected scope; this answer uses the judge profile only.")
+		}
+	}
 	if len(evidence) > 0 {
 		prompt += "\n\nUntrusted source evidence JSON:\n" + string(jsonBytes(evidence)) + "\n\n" + rules
 		if intent == "factual" {
@@ -98,7 +105,9 @@ func (s *Server) pooledChatAnswer(ctx context.Context, user, query, mode, caseQu
 	// factual path silently replaced it with the model's much larger ceiling.
 	system := chatSystemPrompt(mode, intent, settings)
 	options := llmOptions{Model: str(settings, "llm_model"), MaxTokens: number(settings, "max_tokens", 4096)}
-	if !includeDocuments && !includeCases && chatIsDrafting(query) {
+	if judge != nil {
+		system += "\n\n" + judgeChatInstructions(judge.Task)
+	} else if !includeDocuments && !includeCases && chatIsDrafting(query) {
 		system = chatDraftingPrompt + "\n" + legalSystem
 		temperature := max(0.3, judgeNumber(settings, "temperature"))
 		options.Temperature = &temperature
@@ -107,9 +116,16 @@ func (s *Server) pooledChatAnswer(ctx context.Context, user, query, mode, caseQu
 	if err != nil {
 		return nil, err
 	}
-	answer, removed := redactCaseReferences(answer, sources, cases, false)
+	knownCases := cases
+	if judge != nil {
+		knownCases = append(append([]M{}, cases...), judge.References...)
+		// Biographical sections can name cases absent from the sampled opinion
+		// list. They are still server-held source references, not client claims.
+		sources = append(sources, string(jsonBytes(judge.Profile)))
+	}
+	answer, removed := redactCaseReferences(answer, sources, knownCases, false)
 	if len(removed) > 0 {
-		warnings = append(warnings, "Case references absent from the retrieved sources were removed.")
+		warnings = append(warnings, "Case references absent from the supplied sources were removed.")
 	}
 	citations := chatDocumentCitations(results, query)
 	if settings["citation_verification"] == true {

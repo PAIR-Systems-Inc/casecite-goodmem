@@ -232,6 +232,19 @@ func main() {
 		}
 		system, question := in.Messages[0].Content, in.Messages[len(in.Messages)-1].Content
 		answer := "The agreement requires 30 days of notice. [1]\n\nThis is a deterministic test response."
+		if in.ResponseFormat == nil && strings.Contains(system, "You are analyzing a cached judicial intelligence profile") {
+			if !strings.Contains(question, "Example University") || !strings.Contains(question, "Notice v. Example") {
+				http.Error(w, "judge profile was not supplied", 400)
+				return
+			}
+			answer = "Jane Example attended Example University. Notice v. Example appears in the cached profile. The supplied data does not establish how this judge would rule."
+			if strings.Contains(question, "Untrusted source evidence JSON:") {
+				answer += " The agreement requires 30 days of notice. [1]"
+			}
+			if strings.Contains(system, "QUICK FACTS") {
+				answer = "## QUICK FACTS\n- Jane Example attended Example University.\n\n## BACKGROUND\nThe profile includes a biographical summary.\n\n## EDUCATION\nJane Example attended Example University.\n\n## CAREER & APPOINTMENTS\nThe profile lists judicial service.\n\n## JUDICIAL RECORD ANALYSIS\nThis is a limited sample; counts do not predict rulings.\n\n## NOTABLE CASES\nNotice v. Example appears in the cached profile.\n\n## COURTROOM STRATEGY\n- Check the relevant opinion before relying on its holding.\n- Confirm current local rules.\n- Separate record facts from inference.\n- Do not predict rulings from citation counts."
+			}
+		}
 		if in.ResponseFormat == nil && strings.Contains(question, "Pause this answer for the cancellation test") {
 			select {
 			case <-time.After(3 * time.Second):
@@ -264,8 +277,15 @@ func main() {
 				out = map[string]any{"intent": intent, "use_case_law": false, "search_query": "notice", "per_file": strings.Contains(prompt, "Compare each file")}
 			case strings.Contains(system, "You are grounding"):
 				out = map[string]any{"claims": []any{map[string]any{"claim": "Notice is 30 days.", "answer_quote": "The agreement requires 30 days of notice.", "file_ref": "f0", "quote": "Notice is 30 days."}}}
+				if strings.Contains(prompt, `"ref":"judge_profile"`) {
+					claims := []any{map[string]any{"claim": "Jane Example attended Example University.", "answer_quote": "Jane Example attended Example University.", "file_ref": "judge_profile", "quote": "Example University"}, map[string]any{"claim": "Notice v. Example appears in the cached profile.", "answer_quote": "Notice v. Example appears in the cached profile.", "file_ref": "judge_profile", "quote": "Notice v. Example"}}
+					if strings.Contains(prompt, `"ref":"f0"`) {
+						claims = append(claims, map[string]any{"claim": "Notice is 30 days.", "answer_quote": "The agreement requires 30 days of notice.", "file_ref": "f0", "quote": "Notice is 30 days."})
+					}
+					out = map[string]any{"claims": claims}
+				}
 			case strings.Contains(system, "You check statements"):
-				out = map[string]any{"items": []any{map[string]any{"n": 0, "label": "supported", "note": "The notice period appears verbatim in the source."}}}
+				out = map[string]any{"items": []any{map[string]any{"n": 0, "label": "supported", "note": "The fact appears in the source."}, map[string]any{"n": 1, "label": "supported"}, map[string]any{"n": 2, "label": "supported"}}}
 			case strings.Contains(system, "You are reading ONE document"):
 				out = map[string]any{"answer": "Notice is 30 days.", "quotes": []any{map[string]any{"quote": "Notice is 30 days.", "why": "States the notice period."}}}
 			case strings.Contains(system, "You are a senior litigation strategist"):

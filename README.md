@@ -22,11 +22,11 @@ Saved workflows now include all seven original step types, the three original te
 
 The eight legal-tool routes cover case search and pagination, separate opinion/cluster lookups, citation checks, precedents, docket search/details, oral arguments, and yearly trends. Shared CourtListener pacing and retries apply across tools and research; expiring trend and court-name caches use PostgreSQL.
 
-Judge intelligence includes all eight original routes: name search, durable profile builds/refreshes, biography and career, filtered opinions/full text, statistics, all nine computed metrics with methodology, and administrator deletion. Profiles and metrics use PostgreSQL. The original screens show build progress, data coverage and partial-data warnings.
+Judge intelligence includes all eight original routes: name search, durable profile builds/refreshes, biography and career, filtered opinions/full text, statistics, all nine computed metrics with methodology, and administrator deletion. Profiles and metrics use PostgreSQL. The original screens show build progress, data coverage and partial-data warnings. Briefs and Q&A use server-held profile evidence, selected GoodMem documents, source checks and saved history. See [judge intelligence](docs/judge-intelligence.md).
 
 Shared chat now supports scoped GoodMem retrieval, per-file answers, strategy briefs, bounded case-law research, verified quotations and support checks, transactional conversation history, cancellation, and Word/PDF/Markdown exports. The browser uses durable PostgreSQL jobs. See [chat behavior and limits](docs/chat.md).
 
-All eight connector adapters and four file pickers are implemented in Go, including OAuth, rotating grants, encrypted instance credentials, pagination, incremental sync and GoodMem OCR imports. See [connector configuration and verification limits](docs/connectors.md). Full judge-chat consumer acceptance, remaining document-format fidelity, and data import still require implementation or integration work. Live provider, Word-host and complete browser verification remain open.
+All eight connector adapters and four file pickers are implemented in Go, including OAuth, rotating grants, encrypted instance credentials, pagination, incremental sync and GoodMem OCR imports. See [connector configuration and verification limits](docs/connectors.md). Remaining document-format fidelity still requires implementation or integration work. Migrating an existing installation's data requires a separate deployment plan. Live provider, Word-host and complete browser verification remain open.
 
 See the [parity scope](docs/parity/README.md), [source comparisons and verification evidence](docs/parity/evidence.md), and [architecture assessment](docs/migration.md). Known upstream defects should be fixed, with regression tests and documented differences, rather than reproduced.
 
@@ -126,6 +126,6 @@ Whole-document contract analysis uses original PDF, DOCX or text content retriev
 
 GoodMem performs ingestion, chunking, embeddings, retrieval, and page rendering. Configure the space's embedders to suit the corpus; optional reranking uses `GOODMEM_RERANKER_ID`. CaseCite does not duplicate a vector index or implement its own OCR pipeline. Page images depend on GoodMem's support for the uploaded format.
 
-CourtListener tools, judge profiles/analytics and deep research are implemented; streaming research/chat, judge briefs and Q&A still need their shared chat workflows. DOCX redline export preserves the original package and uses native tracked changes; other source formats require a generated DOCX. Exact quotation matches do not establish that the model's interpretation is correct. Real Word-host and visual export verification remain open.
+CourtListener tools, judge profiles/analytics, judge briefs and Q&A, and deep research use the shared Go chat and job workflows. DOCX redline export preserves the original package and uses native tracked changes; other source formats require a generated DOCX. Exact quotation matches do not establish that the model's interpretation is correct. Real Word-host and visual export verification remain open.
 
 [License](LICENSE) · [Third-party notices](NOTICE.md) · [Architecture and tradeoffs](docs/migration.md) · [Operations](docs/operations.md)

@@ -25,6 +25,31 @@ var westlawCiteRE = regexp.MustCompile(str(caseGuardPatterns, "_WL_CITE_RE"))
 var versusRE = regexp.MustCompile(`\s+vs?\.?\s+`)
 var citeStartRE = regexp.MustCompile(`[,;]?\s*\(?\b\d{1,4}\s+[A-Z]`)
 var partyWordsRE = regexp.MustCompile(`[a-z0-9]+`)
+var caseSentenceBreakRE = regexp.MustCompile(`\.\s+[A-Z]`)
+
+// The upstream caption regex can consume an adjacent sentence ("Example
+// University. Notice v. Example") or the next caption. Respect sentence ends
+// while retaining initials and common abbreviations inside party names.
+func casePartySentenceBounds(content string, start, end int, left bool) (int, int) {
+	party := content[start:end]
+	for _, boundary := range caseSentenceBreakRE.FindAllStringIndex(party, -1) {
+		prefix := party[:boundary[0]]
+		words := strings.Fields(prefix)
+		if len(words) == 0 {
+			continue
+		}
+		word := strings.ToLower(words[len(words)-1])
+		if len(word) == 1 || strings.Contains(word, ".") || slices.Contains([]string{"inc", "corp", "co", "ltd", "llc", "plc", "assn", "assoc", "bros", "dept", "dep't", "educ", "bd", "univ", "st", "mt", "ft", "jr", "sr", "dr", "mr", "mrs", "ms", "rel"}, word) {
+			continue
+		}
+		if !left {
+			return start, start + boundary[0]
+		}
+		// The final byte is the next sentence's initial capital.
+		start = end - len(party) + boundary[1] - 1
+	}
+	return start, end
+}
 
 const caseRedaction = "[unverified case-law reference removed]"
 
@@ -107,10 +132,20 @@ func unverifiedCases(content string, sources []string, authorities []M) [][2]int
 		}
 		return end
 	}
-	for _, m := range caseNameRE.FindAllStringSubmatchIndex(content, -1) {
-		if !allowedName(content[m[2]:m[3]], content[m[4]:m[5]]) {
-			spans = append(spans, [2]int{m[0], trimEnd(m[0], m[1])})
+	for offset := 0; offset < len(content); {
+		m := caseNameRE.FindStringSubmatchIndex(content[offset:])
+		if m == nil {
+			break
 		}
+		for i := range m {
+			m[i] += offset
+		}
+		leftStart, leftEnd := casePartySentenceBounds(content, m[2], m[3], true)
+		rightStart, rightEnd := casePartySentenceBounds(content, m[4], m[5], false)
+		if !allowedName(content[leftStart:leftEnd], content[rightStart:rightEnd]) {
+			spans = append(spans, [2]int{leftStart, trimEnd(leftStart, rightEnd)})
+		}
+		offset = rightEnd // Re-scan any following caption consumed by the regex.
 	}
 	for _, m := range singleCaseRE.FindAllStringSubmatchIndex(content, -1) {
 		prefix := normalizeCase(content[m[2]:m[3]])

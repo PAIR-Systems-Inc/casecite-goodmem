@@ -111,6 +111,28 @@ func validateChatRequest(input M, strategy bool) (M, error) {
 			return nil, fail(422, "Invalid analysis mode")
 		}
 		in["mode"] = mode
+		if value := input["judge_id"]; value != nil {
+			id := chatSourceID(value)
+			n, err := strconv.ParseInt(id, 10, 64)
+			if err != nil || n < 1 {
+				return nil, fail(422, "judge_id must be a positive integer")
+			}
+			in["judge_id"] = strconv.FormatInt(n, 10)
+			task := "question"
+			if value := input["judge_task"]; value != nil {
+				var ok bool
+				task, ok = value.(string)
+				if !ok {
+					return nil, fail(422, "judge_task must be brief or question")
+				}
+			}
+			if task != "brief" && task != "question" {
+				return nil, fail(422, "judge_task must be brief or question")
+			}
+			in["judge_task"] = task
+		} else if input["judge_task"] != nil {
+			return nil, fail(422, "judge_task requires judge_id")
+		}
 		for _, field := range []string{"session_id", "conversation_id"} {
 			in[field] = nil
 			if value := input[field]; value != nil {
@@ -165,6 +187,9 @@ func validateChatRequest(input M, strategy bool) (M, error) {
 // Snapshot the authorized scope, never credentials. Later membership changes
 // are checked again when reading sources and atomically when publishing.
 func (s *Server) prepareChat(ctx context.Context, user string, in M, strategy bool) error {
+	if err := s.prepareJudgeChat(ctx, user, in); err != nil {
+		return err
+	}
 	settings, err := s.userSettings(ctx, user)
 	if err != nil {
 		return err

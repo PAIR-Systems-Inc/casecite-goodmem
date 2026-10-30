@@ -225,13 +225,14 @@ function JudgeIntelView() {
                   aria-label="Ask about this judge"
                   type="text"
                   className={t.pillInput}
-                  placeholder={judgeQueryIncludeDocs ? 'Ask about this judge in relation to your documents...' : "Ask about this judge's rulings, patterns, or philosophy..."}
+                  placeholder={judgeQueryIncludeDocs ? 'Ask about this judge in relation to your documents...' : "Ask about this judge's background, opinions, or court record..."}
                   value={judgeQueryInput}
                   onChange={(e) => setJudgeQueryInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !judgeQueryLoading && queryJudgeContext()}
                   disabled={judgeQueryLoading}
                 />
                 <button
+                  aria-label="Ask judge question"
                   className={t.pillBtn}
                   onClick={queryJudgeContext}
                   disabled={judgeQueryLoading || !judgeQueryInput.trim()}

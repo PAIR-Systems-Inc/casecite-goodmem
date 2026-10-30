@@ -56,6 +56,13 @@ func (s *Server) executeChat(ctx context.Context, user, kind string, in M) (M, e
 	started := time.Now()
 	settings := object(in["_chat_settings"])
 	ctx = context.WithValue(ctx, chatSettingsKey{}, settings)
+	judge, err := s.loadJudgeChat(ctx, user, in)
+	if err != nil {
+		return nil, err
+	}
+	if judge != nil {
+		ctx = context.WithValue(ctx, judgeChatKey{}, judge)
+	}
 	scope := object(in["_chat_scope"])
 	query := str(in, "query")
 	strategyEndpoint := kind == "strategy.brief"
@@ -68,8 +75,9 @@ func (s *Server) executeChat(ctx context.Context, user, kind string, in M) (M, e
 		}
 	}
 	route := chatRoute{Intent: "strategy"}
-	var err error
-	if !strategyEndpoint {
+	if judge != nil {
+		route = chatRoute{Intent: "ask"}
+	} else if !strategyEndpoint {
 		route, err = s.routeChatQuery(ctx, user, query)
 		if err != nil {
 			return nil, err
@@ -151,6 +159,10 @@ func (s *Server) executeChat(ctx context.Context, user, kind string, in M) (M, e
 	result["id"], result["mode"], result["timestamp"] = uuid(), in["mode"], time.Now().UTC().Format(time.RFC3339Nano)
 	result["strategy"], result["session_id"], result["access_document_ids"] = brief, in["session_id"], accessIDs
 	exchange := &chatExchange{User: user, Session: str(in, "session_id"), Matter: str(in, "_chat_session_matter"), Personal: in["_chat_session_personal"] == true, NewSession: in["_chat_new_session"] == true, Query: query, Answer: result, Revisions: object(scope["revisions"])}
+	if judge != nil {
+		exchange.JudgeID, exchange.JudgeVersion = judge.ID, judge.Version
+		result["judge_context"] = M{"id": judge.ID, "version": judge.Version, "task": judge.Task}
+	}
 	if err := s.stageChatPublication(ctx, exchange); err != nil {
 		return nil, err
 	}

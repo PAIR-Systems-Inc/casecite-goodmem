@@ -67,7 +67,7 @@ describe('JudgeBriefTab', () => {
   it('shows query hints when there are no messages', () => {
     const { container } = render(<JudgeBriefTab {...defaultProps()} />);
     expect(container.textContent).toContain('Try asking:');
-    expect(container.textContent).toContain('What is their judicial philosophy?');
+    expect(container.textContent).toContain('Summarize their judicial career');
   });
 
   it('fills the composer input when a hint is clicked', () => {
@@ -75,8 +75,8 @@ describe('JudgeBriefTab', () => {
     const { getByText } = render(
       <JudgeBriefTab {...defaultProps({ setJudgeQueryInput })} />,
     );
-    getByText('What is their judicial philosophy?').click();
-    expect(setJudgeQueryInput).toHaveBeenCalledWith('What is their judicial philosophy?');
+    getByText('Summarize their judicial career').click();
+    expect(setJudgeQueryInput).toHaveBeenCalledWith('Summarize their judicial career');
   });
 
   it('renders the conversation instead of hints once messages exist', () => {

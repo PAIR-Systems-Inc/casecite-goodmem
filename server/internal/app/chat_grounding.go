@@ -134,6 +134,7 @@ type chatGrounding struct {
 	Claims, FilesChecked, FilesTotal int
 	AnswerTruncated                  bool
 	SupportChecked                   bool
+	ProfileIncluded                  bool
 	Warnings                         []string
 }
 
@@ -143,7 +144,11 @@ var chatSupportDetails = map[string]string{"partial": "the source adds a conditi
 func (g *chatGrounding) Notice() string {
 	lines := []string{}
 	if len(g.Flagged) > 0 {
-		lines = append(lines, fmt.Sprintf("Source check: %d statement(s) in this answer are not fully supported by your documents:", len(g.Flagged)))
+		sourceLabel := "your documents"
+		if g.ProfileIncluded {
+			sourceLabel = "the supplied judge profile and documents"
+		}
+		lines = append(lines, fmt.Sprintf("Source check: %d statement(s) in this answer are not fully supported by %s:", len(g.Flagged), sourceLabel))
 		for _, flag := range g.Flagged[:min(8, len(g.Flagged))] {
 			said := strings.TrimSpace(fallback(str(flag, "answer_quote"), str(flag, "claim")))
 			if utf8.RuneCountInString(said) > 160 {
@@ -171,6 +176,7 @@ func chatReadFatal(err error) bool {
 }
 
 func (s *Server) groundChatAnswer(ctx context.Context, user, query, answer string, results []M, checkSupport bool) (*chatGrounding, error) {
+	judge, _ := ctx.Value(judgeChatKey{}).(*judgeChatEvidence)
 	scores := map[string]float64{}
 	ids := []string{}
 	for _, result := range results {
@@ -183,7 +189,7 @@ func (s *Server) groundChatAnswer(ctx context.Context, user, query, answer strin
 		}
 		scores[id] = max(scores[id], judgeNumber(result, "similarity"))
 	}
-	if len(ids) == 0 {
+	if len(ids) == 0 && judge == nil {
 		return nil, nil
 	}
 	sort.SliceStable(ids, func(i, j int) bool { return scores[ids[i]] > scores[ids[j]] })
@@ -191,6 +197,7 @@ func (s *Server) groundChatAnswer(ctx context.Context, user, query, answer strin
 	type source struct {
 		Text string
 		Doc  M
+		Kind string
 	}
 	sources := map[string]source{}
 	files := []M{}
@@ -214,10 +221,19 @@ func (s *Server) groundChatAnswer(ctx context.Context, user, query, answer strin
 			}
 		}
 		ref := fmt.Sprintf("f%d", i)
-		sources[ref] = source{text, doc}
+		sources[ref] = source{Text: text, Doc: doc, Kind: "document"}
 		files = append(files, M{"ref": ref, "id": id, "name": doc["filename"], "text": chatFileExcerpt(text, ranges)})
 	}
 	g.FilesChecked = len(files)
+	if judge != nil {
+		// Profile evidence is not a document and never receives document IDs or
+		// Word anchors. It participates in the same verbatim/support checks.
+		text := string(jsonBytes(judge.Profile))
+		name := "Judge profile: " + fallback(str(judge.Profile, "name"), judge.ID)
+		sources["judge_profile"] = source{Text: text, Doc: M{"filename": name, "url": "https://www.courtlistener.com/person/" + judge.ID + "/"}, Kind: "judge_profile"}
+		files = append(files, M{"ref": "judge_profile", "name": name, "text": text})
+		g.ProfileIncluded = true
+	}
 	if len(files) == 0 {
 		g.Warnings = append(g.Warnings, "The original source text could not be read for claim verification; citations show retrieved passages only.")
 		return g, nil
@@ -269,15 +285,21 @@ func (s *Server) groundChatAnswer(ctx context.Context, user, query, answer strin
 			continue
 		}
 		n := len(grounded)
-		c := chatCitation(str(src.Doc, "filename"), "document", charSlice(exact, 0, 600), n+1)
+		c := chatCitation(str(src.Doc, "filename"), src.Kind, charSlice(exact, 0, 600), n+1)
 		c["id"], c["document_id"], c["application"], c["verified"], c["was_cited_by_ai"] = "claim-"+uuid(), src.Doc["id"], statement, verified, true
-		c["similarity"], c["confidence"] = scores[str(src.Doc, "id")], math.Round(scores[str(src.Doc, "id")]*1000)/10
+		if src.Kind == "document" {
+			c["similarity"], c["confidence"] = scores[str(src.Doc, "id")], math.Round(scores[str(src.Doc, "id")]*1000)/10
+		} else {
+			c["similarity"], c["confidence"], c["url"] = nil, nil, src.Doc["url"]
+		}
 		where := strconv.Quote(str(src.Doc, "filename"))
 		matching := "Quote not found verbatim in " + where
 		if verified {
 			where = fmt.Sprintf("line %d of %s", strings.Count(src.Text[:start], "\n")+1, where)
 			matching = "Verified verbatim at " + where
-			attachChatLocation(c, src.Text, src.Doc, start, end)
+			if src.Kind == "document" {
+				attachChatLocation(c, src.Text, src.Doc, start, end)
+			}
 		} else {
 			c["support"], c["support_note"] = "unsupported", "The proposed quote could not be found in the source."
 			g.Flagged = append(g.Flagged, M{"claim": statement, "answer_quote": answerQuote, "label": "unsupported", "note": c["support_note"]})
@@ -324,6 +346,9 @@ func (s *Server) groundChatAnswer(ctx context.Context, user, query, answer strin
 	}
 	g.Citations = grounded
 	for _, src := range sources {
+		if src.Kind != "document" {
+			continue // The profile revision and permission are checked at publication.
+		}
 		current, err := s.getObject(ctx, user, "document", str(src.Doc, "id"))
 		if err != nil {
 			return nil, err

@@ -8,6 +8,7 @@ import (
 
 type chatExchange struct {
 	User, Session, Matter, Query string
+	JudgeID, JudgeVersion        string
 	Personal                     bool
 	NewSession                   bool
 	Answer, Revisions            M
@@ -40,6 +41,9 @@ func (s *Server) stageChatPublication(ctx context.Context, exchange *chatExchang
 // Called inside the transaction holding the job's completion lock. Either the
 // result and both messages become visible together, or none of them do.
 func (s *Server) publishChat(ctx context.Context, tx *sql.Tx, exchange *chatExchange) error {
+	if err := s.validateJudgeChatPublication(ctx, tx, exchange); err != nil {
+		return err
+	}
 	if exchange.Session != "" {
 		if exchange.NewSession {
 			_, err := tx.ExecContext(ctx, `INSERT INTO cc_objects(kind,id,owner_id,data) VALUES('chat_session',$1,$2,$3)`, exchange.Session, exchange.User, jsonBytes(M{"title": charSlice(exchange.Query, 0, 60), "message_count": 0}))
@@ -80,6 +84,9 @@ func (s *Server) publishChat(ctx context.Context, tx *sql.Tx, exchange *chatExch
 	} // standalone strategy has no transcript
 	question := M{"role": "user", "content": exchange.Query, "citations": []M{}, "strategy": nil, "stats": nil}
 	answer := M{"role": "assistant", "content": exchange.Answer["content"], "citations": exchange.Answer["citations"], "strategy": exchange.Answer["strategy"], "stats": exchange.Answer["stats"], "access_document_ids": exchange.Answer["access_document_ids"]}
+	if exchange.Answer["judge_context"] != nil {
+		answer["judge_context"] = exchange.Answer["judge_context"]
+	}
 	_, err := tx.ExecContext(ctx, `INSERT INTO cc_chat_messages(id,session_id,data) VALUES($1,$2,$3),($4,$2,$5)`, uuid(), exchange.Session, jsonBytes(question), exchange.Answer["id"], jsonBytes(answer))
 	if err != nil {
 		return err
