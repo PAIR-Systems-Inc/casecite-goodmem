@@ -8,6 +8,7 @@ require (
 	github.com/ledongthuc/pdf v0.0.0-20261020125853-5e46805f718e
 	github.com/xuri/excelize/v2 v2.11.0
 	golang.org/x/crypto v0.58.0
+	golang.org/x/text v0.43.0
 )
 
 require (
@@ -23,5 +24,4 @@ require (
 	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.24.0 // indirect
-	golang.org/x/text v0.43.0 // indirect
 )

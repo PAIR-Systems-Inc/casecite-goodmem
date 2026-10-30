@@ -25,6 +25,7 @@ type jobOutputs struct {
 	sync.Mutex
 	Objects []jobObject
 	Audits  []jobAudit
+	Judges  []jobJudge
 }
 
 // Stage durable outputs until the worker commits completion while still owning
@@ -292,12 +293,14 @@ func (s *Server) runJob(id, user, kind, lease string, b []byte) {
 	}
 	status := "completed"
 	message := ""
+	errorStatus := 0
 	if err != nil {
 		status = "failed"
 		message = "The job failed. Check the server log and retry."
 		var ae *apiError
 		if errors.As(err, &ae) {
 			message = ae.message
+			errorStatus = ae.status
 		}
 		if errors.Is(err, context.DeadlineExceeded) {
 			message = "The job exceeded its configured time limit (" + limit.String() + "). Retry with a narrower request or ask the administrator to increase JOB_TIMEOUT_SECONDS."
@@ -313,13 +316,24 @@ func (s *Server) runJob(id, user, kind, lease string, b []byte) {
 		return
 	}
 	defer tx.Rollback()
-	r, txErr := tx.ExecContext(finish, `UPDATE cc_jobs SET status=$3,result=$4,error=$5,lease_until=NULL,updated_at=now() WHERE id=$1 AND lease_token=$2 AND status='running'`, id, lease, status, jsonBytes(result), nullable(message))
+	r, txErr := tx.ExecContext(finish, `UPDATE cc_jobs SET status=$3,result=$4,error=$5,lease_until=NULL,updated_at=now(),progress=CASE WHEN $6::int>0 THEN progress || jsonb_build_object('error_status',$6::int) ELSE progress END WHERE id=$1 AND lease_token=$2 AND status='running'`, id, lease, status, jsonBytes(result), nullable(message), errorStatus)
 	if txErr != nil {
 		s.log.Error("job finalization failed", "error", txErr)
 		return
 	}
 	n, _ := r.RowsAffected()
 	if n == 1 && err == nil {
+		for _, output := range outputs.Judges {
+			r, saveErr := tx.ExecContext(finish, `UPDATE cc_judge_cache SET profile=$3,records=$4,metrics=NULL,updated_at=now() WHERE judge_id=$1 AND generation=$2 AND build_job_id=$5`, output.ID, output.Generation, jsonBytes(output.Profile), jsonBytes(output.Records), id)
+			if saveErr != nil {
+				s.log.Error("judge profile save failed", "error", saveErr)
+				return
+			}
+			if affected, _ := r.RowsAffected(); affected != 1 {
+				s.log.Warn("judge build reservation changed", "job", id)
+				return
+			}
+		}
 		for _, output := range outputs.Objects {
 			_, txErr = tx.ExecContext(finish, `INSERT INTO cc_objects(kind,id,owner_id,matter_id,data) VALUES($1,$2,$3,$4,$5)`, output.Kind, output.ID, output.User, nullable(output.Matter), output.Data)
 			if txErr != nil {

@@ -64,6 +64,7 @@ function JudgeIntelView() {
           <h3 className={s.buildingTitle}>Building Judge Intelligence Profile</h3>
           <span className={s.buildingProgress}>{judgeIntelBuildProgress || 'Pulling all available data...'}</span>
           <p className={s.buildingNote}>This may take a moment for judges with many opinions.</p>
+		  <button className={s.judgeIntelBackBtn} onClick={backToJudgeSearch}>Back to Search</button>
         </div>
       ) : !judgeIntelProfile ? (
         /* Judge Search View */
@@ -143,6 +144,10 @@ function JudgeIntelView() {
                 </div>
 
                 <div className={s.profileBody}>
+				  {judgeIntelProfile.coverage?.note && <p className={s.dataQuality}>{judgeIntelProfile.coverage.note}</p>}
+				  {(judgeIntelProfile.data_warnings?.length ?? 0) > 0 && (
+				    <div role="status" className={s.toolErrorBox}><ul>{judgeIntelProfile.data_warnings!.map((warning) => <li key={warning}>{warning}</li>)}</ul></div>
+				  )}
                   <JudgeProfileTab
                     styles={s}
                     judgeIntelProfile={judgeIntelProfile}

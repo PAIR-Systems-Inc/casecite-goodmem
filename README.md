@@ -14,7 +14,9 @@ The original React and Word add-in source and tests are restored. Saved workspac
 
 Saved workflows now include all seven original step types, the three original templates, frozen run versions, conditions, substitutions, approval gates, resume/retry/skip controls, and optional email notifications. Deep research supports editable plans, document/folder/matter filters, bounded parallel searches, verified quotes, saved/shared runs, history and cancellation. Workflow research steps use the same pipeline; citation checks use CourtListener opinion identities and citation-context treatment scans.
 
-The eight legal-tool routes cover case search and pagination, separate opinion/cluster lookups, citation checks, precedents, docket search/details, oral arguments, and yearly trends. Shared CourtListener pacing and retries apply across tools and research; expiring trend and court-name caches use PostgreSQL. Connectors, cloud pickers, streaming research/chat, judge intelligence and remaining administration paths still require implementation or integration work. Live provider, Word-host and full browser verification remain open.
+The eight legal-tool routes cover case search and pagination, separate opinion/cluster lookups, citation checks, precedents, docket search/details, oral arguments, and yearly trends. Shared CourtListener pacing and retries apply across tools and research; expiring trend and court-name caches use PostgreSQL.
+
+Judge intelligence includes all eight original routes: name search, durable profile builds/refreshes, biography and career, filtered opinions/full text, statistics, all nine computed metrics with methodology, and administrator deletion. Profiles and metrics use PostgreSQL. The original screens show build progress, data coverage and partial-data warnings. Connectors, cloud pickers, streaming research/chat (including judge briefs and Q&A) and remaining administration paths still require implementation or integration work. Live provider, Word-host and full browser verification remain open.
 
 See the [parity scope](docs/parity/README.md), [source comparisons and verification evidence](docs/parity/evidence.md), and [architecture assessment](docs/migration.md). Known upstream defects should be fixed, with regression tests and documented differences, rather than reproduced.
 
@@ -114,6 +116,6 @@ Whole-document contract analysis uses original PDF, DOCX or text content retriev
 
 GoodMem performs ingestion, chunking, embeddings, retrieval, and page rendering. Configure the space's embedders to suit the corpus; optional reranking uses `GOODMEM_RERANKER_ID`. CaseCite does not duplicate a vector index or implement its own OCR pipeline. Page images depend on GoodMem's support for the uploaded format.
 
-CourtListener tools and deep research are implemented; streaming research/chat and judge intelligence still need their original workflows. DOCX redline export preserves the original package and uses native tracked changes; other source formats require a generated DOCX. Exact quotation matches do not establish that the model's interpretation is correct. Real Word-host and visual export verification remain open.
+CourtListener tools, judge profiles/analytics and deep research are implemented; streaming research/chat, judge briefs and Q&A still need their shared chat workflows. DOCX redline export preserves the original package and uses native tracked changes; other source formats require a generated DOCX. Exact quotation matches do not establish that the model's interpretation is correct. Real Word-host and visual export verification remain open.
 
 [License](LICENSE) · [Third-party notices](NOTICE.md) · [Architecture and tradeoffs](docs/migration.md) · [Operations](docs/operations.md)

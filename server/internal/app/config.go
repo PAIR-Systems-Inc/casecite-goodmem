@@ -15,6 +15,7 @@ type Config struct {
 	GoodMemURL, GoodMemKey, GoodMemSpace, RerankerID                   string
 	LLMURL, LLMKey, LLMModel, CourtListenerToken                       string
 	CourtListenerURL                                                   string
+	WikipediaURL                                                       string
 	LLMUtilityModel                                                    string
 	LLMContextWindow                                                   int
 	Debug                                                              bool
@@ -50,6 +51,7 @@ func LoadConfig() (Config, error) {
 		LLMUtilityModel:    env("OPENAI_UTILITY_MODEL", "gpt-5.4-mini"),
 		CourtListenerToken: os.Getenv("COURTLISTENER_API_TOKEN"), Debug: env("DEBUG", "false") == "true",
 		CourtListenerURL: strings.TrimRight(env("COURTLISTENER_BASE_URL", "https://www.courtlistener.com/api/rest/v4"), "/"),
+		WikipediaURL:     env("WIKIPEDIA_API_URL", "https://en.wikipedia.org/w/api.php"),
 		SessionTTL:       8 * time.Hour, IdleTTL: 2 * time.Hour, MaxUpload: 50 << 20,
 		JobTimeout:        time.Hour,
 		ReviewConcurrency: 4,
@@ -95,7 +97,7 @@ func LoadConfig() (Config, error) {
 	if c.GoodMemKey == "" || c.GoodMemSpace == "" {
 		return c, errors.New("GOODMEM_API_KEY and GOODMEM_SPACE_ID (or GOODMEM_CONFIG_FILE) are required")
 	}
-	for _, raw := range []string{c.PublicURL, c.GoodMemURL, c.LLMURL, c.CourtListenerURL} {
+	for _, raw := range []string{c.PublicURL, c.GoodMemURL, c.LLMURL, c.CourtListenerURL, c.WikipediaURL} {
 		u, err := url.Parse(raw)
 		if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
 			return c, errors.New("service URLs must be absolute HTTP(S) URLs")

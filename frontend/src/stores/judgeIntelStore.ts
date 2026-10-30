@@ -5,6 +5,7 @@ import { formatErrorDetail } from '../api/client';
 import { persistWorkspaceSession, resetWorkspaceSessionKey } from './workspaceSessionsStore';
 import logger from '../utils/logger';
 import { useUIStore } from './uiStore';
+import { createJobPoller } from './storeUtils';
 import type {
   JudgeSearchResponse, JudgeIntelProfile, JudgeStats, JudgeMetrics,
   JudgeMessage, DocumentFilter, JudgeEducation, JudgePosition,
@@ -12,6 +13,22 @@ import type {
 } from '../types';
 
 export type JudgeOpinionSort = 'citations' | 'date';
+
+const judgeBuildPoller = createJobPoller();
+let buildGeneration = 0;
+let settleBuild: (() => void) | null = null;
+function stopJudgeBuildPolling() {
+  buildGeneration += 1;
+  judgeBuildPoller.stop();
+  settleBuild?.();
+  settleBuild = null;
+}
+interface JudgeBuildJob {
+  status: string;
+  result?: { profile?: JudgeIntelProfile };
+  error?: string | null;
+  progress?: { message?: string };
+}
 
 export interface JudgeIntelState {
   // Search & profile
@@ -176,6 +193,8 @@ export const useJudgeIntelStore = create<JudgeIntelState>((set, get) => {
   },
 
   buildJudgeIntel: async (judgeId, judgeName, forceRefresh = false) => {
+    stopJudgeBuildPolling();
+    const generation = buildGeneration;
     // A new judge is a new History session.
     resetWorkspaceSessionKey('judge');
     set({
@@ -197,30 +216,52 @@ export const useJudgeIntelStore = create<JudgeIntelState>((set, get) => {
 
     try {
       const response = await api.authFetch(
-        `${API_BASE_URL}/judge-intel/build/${judgeId}${forceRefresh ? '?force_refresh=true' : ''}`,
-        // A full build makes 100+ paced CourtListener calls; give it real time.
-        { method: 'POST', timeout: 600000 },
+        `${API_BASE_URL}/judge-intel/build/${judgeId}?async=true${forceRefresh ? '&force_refresh=true' : ''}`,
+        { method: 'POST' },
       );
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(formatErrorDetail(errorData.detail, 'Build failed'));
       }
       const data = await response.json();
-      set({ judgeIntelProfile: data.profile, judgeIntelBuildProgress: '', judgeBrief: null });
+      if (generation !== buildGeneration) return;
+      let profile: JudgeIntelProfile | undefined = data.profile;
+      if (response.status === 202) {
+        profile = await new Promise<JudgeIntelProfile | undefined>((resolve, reject) => {
+          settleBuild = () => resolve(undefined);
+          judgeBuildPoller.start<JudgeBuildJob>({
+            fetchJob: () => api.request(`/jobs/${encodeURIComponent(data.job_id)}`),
+            onPending: (job) => set({ judgeIntelBuildProgress: job.progress?.message || `Building ${judgeName}'s profile…` }),
+            onCompleted: (job) => { settleBuild = null; resolve(job.result?.profile); },
+            onFailed: (message) => { settleBuild = null; reject(new Error(message)); },
+            maxAttempts: 1200,
+            intervalMs: 3000,
+            failedMessage: 'Judge profile build failed.',
+            timeoutMessage: 'The profile is still building. Open this judge again to reconnect to the build.',
+          });
+        });
+      }
+      if (generation !== buildGeneration) return;
+      if (!profile) throw new Error('The build returned no judge profile. Please retry.');
+      set({ judgeIntelProfile: profile, judgeIntelBuildProgress: '', judgeBrief: null });
       // The page shows opinions and statistics inline (no tabs) — load both
       // right away. Opinions default to most-cited order.
       get().queryJudgeOpinions(judgeId);
       get().loadJudgeIntelStats(judgeId);
       get().loadJudgeIntelMetrics(judgeId);
     } catch (error: unknown) {
+      if (generation !== buildGeneration) return;
       logger.error('Build intel error:', error);
       set({ judgeIntelProfile: { error: error instanceof Error ? error.message : String(error) } as JudgeIntelProfile });
     }
-    set({ judgeIntelBuilding: false });
+    if (generation === buildGeneration) set({ judgeIntelBuilding: false });
   },
 
   backToJudgeSearch: () => {
+    stopJudgeBuildPolling();
     set({
+      judgeIntelBuilding: false,
+      judgeIntelBuildProgress: '',
       judgeIntelProfile: null,
       judgeIntelStats: null,
       judgeIntelOpinions: null,
@@ -527,4 +568,7 @@ Provide a thorough, well-reasoned answer based on the judge data above.${judgeQu
 });
 });
 
-registerReset(() => useJudgeIntelStore.setState(useJudgeIntelStore.getInitialState(), true));
+registerReset(() => {
+  stopJudgeBuildPolling();
+  useJudgeIntelStore.setState(useJudgeIntelStore.getInitialState(), true);
+});

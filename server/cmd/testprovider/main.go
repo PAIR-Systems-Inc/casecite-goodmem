@@ -15,6 +15,25 @@ import (
 )
 
 func main() {
+	judgeProvider := map[string]any{}
+	if raw, err := os.ReadFile("/fixtures/judge.json"); err == nil {
+		var fixture map[string]any
+		if err = json.Unmarshal(raw, &fixture); err != nil {
+			log.Fatal(err)
+		}
+		judgeProvider = remapJudgeFixture(fixture["provider"]).(map[string]any)
+	}
+	http.HandleFunc("/wiki", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("list") == "search" {
+			write(w, map[string]any{"query": map[string]any{"search": []any{map[string]any{"title": "Jane Example"}}}})
+			return
+		}
+		text := "Jane Example (born 1965) is an American judge."
+		if r.URL.Query().Get("exintro") == "" {
+			text += "\n== Early life ==\nBorn in Oakland.\n== Education ==\nExample University."
+		}
+		write(w, map[string]any{"query": map[string]any{"pages": map[string]any{"1": map[string]any{"extract": text}}}})
+	})
 	// The browser suite calls the Go application's real CourtListener adapter.
 	// Its upstream is controlled data from the Python parity oracle, not a live
 	// legal database or a browser network interception.
@@ -32,6 +51,23 @@ func main() {
 			}
 			path := strings.TrimPrefix(r.URL.Path, "/api/rest/v4")
 			params := r.URL.Query()
+			judgeKey := path
+			if path == "/people/" {
+				judgeKey = "search_people"
+			}
+			if path == "/search/" {
+				judgeKey = ""
+				if strings.Contains(params.Get("q"), "author_id:") {
+					judgeKey = "search_opinions"
+				}
+				if strings.Contains(params.Get("q"), "assigned_to_id:") {
+					judgeKey = "search_dockets"
+				}
+			}
+			if data, ok := judgeProvider[judgeKey]; ok {
+				write(w, data)
+				return
+			}
 			if path == "/search/" {
 				if params.Get("q") == "upstream-failure" {
 					w.WriteHeader(503)
@@ -166,6 +202,31 @@ func main() {
 	})
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) { write(w, map[string]any{"test_provider": true}) })
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+// Distinct browser fixture IDs keep the legal-tool and judge readers independent.
+func remapJudgeFixture(value any) any {
+	switch v := value.(type) {
+	case map[string]any:
+		out := map[string]any{}
+		for k, item := range v {
+			out[remapJudgeFixture(k).(string)] = remapJudgeFixture(item)
+		}
+		return out
+	case []any:
+		out := make([]any, len(v))
+		for i, item := range v {
+			out[i] = remapJudgeFixture(item)
+		}
+		return out
+	case string:
+		return strings.NewReplacer("/77/", "/777/", "/55/", "/555/", "/56/", "/556/").Replace(v)
+	case float64:
+		if mapped, ok := map[float64]float64{77: 777, 55: 555, 56: 556}[v]; ok {
+			return mapped
+		}
+	}
+	return value
 }
 func write(w http.ResponseWriter, v any) {
 	w.Header().Set("Content-Type", "application/json")
