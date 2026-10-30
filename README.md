@@ -30,6 +30,23 @@ All eight connector adapters and four file pickers are implemented in Go, includ
 
 See the [parity scope](docs/parity/README.md), [source comparisons and verification evidence](docs/parity/evidence.md), and [architecture assessment](docs/migration.md). Known upstream defects should be fixed, with regression tests and documented differences, rather than reproduced.
 
+## Quick local evaluation — prebuilt images
+
+```bash
+git clone --branch goodmem-migration https://github.com/PAIR-Systems-Inc/casecite-goodmem.git
+cd casecite-goodmem
+bash scripts/casecite.sh install
+```
+
+Requires Docker/Compose and Bash; no Go, Node or local application build. The installer
+prompts for provider keys, generates secrets, downloads pinned OCR weights, provisions
+its own GoodMem instance and waits for readiness. Open **http://localhost:8000**.
+Use `bash scripts/casecite.sh token` to retrieve the first-administrator setup token.
+
+Local OCR needs an available NVIDIA GPU and Container Toolkit. For a machine without
+one, pass `--ocr-url http://ocr-server:8000/v1`. See the **[portable quickstart](docs/quickstart.md)**
+for hardware requirements, existing model caches, restart/update commands and demo preparation.
+
 ## Use an existing GoodMem installation
 
 For a separate instance on this workstation, see [local evaluation with GPU OCR](docs/local-evaluation.md).
@@ -69,7 +86,10 @@ export GOODMEM_CONFIG_FILE=/secure/runtime/goodmem.json
 
 See [GoodMem security and upgrades](docs/goodmem-security.md) before upgrading an existing library. Legacy root-key runtime configurations are rejected; `migrate-goodmem-security` copies and verifies existing documents before removing their old shared-space copies. Provisioning adds no running service or Redis dependency.
 
-## Fresh shared-Postgres stack
+## Fresh shared-Postgres stack — build from source
+
+For the prebuilt, automated installation, use the quickstart above. These manual
+commands remain available for developers and custom deployments.
 
 ```bash
 node scripts/init-env.mjs

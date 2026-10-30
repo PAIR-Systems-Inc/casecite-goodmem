@@ -101,6 +101,9 @@ func main() {
 		answer := `[{"bbox":[120,170,1000,215],"category":"Title","text":"SCANNED AGREEMENT"},{"bbox":[120,270,1000,315],"category":"Text","text":"Notice is 30 days."},{"bbox":[120,330,1000,375],"category":"Text","text":"Payment is due monthly."}]`
 		write(w, map[string]any{"id": "test-ocr", "choices": []any{map[string]any{"index": 0, "message": map[string]any{"role": "assistant", "content": answer}, "finish_reason": "stop"}}})
 	})
+	http.HandleFunc("/ocr/v1/models", func(w http.ResponseWriter, r *http.Request) {
+		write(w, map[string]any{"data": []any{map[string]any{"id": "pairsys/pairsys.ocr"}}})
+	})
 	judgeProvider := map[string]any{}
 	if raw, err := os.ReadFile("/fixtures/judge.json"); err == nil {
 		var fixture map[string]any

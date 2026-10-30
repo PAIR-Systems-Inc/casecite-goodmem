@@ -3,6 +3,7 @@
 .env.local
 .env.production
 .local-eval/
+.casecite*/
 /casecite-provisioning/
 
 # Data directories

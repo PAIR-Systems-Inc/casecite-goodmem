@@ -1,5 +1,10 @@
 # Local evaluation
 
+**On a new machine, use the [portable installer](quickstart.md).** It downloads
+the prebuilt application and OCR weights and handles provisioning/readiness.
+This document describes the existing workstation review project, which remains
+independent of that installer.
+
 The local review instance uses its own `casecite-review` Compose project, network,
 PostgreSQL volume and GoodMem credential volumes. It does not reuse or modify the
 existing GoodMem installation. The app is available at **http://localhost:18000**;

@@ -1,6 +1,7 @@
 .git
 .env*
 .local-eval
+.casecite*
 casecite-provisioning
 **/node_modules
 **/dist

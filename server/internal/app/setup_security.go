@@ -96,6 +96,12 @@ func SetupGoodMem(ctx context.Context, output string) error {
 	}
 	save := func() error { return savePrivateJSON(adminFile, state) }
 	g := NewGoodMem(Config{GoodMemURL: str(state, "base_url"), GoodMemKey: str(state, "api_key")})
+	if os.Getenv("GOODMEM_SETUP_MODELS") == "true" {
+		if err := setupModels(ctx, g, state, save); err != nil {
+			return err
+		}
+	}
+	rerankerID := env("GOODMEM_RERANKER_ID", str(state, "reranker_id"))
 	controller := object(state["controller"])
 	if len(controller) == 0 {
 		controller = M{"principal_id": uuid()}
@@ -119,6 +125,9 @@ func SetupGoodMem(ctx context.Context, output string) error {
 	}
 	rules = append(rules, resourcePermission("READ_SPACE", "EXACT", "SPACE", str(state, "space_id")))
 	embedders := map[string]bool{}
+	if id := str(state, "voyage_embedder_id"); id != "" {
+		embedders[id] = true
+	}
 	baseSpace, e := g.JSON(ctx, "GET", "/v1/spaces/"+str(state, "space_id"), nil)
 	if e != nil {
 		return e
@@ -139,7 +148,7 @@ func SetupGoodMem(ctx context.Context, output string) error {
 	for _, id := range ids {
 		rules = append(rules, resourcePermission("EXECUTE_EMBEDDER", "EXACT", "EMBEDDER", id))
 	}
-	if id := os.Getenv("GOODMEM_RERANKER_ID"); id != "" {
+	if id := rerankerID; id != "" {
 		rules = append(rules, resourcePermission("EXECUTE_RERANKER", "EXACT", "RERANKER", id))
 	}
 	if err = setupScopedCredential(ctx, g, controller, rules, []M{permission("MANAGE_ACCESS", "ANY")}, save); err != nil {
@@ -157,7 +166,7 @@ func SetupGoodMem(ctx context.Context, output string) error {
 	if err = save(); err != nil {
 		return err
 	}
-	runtime := GoodMemSecurity{EmbedderIDs: ids, RerankerID: os.Getenv("GOODMEM_RERANKER_ID"), Version: 1, ControllerID: controllerID, APIKey: str(controller, "api_key"), SpaceID: str(state, "space_id"), BaseURL: str(state, "base_url")}
+	runtime := GoodMemSecurity{EmbedderIDs: ids, RerankerID: rerankerID, Version: 1, ControllerID: controllerID, APIKey: str(controller, "api_key"), SpaceID: str(state, "space_id"), BaseURL: str(state, "base_url")}
 	for i := 0; i < len(subjects) || len(runtime.Subjects) < count; i++ {
 		if i == len(subjects) {
 			subjects = append(subjects, M{"principal_id": uuid()})
