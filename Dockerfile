@@ -35,7 +35,8 @@ LABEL org.opencontainers.image.title="CaseCite by PairSys" \
       org.opencontainers.image.source="https://github.com/PAIR-Systems-Inc/casecite-goodmem" \
       org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.version=$VERSION \
-      org.opencontainers.image.revision=$REVISION
+      org.opencontainers.image.revision=$REVISION \
+      ai.pairsys.casecite.doctor="1"
 COPY --from=server /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=server --chown=65532:65532 /data /data
 COPY --from=server --chown=65532:65532 /provisioning /provisioning

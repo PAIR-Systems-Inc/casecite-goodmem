@@ -194,6 +194,9 @@ func main() {
 			w.WriteHeader(404)
 		})
 	}
+	http.HandleFunc("/v1/rerank", func(w http.ResponseWriter, r *http.Request) {
+		write(w, map[string]any{"data": []any{map[string]any{"index": 0, "relevance_score": 0.9}}})
+	})
 	http.HandleFunc("/v1/embeddings", func(w http.ResponseWriter, r *http.Request) {
 		var in struct {
 			Input any `json:"input"`

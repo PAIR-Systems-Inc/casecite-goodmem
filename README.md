@@ -35,6 +35,7 @@ See the [parity scope](docs/parity/README.md), [source comparisons and verificat
 ```bash
 git clone --branch goodmem-migration https://github.com/PAIR-Systems-Inc/casecite-goodmem.git
 cd casecite-goodmem
+bash scripts/casecite.sh doctor
 bash scripts/casecite.sh install
 ```
 
@@ -42,6 +43,8 @@ Requires Docker/Compose and Bash; no Go, Node or local application build. The in
 prompts for provider keys, generates secrets, downloads pinned OCR weights, provisions
 its own GoodMem instance and waits for readiness. Open **http://localhost:8000**.
 Use `bash scripts/casecite.sh token` to retrieve the first-administrator setup token.
+Run `bash scripts/casecite.sh doctor` again after installation for connection checks
+and actionable fixes. Add `--probe-providers` to test keys/models with small API requests.
 
 Local OCR needs an available NVIDIA GPU and Container Toolkit. For a machine without
 one, pass `--ocr-url http://ocr-server:8000/v1`. See the **[portable quickstart](docs/quickstart.md)**

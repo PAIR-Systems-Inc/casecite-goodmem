@@ -41,6 +41,8 @@ export EMBEDDING_BASE_URL="$OPENAI_BASE_URL" VOYAGE_BASE_URL="$OPENAI_BASE_URL"
 export EMBEDDING_MODEL=test-embedding EMBEDDING_DIMENSIONS=16 LLM_MODEL=test-model
 export VOYAGE_EMBEDDING_MODEL=test-voyage VOYAGE_EMBEDDING_DIMENSIONS=16
 export GOODMEM_IDENTITY_CAPACITY=4
+bash scripts/casecite.sh doctor --state-dir "$state" --project "$project" --port "$app_port" --ocr-url http://fixture-provider:8080/ocr/v1
+[ ! -f "$state/.env" ]
 bash scripts/casecite.sh install --state-dir "$state" --project "$project" --port "$app_port" --image "$image" --ocr-url http://fixture-provider:8080/ocr/v1 --non-interactive --no-pull
 cp "$state/.env" "$state/env-before"
 # Verify dotenv round-trips a key with dollars, quotes and backslashes without
@@ -52,17 +54,33 @@ node -e 'const s=require(process.argv[1]); if(s.security_version!==1 || !s.reran
 curl --fail --silent "http://localhost:$app_port/ready" >/dev/null
 curl --fail --silent "http://localhost:$app_port/word-addin/" >/dev/null
 node scripts/test-installed-app.mjs "http://localhost:$app_port" "$state" create
+bash scripts/casecite.sh doctor --state-dir "$state" --probe-providers
+cmp "$state/.env" "$state/env-before"
+# A missing required service must produce an actionable, nonzero diagnosis.
+docker stop "$provider" >/dev/null
+if bash scripts/casecite.sh doctor --state-dir "$state" > "$state/doctor-failed.log" 2>&1; then
+  echo 'ERROR: doctor accepted an unavailable OCR service' >&2
+  exit 1
+fi
+grep -q 'FAIL  OCR model' "$state/doctor-failed.log"
+docker start "$provider" >/dev/null
 # A second invocation must preserve secrets, model registrations and identities.
 bash scripts/casecite.sh stop --state-dir "$state"
+if bash scripts/casecite.sh doctor --state-dir "$state" > "$state/doctor-stopped.log" 2>&1; then
+  echo 'ERROR: doctor accepted a stopped installation' >&2
+  exit 1
+fi
+grep -q 'Application is stopped' "$state/doctor-stopped.log"
 bash scripts/casecite.sh start --state-dir "$state" --no-pull
 cmp "$state/.env" "$state/env-before"
 "${compose[@]}" run --rm --no-deps --entrypoint cat setup /data/goodmem.json > "$state/runtime-after.json"
 cmp "$state/runtime-before.json" "$state/runtime-after.json"
 node scripts/test-installed-app.mjs "http://localhost:$app_port" "$state" verify
+bash scripts/casecite.sh doctor --state-dir "$state"
 # Even after a container stop, another state directory must not adopt the data.
 if bash scripts/casecite.sh install --state-dir "$state/foreign" --project "$project" --port "$app_port" --image "$image" --ocr-url http://fixture-provider:8080/ocr/v1 --non-interactive --no-pull > "$state/collision.log" 2>&1; then
   echo 'ERROR: installer adopted another installation' >&2
   exit 1
 fi
 grep -q 'belongs to another installation' "$state/collision.log"
-echo 'Installer passed: fresh provisioning, dotenv escaping, readiness, add-in, restart, credential stability and project isolation.'
+echo 'Installer passed: fresh provisioning, doctor/provider probes, missing OCR/stopped-service diagnostics, dotenv escaping, readiness, add-in, restart, credential stability and project isolation.'

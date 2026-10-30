@@ -79,6 +79,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - run: bash scripts/test-doctor.sh
       - run: docker build -t casecite-packaging:test .
       - run: docker build -f deploy/Dockerfile.test-provider -t casecite-installer-provider:test .
       - run: bash scripts/test-installer.sh

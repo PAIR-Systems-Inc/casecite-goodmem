@@ -1,4 +1,4 @@
-// Package install contains dependency-free helpers used by the Docker installer.
+// Package install contains helpers used by the Docker installer.
 package install
 
 import (

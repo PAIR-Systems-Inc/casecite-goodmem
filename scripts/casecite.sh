@@ -19,12 +19,14 @@ interactive=true
 pull=true
 image_given=false
 install_options=false
+probe_providers=false
 fail() { echo "CaseCite: $*" >&2; exit 1; }
 usage() {
   cat <<'EOF'
 CaseCite by PairSys — prebuilt Docker installation
 
   bash scripts/casecite.sh install [options]
+  bash scripts/casecite.sh doctor [--state-dir PATH] [--probe-providers]
   bash scripts/casecite.sh start|stop|status|logs|token [--state-dir PATH]
   bash scripts/casecite.sh update [--image IMAGE_OR_DIGEST] [--state-dir PATH]
 
@@ -40,6 +42,11 @@ Install options:
   --image IMAGE       App image/tag/digest (default GHCR :demo).
   --non-interactive   Read OPENAI_API_KEY and optional VOYAGE_API_KEY from env.
   --no-pull           Use cached images only (development/air-gapped installs).
+
+Doctor accepts install options before installation, and --state-dir afterward.
+It changes no configuration, containers or volumes and never pulls images.
+--probe-providers makes small, potentially billable synthetic model requests.
+Without it, provider credentials are checked for presence, not validity.
 
 Requires Docker Engine/Desktop and Compose >= 2.24.4. Local GPU OCR requires
 Linux x86-64, NVIDIA Container Toolkit, an Ampere-or-newer GPU with >= 8 GB VRAM,
@@ -62,15 +69,22 @@ while [ "$#" -gt 0 ]; do
       shift 2 ;;
     --non-interactive) interactive=false; shift ;;
     --no-pull) pull=false; shift ;;
+    --probe-providers) probe_providers=true; shift ;;
     --help|-h) usage; exit 0 ;;
     *) fail "Unknown option: $1" ;;
   esac
 done
 case "$command_name" in
   help|-h|--help) usage; exit 0 ;;
-  install|start|stop|status|logs|token|update) ;;
+  install|start|stop|status|logs|token|update|doctor) ;;
   *) usage; fail "Unknown command: $command_name" ;;
 esac
+[ "$probe_providers" = false ] || [ "$command_name" = doctor ] || fail "--probe-providers is only valid with doctor."
+if [ "$command_name" = doctor ]; then
+  # Branch before mkdir, chmod, locks, image pulls or service lifecycle actions.
+  source "$root/scripts/doctor.sh"
+  exit 0
+fi
 command -v docker >/dev/null || fail "Install Docker and its Compose plugin first. See docs/quickstart.md."
 docker info >/dev/null 2>&1 || fail "Docker is not running or your account cannot access it."
 compose_version="$(docker compose version --short)"

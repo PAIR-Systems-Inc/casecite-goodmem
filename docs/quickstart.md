@@ -29,6 +29,7 @@ requires 68% of the selected GPU's VRAM plus 300 MiB free before starting OCR.
 ```bash
 git clone --branch goodmem-migration https://github.com/PAIR-Systems-Inc/casecite-goodmem.git
 cd casecite-goodmem
+bash scripts/casecite.sh doctor
 bash scripts/casecite.sh install
 ```
 
@@ -134,6 +135,41 @@ avoid exporting conflicting values into your management shell: Compose gives
 process environment variables precedence over the saved `.env` file.
 
 ## Before the demo
+
+Run the diagnostic before installation and again after starting the application:
+
+```bash
+bash scripts/casecite.sh doctor
+# Optional: small synthetic API requests, billed by your providers.
+bash scripts/casecite.sh doctor --probe-providers
+```
+
+Before installation, pass the same intended options to both commands, for example
+`doctor --ocr-url http://ocr-server:8000/v1` followed by `install --ocr-url ...`.
+After installation, only `--state-dir` is needed for a nondefault installation.
+Doctor prints **PASS/WARN/FAIL** with suggested fixes and exits nonzero for
+blocking failures. It checks Docker/Compose, memory/disk, port availability,
+project ownership, GPU compatibility and free VRAM, private file permissions,
+the application, PostgreSQL, scoped GoodMem access and the expected OCR model.
+It recognizes VRAM already allocated by this installation's running OCR.
+
+Doctor does not install anything, pull images, start/stop containers, change
+permissions, migrate databases or rewrite configuration. The runtime checks
+execute the Go helper inside the running app container; no extra host runtime is
+needed. A stopped installation reports a failure with the `start` command.
+An older app image reports that it needs `update`; it is never started as a
+second server. Remote Docker hosts and Docker Desktop disk allocation have
+explicit diagnostic limits; run host preflight on the actual Docker host.
+
+By default provider keys are checked for presence only. `--probe-providers`
+checks the configured generation model, embedding dimensions and optional
+Voyage embeddings/reranking using fixed synthetic text, never your documents.
+Each request is bounded by a 30-second timeout; generation has a 512-token cap.
+Keys, provider response bodies and connection strings are not printed. These
+checks cover installer defaults, not every user-specific model, connector,
+SSO integration or full document workflow. Provider settings stored in GoodMem
+must stay consistent with the installation settings; editing `.env` alone does
+not rotate a model credential already registered in GoodMem.
 
 Create the administrator, upload a scan and a native Word/PDF document, wait for
 indexing, then rehearse a question with verified citations and page previews.

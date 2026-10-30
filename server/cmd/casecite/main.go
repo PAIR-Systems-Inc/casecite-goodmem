@@ -26,6 +26,14 @@ func main() {
 	}
 }
 func run() error {
+	if len(os.Args) > 1 && os.Args[1] == "doctor" {
+		if len(os.Args) > 3 || len(os.Args) == 3 && os.Args[2] != "--probe-providers" {
+			return fmt.Errorf("usage: casecite doctor [--probe-providers]")
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+		defer cancel()
+		return install.Doctor(ctx, os.Stdout, len(os.Args) == 3)
+	}
 	if len(os.Args) > 1 && os.Args[1] == "init-env" {
 		if len(os.Args) != 3 {
 			return fmt.Errorf("usage: casecite init-env /path/to/.env")
@@ -62,6 +70,9 @@ func run() error {
 	if len(os.Args) > 1 && os.Args[1] == "version" {
 		fmt.Printf("casecite-goodmem %s (%s)\n", version, revision)
 		return nil
+	}
+	if len(os.Args) > 1 && os.Args[1] != "migrate-goodmem-security" {
+		return fmt.Errorf("unknown command; use version, doctor, init-env, wait, setup-goodmem or migrate-goodmem-security")
 	}
 	cfg, err := app.LoadConfig()
 	if err != nil {
