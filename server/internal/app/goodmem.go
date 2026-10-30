@@ -210,6 +210,12 @@ func (g *GoodMem) Page(ctx context.Context, id, index string, query url.Values) 
 // Search only active memory revisions selected from the application's SQL ACLs.
 // Empty scope returns locally: it must never become an unfiltered remote query.
 func (g *GoodMem) Search(ctx context.Context, query string, memoryIDs []string, k int) ([]Hit, error) {
+	return g.SearchWithRerank(ctx, query, memoryIDs, k, true)
+}
+
+// Reranking is a per-request choice. In particular, the chat UI's toggle must
+// not silently inherit an instance-wide postprocessor when switched off.
+func (g *GoodMem) SearchWithRerank(ctx context.Context, query string, memoryIDs []string, k int, rerank bool) ([]Hit, error) {
 	if len(memoryIDs) == 0 {
 		return []Hit{}, nil
 	}
@@ -226,7 +232,7 @@ func (g *GoodMem) Search(ctx context.Context, query string, memoryIDs []string, 
 			allowed[id] = true
 		}
 		body := M{"message": query, "spaceKeys": []M{{"spaceId": g.Space, "filter": "CAST(val('$.casecite_memory_id') AS TEXT) IN (" + strings.Join(quoted, ",") + ")"}}, "requestedSize": k, "fetchMemory": true}
-		if g.Reranker != "" {
+		if rerank && g.Reranker != "" {
 			body["requestedSize"] = max(k, 30)
 			body["postProcessor"] = M{"name": "com.goodmem.retrieval.postprocess.ChatPostProcessorFactory", "config": M{"reranker_id": g.Reranker, "max_results": k}}
 		}
@@ -243,8 +249,11 @@ func (g *GoodMem) Search(ctx context.Context, query string, memoryIDs []string, 
 	}
 	// Scores are comparable across batches using the same space and postprocessor.
 	sort.SliceStable(out, func(i, j int) bool {
-		if g.Reranker != "" {
+		if out[i].Stage == "rerank" && out[j].Stage == "rerank" {
 			return out[i].Score > out[j].Score
+		}
+		if (out[i].Stage == "rerank") != (out[j].Stage == "rerank") {
+			return out[i].Stage == "rerank"
 		}
 		return out[i].Score < out[j].Score
 	})
@@ -259,6 +268,7 @@ func decodeRetrieval(r io.Reader, allowed map[string]bool) ([]Hit, error) {
 	scan.Buffer(make([]byte, 64<<10), 8<<20)
 	memories := []M{}
 	sets := map[string][]Hit{}
+	stages := map[string]string{}
 	order := []string{}
 	stage := "vector_search"
 	current := "default"
@@ -281,6 +291,7 @@ func decodeRetrieval(r io.Reader, allowed map[string]bool) ([]Hit, error) {
 			if str(b, "kind") == "BEGIN" {
 				current = str(b, "resultSetId")
 				stage = str(b, "stageName")
+				stages[current] = stage
 				order = append(order, current)
 				sets[current] = []Hit{}
 			}
@@ -316,7 +327,8 @@ func decodeRetrieval(r io.Reader, allowed map[string]bool) ([]Hit, error) {
 		if _, ok := sets[id]; !ok {
 			order = append(order, id)
 		}
-		sets[id] = append(sets[id], Hit{ID: str(chunk, "chunkId"), MemoryID: mid, Text: str(chunk, "chunkText"), Score: score, Sequence: number(chunk, "chunkSequenceNumber", 0), Metadata: object(chunk["metadata"]), Stage: stage})
+		setStage := fallback(stages[id], stage)
+		sets[id] = append(sets[id], Hit{ID: str(chunk, "chunkId"), MemoryID: mid, Text: str(chunk, "chunkText"), Score: score, Sequence: number(chunk, "chunkSequenceNumber", 0), Metadata: object(chunk["metadata"]), Stage: setStage})
 	}
 	if err := scan.Err(); err != nil {
 		return nil, err

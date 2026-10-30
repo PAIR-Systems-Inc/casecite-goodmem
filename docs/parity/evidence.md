@@ -283,3 +283,19 @@ and restored the deployment defaults. Desktop and phone screenshots were
 inspected. Dedicated tests verify a single retry budget for long drafting and
 safe handling of native Claude/Gemini responses; those native protocols were
 exercised with fixtures rather than paid external API calls.
+
+The shared-chat components now have 160 pinned-Python behavior cases covering
+routing, explicit search operators, keyword ranking, query rank fusion, context
+compression, citation references, source excerpts and reasoning cleanup. Three
+short-filename reference expectations intentionally differ to fix an upstream
+false-positive citation-use bug. Local HTTP/PostgreSQL tests exercise retrieval
+thresholds and reranking independently, OCR-original source identity, empty
+scope, selected-file coverage, exact UTF-16 anchors, fabricated quotations,
+omitted support labels, and per-file failure/truncation reporting. The chat
+endpoint, strategy integration, durable exchange publication and exports remain
+in progress. See [chat implementation and limits](../chat.md).
+
+This internal chat checkpoint passed the complete Go race suite against isolated
+PostgreSQL and Go vet. The subsequent classifier-fence and short-filename fixes
+passed their targeted regression tests and all 160 behavior cases. No frontend
+files changed in this checkpoint; browser chat acceptance awaits endpoint wiring.
