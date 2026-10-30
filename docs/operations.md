@@ -2,7 +2,7 @@
 
 ## State and secrets
 
-Back up both application databases and keep their snapshots coordinated. CaseCite document rows reference GoodMem memory IDs; restoring only one side can leave dangling references. Also back up the stable `SECRET_KEY` and GoodMem connection file/credential. The setup JSON contains a secret and is written with mode `0600`; do not commit it or copy it into a frontend asset directory.
+Back up both application databases and keep their snapshots coordinated. CaseCite document rows reference GoodMem memory IDs; restoring only one side can leave dangling references. Also back up the stable `SECRET_KEY`, scoped runtime connection file, and separate offline provisioning state. Preserve the coordinated CaseCite/GoodMem identity mappings and grants; never attach the same runtime file to an unrelated application database. The setup JSON contains a secret and is written with mode `0600`; do not commit it or copy it into a frontend asset directory.
 
 The fresh Compose setup creates two databases and two ordinary login roles on one PostgreSQL 17 instance with pgvector. CaseCite runs its schema creation against `DATABASE_URL`; GoodMem manages its own schema. Sharing the same instance is supported; sharing GoodMem's tables is not required. For an existing instance, create the CaseCite database/role without rerunning the fresh-volume initialization script.
 
@@ -21,7 +21,7 @@ tokens. The endpoint cannot claim an existing email, reactivate a disabled user,
 or sign in after the reserved identity is promoted or given a normal password.
 Custom viewer permissions can remove its access but cannot elevate it beyond the
 original viewer defaults. Ordinary accounts continue using local passwords,
-Microsoft SSO and the configured MFA policy.
+Microsoft or [Google Workspace SSO](google-sso.md) and the configured MFA policy.
 
 ## Jobs and recovery
 
@@ -53,7 +53,7 @@ Uploads can report `upload_uncertain` if the browser/server connection ends arou
 
 ## Access and deployment
 
-This version targets one firm/workspace per installation, with a dedicated GoodMem space. Matter members can read matter documents/results; item owners control mutation/deletion. Administrators manage accounts, but do not automatically gain access to every private document. Membership revocation is checked for future requests and saved source-dependent results; content someone already downloaded cannot be revoked.
+This version targets one firm/workspace per installation, with dedicated GoodMem document spaces and per-user reader identities. See [GoodMem security](goodmem-security.md) for provisioning, grants, capacity, and upgrades. Matter members can read matter documents/results; item owners control mutation/deletion. Administrators manage accounts, but do not automatically gain access to every private document. Membership revocation removes the GoodMem space grants before the application commits the removal and is also checked for future requests and saved source-dependent results; content someone already downloaded cannot be revoked.
 
 Use `DEBUG=false` and an HTTPS `PUBLIC_URL` in production. Cookies are Secure, HttpOnly for sessions, and SameSite=Lax. Browser mutations require a signed CSRF token, and cross-origin requests are restricted. Session tokens are random and stored as hashes. Personal provider keys are encrypted with AES-GCM. Never expose the GoodMem administrative credential to the browser.
 

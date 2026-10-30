@@ -550,3 +550,42 @@ independent OOXML/openpyxl reads and LibreOffice confirmed that the actual cells
 are blank. The workflow DOCX downloaded by the real browser test was also
 rendered independently and its complete page inspected. These are sample-based
 layout checks, not a substitute for live Microsoft Office acceptance.
+
+## GoodMem authorization and Google Workspace SSO
+
+The security assessment's three gaps are implemented: offline human/admin
+provisioning is separated from scoped runtime service credentials, each
+application user has a distinct GoodMem reader identity, and per-document spaces
+carry the current private/matter grants across originals, page images, derived
+OCR/native text, and alternate embedding indexes. The existing SQL/filter checks
+remain. Revocation precedes local ACL mutations, is journaled for uncertain
+replies, and is serialized with ingestion and new-space creation across replicas.
+The offline upgrade copies and byte-verifies originals before switching stable
+application document IDs and deleting legacy shared-space copies.
+
+`TestGoodMemSecurityLive` runs against pinned GoodMem v1.0.334, without mocking
+its authorization. Allowed content/retrieval succeed; outsider and removed-member
+requests to GoodMem fail even without a filter or with an incorrect filter. It
+covers page images, OCR text, alternate embeddings, multi-space retrieval, moved
+and deleted documents, disabled identities, late OCR writes, policy/space-creation
+outages, late role/provisioning grants, replenishment after retirement, migration
+and restart. The Docker integration
+script runs this test automatically before the built-image browser workflow.
+
+Google Workspace sign-in is an addition to the original Microsoft OIDC flow. It
+uses signed Google subjects and verified Workspace domain claims, browser-bound
+single-use nonces, invitation-only defaults, authenticated account linking and
+existing local roles/MFA gates. Backend tests sign real JWTs and verify issuer,
+audience, expiry, domain, email verification, nonce/replay, invitation/linking,
+disabled-account and MFA behavior. Frontend tests cover the Google button, nonce,
+session/MFA handling, retry and late callbacks. Live Google organizational
+sign-in still requires the deployment's OAuth client and Workspace account.
+
+Validation: the complete PostgreSQL Go race suite passed in 233.223 seconds;
+729 frontend tests across 90 files, typecheck, lint, build and Go vet passed.
+The real GoodMem security/migration suite passed with the race detector in
+19.318 seconds in the Docker integration stack, including the final outage and
+late-grant regressions; the built-image Chromium
+workflow passed in 2.4 minutes. Provider responses remain deterministic fixtures,
+so this evidence establishes authorization and tested workflow behavior, not
+real-model quality or complete application parity.

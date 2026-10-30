@@ -41,6 +41,7 @@ func (s *Server) structuredWithStats(ctx context.Context, user, instructions, pr
 }
 
 func (s *Server) documentText(ctx context.Context, user, id string) (string, M, error) {
+	ctx = goodMemUserContext(ctx, user)
 	doc, err := s.getObject(ctx, user, "document", id)
 	if err != nil {
 		return "", nil, err

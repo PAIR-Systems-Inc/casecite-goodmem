@@ -1,0 +1,66 @@
+GoodMem security integration assessment
+
+Scope: Review of the CaseCite GoodMem implementation and its default setup at
+commit 9da3576. This is a source-code assessment, not an audit of credentials or
+grants configured on a live deployment.
+
+Conclusion
+
+CaseCite is not yet fully using GoodMem's security model. Most user and matter
+isolation is enforced by CaseCite, rather than independently by GoodMem.
+
+Current implementation
+
+- GoodMem authentication: one server-side API key, never sent to the browser.
+- User/matter access checks: enforced in Go and PostgreSQL.
+- Retrieval isolation: Go supplies authorized memory IDs and rejects unexpected
+  results. These request filters are not a substitute for GoodMem authorization.
+- Dedicated GoodMem service identity and scoped key: not automatically
+  provisioned.
+- GoodMem grants and roles reflecting CaseCite users and matters: not implemented.
+- Membership revocation: checked by CaseCite, but not synchronized into GoodMem
+  permissions.
+
+Every GoodMem request uses the same configured credential. GoodMem therefore
+sees the application's identity, not the individual CaseCite user.
+
+Source: server/internal/app/goodmem.go, NewGoodMem and GoodMem.do.
+
+Most important gap
+
+The fresh-install setup saves GoodMem's initialization rootApiKey as the runtime
+credential. An externally supplied key could be restricted, but the default
+setup does not provision a restricted replacement.
+
+Source: server/internal/app/setup.go, SetupGoodMem; docker-compose.yml, setup
+and app services using the same GoodMem connection file.
+
+GoodMem already supports service identities, resource-scoped grants and roles,
+and immutable API-key permission ceilings. A scoped request must pass both the
+subject's current authority and the key's ceiling. CaseCite leaves these
+protections largely unused as independent user/matter boundaries.
+
+Reference: https://docs.goodmem.ai/docs/concepts/security-model/
+
+Required follow-up before declaring the security integration complete
+
+1. Separate provisioning credentials from runtime credentials. Provision a
+   dedicated CaseCite service identity with only the operations and resource
+   scopes it needs. Keep the initialization/root credential out of the normal
+   application runtime.
+
+2. Represent user/matter boundaries in GoodMem authorization, including private
+   documents, shared matters, membership changes and revocation. Restricting one
+   application-wide key alone does not provide per-user or per-matter isolation.
+   The request identity and grants must let GoodMem enforce those boundaries.
+
+3. Add integration tests proving that GoodMem itself rejects cross-boundary
+   reads and retrieval, even when an application filter is absent or incorrect.
+   Include originals, page images, derived OCR memories and alternate embedding
+   spaces so all representations of a document receive equivalent protection.
+
+The existing CaseCite access checks are valuable and should remain. GoodMem
+should supply an additional enforcement layer. That remains implementation work.
+
+Writing this assessment does not change code, credentials, grants or deployment
+configuration, and does not mean the follow-up changes have been implemented.

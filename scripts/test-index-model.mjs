@@ -17,4 +17,6 @@ const response = await fetch(new URL('/v1/embedders', target), {
   }),
 });
 if (!response.ok) throw new Error(`Test embedder setup returned HTTP ${response.status}`);
-console.log('Enabled alternate integration embedder.');
+const created = await response.json();
+if (!/^[0-9a-f-]{36}$/i.test(created.embedderId)) throw new Error('Expected embedder UUID');
+console.log(created.embedderId);

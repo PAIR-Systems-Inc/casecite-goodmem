@@ -358,7 +358,11 @@ func TestProviderCourtListenerInstanceCredential(t *testing.T) {
 }
 
 func TestProviderPolicyEnvironmentFormats(t *testing.T) {
-	t.Setenv("GOODMEM_CONFIG_FILE", "")
+	file := t.TempDir() + "/goodmem.json"
+	if err := savePrivateJSON(file, GoodMemSecurity{Version: 1, ControllerID: "fixture-controller", APIKey: "fixture", SpaceID: "space", Subjects: []GoodMemSubject{{"fixture-reader", "reader-key"}}}); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("GOODMEM_CONFIG_FILE", file)
 	t.Setenv("DATABASE_URL", "postgres://fixture/test")
 	t.Setenv("GOODMEM_API_KEY", "fixture")
 	t.Setenv("GOODMEM_SPACE_ID", "space")

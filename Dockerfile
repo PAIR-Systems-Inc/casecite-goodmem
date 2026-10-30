@@ -24,7 +24,7 @@ COPY NOTICE.md ./web/assets/third-party-notices.txt
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /casecite ./cmd/casecite
 
 FROM alpine:3.22
-RUN apk add --no-cache ca-certificates && mkdir /data && chown 65532:65532 /data
+RUN apk add --no-cache ca-certificates && mkdir /data /provisioning && chown 65532:65532 /data /provisioning && chmod 700 /data /provisioning
 COPY --from=server /casecite /usr/local/bin/casecite
 USER 65532:65532
 WORKDIR /data

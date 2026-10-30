@@ -194,6 +194,11 @@ func (s *Server) rebuildDocument(ctx context.Context, user string, doc, profile 
 			return fail(409, "initial document indexing is still in progress; try again after it finishes")
 		}
 	}
+	ctx = goodMemUserContext(ctx, user)
+	profile, err := s.secureDocumentProfile(ctx, id, profile)
+	if err != nil {
+		return err
+	}
 	data, err := s.gm.Content(ctx, original)
 	if err != nil {
 		return err

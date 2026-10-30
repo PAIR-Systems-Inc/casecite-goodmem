@@ -1,6 +1,10 @@
 package app
 
 func (s *Server) identityRoutes() {
+	s.api("GET /api/v1/auth/google/config", true, s.googleConfig)
+	s.api("POST /api/v1/auth/google/login", true, s.googleLogin)
+	s.api("GET /api/v1/auth/google/link/config", false, s.googleConfig)
+	s.api("POST /api/v1/auth/google/link", false, s.googleLogin)
 	s.api("POST /api/v1/auth/forgot-password", true, s.forgotPassword)
 	s.api("POST /api/v1/auth/verify-reset-token", true, s.verifyReset)
 	s.api("POST /api/v1/auth/reset-password", true, s.resetPassword)

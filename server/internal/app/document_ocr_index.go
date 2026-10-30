@@ -96,6 +96,7 @@ func (s *Server) retryDocumentOCR(q request) (any, error) {
 }
 
 func (s *Server) executeDocumentOCR(ctx context.Context, user string, input M) (M, error) {
+	ctx = goodMemUserContext(ctx, user)
 	id, original, index := str(input, "document_id"), str(input, "memory_id"), str(input, "index_memory_id")
 	doc, err := s.getObject(ctx, user, "document", id)
 	if err != nil {

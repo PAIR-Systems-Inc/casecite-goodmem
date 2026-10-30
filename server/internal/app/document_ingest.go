@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"database/sql"
 	"path/filepath"
 	"strings"
 	"time"
@@ -38,6 +39,9 @@ func (s *Server) beginDocumentIngest(ctx context.Context, user, matter, id, name
 	mid := uuid()
 	doc := M{"filename": name, "content_type": ct, "size": len(data), "memory_id": mid, "status": "processing", "source": source, "source_id": nullable(sourceID), "sha256": digest(string(data)), "chunk_count": 0, "metadata": metadata, "folder_path": nil}
 	doc["index_profile"] = profile
+	if s.cfg.GoodMemSecurity != nil {
+		doc["goodmem_security"] = 1
+	}
 	if documentNeedsOCR(data) {
 		doc["ocr_required"] = true
 		doc["index_memory_id"] = uuid()
@@ -53,18 +57,38 @@ func (s *Server) beginDocumentIngest(ctx context.Context, user, matter, id, name
 			doc["index_memory_id"] = uuid()
 		}
 	}
-	r, err := s.db.ExecContext(ctx, `INSERT INTO cc_objects(kind,id,owner_id,matter_id,data) SELECT 'document',$1,id,$3,$4 FROM cc_users WHERE id=$2 AND active ON CONFLICT(kind,id) DO NOTHING`, id, user, nullable(matter), jsonBytes(doc))
-	if err != nil {
-		return nil, false, err
-	}
-	if inserted, _ := r.RowsAffected(); inserted == 0 {
-		current, e := s.getObject(ctx, user, "document", id)
+	var r sql.Result
+	var current M
+	inserted := false
+	err = s.withGoodMemLock(ctx, func(ctx context.Context) error {
+		if err := s.checkMatter(ctx, user, matter, false); err != nil {
+			return err
+		}
+		var e error
+		r, e = s.db.ExecContext(ctx, `INSERT INTO cc_objects(kind,id,owner_id,matter_id,data) SELECT 'document',$1,id,$3,$4 FROM cc_users WHERE id=$2 AND active ON CONFLICT(kind,id) DO NOTHING`, id, user, nullable(matter), jsonBytes(doc))
 		if e != nil {
-			return nil, false, e
+			return e
 		}
-		if str(current, "sha256") != str(doc, "sha256") {
-			return nil, false, fail(409, "An import already exists with a different document revision")
+		if n, _ := r.RowsAffected(); n == 0 {
+			current, e = s.getObject(ctx, user, "document", id)
+			if e == nil && str(current, "sha256") != str(doc, "sha256") {
+				e = fail(409, "An import already exists with a different document revision")
+			}
+			return e
 		}
+		inserted = true
+		profile, e = s.secureDocumentProfile(ctx, id, profile)
+		if e != nil {
+			return e
+		}
+		doc["index_profile"] = profile
+		_, e = s.db.ExecContext(ctx, `UPDATE cc_objects SET data=data || $2::jsonb WHERE kind='document' AND id=$1`, id, jsonBytes(M{"index_profile": profile, "original_space_id": str(profile, "space_id")}))
+		return e
+	})
+	if err != nil {
+		return nil, inserted, err
+	}
+	if !inserted {
 		return current, false, nil
 	}
 	_, createErr := s.gm.withIndexProfile(profile).Create(ctx, mid, id, name, ct, data)
@@ -92,11 +116,12 @@ func (s *Server) beginDocumentIngest(ctx context.Context, user, matter, id, name
 		}
 	}
 	s.audit(finish, user, "document.upload", "document", id, M{"matter_id": matter, "source": source, "source_id": sourceID, "size": len(data)})
-	current, err := s.getObject(finish, user, "document", id)
+	current, err = s.getObject(finish, user, "document", id)
 	return current, true, err
 }
 
 func (s *Server) waitDocumentIndexed(ctx context.Context, user, id string) (M, error) {
+	ctx = goodMemUserContext(ctx, user)
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Minute)
 	defer cancel()
 	for {

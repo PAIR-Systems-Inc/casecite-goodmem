@@ -399,7 +399,7 @@ func (s *Server) executeSafely(ctx context.Context, user, kind string, input M) 
 			err = errors.New("job processor panic")
 		}
 	}()
-	return s.execute(ctx, user, kind, input)
+	return s.execute(goodMemUserContext(ctx, user), user, kind, input)
 }
 func (s *Server) maintenance() {
 	defer s.wg.Done()
@@ -411,6 +411,9 @@ func (s *Server) maintenance() {
 			return
 		case <-t.C:
 			s.cleanupDocumentOCR(s.ctx)
+			if err := s.repairGoodMemAccess(s.ctx); err != nil {
+				s.log.Warn("GoodMem access reconciliation failed", "error", err)
+			}
 			_, err := s.db.ExecContext(s.ctx, `UPDATE cc_jobs SET status='failed',error='Worker lease expired. Retry explicitly; the previous request may have incurred a model charge.',updated_at=now(),input=CASE WHEN kind='picker.import' THEN input-'encrypted_files' ELSE input END WHERE status='running' AND lease_until<now()`)
 			if err != nil {
 				s.log.Error("job recovery failed", "error", err)

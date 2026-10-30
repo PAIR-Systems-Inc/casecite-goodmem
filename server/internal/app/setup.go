@@ -14,7 +14,7 @@ import (
 // SetupGoodMem is an explicit administrative command, never run at API startup.
 // Persist each resource as it is created so a retry reuses it and never loses
 // the one-time root credential returned by initialization.
-func SetupGoodMem(ctx context.Context, output string) error {
+func setupGoodMemAdmin(ctx context.Context, output string) error {
 	state := M{}
 	if b, err := os.ReadFile(output); err == nil {
 		if err = json.Unmarshal(b, &state); err != nil {
@@ -125,7 +125,7 @@ func SetupGoodMem(ctx context.Context, output string) error {
 }
 
 func SetupWithTimeout(output string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
 	return SetupGoodMem(ctx, output)
 }

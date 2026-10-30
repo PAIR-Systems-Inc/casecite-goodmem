@@ -140,6 +140,20 @@ func TestDocumentIndexCatalogAndSettings(t *testing.T) {
 	f.call("PUT", "/settings/rag", access, M{"document_embedder_id": ""}, 200)
 }
 
+func TestDocumentIndexCatalogRespectsProvisionedExecutionAuthority(t *testing.T) {
+	f := newFixture(t)
+	indexCatalogFixture(t, f)
+	f.s.cfg.GoodMemSecurity = &GoodMemSecurity{EmbedderIDs: []string{"base"}}
+	access := f.admin()
+	catalog := f.call("GET", "/settings/document-embedders", access, nil, 200)
+	models := maps(catalog["models"])
+	if len(models) != 1 || str(models[0], "id") != "base" {
+		t.Fatal("model catalog advertised an unprovisioned embedder", catalog)
+	}
+	// A public enablement label is not an execution grant for this controller.
+	f.call("PUT", "/settings/rag", access, M{"document_embedder_id": "alt"}, 400)
+}
+
 func TestDocumentIndexProfilesMixedSearchAndRebuildSnapshot(t *testing.T) {
 	f := newFixture(t)
 	x := indexCatalogFixture(t, f)

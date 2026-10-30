@@ -50,7 +50,10 @@ declare global {
     __msalInstance?: import('@azure/msal-browser').PublicClientApplication;
     google?: {
       picker?: GooglePickerApi;
-      accounts: { oauth2: GoogleAccountsOAuth2 };
+      accounts: { oauth2: GoogleAccountsOAuth2; id?: {
+        initialize: (options: { client_id: string; nonce: string; hd: string; auto_select: boolean; ux_mode: string; callback: (response: { credential: string }) => void }) => void;
+        renderButton: (parent: HTMLElement, options: Record<string, string>) => void;
+      } };
     };
     gapi?: {
       load(

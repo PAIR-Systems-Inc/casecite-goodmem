@@ -48,6 +48,14 @@ func run() error {
 	}
 	defer db.Close()
 	server := app.New(cfg, db, webassets.Files(), slog.Default())
+	if len(os.Args) > 1 && os.Args[1] == "migrate-goodmem-security" {
+		defer server.Close()
+		return server.MigrateGoodMemSecurity(context.Background(), os.Getenv("GOODMEM_PROVISIONING_FILE"))
+	}
+	if err := server.InitializeGoodMemSecurity(context.Background()); err != nil {
+		server.Close()
+		return err
+	}
 	server.StartWorkers()
 	defer server.Close()
 	httpServer := &http.Server{Addr: cfg.Address, Handler: server, ReadHeaderTimeout: 10 * time.Second, ReadTimeout: 5 * time.Minute, WriteTimeout: 5 * time.Minute, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}

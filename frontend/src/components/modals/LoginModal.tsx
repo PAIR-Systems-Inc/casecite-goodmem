@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { GoogleSignIn } from '../shared/GoogleSignIn';
 import { useAuthStore } from '../../stores/authStore';
 import s from './AuthModals.module.css';
 import { Icon } from '../shared/Icon';
@@ -44,6 +45,7 @@ function LoginModal() {
 					{microsoft.loading ? 'Signing in with Microsoft…' : 'Sign in with Microsoft'}
 				</button>
 			)}
+          <GoogleSignIn open={showLoginModal} />
           <form id={`${id}-form`} onSubmit={e => { e.preventDefault(); handleLoginSubmit(); }} className={s.formLayout}>
             <div>
               <label htmlFor={`${id}-email`} className={s.formLabel}>Email</label>

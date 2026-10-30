@@ -14,6 +14,8 @@ const CREDENTIAL_ENDPOINTS = new Set([
   '/auth/register',
   '/auth/mfa/verify',
   '/auth/azure/login',
+  '/auth/google/login',
+  '/auth/google/link',
 ]);
 
 const AUTH_FETCH_TIMEOUT_MS = 120000;

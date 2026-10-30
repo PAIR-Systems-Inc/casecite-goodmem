@@ -38,8 +38,8 @@ Build tools: Go 1.26 and Node 24. The resulting executable needs neither Node no
 bash scripts/build.sh
 export DATABASE_URL='postgres://casecite:password@localhost:5432/casecite?sslmode=require'
 export GOODMEM_BASE_URL='https://your-goodmem-host'
-export GOODMEM_API_KEY='your-server-side-key'
-export GOODMEM_SPACE_ID='your-dedicated-space-uuid'
+# Provision separately as an administrator; see docs/goodmem-security.md.
+export GOODMEM_CONFIG_FILE='/secure/runtime/goodmem.json'
 export SECRET_KEY="$(openssl rand -hex 32)"
 export REGISTRATION_BOOTSTRAP_TOKEN="$(openssl rand -hex 32)"
 export DEBUG=true
@@ -53,14 +53,19 @@ Create a `casecite` database and a dedicated `casecite` role on the **same Postg
 
 Open `http://localhost:8000`, create the first administrator using the setup token, then create additional users in Settings. There is no public signup after the first account.
 
-Use a dedicated GoodMem space and a server-side credential authorized for that space. For a new space, the explicit administrative command below creates an embedder and space, saving connection state with mode `0600`. It can reuse `GOODMEM_EMBEDDER_ID`. It does not run automatically when the application starts.
+GoodMem setup creates a scoped application controller and a reserve of separate reader identities. Every user's document reads and searches use their own reader identity. Document and matter grants are enforced by GoodMem as well as the Go application. The administrative credential is kept in a separate provisioning file; it is never the runtime key.
 
 ```bash
-# Requires an administrative GOODMEM_API_KEY on an existing server.
+# Administrative shell only. For a fresh GoodMem server use GOODMEM_INITIALIZE=true.
+export GOODMEM_API_KEY='your-administrative-key'
+export GOODMEM_PROVISIONING_FILE=/secure/provisioning/admin.json
 # Set EMBEDDING_API_KEY or OPENAI_API_KEY, or reuse GOODMEM_EMBEDDER_ID.
-./bin/casecite setup-goodmem /secure/path/goodmem.json
-export GOODMEM_CONFIG_FILE=/secure/path/goodmem.json
+./bin/casecite setup-goodmem /secure/runtime/goodmem.json
+unset GOODMEM_API_KEY GOODMEM_PROVISIONING_FILE
+export GOODMEM_CONFIG_FILE=/secure/runtime/goodmem.json
 ```
+
+See [GoodMem security and upgrades](docs/goodmem-security.md) before upgrading an existing library. Legacy root-key runtime configurations are rejected; `migrate-goodmem-security` copies and verifies existing documents before removing their old shared-space copies. Provisioning adds no running service or Redis dependency.
 
 ## Fresh shared-Postgres stack
 
@@ -77,9 +82,11 @@ docker compose up --build -d app
 
 Open `http://localhost:8000`. The installation token is `REGISTRATION_BOOTSTRAP_TOKEN` in your local `.env`. `init-env.mjs` refuses to overwrite an existing file and generates independent database passwords and application secrets.
 
-The application stack has three services. Postgres hosts separate `goodmem` and `casecite` databases with separate logins. The one-time `setup` container stores the GoodMem connection in a private volume. The GoodMem image is pinned to the tested v1.0.334 digest. OCR additionally needs GoodMem's on-premise model service, configured with `GOODMEM_OCR_BASE_URL`; see [OCR setup and behavior](docs/ocr.md). Setup on a fresh instance uses GoodMem's initial administrative credential; provision a suitably restricted application credential before a wider rollout.
+The application stack has three services. Postgres hosts separate `goodmem` and `casecite` databases with separate logins. The administrative `setup` container writes scoped runtime credentials to `connection` and keeps its administrative credential in `provisioning`. Only `connection` is mounted by the application. The GoodMem image is pinned to the tested v1.0.334 digest. OCR additionally needs GoodMem's on-premise model service, configured with `GOODMEM_OCR_BASE_URL`; see [OCR setup and behavior](docs/ocr.md). Setup automatically replaces the initialization credential with scoped service credentials for runtime use.
 
 The default port is bound to localhost. For production, set `DEBUG=false`, use an HTTPS `PUBLIC_URL`, and put the app behind your existing TLS reverse proxy. GoodMem and Postgres stay on the internal network. See [operations](docs/operations.md) for backup, restart, and migration behavior.
+
+Optional [Google Workspace SSO](docs/google-sso.md) uses the existing account and MFA system. It requires a Google OAuth web client and an explicit domain allowlist; invitation-based enrollment is the default.
 
 ## Development and verification
 
@@ -118,7 +125,7 @@ bash scripts/integration.sh
 
 It builds the Docker image and tests the restored UI's sign-in, matter creation, membership display, upload/indexing, original-file and text retrieval, persistent login, Word manifest and logout. The original mocked browser suite runs separately without `E2E_BASE_URL`. Neither suite establishes full parity. The test stack is removed afterward. `KEEP_TEST_STACK=true` preserves it for inspection; ports and project name are configurable in the script. The fixture provider must never be used for real legal work.
 
-`TEST_GOODMEM_CONFIG=/path/to/test-connection.json go test -run TestRealGoodMem -v ./internal/app` separately exercises the actual GoodMem document lifecycle. Run it only against a test space; it creates and deletes its own temporary memory.
+`scripts/integration.sh` also runs `TestGoodMemSecurityLive` against the pinned GoodMem server. It tests unauthorized reads and retrieval without application filters, OCR and page-image boundaries, membership changes, retirement, outage recovery, and the legacy-library upgrade. Its administrative credentials and database volumes are disposable test fixtures.
 
 ## Limits that matter
 

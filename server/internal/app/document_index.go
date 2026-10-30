@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -31,6 +32,9 @@ func (s *Server) documentEmbeddingCatalog(ctx context.Context) (M, error) {
 	for _, entry := range maps(listed["embedders"]) {
 		id := str(entry, "embedderId")
 		if id == "" || !defaults[id] && str(object(entry["labels"]), "casecite") != "enabled" {
+			continue
+		}
+		if s.cfg.GoodMemSecurity != nil && !slices.Contains(s.cfg.GoodMemSecurity.EmbedderIDs, id) {
 			continue
 		}
 		if str(entry, "distributionType") != "DENSE" || number(entry, "dimensionality", 0) < 1 {

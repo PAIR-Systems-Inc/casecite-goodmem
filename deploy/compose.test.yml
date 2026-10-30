@@ -37,11 +37,12 @@ services:
     environment:
       GOODMEM_BASE_URL: http://goodmem:8080
       GOODMEM_INITIALIZE: 'true'
+      GOODMEM_PROVISIONING_FILE: /provisioning/admin.json
       EMBEDDING_BASE_URL: http://provider:8080/v1
       EMBEDDING_MODEL: test-embedding
       EMBEDDING_DIMENSIONS: 16
       EMBEDDING_API_KEY: test-provider-only
-    volumes: [test-connection:/data]
+    volumes: [test-connection:/data, test-provisioning:/provisioning]
   app:
     build: ..
     environment:
@@ -71,3 +72,4 @@ services:
 volumes:
   test-db:
   test-connection:
+  test-provisioning:

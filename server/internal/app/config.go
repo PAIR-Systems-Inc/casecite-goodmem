@@ -11,6 +11,10 @@ import (
 )
 
 type Config struct {
+	GoogleSSOClientID, GoogleDefaultRole                               string
+	GoogleSSODomains                                                   []string
+	GoogleAutoProvision                                                bool
+	GoodMemSecurity                                                    *GoodMemSecurity
 	Address, DatabaseURL, Secret, BootstrapToken, PublicURL            string
 	GoodMemURL, GoodMemKey, GoodMemSpace, RerankerID                   string
 	LLMURL, LLMKey, LLMModel, CourtListenerToken                       string
@@ -76,6 +80,22 @@ func LoadConfig() (Config, error) {
 		AzureAutoProvision: env("AZURE_SSO_AUTO_PROVISION", "true") == "true", AzureDefaultRole: env("AZURE_SSO_DEFAULT_ROLE", "viewer"),
 		SMTPHost: os.Getenv("SMTP_HOST"), SMTPPort: env("SMTP_PORT", "587"), SMTPUser: os.Getenv("SMTP_USER"), SMTPPassword: os.Getenv("SMTP_PASSWORD"), SMTPFrom: os.Getenv("SMTP_FROM"), SMTPTLS: env("SMTP_TLS", "false") == "true",
 	}
+	c.GoogleSSOClientID = strings.TrimSpace(os.Getenv("GOOGLE_SSO_CLIENT_ID"))
+	c.GoogleAutoProvision = env("GOOGLE_SSO_AUTO_PROVISION", "false") == "true"
+	c.GoogleDefaultRole = env("GOOGLE_SSO_DEFAULT_ROLE", "viewer")
+	for _, domain := range strings.Split(os.Getenv("GOOGLE_SSO_ALLOWED_DOMAINS"), ",") {
+		domain = strings.ToLower(strings.TrimSpace(domain))
+		if domain == "" {
+			continue
+		}
+		if !strings.Contains(domain, ".") || strings.ContainsAny(domain, " /:@?#*\\") {
+			return c, errors.New("GOOGLE_SSO_ALLOWED_DOMAINS must contain exact Google Workspace domains")
+		}
+		c.GoogleSSODomains = append(c.GoogleSSODomains, domain)
+	}
+	if c.GoogleSSOClientID != "" && len(c.GoogleSSODomains) == 0 {
+		return c, errors.New("Google SSO requires GOOGLE_SSO_ALLOWED_DOMAINS")
+	}
 	c.ConnectorSettings = connectorEnvironment(c.PublicURL)
 	c.ExperimentalConnectors = env("EXPERIMENTAL_CONNECTORS", "false") == "true"
 	c.FilevineEnabled = env("FILEVINE_ENABLED", "false") == "true"
@@ -92,20 +112,21 @@ func LoadConfig() (Config, error) {
 		if err != nil {
 			return c, err
 		}
-		var v struct {
-			APIKey  string `json:"api_key"`
-			SpaceID string `json:"space_id"`
-			BaseURL string `json:"base_url"`
-		}
+		var v GoodMemSecurity
 		if err := json.Unmarshal(b, &v); err != nil {
 			return c, err
 		}
-		if c.GoodMemKey == "" {
-			c.GoodMemKey = v.APIKey
+		if v.Version != 1 || v.ControllerID == "" || len(v.Subjects) == 0 {
+			return c, errors.New("GOODMEM_CONFIG_FILE must contain scoped controller and user identities from setup-goodmem; legacy root credentials are not accepted")
 		}
-		if c.GoodMemSpace == "" {
-			c.GoodMemSpace = v.SpaceID
+		if c.GoodMemKey != "" && c.GoodMemKey != v.APIKey || c.GoodMemSpace != "" && c.GoodMemSpace != v.SpaceID {
+			return c, errors.New("GoodMem environment credentials must not override the scoped configuration")
 		}
+		if c.RerankerID != "" && c.RerankerID != v.RerankerID {
+			return c, errors.New("GOODMEM_RERANKER_ID must match the scoped setup configuration; rerun setup-goodmem before changing it")
+		}
+		c.RerankerID = v.RerankerID
+		c.GoodMemKey, c.GoodMemSpace, c.GoodMemSecurity = v.APIKey, v.SpaceID, &v
 		if os.Getenv("GOODMEM_BASE_URL") == "" && v.BaseURL != "" {
 			c.GoodMemURL = v.BaseURL
 		}
@@ -117,8 +138,8 @@ func LoadConfig() (Config, error) {
 	if len(c.Secret) < 32 {
 		return c, errors.New("SECRET_KEY must contain at least 32 characters")
 	}
-	if c.GoodMemKey == "" || c.GoodMemSpace == "" {
-		return c, errors.New("GOODMEM_API_KEY and GOODMEM_SPACE_ID (or GOODMEM_CONFIG_FILE) are required")
+	if c.GoodMemSecurity == nil || c.GoodMemKey == "" || c.GoodMemSpace == "" {
+		return c, errors.New("GOODMEM_CONFIG_FILE from setup-goodmem is required (a shared API key is not a user security boundary)")
 	}
 	for _, raw := range []string{c.PublicURL, c.GoodMemURL, c.LLMURL, c.CourtListenerURL, c.WikipediaURL} {
 		u, err := url.Parse(raw)

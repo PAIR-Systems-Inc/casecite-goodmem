@@ -18,6 +18,7 @@ import (
 )
 
 type GoodMem struct {
+	ReadKey                   func(context.Context) (string, error)
 	URL, Key, Space, Reranker string
 	Client                    *http.Client
 	OCRTimeout                time.Duration
@@ -44,7 +45,14 @@ func (g *GoodMem) do(ctx context.Context, method, p string, body io.Reader, cont
 	if err != nil {
 		return nil, err
 	}
-	r.Header.Set("x-api-key", g.Key)
+	key := g.Key
+	if g.ReadKey != nil && (method == "GET" && strings.HasPrefix(p, "/v1/memories") || strings.HasPrefix(p, "/v1/memories:retrieve")) {
+		key, err = g.ReadKey(ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	r.Header.Set("x-api-key", key)
 	r.Header.Set("Accept", "application/x-ndjson")
 	if contentType != "" {
 		r.Header.Set("Content-Type", contentType)
