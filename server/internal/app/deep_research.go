@@ -60,21 +60,12 @@ func researchStringList(raw any, maxItems int) ([]string, error) {
 	return values, nil
 }
 
-func validateResearchRequest(in M, running bool, maxQuestions int) (string, []M, error) {
-	question := strings.TrimSpace(str(in, "question"))
-	if n := len([]rune(question)); n < 3 || n > 4000 {
-		return "", nil, fail(422, "question must contain 3–4000 characters")
-	}
-	if in["matter_id"] != nil {
-		if _, ok := in["matter_id"].(string); !ok {
-			return "", nil, fail(422, "matter_id must be a string")
-		}
-	}
+func validateDocumentFilter(in M) error {
 	if in["document_filter"] != nil {
 		f := object(in["document_filter"])
 		if _, ok := in["document_filter"].(map[string]any); !ok {
 			if _, ok = in["document_filter"].(M); !ok {
-				return "", nil, fail(422, "document_filter must be an object")
+				return fail(422, "document_filter must be an object")
 			}
 		}
 		for _, key := range []string{"document_ids", "folder_paths", "sources", "doc_types", "matter_ids"} {
@@ -87,12 +78,12 @@ func validateResearchRequest(in M, running bool, maxQuestions int) (string, []M,
 			}
 			values, err := researchStringList(f[key], cap)
 			if err != nil {
-				return "", nil, fail(422, "Invalid document_filter."+key)
+				return fail(422, "Invalid document_filter."+key)
 			}
 			if key == "sources" {
 				for _, value := range values {
 					if !slices.Contains(strings.Fields("google_drive onedrive box netdocuments imanage filevine clio dropbox local google_picker onedrive_picker box_picker dropbox_chooser"), value) {
-						return "", nil, fail(422, "Unknown document source")
+						return fail(422, "Unknown document source")
 					}
 				}
 			}
@@ -101,11 +92,27 @@ func validateResearchRequest(in M, running bool, maxQuestions int) (string, []M,
 			if value, present := f[key]; present {
 				parsed, ok := researchBool(value)
 				if !ok {
-					return "", nil, fail(422, "document_filter."+key+" must be a boolean")
+					return fail(422, "document_filter."+key+" must be a boolean")
 				}
 				f[key] = parsed
 			}
 		}
+	}
+	return nil
+}
+
+func validateResearchRequest(in M, running bool, maxQuestions int) (string, []M, error) {
+	question := strings.TrimSpace(str(in, "question"))
+	if n := len([]rune(question)); n < 3 || n > 4000 {
+		return "", nil, fail(422, "question must contain 3–4000 characters")
+	}
+	if in["matter_id"] != nil {
+		if _, ok := in["matter_id"].(string); !ok {
+			return "", nil, fail(422, "matter_id must be a string")
+		}
+	}
+	if err := validateDocumentFilter(in); err != nil {
+		return "", nil, err
 	}
 	if !running {
 		return question, nil, nil

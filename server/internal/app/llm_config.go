@@ -195,6 +195,9 @@ func (s *Server) selectLLM(ctx context.Context, user string) (llmSelection, erro
 	if v, ok := settings["temperature"].(float64); ok {
 		selected.Temperature = v
 	}
+	if options.Temperature != nil {
+		selected.Temperature = *options.Temperature
+	}
 	family := modelProvider(model)
 	if family != "openai" {
 		fallbackKey, endpoint := s.cfg.AnthropicKey, "https://api.anthropic.com/v1"

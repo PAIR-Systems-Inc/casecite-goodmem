@@ -305,8 +305,7 @@ export function useResearchState({ addToast, activeMode, setActiveMode }: { addT
 
     const startTime = Date.now();
 
-    // The request is a single round trip — there is no server-reported
-    // progress to show, so say only what is true and let the view count the
+    // Job polling does not expose per-stage progress. Let the view count the
     // elapsed time. Retrieval depth and thresholds come from the user's saved
     // settings server-side.
     setProcessingStage('Working…');

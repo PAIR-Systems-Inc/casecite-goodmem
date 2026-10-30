@@ -79,6 +79,33 @@ func groundSpan(item M, text, quoteKey string) bool {
 	return true
 }
 
+func (s *Server) enqueueTask(ctx context.Context, user, kind string, input M) (string, error) {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback()
+	if _, err = tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1,1))`, user); err != nil {
+		return "", err
+	}
+	var queued int
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM cc_jobs WHERE user_id=$1 AND kind<>'document.ocr_index' AND status IN ('pending','running')`, user).Scan(&queued); err != nil {
+		return "", err
+	}
+	if queued >= 5 {
+		return "", fail(429, "Five jobs are already in progress. Wait for one to finish.")
+	}
+	id := uuid()
+	input["job_id"] = id
+	if _, err = tx.ExecContext(ctx, `INSERT INTO cc_jobs(id,user_id,kind,input) VALUES($1,$2,$3,$4)`, id, user, kind, jsonBytes(input)); err != nil {
+		return "", err
+	}
+	if err = tx.Commit(); err != nil {
+		return "", err
+	}
+	return id, nil
+}
+
 func (s *Server) queueTask(q request, kind string, input M) (any, error) {
 	ids := stringsOf(input["document_ids"])
 	for _, id := range ids {
@@ -89,27 +116,8 @@ func (s *Server) queueTask(q request, kind string, input M) (any, error) {
 	if err := s.checkMatter(q.r.Context(), q.user.ID, str(input, "matter_id"), false); err != nil {
 		return nil, err
 	}
-	tx, err := s.db.BeginTx(q.r.Context(), nil)
+	id, err := s.enqueueTask(q.r.Context(), q.user.ID, kind, input)
 	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-	if _, err = tx.ExecContext(q.r.Context(), `SELECT pg_advisory_xact_lock(hashtextextended($1,1))`, q.user.ID); err != nil {
-		return nil, err
-	}
-	var queued int
-	if err = tx.QueryRowContext(q.r.Context(), `SELECT count(*) FROM cc_jobs WHERE user_id=$1 AND kind<>'document.ocr_index' AND status IN ('pending','running')`, q.user.ID).Scan(&queued); err != nil {
-		return nil, err
-	}
-	if queued >= 5 {
-		return nil, fail(429, "Five jobs are already in progress. Wait for one to finish.")
-	}
-	id := uuid()
-	input["job_id"] = id
-	if _, err = tx.ExecContext(q.r.Context(), `INSERT INTO cc_jobs(id,user_id,kind,input) VALUES($1,$2,$3,$4)`, id, q.user.ID, kind, jsonBytes(input)); err != nil {
-		return nil, err
-	}
-	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
 	responseType := strings.TrimPrefix(kind, "contract.") + "_started"

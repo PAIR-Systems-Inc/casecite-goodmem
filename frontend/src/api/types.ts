@@ -317,6 +317,7 @@ export interface StrategyBriefPoint {
   step?: string;
   citation_ids: string[];
   case_refs?: string[];
+  support?: 'unsupported';
 }
 
 interface StrategyBriefCitation {
@@ -345,6 +346,9 @@ export interface StrategyBriefResponse {
     /** Every folder the brief was scoped to (their union). */
     folder_paths?: string[];
     documents_considered: number;
+    /** Documents that supplied usable passages to the synthesis. */
+    documents_read?: number;
+    missing_documents?: { document_id: string; filename: string }[];
     documents_total: number;
     /** Passages the synthesis actually read (the most relevant per document). */
     passages_read?: number;
@@ -367,12 +371,12 @@ export interface StrategyBriefResponse {
     points_searched: number;
     /** Opinions whose full text was actually retrieved and judged. */
     opinions_read: number;
-    /** Opinions too long to judge in full — only their opening windows were read. */
+    /** Reviews that ended before reading the entire opinion, including early matches. */
     partially_read?: number;
     attached: number;
     /** Candidates dropped because no usable opinion text could be retrieved. */
     unreadable?: number;
-    /** Opinions read in full and judged not to support any proposition. */
+    /** Reviews where no supporting passage was found in the text read. */
     unsupportive?: number;
     /** Opinions the judge endorsed but whose quote never verified verbatim. */
     quote_unverified?: number;

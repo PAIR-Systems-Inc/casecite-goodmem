@@ -131,6 +131,11 @@ func (s *Server) workspaceSessions(q request) (any, error) {
 			if err != nil {
 				return nil, err
 			}
+			for _, message := range messages {
+				if err := s.resultAccess(q.r.Context(), q.user.ID, message); err != nil {
+					return nil, err
+				}
+			}
 			result["messages"] = messages
 		}
 		s.audit(q.r.Context(), q.user.ID, kind+".read", kind, id, M{})
@@ -178,6 +183,9 @@ func (s *Server) workspaceSessions(q request) (any, error) {
 		return sessionSummary(m, true), nil
 	}
 	if q.r.Method == "DELETE" {
+		if !workspace {
+			return s.deleteChatSession(q)
+		}
 		allowed := `owner_id=$3`
 		if !workspace {
 			allowed += ` OR EXISTS(SELECT 1 FROM cc_matters m WHERE m.id=cc_objects.matter_id AND m.owner_id=$3)`

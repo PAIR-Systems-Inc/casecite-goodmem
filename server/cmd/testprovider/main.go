@@ -17,6 +17,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -194,7 +195,19 @@ func main() {
 			ResponseFormat any `json:"response_format"`
 		}
 		json.NewDecoder(r.Body).Decode(&in)
+		if len(in.Messages) == 0 {
+			http.Error(w, "messages required", 400)
+			return
+		}
+		system, question := in.Messages[0].Content, in.Messages[len(in.Messages)-1].Content
 		answer := "The agreement requires 30 days of notice. [1]\n\nThis is a deterministic test response."
+		if in.ResponseFormat == nil && strings.Contains(question, "Pause this answer for the cancellation test") {
+			select {
+			case <-time.After(3 * time.Second):
+			case <-r.Context().Done():
+				return
+			}
+		}
 		if in.ResponseFormat != nil {
 			docs := []map[string]any{}
 			prompt := in.Messages[len(in.Messages)-1].Content
@@ -212,6 +225,20 @@ func main() {
 				out = map[string]any{"title": "Workflow memo", "text": "The agreement requires 30 days of notice. Counsel approved this draft after reviewing the extracted terms."}
 			}
 			switch {
+			case strings.HasPrefix(system, "Classify the user's message"):
+				intent := "ask"
+				if strings.Contains(prompt, "Make a strategy") {
+					intent = "strategy"
+				}
+				out = map[string]any{"intent": intent, "use_case_law": false, "search_query": "notice", "per_file": strings.Contains(prompt, "Compare each file")}
+			case strings.Contains(system, "You are grounding"):
+				out = map[string]any{"claims": []any{map[string]any{"claim": "Notice is 30 days.", "answer_quote": "The agreement requires 30 days of notice.", "file_ref": "f0", "quote": "Notice is 30 days."}}}
+			case strings.Contains(system, "You check statements"):
+				out = map[string]any{"items": []any{map[string]any{"n": 0, "label": "supported", "note": "The notice period appears verbatim in the source."}}}
+			case strings.Contains(system, "You are reading ONE document"):
+				out = map[string]any{"answer": "Notice is 30 days.", "quotes": []any{map[string]any{"quote": "Notice is 30 days.", "why": "States the notice period."}}}
+			case strings.Contains(system, "You are a senior litigation strategist"):
+				out = map[string]any{"position": "The agreement requires notice before termination.", "strengths": []any{map[string]any{"point": "The notice period is explicit.", "refs": []string{"d0"}}}, "weaknesses": []any{}, "next_steps": []any{map[string]any{"step": "Confirm receipt of the notice.", "refs": []string{}}}}
 			case strings.Contains(prompt, "Break it into"):
 				out = map[string]any{"sub_questions": []any{
 					map[string]any{"question": "What notice is required?", "tools": []string{"documents"}},

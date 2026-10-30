@@ -1,0 +1,281 @@
+{
+  "baseline": "6605cb3474cf0c2894080af216d5fed2a81fc997",
+  "source_sha256": {
+    "backend/app/services/ai_notice.py": "773543209f27dce93de097376faf4b70e969833541e63c69f0a5728b34827ddb",
+    "backend/app/services/conversation_export.py": "75152a78d42a032a3cb71ab4c45a73bbdd85d95f66019b3f4dcd05ad4578e707"
+  },
+  "cases": [
+    {
+      "kind": "inline",
+      "input": "**Bold** __also bold__ *italic* _italic_ `code` [source](https://example.test)",
+      "expected": "Bold also bold italic italic code source"
+    },
+    {
+      "kind": "blocks",
+      "input": "**Bold** __also bold__ *italic* _italic_ `code` [source](https://example.test)",
+      "expected": [
+        [
+          "para",
+          "Bold also bold italic italic code source"
+        ]
+      ]
+    },
+    {
+      "kind": "inline",
+      "input": "notice_period section_8 § 2. * yes * keep **unclosed",
+      "expected": "notice_period section_8 § 2. * yes * keep **unclosed"
+    },
+    {
+      "kind": "blocks",
+      "input": "notice_period section_8 § 2. * yes * keep **unclosed",
+      "expected": [
+        [
+          "para",
+          "notice_period section_8 § 2. * yes * keep **unclosed"
+        ]
+      ]
+    },
+    {
+      "kind": "inline",
+      "input": "été*mot* and 漢_字_ word*italic*word",
+      "expected": "été*mot* and 漢_字_ word*italic*word"
+    },
+    {
+      "kind": "blocks",
+      "input": "été*mot* and 漢_字_ word*italic*word",
+      "expected": [
+        [
+          "para",
+          "été*mot* and 漢_字_ word*italic*word"
+        ]
+      ]
+    },
+    {
+      "kind": "inline",
+      "input": "# Title\n\n## Subheading\r\n- Bullet\n* Another\n• Third\n1. First\n2) Second\nParagraph.",
+      "expected": "# Title\n\n## Subheading\r\n- Bullet\n* Another\n• Third\n1. First\n2) Second\nParagraph."
+    },
+    {
+      "kind": "blocks",
+      "input": "# Title\n\n## Subheading\r\n- Bullet\n* Another\n• Third\n1. First\n2) Second\nParagraph.",
+      "expected": [
+        [
+          "heading",
+          "Title"
+        ],
+        [
+          "heading",
+          "Subheading"
+        ],
+        [
+          "bullet",
+          "Bullet"
+        ],
+        [
+          "bullet",
+          "Another"
+        ],
+        [
+          "bullet",
+          "Third"
+        ],
+        [
+          "number",
+          "First"
+        ],
+        [
+          "number",
+          "Second"
+        ],
+        [
+          "para",
+          "Paragraph."
+        ]
+      ]
+    },
+    {
+      "kind": "inline",
+      "input": "  # Indented heading\n###Title\n####### Too deep\n  ٣. Unicode number\n- NBSP bullet\n## NBSP heading",
+      "expected": "  # Indented heading\n###Title\n####### Too deep\n  ٣. Unicode number\n- NBSP bullet\n## NBSP heading"
+    },
+    {
+      "kind": "blocks",
+      "input": "  # Indented heading\n###Title\n####### Too deep\n  ٣. Unicode number\n- NBSP bullet\n## NBSP heading",
+      "expected": [
+        [
+          "para",
+          "# Indented heading"
+        ],
+        [
+          "para",
+          "###Title"
+        ],
+        [
+          "para",
+          "####### Too deep"
+        ],
+        [
+          "number",
+          "Unicode number"
+        ],
+        [
+          "bullet",
+          "NBSP bullet"
+        ],
+        [
+          "heading",
+          "NBSP heading"
+        ]
+      ]
+    },
+    {
+      "kind": "inline",
+      "input": "***nested*** **a** **b** *one* and *two* [empty]() [](/link)",
+      "expected": "nested a b one and two [empty]() [](/link)"
+    },
+    {
+      "kind": "blocks",
+      "input": "***nested*** **a** **b** *one* and *two* [empty]() [](/link)",
+      "expected": [
+        [
+          "para",
+          "nested a b one and two [empty]() [](/link)"
+        ]
+      ]
+    },
+    {
+      "kind": "inline",
+      "input": "<tag> & text\n   \nline with   spaces  ",
+      "expected": "<tag> & text\n   \nline with   spaces  "
+    },
+    {
+      "kind": "blocks",
+      "input": "<tag> & text\n   \nline with   spaces  ",
+      "expected": [
+        [
+          "para",
+          "<tag> & text"
+        ],
+        [
+          "para",
+          "line with   spaces"
+        ]
+      ]
+    },
+    {
+      "kind": "inline",
+      "input": "",
+      "expected": ""
+    },
+    {
+      "kind": "blocks",
+      "input": "",
+      "expected": []
+    },
+    {
+      "kind": "inline",
+      "input": "a\n_b_\n*c*",
+      "expected": "a\nb\nc"
+    },
+    {
+      "kind": "blocks",
+      "input": "a\n_b_\n*c*",
+      "expected": [
+        [
+          "para",
+          "a"
+        ],
+        [
+          "para",
+          "b"
+        ],
+        [
+          "para",
+          "c"
+        ]
+      ]
+    },
+    {
+      "kind": "filename",
+      "input": "Notice review",
+      "expected": "Notice-review.docx"
+    },
+    {
+      "kind": "filename",
+      "input": "Été / 😀 case",
+      "expected": "t-case.docx"
+    },
+    {
+      "kind": "filename",
+      "input": "../unsafe\r\n\"title",
+      "expected": "unsafetitle.docx"
+    },
+    {
+      "kind": "filename",
+      "input": "___",
+      "expected": "___.docx"
+    },
+    {
+      "kind": "filename",
+      "input": "---",
+      "expected": "conversation.docx"
+    },
+    {
+      "kind": "filename",
+      "input": "",
+      "expected": "conversation.docx"
+    },
+    {
+      "kind": "filename",
+      "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "expected": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.docx"
+    },
+    {
+      "kind": "filename",
+      "input": " a   b-- ",
+      "expected": "a-b.docx"
+    },
+    {
+      "kind": "filename",
+      "input": "案例",
+      "expected": "conversation.docx"
+    },
+    {
+      "kind": "markdown",
+      "input": {
+        "title": "Notice review",
+        "messages": [
+          {
+            "role": "user",
+            "text": "Question?"
+          },
+          {
+            "role": "assistant",
+            "text": "**Bold** __also bold__ *italic* _italic_ `code` [source](https://example.test)"
+          }
+        ]
+      },
+      "expected": "# Notice review\n\n_Exported 2026-10-29 19:00 UTC_\n\n## You\n\nQuestion?\n\n## Assistant\n\n**Bold** __also bold__ *italic* _italic_ `code` [source](https://example.test)\n\n---\n\n_AI-generated draft. Verify every statement, citation and clause against the source documents and current law before relying on it or sending it to anyone._\n"
+    },
+    {
+      "kind": "markdown",
+      "input": {
+        "title": "Notice review",
+        "messages": [
+          {
+            "role": "assistant",
+            "text": " A grounded answer. ",
+            "citations": [
+              {
+                "label": "Agreement <&>",
+                "url": "https://example.test",
+                "quote": " Clause one.\nClause two. "
+              }
+            ]
+          }
+        ]
+      },
+      "expected": "# Notice review\n\n_Exported 2026-10-29 19:00 UTC_\n\n## Assistant\n\nA grounded answer.\n\n**Sources**\n\n1. Agreement <&> — https://example.test\n   > Clause one.\nClause two.\n\n---\n\n_AI-generated draft. Verify every statement, citation and clause against the source documents and current law before relying on it or sending it to anyone._\n"
+    }
+  ]
+}

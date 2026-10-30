@@ -27,6 +27,7 @@ func (s *Server) routes() {
 	s.documentWorkspaceRoutes()
 	s.contractRoutes()
 	s.workspaceSessionRoutes()
+	s.chatRoutes()
 	s.reviewTableRoutes()
 	s.workflowRoutes()
 	s.deepResearchRoutes()

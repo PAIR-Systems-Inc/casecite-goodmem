@@ -26,6 +26,7 @@ type jobOutputs struct {
 	Objects []jobObject
 	Audits  []jobAudit
 	Judges  []jobJudge
+	Chat    *chatExchange
 }
 
 // Stage durable outputs until the worker commits completion while still owning
@@ -160,6 +161,9 @@ func (s *Server) getJob(q request) (any, error) {
 	var out any
 	if len(result) > 0 {
 		if err = json.Unmarshal(result, &out); err != nil {
+			return nil, err
+		}
+		if err = s.resultAccess(q.r.Context(), q.user.ID, object(out)); err != nil {
 			return nil, err
 		}
 	}
@@ -323,6 +327,13 @@ func (s *Server) runJob(id, user, kind, lease string, b []byte) {
 	}
 	n, _ := r.RowsAffected()
 	if n == 1 && err == nil && kind != "document.ocr_index" {
+		if outputs.Chat != nil {
+			if saveErr := s.publishChat(finish, tx, outputs.Chat); saveErr != nil {
+				_ = tx.Rollback()
+				s.failChatPublication(finish, id, lease, saveErr)
+				return
+			}
+		}
 		for _, output := range outputs.Judges {
 			r, saveErr := tx.ExecContext(finish, `UPDATE cc_judge_cache SET profile=$3,records=$4,metrics=NULL,updated_at=now() WHERE judge_id=$1 AND generation=$2 AND build_job_id=$5`, output.ID, output.Generation, jsonBytes(output.Profile), jsonBytes(output.Records), id)
 			if saveErr != nil {
@@ -341,20 +352,22 @@ func (s *Server) runJob(id, user, kind, lease string, b []byte) {
 				return
 			}
 		}
-		if str(result, "kind") == "" {
-			result["kind"] = kind
-		}
-		if str(result, "title") == "" {
-			result["title"] = shortTitle(fallback(str(input, "prompt"), str(input, "message")), kind)
-		}
-		result["document_ids"] = input["document_ids"]
-		result["access_document_ids"] = input["access_document_ids"]
-		result["prompt"] = input["prompt"]
-		result["parent_id"] = input["parent_id"]
-		_, txErr = tx.ExecContext(finish, `INSERT INTO cc_objects(kind,id,owner_id,matter_id,data) VALUES('result',$1,$2,$3,$4)`, id, user, nullable(str(input, "matter_id")), jsonBytes(result))
-		if txErr != nil {
-			s.log.Error("result save failed", "error", txErr)
-			return
+		if outputs.Chat == nil {
+			if str(result, "kind") == "" {
+				result["kind"] = kind
+			}
+			if str(result, "title") == "" {
+				result["title"] = shortTitle(fallback(str(input, "prompt"), str(input, "message")), kind)
+			}
+			result["document_ids"] = input["document_ids"]
+			result["access_document_ids"] = input["access_document_ids"]
+			result["prompt"] = input["prompt"]
+			result["parent_id"] = input["parent_id"]
+			_, txErr = tx.ExecContext(finish, `INSERT INTO cc_objects(kind,id,owner_id,matter_id,data) VALUES('result',$1,$2,$3,$4)`, id, user, nullable(str(input, "matter_id")), jsonBytes(result))
+			if txErr != nil {
+				s.log.Error("result save failed", "error", txErr)
+				return
+			}
 		}
 	}
 	if txErr = tx.Commit(); txErr != nil {

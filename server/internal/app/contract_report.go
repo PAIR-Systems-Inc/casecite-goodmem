@@ -267,6 +267,15 @@ func wordParagraph(text, style string, bold, italic bool) string {
 }
 func reportWordDocument(blocks []reportBlock) ([]byte, error) {
 	var body strings.Builder
+	numbering := `<w:numbering xmlns:w="` + wordNamespace + `">`
+	for id, format := range []string{"bullet", "decimal"} {
+		label := "•"
+		if format == "decimal" {
+			label = "%1."
+		}
+		numbering += fmt.Sprintf(`<w:abstractNum w:abstractNumId="%d"><w:multiLevelType w:val="singleLevel"/><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="%s"/><w:suff w:val="space"/><w:lvlText w:val="%s "/><w:lvlJc w:val="left"/><w:pPr><w:tabs><w:tab w:val="num" w:pos="360"/></w:tabs><w:ind w:left="360" w:hanging="180"/></w:pPr></w:lvl></w:abstractNum>`, id, format, label)
+	}
+	listID, previous := 0, ""
 	body.WriteString(`<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="` + wordNamespace + `"><w:body>`)
 	for _, block := range blocks {
 		switch block.Kind {
@@ -278,6 +287,19 @@ func reportWordDocument(blocks []reportBlock) ([]byte, error) {
 			body.WriteString(wordParagraph(block.Text, "Heading2", false, false))
 		case "meta":
 			body.WriteString(wordParagraph(block.Text, "Normal", true, false))
+		case "stamp":
+			body.WriteString(wordParagraph(block.Text, "Normal", false, true))
+		case "ordered", "unordered":
+			if previous != block.Kind {
+				listID++
+				abstract := 0
+				if block.Kind == "ordered" {
+					abstract = 1
+				}
+				numbering += fmt.Sprintf(`<w:num w:numId="%d"><w:abstractNumId w:val="%d"/><w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride></w:num>`, listID, abstract)
+			}
+			paragraph := wordParagraph(block.Text, "ListParagraph", false, false)
+			body.WriteString(strings.Replace(paragraph, `</w:pPr>`, fmt.Sprintf(`<w:numPr><w:ilvl w:val="0"/><w:numId w:val="%d"/></w:numPr></w:pPr>`, listID), 1))
 		case "bullet", "bulletbold":
 			body.WriteString(wordParagraph("• "+block.Text, "ListParagraph", block.Kind == "bulletbold", false))
 		case "nested":
@@ -315,6 +337,7 @@ func reportWordDocument(blocks []reportBlock) ([]byte, error) {
 		default:
 			body.WriteString(wordParagraph(block.Text, "Normal", false, false))
 		}
+		previous = block.Kind
 	}
 	body.WriteString(`<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720"/></w:sectPr></w:body></w:document>`)
 	styles := `<?xml version="1.0"?><w:styles xmlns:w="` + wordNamespace + `"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="22"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>`
@@ -322,7 +345,7 @@ func reportWordDocument(blocks []reportBlock) ([]byte, error) {
 		id, size string
 		level    int
 	}{{"Title", "40", 0}, {"Heading1", "32", 0}, {"Heading2", "26", 1}} {
-		styles += `<w:style w:type="paragraph" w:styleId="` + style.id + `"><w:name w:val="` + style.id + `"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/>` + fmt.Sprintf(`<w:outlineLvl w:val="%d"/>`, style.level) + `</w:pPr><w:rPr><w:b/><w:color w:val="203E56"/><w:sz w:val="` + style.size + `"/></w:rPr></w:style>`
+		styles += `<w:style w:type="paragraph" w:styleId="` + style.id + `"><w:name w:val="` + style.id + `"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/>` + fmt.Sprintf(`<w:outlineLvl w:val="%d"/>`, style.level) + `</w:pPr><w:rPr><w:b/><w:color w:val="000000"/><w:sz w:val="` + style.size + `"/></w:rPr></w:style>`
 	}
 	for _, style := range []struct{ id, indent string }{{"ListParagraph", "360"}, {"NestedList", "720"}, {"Quote", "720"}} {
 		styles += `<w:style w:type="paragraph" w:styleId="` + style.id + `"><w:name w:val="` + style.id + `"/><w:basedOn w:val="Normal"/><w:pPr><w:ind w:left="` + style.indent + `"/></w:pPr></w:style>`
@@ -331,7 +354,14 @@ func reportWordDocument(blocks []reportBlock) ([]byte, error) {
 	files := map[string]string{"word/document.xml": body.String(), "word/styles.xml": styles, "[Content_Types].xml": `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`, "_rels/.rels": `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`, "word/_rels/document.xml.rels": `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`}
 	var out bytes.Buffer
 	writer := zip.NewWriter(&out)
-	for _, name := range []string{"[Content_Types].xml", "_rels/.rels", "word/document.xml", "word/styles.xml", "word/_rels/document.xml.rels"} {
+	parts := []string{"[Content_Types].xml", "_rels/.rels", "word/document.xml", "word/styles.xml", "word/_rels/document.xml.rels"}
+	if listID > 0 {
+		files["word/numbering.xml"] = numbering + `</w:numbering>`
+		files["[Content_Types].xml"] = strings.Replace(files["[Content_Types].xml"], `</Types>`, `<Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/></Types>`, 1)
+		files["word/_rels/document.xml.rels"] = strings.Replace(files["word/_rels/document.xml.rels"], `</Relationships>`, `<Relationship Id="rIdNumbering" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/></Relationships>`, 1)
+		parts = append(parts, "word/numbering.xml")
+	}
+	for _, name := range parts {
 		entry, err := writer.Create(name)
 		if err != nil {
 			return nil, err

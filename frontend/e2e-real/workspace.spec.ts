@@ -3,6 +3,7 @@ import { exerciseLegalTools } from './legal-tools';
 import { exerciseJudgeIntelligence } from './judge';
 import { exerciseGoodMemOCR } from './ocr';
 import { exerciseProviderSettings } from './providers';
+import { exerciseChat } from './chat';
 
 // No page.route mocks: this suite exercises the built Go image and GoodMem.
 // scripts/integration.sh provisions disposable databases and a test provider.
@@ -258,6 +259,7 @@ test('original UI manages matters, GoodMem documents and cited tabular review', 
   await exerciseLegalTools(page, testInfo);
   await exerciseJudgeIntelligence(page, testInfo);
   await exerciseGoodMemOCR(page, request, headers, testInfo);
+  await exerciseChat(page, request, headers, testInfo);
   await exerciseProviderSettings(page, request, headers, testInfo);
 
   const manifest = await request.get('/word-addin/manifest.xml');

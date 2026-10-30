@@ -1,0 +1,2183 @@
+{
+  "baseline": "6605cb3474cf0c2894080af216d5fed2a81fc997",
+  "sources": {
+    "backend/app/services/strategy.py": "724a94ac5254671ba585fc06ad39dcd314d8e344abca139d7ea33dd66aefb7d9"
+  },
+  "fixtures": [
+    {
+      "kind": "confidence",
+      "score": -1,
+      "expected": 0
+    },
+    {
+      "kind": "confidence",
+      "score": 0,
+      "expected": 0
+    },
+    {
+      "kind": "confidence",
+      "score": 0.005,
+      "expected": 0
+    },
+    {
+      "kind": "confidence",
+      "score": 0.015,
+      "expected": 2
+    },
+    {
+      "kind": "confidence",
+      "score": 0.025,
+      "expected": 2
+    },
+    {
+      "kind": "confidence",
+      "score": 0.135,
+      "expected": 14
+    },
+    {
+      "kind": "confidence",
+      "score": 0.445,
+      "expected": 44
+    },
+    {
+      "kind": "confidence",
+      "score": 0.795,
+      "expected": 80
+    },
+    {
+      "kind": "confidence",
+      "score": 1,
+      "expected": 100
+    },
+    {
+      "kind": "confidence",
+      "score": 2,
+      "expected": 100
+    },
+    {
+      "kind": "group",
+      "rows": [
+        {
+          "id": "c0",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c1",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+          "similarity": 0.7000000000000001,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c2",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+          "similarity": 0.6000000000000001,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c3",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+          "similarity": 0.5,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c4",
+          "text": " ",
+          "similarity": 0.4,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c5",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+          "similarity": 0.30000000000000004,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c6",
+          "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+          "similarity": 0.19999999999999996,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "orphan",
+          "text": "Orphan",
+          "metadata": {}
+        }
+      ],
+      "allowed": [],
+      "count": 1,
+      "expected": {}
+    },
+    {
+      "kind": "passages",
+      "order": [],
+      "grouped": {},
+      "expected": []
+    },
+    {
+      "kind": "group",
+      "rows": [
+        {
+          "id": "c0",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c1",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+          "similarity": 0.7000000000000001,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c2",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+          "similarity": 0.6000000000000001,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c3",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+          "similarity": 0.5,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c4",
+          "text": " ",
+          "similarity": 0.4,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c5",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+          "similarity": 0.30000000000000004,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c6",
+          "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+          "similarity": 0.19999999999999996,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "orphan",
+          "text": "Orphan",
+          "metadata": {}
+        }
+      ],
+      "allowed": [],
+      "count": 3,
+      "expected": {}
+    },
+    {
+      "kind": "passages",
+      "order": [],
+      "grouped": {},
+      "expected": []
+    },
+    {
+      "kind": "group",
+      "rows": [
+        {
+          "id": "c0",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c1",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+          "similarity": 0.7000000000000001,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c2",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+          "similarity": 0.6000000000000001,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c3",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+          "similarity": 0.5,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c4",
+          "text": " ",
+          "similarity": 0.4,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c5",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+          "similarity": 0.30000000000000004,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c6",
+          "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+          "similarity": 0.19999999999999996,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "orphan",
+          "text": "Orphan",
+          "metadata": {}
+        }
+      ],
+      "allowed": [],
+      "count": 8,
+      "expected": {}
+    },
+    {
+      "kind": "passages",
+      "order": [],
+      "grouped": {},
+      "expected": []
+    },
+    {
+      "kind": "group",
+      "rows": [
+        {
+          "id": "c0",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c1",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+          "similarity": 0.7000000000000001,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c2",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+          "similarity": 0.6000000000000001,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c3",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+          "similarity": 0.5,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c4",
+          "text": " ",
+          "similarity": 0.4,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c5",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+          "similarity": 0.30000000000000004,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c6",
+          "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+          "similarity": 0.19999999999999996,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "orphan",
+          "text": "Orphan",
+          "metadata": {}
+        }
+      ],
+      "allowed": [
+        "a"
+      ],
+      "count": 1,
+      "expected": {
+        "a": [
+          {
+            "id": "c0",
+            "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "passages",
+      "order": [
+        [
+          "a",
+          "a.pdf"
+        ]
+      ],
+      "grouped": {
+        "a": [
+          {
+            "id": "c0",
+            "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a"
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "ref": "d0",
+          "document_id": "a",
+          "filename": "a.pdf",
+          "snippet": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Pass",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0.",
+          "score": 0.8
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "rows": [
+        {
+          "id": "c0",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c1",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+          "similarity": 0.7000000000000001,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c2",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+          "similarity": 0.6000000000000001,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c3",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+          "similarity": 0.5,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c4",
+          "text": " ",
+          "similarity": 0.4,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c5",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+          "similarity": 0.30000000000000004,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c6",
+          "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+          "similarity": 0.19999999999999996,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "orphan",
+          "text": "Orphan",
+          "metadata": {}
+        }
+      ],
+      "allowed": [
+        "a"
+      ],
+      "count": 3,
+      "expected": {
+        "a": [
+          {
+            "id": "c0",
+            "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c2",
+            "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+            "similarity": 0.6000000000000001,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c4",
+            "text": " ",
+            "similarity": 0.4,
+            "metadata": {
+              "document_id": "a"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "passages",
+      "order": [
+        [
+          "a",
+          "a.pdf"
+        ]
+      ],
+      "grouped": {
+        "a": [
+          {
+            "id": "c0",
+            "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c2",
+            "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+            "similarity": 0.6000000000000001,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c4",
+            "text": " ",
+            "similarity": 0.4,
+            "metadata": {
+              "document_id": "a"
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "ref": "d0",
+          "document_id": "a",
+          "filename": "a.pdf",
+          "snippet": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Pass",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0.",
+          "score": 0.8
+        },
+        {
+          "ref": "d1",
+          "document_id": "a",
+          "filename": "a.pdf",
+          "snippet": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Pass",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2.",
+          "score": 0.6000000000000001
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "rows": [
+        {
+          "id": "c0",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c1",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+          "similarity": 0.7000000000000001,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c2",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+          "similarity": 0.6000000000000001,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c3",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+          "similarity": 0.5,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c4",
+          "text": " ",
+          "similarity": 0.4,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c5",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+          "similarity": 0.30000000000000004,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c6",
+          "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+          "similarity": 0.19999999999999996,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "orphan",
+          "text": "Orphan",
+          "metadata": {}
+        }
+      ],
+      "allowed": [
+        "a"
+      ],
+      "count": 8,
+      "expected": {
+        "a": [
+          {
+            "id": "c0",
+            "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c2",
+            "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+            "similarity": 0.6000000000000001,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c4",
+            "text": " ",
+            "similarity": 0.4,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c6",
+            "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+            "similarity": 0.19999999999999996,
+            "metadata": {
+              "document_id": "a"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "passages",
+      "order": [
+        [
+          "a",
+          "a.pdf"
+        ]
+      ],
+      "grouped": {
+        "a": [
+          {
+            "id": "c0",
+            "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c2",
+            "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+            "similarity": 0.6000000000000001,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c4",
+            "text": " ",
+            "similarity": 0.4,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c6",
+            "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+            "similarity": 0.19999999999999996,
+            "metadata": {
+              "document_id": "a"
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "ref": "d0",
+          "document_id": "a",
+          "filename": "a.pdf",
+          "snippet": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Pass",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0.",
+          "score": 0.8
+        },
+        {
+          "ref": "d1",
+          "document_id": "a",
+          "filename": "a.pdf",
+          "snippet": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Pass",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2.",
+          "score": 0.6000000000000001
+        },
+        {
+          "ref": "d2",
+          "document_id": "a",
+          "filename": "a.pdf",
+          "snippet": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Pass",
+          "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6.",
+          "score": 0.19999999999999996
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "rows": [
+        {
+          "id": "c0",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c1",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+          "similarity": 0.7000000000000001,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c2",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+          "similarity": 0.6000000000000001,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c3",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+          "similarity": 0.5,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c4",
+          "text": " ",
+          "similarity": 0.4,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c5",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+          "similarity": 0.30000000000000004,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c6",
+          "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+          "similarity": 0.19999999999999996,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "orphan",
+          "text": "Orphan",
+          "metadata": {}
+        }
+      ],
+      "allowed": [
+        "b"
+      ],
+      "count": 1,
+      "expected": {
+        "b": [
+          {
+            "id": "c1",
+            "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+            "similarity": 0.7000000000000001,
+            "metadata": {
+              "document_id": "b"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "passages",
+      "order": [
+        [
+          "b",
+          "b.pdf"
+        ]
+      ],
+      "grouped": {
+        "b": [
+          {
+            "id": "c1",
+            "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+            "similarity": 0.7000000000000001,
+            "metadata": {
+              "document_id": "b"
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "ref": "d0",
+          "document_id": "b",
+          "filename": "b.pdf",
+          "snippet": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Pass",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1.",
+          "score": 0.7000000000000001
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "rows": [
+        {
+          "id": "c0",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c1",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+          "similarity": 0.7000000000000001,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c2",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+          "similarity": 0.6000000000000001,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c3",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+          "similarity": 0.5,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c4",
+          "text": " ",
+          "similarity": 0.4,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c5",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+          "similarity": 0.30000000000000004,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c6",
+          "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+          "similarity": 0.19999999999999996,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "orphan",
+          "text": "Orphan",
+          "metadata": {}
+        }
+      ],
+      "allowed": [
+        "b"
+      ],
+      "count": 3,
+      "expected": {
+        "b": [
+          {
+            "id": "c1",
+            "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+            "similarity": 0.7000000000000001,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c3",
+            "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+            "similarity": 0.5,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c5",
+            "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+            "similarity": 0.30000000000000004,
+            "metadata": {
+              "document_id": "b"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "passages",
+      "order": [
+        [
+          "b",
+          "b.pdf"
+        ]
+      ],
+      "grouped": {
+        "b": [
+          {
+            "id": "c1",
+            "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+            "similarity": 0.7000000000000001,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c3",
+            "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+            "similarity": 0.5,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c5",
+            "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+            "similarity": 0.30000000000000004,
+            "metadata": {
+              "document_id": "b"
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "ref": "d0",
+          "document_id": "b",
+          "filename": "b.pdf",
+          "snippet": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Pass",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1.",
+          "score": 0.7000000000000001
+        },
+        {
+          "ref": "d1",
+          "document_id": "b",
+          "filename": "b.pdf",
+          "snippet": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Pass",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3.",
+          "score": 0.5
+        },
+        {
+          "ref": "d2",
+          "document_id": "b",
+          "filename": "b.pdf",
+          "snippet": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Pass",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5.",
+          "score": 0.30000000000000004
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "rows": [
+        {
+          "id": "c0",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c1",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+          "similarity": 0.7000000000000001,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c2",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+          "similarity": 0.6000000000000001,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c3",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+          "similarity": 0.5,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c4",
+          "text": " ",
+          "similarity": 0.4,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c5",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+          "similarity": 0.30000000000000004,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c6",
+          "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+          "similarity": 0.19999999999999996,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "orphan",
+          "text": "Orphan",
+          "metadata": {}
+        }
+      ],
+      "allowed": [
+        "b"
+      ],
+      "count": 8,
+      "expected": {
+        "b": [
+          {
+            "id": "c1",
+            "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+            "similarity": 0.7000000000000001,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c3",
+            "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+            "similarity": 0.5,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c5",
+            "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+            "similarity": 0.30000000000000004,
+            "metadata": {
+              "document_id": "b"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "passages",
+      "order": [
+        [
+          "b",
+          "b.pdf"
+        ]
+      ],
+      "grouped": {
+        "b": [
+          {
+            "id": "c1",
+            "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+            "similarity": 0.7000000000000001,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c3",
+            "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+            "similarity": 0.5,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c5",
+            "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+            "similarity": 0.30000000000000004,
+            "metadata": {
+              "document_id": "b"
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "ref": "d0",
+          "document_id": "b",
+          "filename": "b.pdf",
+          "snippet": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Pass",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1.",
+          "score": 0.7000000000000001
+        },
+        {
+          "ref": "d1",
+          "document_id": "b",
+          "filename": "b.pdf",
+          "snippet": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Pass",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3.",
+          "score": 0.5
+        },
+        {
+          "ref": "d2",
+          "document_id": "b",
+          "filename": "b.pdf",
+          "snippet": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Pass",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5.",
+          "score": 0.30000000000000004
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "rows": [
+        {
+          "id": "c0",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c1",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+          "similarity": 0.7000000000000001,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c2",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+          "similarity": 0.6000000000000001,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c3",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+          "similarity": 0.5,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c4",
+          "text": " ",
+          "similarity": 0.4,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c5",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+          "similarity": 0.30000000000000004,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c6",
+          "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+          "similarity": 0.19999999999999996,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "orphan",
+          "text": "Orphan",
+          "metadata": {}
+        }
+      ],
+      "allowed": [
+        "a",
+        "b"
+      ],
+      "count": 1,
+      "expected": {
+        "a": [
+          {
+            "id": "c0",
+            "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a"
+            }
+          }
+        ],
+        "b": [
+          {
+            "id": "c1",
+            "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+            "similarity": 0.7000000000000001,
+            "metadata": {
+              "document_id": "b"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "passages",
+      "order": [
+        [
+          "b",
+          "b.pdf"
+        ],
+        [
+          "a",
+          "a.pdf"
+        ]
+      ],
+      "grouped": {
+        "a": [
+          {
+            "id": "c0",
+            "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a"
+            }
+          }
+        ],
+        "b": [
+          {
+            "id": "c1",
+            "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+            "similarity": 0.7000000000000001,
+            "metadata": {
+              "document_id": "b"
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "ref": "d0",
+          "document_id": "b",
+          "filename": "b.pdf",
+          "snippet": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Pass",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1.",
+          "score": 0.7000000000000001
+        },
+        {
+          "ref": "d1",
+          "document_id": "a",
+          "filename": "a.pdf",
+          "snippet": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Pass",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0.",
+          "score": 0.8
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "rows": [
+        {
+          "id": "c0",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c1",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+          "similarity": 0.7000000000000001,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c2",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+          "similarity": 0.6000000000000001,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c3",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+          "similarity": 0.5,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c4",
+          "text": " ",
+          "similarity": 0.4,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c5",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+          "similarity": 0.30000000000000004,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c6",
+          "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+          "similarity": 0.19999999999999996,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "orphan",
+          "text": "Orphan",
+          "metadata": {}
+        }
+      ],
+      "allowed": [
+        "a",
+        "b"
+      ],
+      "count": 3,
+      "expected": {
+        "a": [
+          {
+            "id": "c0",
+            "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c2",
+            "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+            "similarity": 0.6000000000000001,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c4",
+            "text": " ",
+            "similarity": 0.4,
+            "metadata": {
+              "document_id": "a"
+            }
+          }
+        ],
+        "b": [
+          {
+            "id": "c1",
+            "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+            "similarity": 0.7000000000000001,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c3",
+            "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+            "similarity": 0.5,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c5",
+            "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+            "similarity": 0.30000000000000004,
+            "metadata": {
+              "document_id": "b"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "passages",
+      "order": [
+        [
+          "b",
+          "b.pdf"
+        ],
+        [
+          "a",
+          "a.pdf"
+        ]
+      ],
+      "grouped": {
+        "a": [
+          {
+            "id": "c0",
+            "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c2",
+            "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+            "similarity": 0.6000000000000001,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c4",
+            "text": " ",
+            "similarity": 0.4,
+            "metadata": {
+              "document_id": "a"
+            }
+          }
+        ],
+        "b": [
+          {
+            "id": "c1",
+            "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+            "similarity": 0.7000000000000001,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c3",
+            "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+            "similarity": 0.5,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c5",
+            "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+            "similarity": 0.30000000000000004,
+            "metadata": {
+              "document_id": "b"
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "ref": "d0",
+          "document_id": "b",
+          "filename": "b.pdf",
+          "snippet": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Pass",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1.",
+          "score": 0.7000000000000001
+        },
+        {
+          "ref": "d1",
+          "document_id": "b",
+          "filename": "b.pdf",
+          "snippet": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Pass",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3.",
+          "score": 0.5
+        },
+        {
+          "ref": "d2",
+          "document_id": "b",
+          "filename": "b.pdf",
+          "snippet": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Pass",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5.",
+          "score": 0.30000000000000004
+        },
+        {
+          "ref": "d3",
+          "document_id": "a",
+          "filename": "a.pdf",
+          "snippet": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Pass",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0.",
+          "score": 0.8
+        },
+        {
+          "ref": "d4",
+          "document_id": "a",
+          "filename": "a.pdf",
+          "snippet": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Pass",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2.",
+          "score": 0.6000000000000001
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "rows": [
+        {
+          "id": "c0",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c1",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+          "similarity": 0.7000000000000001,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c2",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+          "similarity": 0.6000000000000001,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c3",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+          "similarity": 0.5,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c4",
+          "text": " ",
+          "similarity": 0.4,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "c5",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+          "similarity": 0.30000000000000004,
+          "metadata": {
+            "document_id": "b"
+          }
+        },
+        {
+          "id": "c6",
+          "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+          "similarity": 0.19999999999999996,
+          "metadata": {
+            "document_id": "a"
+          }
+        },
+        {
+          "id": "orphan",
+          "text": "Orphan",
+          "metadata": {}
+        }
+      ],
+      "allowed": [
+        "a",
+        "b"
+      ],
+      "count": 8,
+      "expected": {
+        "a": [
+          {
+            "id": "c0",
+            "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c2",
+            "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+            "similarity": 0.6000000000000001,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c4",
+            "text": " ",
+            "similarity": 0.4,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c6",
+            "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+            "similarity": 0.19999999999999996,
+            "metadata": {
+              "document_id": "a"
+            }
+          }
+        ],
+        "b": [
+          {
+            "id": "c1",
+            "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+            "similarity": 0.7000000000000001,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c3",
+            "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+            "similarity": 0.5,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c5",
+            "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+            "similarity": 0.30000000000000004,
+            "metadata": {
+              "document_id": "b"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "passages",
+      "order": [
+        [
+          "b",
+          "b.pdf"
+        ],
+        [
+          "a",
+          "a.pdf"
+        ]
+      ],
+      "grouped": {
+        "a": [
+          {
+            "id": "c0",
+            "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. ",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c2",
+            "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. ",
+            "similarity": 0.6000000000000001,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c4",
+            "text": " ",
+            "similarity": 0.4,
+            "metadata": {
+              "document_id": "a"
+            }
+          },
+          {
+            "id": "c6",
+            "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. ",
+            "similarity": 0.19999999999999996,
+            "metadata": {
+              "document_id": "a"
+            }
+          }
+        ],
+        "b": [
+          {
+            "id": "c1",
+            "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. ",
+            "similarity": 0.7000000000000001,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c3",
+            "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. ",
+            "similarity": 0.5,
+            "metadata": {
+              "document_id": "b"
+            }
+          },
+          {
+            "id": "c5",
+            "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. ",
+            "similarity": 0.30000000000000004,
+            "metadata": {
+              "document_id": "b"
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "ref": "d0",
+          "document_id": "b",
+          "filename": "b.pdf",
+          "snippet": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Pass",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1.",
+          "score": 0.7000000000000001
+        },
+        {
+          "ref": "d1",
+          "document_id": "b",
+          "filename": "b.pdf",
+          "snippet": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Pass",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3.",
+          "score": 0.5
+        },
+        {
+          "ref": "d2",
+          "document_id": "b",
+          "filename": "b.pdf",
+          "snippet": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Pass",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5.",
+          "score": 0.30000000000000004
+        },
+        {
+          "ref": "d3",
+          "document_id": "a",
+          "filename": "a.pdf",
+          "snippet": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Pass",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0.",
+          "score": 0.8
+        },
+        {
+          "ref": "d4",
+          "document_id": "a",
+          "filename": "a.pdf",
+          "snippet": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Pass",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2.",
+          "score": 0.6000000000000001
+        },
+        {
+          "ref": "d5",
+          "document_id": "a",
+          "filename": "a.pdf",
+          "snippet": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Pass",
+          "text": "Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6. Passage 6.",
+          "score": 0.19999999999999996
+        }
+      ]
+    },
+    {
+      "kind": "join",
+      "data": {},
+      "passages": [
+        {
+          "ref": "d0",
+          "document_id": "a",
+          "filename": "alpha.pdf",
+          "snippet": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Pass",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0.",
+          "score": 0.8
+        },
+        {
+          "ref": "d1",
+          "document_id": "a",
+          "filename": "alpha.pdf",
+          "snippet": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Pass",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2.",
+          "score": 0.6000000000000001
+        },
+        {
+          "ref": "d2",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Pass",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1.",
+          "score": 0.7000000000000001
+        },
+        {
+          "ref": "d3",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Pass",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3.",
+          "score": 0.5
+        },
+        {
+          "ref": "d4",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Pass",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5.",
+          "score": 0.30000000000000004
+        }
+      ],
+      "expected": {
+        "sections": {
+          "position": "",
+          "strengths": [],
+          "weaknesses": [],
+          "next_steps": []
+        },
+        "citations": []
+      }
+    },
+    {
+      "kind": "join",
+      "data": {
+        "position": "  Assessment. "
+      },
+      "passages": [
+        {
+          "ref": "d0",
+          "document_id": "a",
+          "filename": "alpha.pdf",
+          "snippet": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Pass",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0.",
+          "score": 0.8
+        },
+        {
+          "ref": "d1",
+          "document_id": "a",
+          "filename": "alpha.pdf",
+          "snippet": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Pass",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2.",
+          "score": 0.6000000000000001
+        },
+        {
+          "ref": "d2",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Pass",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1.",
+          "score": 0.7000000000000001
+        },
+        {
+          "ref": "d3",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Pass",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3.",
+          "score": 0.5
+        },
+        {
+          "ref": "d4",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Pass",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5.",
+          "score": 0.30000000000000004
+        }
+      ],
+      "expected": {
+        "sections": {
+          "position": "Assessment.",
+          "strengths": [],
+          "weaknesses": [],
+          "next_steps": []
+        },
+        "citations": []
+      }
+    },
+    {
+      "kind": "join",
+      "data": {
+        "position": "Assessment.",
+        "strengths": [
+          {
+            "point": " Point ",
+            "refs": [
+              "d1",
+              "d0",
+              "d1",
+              "fake"
+            ]
+          }
+        ],
+        "weaknesses": [
+          {
+            "point": "Risk.",
+            "refs": [
+              "d0"
+            ]
+          }
+        ],
+        "next_steps": [
+          {
+            "step": "Read the agreement.",
+            "refs": [
+              "d2"
+            ]
+          }
+        ]
+      },
+      "passages": [
+        {
+          "ref": "d0",
+          "document_id": "a",
+          "filename": "alpha.pdf",
+          "snippet": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Pass",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0.",
+          "score": 0.8
+        },
+        {
+          "ref": "d1",
+          "document_id": "a",
+          "filename": "alpha.pdf",
+          "snippet": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Pass",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2.",
+          "score": 0.6000000000000001
+        },
+        {
+          "ref": "d2",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Pass",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1.",
+          "score": 0.7000000000000001
+        },
+        {
+          "ref": "d3",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Pass",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3.",
+          "score": 0.5
+        },
+        {
+          "ref": "d4",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Pass",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5.",
+          "score": 0.30000000000000004
+        }
+      ],
+      "expected": {
+        "sections": {
+          "position": "Assessment.",
+          "strengths": [
+            {
+              "point": "Point",
+              "citation_ids": [
+                "d1",
+                "d0"
+              ]
+            }
+          ],
+          "weaknesses": [
+            {
+              "point": "Risk.",
+              "citation_ids": [
+                "d0"
+              ]
+            }
+          ],
+          "next_steps": [
+            {
+              "step": "Read the agreement.",
+              "citation_ids": [
+                "d2"
+              ]
+            }
+          ]
+        },
+        "citations": [
+          {
+            "id": "d0",
+            "source": "alpha.pdf",
+            "type": "document",
+            "document_id": "a",
+            "passage": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Pass",
+            "confidence": 80
+          },
+          {
+            "id": "d1",
+            "source": "alpha.pdf",
+            "type": "document",
+            "document_id": "a",
+            "passage": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Pass",
+            "confidence": 60
+          },
+          {
+            "id": "d2",
+            "source": "beta.pdf",
+            "type": "document",
+            "document_id": "b",
+            "passage": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Pass",
+            "confidence": 70
+          }
+        ]
+      }
+    },
+    {
+      "kind": "join",
+      "data": {
+        "strengths": [
+          null,
+          "bad",
+          {},
+          {
+            "point": "Unsupported.",
+            "refs": [
+              1,
+              "d999"
+            ]
+          }
+        ]
+      },
+      "passages": [
+        {
+          "ref": "d0",
+          "document_id": "a",
+          "filename": "alpha.pdf",
+          "snippet": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Pass",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0.",
+          "score": 0.8
+        },
+        {
+          "ref": "d1",
+          "document_id": "a",
+          "filename": "alpha.pdf",
+          "snippet": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Pass",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2.",
+          "score": 0.6000000000000001
+        },
+        {
+          "ref": "d2",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Pass",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1.",
+          "score": 0.7000000000000001
+        },
+        {
+          "ref": "d3",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Pass",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3.",
+          "score": 0.5
+        },
+        {
+          "ref": "d4",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Pass",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5.",
+          "score": 0.30000000000000004
+        }
+      ],
+      "expected": {
+        "sections": {
+          "position": "",
+          "strengths": [
+            {
+              "point": "Unsupported.",
+              "citation_ids": []
+            }
+          ],
+          "weaknesses": [],
+          "next_steps": []
+        },
+        "citations": []
+      }
+    },
+    {
+      "kind": "join",
+      "data": {
+        "weaknesses": "not a list",
+        "next_steps": [
+          {
+            "step": "Next.",
+            "refs": "d0"
+          }
+        ]
+      },
+      "passages": [
+        {
+          "ref": "d0",
+          "document_id": "a",
+          "filename": "alpha.pdf",
+          "snippet": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Pass",
+          "text": "Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0. Passage 0.",
+          "score": 0.8
+        },
+        {
+          "ref": "d1",
+          "document_id": "a",
+          "filename": "alpha.pdf",
+          "snippet": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Pass",
+          "text": "Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2. Passage 2.",
+          "score": 0.6000000000000001
+        },
+        {
+          "ref": "d2",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Pass",
+          "text": "Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1. Passage 1.",
+          "score": 0.7000000000000001
+        },
+        {
+          "ref": "d3",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Pass",
+          "text": "Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3. Passage 3.",
+          "score": 0.5
+        },
+        {
+          "ref": "d4",
+          "document_id": "b",
+          "filename": "beta.pdf",
+          "snippet": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Pass",
+          "text": "Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5. Passage 5.",
+          "score": 0.30000000000000004
+        }
+      ],
+      "expected": {
+        "sections": {
+          "position": "",
+          "strengths": [],
+          "weaknesses": [],
+          "next_steps": [
+            {
+              "step": "Next.",
+              "citation_ids": []
+            }
+          ]
+        },
+        "citations": []
+      }
+    }
+  ]
+}

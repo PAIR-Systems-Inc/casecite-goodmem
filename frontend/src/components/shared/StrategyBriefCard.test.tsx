@@ -44,4 +44,22 @@ describe('StrategyBriefCard scope', () => {
     );
     expect(container.textContent).not.toContain('· in');
   });
+
+  it('counts files actually read and names missing documents', () => {
+    const data = brief({ documents_read: 1, missing_documents: [{ document_id: 'b', filename: 'unreadable.pdf' }] });
+    data.next_steps = [{ step: 'Confirm service.', citation_ids: [], support: 'unsupported' }];
+    const { container } = render(<StrategyBriefCard brief={data} citations={[]} onCitationClick={vi.fn()} styles={s} />);
+    expect(container.textContent).toContain('1 document reviewed (of 3)');
+    expect(container.textContent).toContain('Could not read: unreadable.pdf');
+    expect(container.textContent).toContain('No supporting document passage was identified for this point.');
+  });
+
+  it('does not invent the reason a supporting opinion was reviewed in part', () => {
+    const data = brief({});
+    data.case_law = { requested: true, points_searched: 2, opinions_read: 3, partially_read: 1, attached: 1, timed_out: true };
+    const { container } = render(<StrategyBriefCard brief={data} citations={[]} onCitationClick={vi.fn()} styles={s} />);
+    expect(container.textContent).toContain('1 opinion review covered only part of the text');
+    expect(container.textContent).not.toContain('too long');
+    expect(container.textContent).toContain('some points may remain unchecked');
+  });
 });

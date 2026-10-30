@@ -16,6 +16,9 @@ func (s *Server) userSettings(ctx context.Context, user string) (M, error) {
 	return s.userSettingsWithRuntime(ctx, user, runtime)
 }
 func (s *Server) userSettingsWithRuntime(ctx context.Context, user string, runtime llmRuntime) (M, error) {
+	if snapshot, ok := ctx.Value(chatSettingsKey{}).(M); ok {
+		return snapshot, nil
+	}
 	m := defaultRAGSettings()
 	stored := M{}
 	err := s.kvGet(ctx, "settings:"+user, &stored)

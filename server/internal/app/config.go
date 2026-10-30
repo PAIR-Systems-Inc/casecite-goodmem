@@ -31,6 +31,7 @@ type Config struct {
 	WorkflowNotifications                                              bool
 	ResearchMaxSubquestions, ResearchMaxToolCalls, ResearchMaxPassages int
 	ResearchConcurrency, ResearchFollowupDepth                         int
+	ResearchOpinionWindows                                             int
 	MaxUpload                                                          int64
 	RequireMFA                                                         bool
 	AuditFailClosed                                                    bool
@@ -66,9 +67,10 @@ func LoadConfig() (Config, error) {
 		WorkflowMaxSteps:  12, WorkflowMaxDocuments: 25, WorkflowMaxCitations: 10, WorkflowMaxOutputBytes: 524288,
 		WorkflowNotifications:   env("WORKFLOW_NOTIFICATIONS", "false") == "true",
 		ResearchMaxSubquestions: 8, ResearchMaxToolCalls: 24, ResearchMaxPassages: 60, ResearchConcurrency: 3, ResearchFollowupDepth: 1,
-		RequireMFA:        env("REQUIRE_MFA", "false") == "true",
-		AuditFailClosed:   env("AUDIT_FAIL_CLOSED", "false") == "true",
-		MicrosoftClientID: os.Getenv("MICROSOFT_CLIENT_ID"), MicrosoftTenantID: os.Getenv("MICROSOFT_TENANT_ID"), MicrosoftRedirectURI: os.Getenv("MICROSOFT_REDIRECT_URI"),
+		ResearchOpinionWindows: 6,
+		RequireMFA:             env("REQUIRE_MFA", "false") == "true",
+		AuditFailClosed:        env("AUDIT_FAIL_CLOSED", "false") == "true",
+		MicrosoftClientID:      os.Getenv("MICROSOFT_CLIENT_ID"), MicrosoftTenantID: os.Getenv("MICROSOFT_TENANT_ID"), MicrosoftRedirectURI: os.Getenv("MICROSOFT_REDIRECT_URI"),
 		AzureAutoProvision: env("AZURE_SSO_AUTO_PROVISION", "true") == "true", AzureDefaultRole: env("AZURE_SSO_DEFAULT_ROLE", "viewer"),
 		SMTPHost: os.Getenv("SMTP_HOST"), SMTPPort: env("SMTP_PORT", "587"), SMTPUser: os.Getenv("SMTP_USER"), SMTPPassword: os.Getenv("SMTP_PASSWORD"), SMTPFrom: os.Getenv("SMTP_FROM"), SMTPTLS: env("SMTP_TLS", "false") == "true",
 	}
@@ -170,6 +172,7 @@ func LoadConfig() (Config, error) {
 		{"DEEP_RESEARCH_MAX_PASSAGES", &c.ResearchMaxPassages, 1, 1000},
 		{"DEEP_RESEARCH_CONCURRENCY", &c.ResearchConcurrency, 1, 32},
 		{"DEEP_RESEARCH_FOLLOWUP_DEPTH", &c.ResearchFollowupDepth, 0, 1},
+		{"RESEARCH_MAX_WINDOWS_PER_OPINION", &c.ResearchOpinionWindows, 1, 32},
 	} {
 		if raw := os.Getenv(field.key); raw != "" {
 			n, err := strconv.Atoi(raw)
