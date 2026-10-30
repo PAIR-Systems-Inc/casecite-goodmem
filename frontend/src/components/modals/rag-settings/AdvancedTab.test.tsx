@@ -58,7 +58,8 @@ describe('AdvancedTab', () => {
     const { container } = render(<AdvancedTab {...defaultProps()} />);
     // The copy states the real conditions rather than promising a reranker
     // or a separate keyword search.
-    expect(container.textContent).toContain('only when the server has the optional sentence-transformers package');
+    expect(container.textContent).toContain('Use the reranker configured in GoodMem');
+    expect(container.textContent).toContain('When no reranker is configured');
     expect(container.textContent).toContain('Blend keyword-match scores');
   });
 });

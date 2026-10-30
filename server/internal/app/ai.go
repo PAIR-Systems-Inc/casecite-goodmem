@@ -31,6 +31,9 @@ func withLLMOptions(ctx context.Context, options llmOptions) context.Context {
 }
 
 func (s *Server) execute(ctx context.Context, user, kind string, input M) (M, error) {
+	if kind == "document.reindex" {
+		return s.executeReindex(ctx, user, input)
+	}
 	if kind == "connector.sync" {
 		return s.executeConnectorSync(ctx, user, input)
 	}

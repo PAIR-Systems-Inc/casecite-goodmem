@@ -85,7 +85,14 @@ func (g *GoodMem) Create(ctx context.Context, id, docID, filename, contentType s
 func (g *GoodMem) CreateOCRIndex(ctx context.Context, id, docID, original, filename string, data []byte) (M, error) {
 	return g.createMemory(ctx, id, docID, filename, "text/plain", data, original)
 }
-func (g *GoodMem) createMemory(ctx context.Context, id, docID, filename, contentType string, data []byte, original string) (M, error) {
+func (g *GoodMem) CreateReindex(ctx context.Context, id, docID, original, filename, contentType string, data []byte, ocr bool) (M, error) {
+	extraction := "native"
+	if ocr {
+		extraction = "goodmem_ocr"
+	}
+	return g.createMemory(ctx, id, docID, filename, contentType, data, original, M{"text_extraction": extraction})
+}
+func (g *GoodMem) createMemory(ctx context.Context, id, docID, filename, contentType string, data []byte, original string, metadata ...M) (M, error) {
 	var buffer bytes.Buffer
 	w := multipart.NewWriter(&buffer)
 	request := M{"memoryId": id, "spaceId": g.Space, "contentType": contentType, "extractPageImages": true, "metadata": M{"title": filename, "filename": filename, "casecite_document_id": docID, "casecite_memory_id": id}, "chunkingConfig": M{"recursive": M{"chunkSize": 1800, "chunkOverlap": 200, "lengthMeasurement": "CHARACTER_COUNT", "keepStrategy": "KEEP_END"}}}
@@ -93,6 +100,11 @@ func (g *GoodMem) createMemory(ctx context.Context, id, docID, filename, content
 		object(request["metadata"])["casecite_source_memory_id"] = original
 		object(request["metadata"])["text_extraction"] = "goodmem_ocr"
 		request["extractPageImages"] = false
+	}
+	for _, extra := range metadata {
+		for k, v := range extra {
+			object(request["metadata"])[k] = v
+		}
 	}
 	if err := w.WriteField("request", string(jsonBytes(request))); err != nil {
 		return nil, err

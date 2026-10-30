@@ -35,6 +35,8 @@ func (s *Server) routes() {
 	s.judgeRoutes()
 	s.connectorRoutes()
 	s.pickerRoutes()
+	s.api("POST /api/v1/settings/reindex", false, s.reindexDocuments)
+	s.api("POST /api/v1/settings/clear", false, s.clearDocuments)
 	s.api("GET /api/v1/settings", false, s.settings)
 	s.api("PUT /api/v1/settings", false, s.settings)
 	s.api("PUT /api/v1/keys/{provider}", false, s.saveKey)

@@ -1,0 +1,741 @@
+{
+  "baseline": "6605cb3474cf0c2894080af216d5fed2a81fc997",
+  "sources": {
+    "backend/app/services/diagnostics.py": "4d7c581f7df137b5fb5c550cb30f9055649e88c9935959d27635b04c90eb27fb",
+    "backend/app/routers/settings.py": "acddbc44a2402dc982ae2587c417d14002196ce5faa9e1215db90dc803355c1e"
+  },
+  "reindex": [
+    {
+      "outcomes": [],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "indexed"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 1,
+        "errors": [],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 1 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "failed"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: indexing failed"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "missing"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: file not found"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "gone"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: document not found"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "provider"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: provider unavailable"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "indexed",
+        "indexed"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 2,
+        "errors": [],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 2 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "indexed",
+        "failed"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 1,
+        "errors": [
+          "file-1.pdf: indexing failed"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 1 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "indexed",
+        "missing"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 1,
+        "errors": [
+          "file-1.pdf: file not found"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 1 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "indexed",
+        "gone"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 1,
+        "errors": [
+          "file-1.pdf: document not found"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 1 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "indexed",
+        "provider"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 1,
+        "errors": [
+          "file-1.pdf: provider unavailable"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 1 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "failed",
+        "indexed"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 1,
+        "errors": [
+          "file-0.pdf: indexing failed"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 1 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "failed",
+        "failed"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: indexing failed",
+          "file-1.pdf: indexing failed"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "failed",
+        "missing"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: indexing failed",
+          "file-1.pdf: file not found"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "failed",
+        "gone"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: indexing failed",
+          "file-1.pdf: document not found"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "failed",
+        "provider"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: indexing failed",
+          "file-1.pdf: provider unavailable"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "missing",
+        "indexed"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 1,
+        "errors": [
+          "file-0.pdf: file not found"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 1 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "missing",
+        "failed"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: file not found",
+          "file-1.pdf: indexing failed"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "missing",
+        "missing"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: file not found",
+          "file-1.pdf: file not found"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "missing",
+        "gone"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: file not found",
+          "file-1.pdf: document not found"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "missing",
+        "provider"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: file not found",
+          "file-1.pdf: provider unavailable"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "gone",
+        "indexed"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 1,
+        "errors": [
+          "file-0.pdf: document not found"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 1 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "gone",
+        "failed"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: document not found",
+          "file-1.pdf: indexing failed"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "gone",
+        "missing"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: document not found",
+          "file-1.pdf: file not found"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "gone",
+        "gone"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: document not found",
+          "file-1.pdf: document not found"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "gone",
+        "provider"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: document not found",
+          "file-1.pdf: provider unavailable"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "provider",
+        "indexed"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 1,
+        "errors": [
+          "file-0.pdf: provider unavailable"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 1 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "provider",
+        "failed"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: provider unavailable",
+          "file-1.pdf: indexing failed"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "provider",
+        "missing"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: provider unavailable",
+          "file-1.pdf: file not found"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "provider",
+        "gone"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: provider unavailable",
+          "file-1.pdf: document not found"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    },
+    {
+      "outcomes": [
+        "provider",
+        "provider"
+      ],
+      "expected": {
+        "status": "completed",
+        "reindexed": 0,
+        "errors": [
+          "file-0.pdf: provider unavailable",
+          "file-1.pdf: provider unavailable"
+        ],
+        "embedding_model": "fixture-embedder",
+        "message": "Reindexed 0 documents with fixture-embedder"
+      }
+    }
+  ],
+  "clear": [
+    {
+      "cleared": 0,
+      "failed": 0,
+      "status": 200,
+      "expected": {
+        "status": "cleared",
+        "message": "Index cleared successfully. All your documents have been removed.",
+        "cleared_documents": 0,
+        "failed_documents": 0
+      }
+    },
+    {
+      "cleared": 0,
+      "failed": 1,
+      "status": 502,
+      "expected": {
+        "detail": "None of your 1 document(s) could be removed from the search index. Nothing was deleted; try again."
+      }
+    },
+    {
+      "cleared": 0,
+      "failed": 2,
+      "status": 502,
+      "expected": {
+        "detail": "None of your 2 document(s) could be removed from the search index. Nothing was deleted; try again."
+      }
+    },
+    {
+      "cleared": 0,
+      "failed": 3,
+      "status": 502,
+      "expected": {
+        "detail": "None of your 3 document(s) could be removed from the search index. Nothing was deleted; try again."
+      }
+    },
+    {
+      "cleared": 0,
+      "failed": 4,
+      "status": 502,
+      "expected": {
+        "detail": "None of your 4 document(s) could be removed from the search index. Nothing was deleted; try again."
+      }
+    },
+    {
+      "cleared": 1,
+      "failed": 0,
+      "status": 200,
+      "expected": {
+        "status": "cleared",
+        "message": "Index cleared successfully. All your documents have been removed.",
+        "cleared_documents": 1,
+        "failed_documents": 0
+      }
+    },
+    {
+      "cleared": 1,
+      "failed": 1,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 1 document(s). 1 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 1,
+        "failed_documents": 1
+      }
+    },
+    {
+      "cleared": 1,
+      "failed": 2,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 1 document(s). 2 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 1,
+        "failed_documents": 2
+      }
+    },
+    {
+      "cleared": 1,
+      "failed": 3,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 1 document(s). 3 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 1,
+        "failed_documents": 3
+      }
+    },
+    {
+      "cleared": 1,
+      "failed": 4,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 1 document(s). 4 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 1,
+        "failed_documents": 4
+      }
+    },
+    {
+      "cleared": 2,
+      "failed": 0,
+      "status": 200,
+      "expected": {
+        "status": "cleared",
+        "message": "Index cleared successfully. All your documents have been removed.",
+        "cleared_documents": 2,
+        "failed_documents": 0
+      }
+    },
+    {
+      "cleared": 2,
+      "failed": 1,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 2 document(s). 1 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 2,
+        "failed_documents": 1
+      }
+    },
+    {
+      "cleared": 2,
+      "failed": 2,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 2 document(s). 2 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 2,
+        "failed_documents": 2
+      }
+    },
+    {
+      "cleared": 2,
+      "failed": 3,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 2 document(s). 3 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 2,
+        "failed_documents": 3
+      }
+    },
+    {
+      "cleared": 2,
+      "failed": 4,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 2 document(s). 4 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 2,
+        "failed_documents": 4
+      }
+    },
+    {
+      "cleared": 3,
+      "failed": 0,
+      "status": 200,
+      "expected": {
+        "status": "cleared",
+        "message": "Index cleared successfully. All your documents have been removed.",
+        "cleared_documents": 3,
+        "failed_documents": 0
+      }
+    },
+    {
+      "cleared": 3,
+      "failed": 1,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 3 document(s). 1 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 3,
+        "failed_documents": 1
+      }
+    },
+    {
+      "cleared": 3,
+      "failed": 2,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 3 document(s). 2 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 3,
+        "failed_documents": 2
+      }
+    },
+    {
+      "cleared": 3,
+      "failed": 3,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 3 document(s). 3 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 3,
+        "failed_documents": 3
+      }
+    },
+    {
+      "cleared": 3,
+      "failed": 4,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 3 document(s). 4 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 3,
+        "failed_documents": 4
+      }
+    },
+    {
+      "cleared": 4,
+      "failed": 0,
+      "status": 200,
+      "expected": {
+        "status": "cleared",
+        "message": "Index cleared successfully. All your documents have been removed.",
+        "cleared_documents": 4,
+        "failed_documents": 0
+      }
+    },
+    {
+      "cleared": 4,
+      "failed": 1,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 4 document(s). 1 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 4,
+        "failed_documents": 1
+      }
+    },
+    {
+      "cleared": 4,
+      "failed": 2,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 4 document(s). 2 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 4,
+        "failed_documents": 2
+      }
+    },
+    {
+      "cleared": 4,
+      "failed": 3,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 4 document(s). 3 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 4,
+        "failed_documents": 3
+      }
+    },
+    {
+      "cleared": 4,
+      "failed": 4,
+      "status": 200,
+      "expected": {
+        "status": "partial",
+        "message": "Removed 4 document(s). 4 could not be removed from the search index and were kept; try again.",
+        "cleared_documents": 4,
+        "failed_documents": 4
+      }
+    }
+  ]
+}

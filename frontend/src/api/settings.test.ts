@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('./client', () => {
   const api = {
@@ -13,6 +13,7 @@ import './settings';
 
 describe('api/settings', () => {
   beforeEach(() => { vi.clearAllMocks(); });
+  afterEach(() => { vi.useRealTimers(); });
 
   it('registers expected methods on api object', () => {
     expect(typeof (api as any).getSettings).toBe('function');
@@ -35,5 +36,31 @@ describe('api/settings', () => {
       body: JSON.stringify(settings),
     });
     expect(result.temperature).toBe(0.5);
+  });
+
+  it('polls a durable rebuild and preserves per-document failures', async () => {
+    vi.useFakeTimers();
+    const result = { status: 'completed', reindexed: 2, errors: ['bad.pdf: unreadable'] };
+    vi.mocked(api.request).mockResolvedValueOnce({ job_id: 'rebuild' }).mockResolvedValueOnce({ status: 'running' }).mockResolvedValueOnce({ status: 'completed', result });
+    const pending = api.reindexDocuments();
+    await vi.runAllTimersAsync();
+    expect(await pending).toEqual(result);
+    expect(api.request).toHaveBeenNthCalledWith(1, '/settings/reindex?async=true', { method: 'POST' });
+    expect(api.request).toHaveBeenNthCalledWith(3, '/jobs/rebuild');
+  });
+
+  it('reports a stopped rebuild without submitting it again', async () => {
+    vi.mocked(api.request).mockResolvedValueOnce({ job_id: 'rebuild' }).mockResolvedValueOnce({ status: 'cancelled', error: 'Cancelled by the user' });
+    await expect(api.reindexDocuments()).rejects.toThrow('Cancelled by the user');
+    expect(api.request).toHaveBeenCalledTimes(2);
+  });
+
+  it('bounds polling failures and explains how to reconnect', async () => {
+    vi.useFakeTimers();
+    vi.mocked(api.request).mockResolvedValueOnce({ job_id: 'rebuild' }).mockRejectedValue(new Error('Offline'));
+    const pending = expect(api.reindexDocuments()).rejects.toThrow('click Rebuild to reconnect');
+    await vi.runAllTimersAsync();
+    await pending;
+    expect(api.request).toHaveBeenCalledTimes(4);
   });
 });

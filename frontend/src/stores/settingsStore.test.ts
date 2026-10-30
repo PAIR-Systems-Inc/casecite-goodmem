@@ -280,7 +280,7 @@ describe('settingsStore', () => {
 
     expect(useSettingsStore.getState().isReindexing).toBe(false);
     const toasts = useUIStore.getState().toasts;
-    expect(toasts.some(t => t.message === 'Reindex failed')).toBe(true);
+    expect(toasts.some(t => t.message === 'Reindex error' && t.type === 'error')).toBe(true);
   });
 
 });

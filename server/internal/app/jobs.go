@@ -365,7 +365,7 @@ func (s *Server) runJob(id, user, kind, lease string, b []byte) {
 				return
 			}
 		}
-		if outputs.Chat == nil && outputs.Connector == nil && !outputs.Picker {
+		if outputs.Chat == nil && outputs.Connector == nil && !outputs.Picker && kind != "document.reindex" {
 			if str(result, "kind") == "" {
 				result["kind"] = kind
 			}

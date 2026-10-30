@@ -6,6 +6,8 @@ Derived from [Thomas Unise's CaseCite](https://github.com/thomasunise/casecite),
 
 Generation supports native Claude/Gemini and OpenAI-compatible endpoints, including keyless local models. The original admin endpoint and CourtListener controls persist encrypted settings in PostgreSQL. Clause embeddings use a separate OpenAI/Voyage/Cohere or local provider; GoodMem retains document indexing and retrieval. See [provider configuration](docs/providers.md).
 
+Search-index rebuilds run as durable PostgreSQL jobs, check replacement GoodMem indexes before switching, and reuse completed OCR. Owner-only clearing, health/readiness and JSON/Prometheus metrics are implemented. See [administration and remaining settings integration](docs/administration.md).
+
 ## Implementation status
 
 **Full feature and UI parity is the requirement, and is not yet complete.** The earlier reduced-scope implementation is preserved at `checkpoint/core-goodmem-a74e09e`; its omissions are not accepted scope for this branch.

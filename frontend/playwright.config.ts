@@ -12,13 +12,15 @@ export default defineConfig({
   outputDir: EXTERNAL_URL ? './test-results/real' : './test-results/ui',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  // The live suite bootstraps an empty database and must not replay against
+  // its own partially created account after a failure.
+  retries: process.env.CI && !EXTERNAL_URL ? 1 : 0,
   workers: process.env.CI || EXTERNAL_URL ? 1 : undefined,
   reporter: 'html',
 
   use: {
     baseURL: BASE_URL,
-    trace: 'on-first-retry',
+    trace: EXTERNAL_URL ? 'retain-on-failure' : 'on-first-retry',
     screenshot: 'only-on-failure',
   },
 

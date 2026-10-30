@@ -2,15 +2,23 @@ import { expect, type APIRequestContext, type Page, type TestInfo } from '@playw
 import { readFile } from 'node:fs/promises';
 
 export async function exerciseConnectors(page: Page, request: APIRequestContext, headers: Record<string, string>, testInfo: TestInfo) {
-  // Only the external consent page is simulated. The built Go server handles
-  // the browser-bound callback, token exchange, listing, download and jobs.
-  await page.context().route('http://provider:8080/oauth/authorize*', async route => {
-    const params = new URL(route.request().url()).searchParams;
+  // Playwright only routes the first URL in a redirect chain. Fetch the real,
+  // cookie-bound launch endpoint without following its redirect, then show a
+  // fixture consent link. Token exchange, callback, listing and indexing remain
+  // real server operations. See playwright.dev/docs/api/class-page#page-route.
+  const launchPattern = '**/api/v1/connectors/clio/authorize?*';
+  await page.context().route(launchPattern, async route => {
+    const launched = await route.fetch({ maxRedirects: 0 });
+    expect(launched.status()).toBe(302);
+    const destination = new URL(launched.headers().location);
+    expect(destination.origin + destination.pathname).toBe('http://provider:8080/oauth/authorize');
+    const params = destination.searchParams;
     expect(params.get('client_id')).toBe('fixture-clio-client');
     const callback = new URL(params.get('redirect_uri')!);
     callback.searchParams.set('state', params.get('state')!);
     callback.searchParams.set('code', 'fixture-authorized-code');
-    await route.fulfill({ status: 302, headers: { Location: callback.href } });
+    const link = callback.href.replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+    await route.fulfill({ status: 200, contentType: 'text/html', body: `<a href="${link}">Authorize fixture Clio</a>` });
   });
   await page.goto('/documents');
   const main = page.locator('main[data-layout="main-content"]');
@@ -42,7 +50,12 @@ export async function exerciseConnectors(page: Page, request: APIRequestContext,
   await picker.getByRole('button', { name: 'Close', exact: true }).click();
   // Reset the public fixture key before the remainder of the UI walkthrough.
   expect((await request.delete('/api/v1/admin/integrations/connectors/google', { headers })).status()).toBe(200);
+  const opened = page.waitForEvent('popup');
   await main.getByTitle('Connect Clio', { exact: true }).click();
+  const popup = await opened;
+  const closed = popup.waitForEvent('close');
+  await popup.getByRole('link', { name: 'Authorize fixture Clio' }).click();
+  await closed;
   const manage = main.getByTitle('Manage Clio', { exact: true });
   await expect(manage).toBeVisible({ timeout: 15_000 });
   await manage.click();
@@ -83,5 +96,5 @@ export async function exerciseConnectors(page: Page, request: APIRequestContext,
   await expect(main.getByTitle('Connect Clio', { exact: true })).toBeVisible();
   // Disconnect retains imported source records and their citations.
   expect((await request.get(`/api/v1/documents/${doc.id}`, { headers })).status()).toBe(200);
-  await page.context().unroute('http://provider:8080/oauth/authorize*');
+  await page.context().unroute(launchPattern);
 }

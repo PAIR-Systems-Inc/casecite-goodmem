@@ -218,7 +218,7 @@ export const useSettingsStore = create<SettingsState>((set, _get) => ({
       const result = await api.reindexDocuments();
       const failed = result.errors?.length ?? 0;
       if (failed > 0) {
-        // Say which documents failed — they are now marked failed, not indexed.
+        // A failed replacement keeps the previous working index.
         const shown = result.errors.slice(0, 3).join('; ');
         const more = failed > 3 ? ` (and ${failed - 3} more)` : '';
         addToast(
@@ -230,7 +230,7 @@ export const useSettingsStore = create<SettingsState>((set, _get) => ({
       }
     } catch (error) {
       logger.error('Reindex error:', error);
-      addToast('Reindex failed', 'error');
+      addToast(error instanceof Error ? error.message : 'Reindex failed', 'error');
     }
     set({ isReindexing: false });
     _get().refreshSystemStats();

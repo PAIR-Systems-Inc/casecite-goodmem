@@ -156,7 +156,7 @@ func (s *Server) scheduleMemoryDeletion(ctx context.Context, memory string) erro
 func (s *Server) cleanupDocumentOCR(ctx context.Context) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	rows, err := s.db.QueryContext(ctx, `SELECT key,value->>'memory_id' FROM cc_kv WHERE starts_with(key,'memory-delete:') AND (value->>'not_before')::timestamptz<now() AND NOT EXISTS(SELECT 1 FROM cc_objects d WHERE d.kind='document' AND (d.data->>'memory_id'=cc_kv.value->>'memory_id' OR d.data->>'index_memory_id'=cc_kv.value->>'memory_id')) ORDER BY key LIMIT 20`)
+	rows, err := s.db.QueryContext(ctx, `SELECT key,value->>'memory_id' FROM cc_kv WHERE starts_with(key,'memory-delete:') AND (value->>'not_before')::timestamptz<now() AND NOT EXISTS(SELECT 1 FROM cc_jobs j WHERE j.id=cc_kv.value->>'job_id' AND j.status IN ('pending','running')) AND NOT EXISTS(SELECT 1 FROM cc_objects d WHERE d.kind='document' AND (d.data->>'memory_id'=cc_kv.value->>'memory_id' OR d.data->>'index_memory_id'=cc_kv.value->>'memory_id')) ORDER BY key LIMIT 20`)
 	if err != nil {
 		s.log.Warn("OCR index cleanup lookup failed", "error", err)
 		return

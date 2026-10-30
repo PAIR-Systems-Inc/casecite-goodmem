@@ -135,8 +135,9 @@ func (s *Server) cachedDocumentText(ctx context.Context, doc M) (extractedDocume
 	return out, err
 }
 func (s *Server) readDocumentText(ctx context.Context, doc M) (extractedDocument, error) {
-	// GoodMem memory content is immutable. Reindexing assigns a new memory ID,
-	// invalidating the cached OCR. The hash binds partial retries to exact bytes.
+	// GoodMem original content is immutable. Rebuilding its search index keeps
+	// cached OCR; replacing the original memory invalidates it. Partial retries
+	// are bound to the exact original bytes by their hash.
 	cached, err := s.cachedDocumentText(ctx, doc)
 	if err == nil && cached.Complete {
 		return cached, nil

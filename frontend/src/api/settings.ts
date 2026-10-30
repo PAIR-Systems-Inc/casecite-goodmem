@@ -37,6 +37,25 @@ Object.assign(api, {
   },
 
   async reindexDocuments(): Promise<ReindexResult> {
-    return api.request('/settings/reindex', { method: 'POST' });
+    const started: { job_id: string } = await api.request('/settings/reindex?async=true', { method: 'POST' });
+    if (!started.job_id) throw new Error('The rebuild did not return a tracking ID.');
+    let failures = 0;
+    for (;;) {
+      let job: { status: string; result?: ReindexResult; error?: string };
+      try {
+        job = await api.request(`/jobs/${encodeURIComponent(started.job_id)}`);
+        failures = 0;
+      } catch (error) {
+        if (++failures > 2) throw new Error(`Could not check the rebuild. It may still be running; click Rebuild to reconnect. ${error instanceof Error ? error.message : ''}`.trim());
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        continue;
+      }
+      if (job.status === 'completed') {
+        if (!job.result) throw new Error('The completed rebuild has no result. Check the Knowledge Base.');
+        return job.result;
+      }
+      if (job.status === 'failed' || job.status === 'cancelled') throw new Error(job.error || 'Rebuild stopped. Completed documents keep their new index.');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
   },
 });
