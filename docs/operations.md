@@ -8,6 +8,21 @@ The fresh Compose setup creates two databases and two ordinary login roles on on
 
 The initial schema and embedded, numbered SQL migrations run under a migration lock. `cc_migrations` records checksums, and a changed previously applied migration is rejected. This upgrades the Go schema; it is not an importer for the upstream Python database.
 
+## Development login
+
+The original `POST /api/v1/auth/demo/login` is available with `DEBUG=true`.
+It accepts `dev@localhost` and password `demo` (the password may be omitted).
+It creates a reserved viewer in PostgreSQL so normal sessions, resource ownership
+and foreign keys apply. CSRF and the shared sign-in rate limit still apply.
+The development account does not prevent first-administrator registration.
+
+`DEBUG=false` rejects both new demo logins and existing demo access/refresh
+tokens. The endpoint cannot claim an existing email, reactivate a disabled user,
+or sign in after the reserved identity is promoted or given a normal password.
+Custom viewer permissions can remove its access but cannot elevate it beyond the
+original viewer defaults. Ordinary accounts continue using local passwords,
+Microsoft SSO and the configured MFA policy.
+
 ## Jobs and recovery
 
 Two workers per Go process claim durable jobs. At most five pending/running jobs are allowed per user. Jobs have a one-hour default budget (`JOB_TIMEOUT_SECONDS`), a 30-second lease renewed every five seconds, and explicit cancellation. Successful job completion and saved analysis/results commit together. A process crash leaves the lease to expire; another live instance's maintenance task marks the job failed. Users choose whether to retry. Model charges from an interrupted request cannot be reliably rolled back.
@@ -54,7 +69,7 @@ Original files and page-image bytes are fetched through authenticated CaseCite r
 
 AI requests support OpenAI-compatible endpoints, native Claude and native Gemini. Shared utility calls retain the chosen provider. Instance endpoint and CourtListener settings persist encrypted in PostgreSQL, and optional provider policies apply before outgoing AI calls. Clause embeddings have a separate endpoint and support OpenAI, Voyage and Cohere. See [provider configuration and verification](providers.md). Transient failures share one bounded retry budget, including long drafting; other job retries remain explicit. Output-limit failures and invalid structured output are reported, and failed reconciliation preserves the assembled sections.
 
-Analysis reports and drafts generate new documents. DOCX redline exports preserve the original package and add native tracked revisions to affected runs; non-DOCX sources use a generated document. Ambiguous or unavailable anchors appear in export notes with the full proposal. Actual Word-host and visual rendering verification remain open. CSV cells are escaped against spreadsheet formula execution. Model content is not trusted HTML.
+Analysis reports and drafts generate new documents. DOCX redline exports preserve the original package and add native tracked revisions to affected runs; non-DOCX sources use a generated document. Ambiguous or unavailable anchors appear in export notes with the full proposal. Sample contract reports, tracked variants and conversation exports have been rendered and inspected; live Microsoft Word-host verification remains open. See [Word editing behavior and verification](word-addin.md). CSV cells are escaped against spreadsheet formula execution. Model content is not trusted HTML.
 
 ## Testing
 

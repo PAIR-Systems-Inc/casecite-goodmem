@@ -4,6 +4,8 @@ import s from '../styles/pane.module.css';
 interface IssueCardProps {
   issue: ContractIssue;
   busy: boolean;
+  disabled?: boolean;
+  applied?: boolean;
   onSelect: (issue: ContractIssue) => void;
   onApply: (issue: ContractIssue) => void;
 }
@@ -16,7 +18,7 @@ function severityClass(severity: string): string {
 }
 
 /** One review issue: what, why, the quoted passage, and the two document actions. */
-export function IssueCard({ issue, busy, onSelect, onApply }: IssueCardProps) {
+export function IssueCard({ issue, busy, disabled = false, applied = false, onSelect, onApply }: IssueCardProps) {
   const canLocate = Boolean(issue.matched_text) && issue.grounding === 'span';
   const canApply = canLocate && Boolean(issue.suggested_language);
   return (
@@ -40,12 +42,12 @@ export function IssueCard({ issue, busy, onSelect, onApply }: IssueCardProps) {
         </>
       )}
       <div className={s.row}>
-        <button type="button" className={s.secondary} disabled={!canLocate || busy} onClick={() => onSelect(issue)}>
+        <button type="button" className={s.secondary} disabled={!canLocate || busy || disabled} onClick={() => onSelect(issue)}>
           {busy ? <span className={s.spinner} /> : null}
           Select in document
         </button>
-        <button type="button" className={s.primary} disabled={!canApply || busy} onClick={() => onApply(issue)}>
-          Insert as tracked change
+        <button type="button" className={s.primary} disabled={!canApply || busy || disabled || applied} onClick={() => onApply(issue)}>
+          {applied ? 'Tracked change inserted' : 'Insert as tracked change'}
         </button>
       </div>
     </li>

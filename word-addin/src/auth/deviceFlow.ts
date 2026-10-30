@@ -48,6 +48,7 @@ export function nextInterval(current: number, status: string): number {
 export async function runDeviceFlow(client: ApiClient, options: DeviceFlowOptions): Promise<DeviceFlowResult> {
   const sleep = options.sleep ?? defaultSleep;
   const start = await client.startDeviceFlow();
+  if (options.signal?.aborted) throw new DeviceFlowError('cancelled');
   options.onCode(start);
 
   let interval = Math.max(1, start.interval || 5);
@@ -58,6 +59,7 @@ export async function runDeviceFlow(client: ApiClient, options: DeviceFlowOption
     if (options.signal?.aborted) throw new DeviceFlowError('cancelled');
 
     const result = await client.pollDeviceToken(start.device_code);
+    if (options.signal?.aborted) throw new DeviceFlowError('cancelled');
     switch (result.status) {
       case 'approved': {
         if (!result.access_token || !result.refresh_token || !result.user) {

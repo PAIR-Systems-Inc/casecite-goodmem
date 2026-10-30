@@ -201,7 +201,15 @@ function buildMarkSpans(
   const redlineSpans: MarkSpan[] = [];
   for (const edit of redlines) {
     if (edit.kind !== 'replace' || !edit.original_text) continue;
-    const located = locateQuote(text, normalizedText, edit.original_text);
+    const hasExactSpan = Number.isInteger(edit.span_start) && Number.isInteger(edit.span_end)
+      && edit.span_start >= 0 && edit.span_end > edit.span_start && edit.span_end <= text.length
+      && text.slice(edit.span_start, edit.span_end) === edit.original_text;
+    if (!hasExactSpan) {
+      const normalizedQuote = edit.original_text.replace(/\s+/g, ' ').trim();
+      const first = normalizedText.indexOf(normalizedQuote);
+      if (first >= 0 && normalizedText.indexOf(normalizedQuote, first + 1) >= 0) continue;
+    }
+    const located = hasExactSpan ? [edit.span_start, edit.span_end] : locateQuote(text, normalizedText, edit.original_text);
     if (located) {
       redlineSpans.push({ start: located[0], end: located[1], kind: 'redline', editRef: edit.ref });
     }

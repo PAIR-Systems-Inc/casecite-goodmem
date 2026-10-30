@@ -70,6 +70,24 @@ describe('contract paragraph presentation', () => {
     expect(screen.getByText('New schedule')).toBeInTheDocument();
   });
 
+  it('anchors a repeated clause to the validated server span', () => {
+    const quote = 'Payment is due in thirty days.';
+    const repeated = `😀 First agreement. ${quote}\n\nSecond agreement. ${quote}`;
+    const start = repeated.lastIndexOf(quote);
+    const { container } = render(<ContractTextViewer {...props} filename="agreement.pdf" text={repeated}
+      redlines={[{ ...edit(quote, 'Payment is due in sixty days.'), span_start: start, span_end: start + quote.length }]} />);
+    const paragraphs = container.querySelectorAll('p');
+    expect(paragraphs[0].querySelector('mark')).toBeNull();
+    expect(paragraphs[1].querySelector('mark')?.textContent).toBe(quote);
+  });
+
+  it('does not guess a repeated redline location after its source offsets become stale', () => {
+    const quote = 'Payment is due in thirty days.';
+    const { container } = render(<ContractTextViewer {...props} filename="agreement.pdf" text={`${quote}\n\n${quote}`}
+      redlines={[{ ...edit(quote, 'Changed.'), span_start: 5, span_end: 9 }]} />);
+    expect(container.querySelector('mark')).toBeNull();
+  });
+
   it('shows literal pipes, backslashes and HTML as cell text', () => {
     render(<ContractTextViewer {...props} filename="agreement.pdf" text={'| Value |\n| --- |\n| A\\|B and C\\\\D <script>alert(1)</script> |'} highlights={['|B']} />);
     const cell = screen.getByRole('cell');

@@ -38,6 +38,9 @@ func (s *Server) loadUser(ctx context.Context, id string) (User, error) {
 	}
 	u.MFAEnrollmentRequired = s.cfg.RequireMFA && u.HasPassword && !u.MFAEnabled
 	u.Permissions, err = s.rolePermissions(ctx, u.Role)
+	if err == nil {
+		err = s.restrictDemoUser(&u)
+	}
 	return u, err
 }
 func digest(s string) string { h := sha256.Sum256([]byte(s)); return hex.EncodeToString(h[:]) }
@@ -142,7 +145,7 @@ func (s *Server) register(q request) (any, error) {
 		return nil, err
 	}
 	var count int
-	if err = tx.QueryRowContext(q.r.Context(), "SELECT count(*) FROM cc_users").Scan(&count); err != nil {
+	if err = tx.QueryRowContext(q.r.Context(), `SELECT count(*) FROM cc_users WHERE id<>$1 OR email<>$2 OR role<>'viewer' OR password_hash<>''`, demoUserID, demoEmail).Scan(&count); err != nil {
 		return nil, err
 	}
 	role := "attorney"

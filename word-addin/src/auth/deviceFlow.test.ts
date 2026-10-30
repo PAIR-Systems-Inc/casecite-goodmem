@@ -101,4 +101,28 @@ describe('runDeviceFlow', () => {
     );
     expect((err as DeviceFlowError).reason).toBe('expired');
   });
+
+  it('ignores a code returned after cancellation', async () => {
+    const abort = new AbortController();
+    const { client, setTokens } = fakeClient([]);
+    vi.mocked(client.startDeviceFlow).mockImplementation(async () => {
+      abort.abort();
+      return START;
+    });
+    const onCode = vi.fn();
+    await expect(runDeviceFlow(client, { onCode, signal: abort.signal })).rejects.toMatchObject({ reason: 'cancelled' });
+    expect(onCode).not.toHaveBeenCalled();
+    expect(setTokens).not.toHaveBeenCalled();
+  });
+
+  it('does not install approved tokens when cancelled during the poll request', async () => {
+    const abort = new AbortController();
+    const { client, setTokens } = fakeClient([]);
+    vi.mocked(client.pollDeviceToken).mockImplementation(async () => {
+      abort.abort();
+      return { status: 'approved', access_token: 'late', refresh_token: 'late', user: { id: 'u', email: 'a@b.c', name: 'A', roles: [] } };
+    });
+    await expect(runDeviceFlow(client, { onCode: () => {}, sleep: async () => {}, signal: abort.signal })).rejects.toMatchObject({ reason: 'cancelled' });
+    expect(setTokens).not.toHaveBeenCalled();
+  });
 });

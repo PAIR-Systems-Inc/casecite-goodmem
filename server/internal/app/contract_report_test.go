@@ -58,6 +58,13 @@ func TestContractReportsRetainFindingsAndGrounding(t *testing.T) {
 	if !strings.Contains(parts["word/document.xml"], "<w:tblHeader/>") || !strings.Contains(parts["word/styles.xml"], `w:styleId="Heading1"`) {
 		t.Fatal("report lost table headers or heading styles")
 	}
+	redlined, err := redlineDOCX(docx, []M{{"ref": "terms", "original_text": "Invoices are payable within 30 days.", "proposed_text": "Invoices are payable within 45 days."}}, "CaseCite reviewer", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Count(revisionView(t, zipParts(t, redlined.Content)["word/document.xml"], true), aiReviewNotice) != 1 {
+		t.Fatal("redline export duplicated the existing review notice")
+	}
 	// Optional local artifacts for rendering with an independent office engine.
 	// CI uses the structural/content assertions above and does not need LibreOffice.
 	if dir := os.Getenv("PARITY_ARTIFACT_DIR"); dir != "" {
@@ -65,10 +72,6 @@ func TestContractReportsRetainFindingsAndGrounding(t *testing.T) {
 			t.Fatal(err)
 		}
 		if err := os.WriteFile(filepath.Join(dir, "contract-report.docx"), docx, 0600); err != nil {
-			t.Fatal(err)
-		}
-		redlined, err := redlineDOCX(docx, []M{{"ref": "terms", "original_text": "Invoices are payable within 30 days.", "proposed_text": "Invoices are payable within 45 days."}}, "CaseCite reviewer", true)
-		if err != nil {
 			t.Fatal(err)
 		}
 		if err := os.WriteFile(filepath.Join(dir, "contract-redlines.docx"), redlined.Content, 0600); err != nil {

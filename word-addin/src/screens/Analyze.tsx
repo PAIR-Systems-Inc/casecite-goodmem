@@ -30,7 +30,7 @@ export function Analyze() {
             disabled={running}
           />
         </div>
-        <button type="button" className={s.primary} onClick={analyze} disabled={running}>
+        <button type="button" className={s.primary} onClick={analyze} disabled={running || !!analysis.busyRef}>
           {running ? <span className={s.spinner} /> : null}
           {analysis.status === 'reading'
             ? 'Reading document…'
@@ -75,6 +75,8 @@ export function Analyze() {
                     key={issue.ref}
                     issue={issue}
                     busy={analysis.busyRef === issue.ref}
+                    disabled={!!analysis.busyRef || running}
+                    applied={analysis.appliedRefs.includes(issue.ref)}
                     onSelect={selectIssue}
                     onApply={applyRewrite}
                   />

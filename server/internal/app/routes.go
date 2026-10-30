@@ -10,11 +10,12 @@ func (s *Server) routes() {
 	})
 	s.api("GET /api/v1/config", true, func(q request) (any, error) {
 		var count int
-		err := s.db.QueryRowContext(q.r.Context(), `SELECT count(*) FROM cc_users`).Scan(&count)
+		err := s.db.QueryRowContext(q.r.Context(), `SELECT count(*) FROM cc_users WHERE id<>$1 OR email<>$2 OR role<>'viewer' OR password_hash<>''`, demoUserID, demoEmail).Scan(&count)
 		return M{"setup_required": count == 0, "edition": "CaseCite GoodMem", "self_registration": false}, err
 	})
 	s.api("POST /api/v1/auth/register", true, s.register)
 	s.api("POST /api/v1/auth/login", true, s.login)
+	s.api("POST /api/v1/auth/demo/login", true, s.demoLogin)
 	s.api("GET /api/v1/auth/me", false, func(q request) (any, error) { return q.user.public(), nil })
 	s.api("POST /api/v1/auth/logout", false, s.logout)
 	s.api("POST /api/v1/auth/logout/all", false, s.logout)

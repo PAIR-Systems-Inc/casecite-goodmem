@@ -21,6 +21,12 @@ import (
 )
 
 func main() {
+	wordFixture := map[string]string{}
+	if data, err := os.ReadFile("/fixtures/word_contract.json"); err == nil {
+		if err := json.Unmarshal(data, &wordFixture); err != nil {
+			log.Fatal(err)
+		}
+	}
 	// Clio Manage protocol fixture. OAuth consent is simulated in the browser;
 	// token exchange, listing and download use this real HTTP server.
 	http.HandleFunc("/oauth/token", func(w http.ResponseWriter, r *http.Request) {
@@ -269,6 +275,14 @@ func main() {
 				out = map[string]any{"title": "Workflow memo", "text": "The agreement requires 30 days of notice. Counsel approved this draft after reviewing the extracted terms."}
 			}
 			switch {
+			case strings.Contains(system, "You are a contract analysis expert") && strings.Contains(prompt, wordFixture["title"]) && wordFixture["title"] != "":
+				out = map[string]any{"summary": "Review the complete indemnity clause and its notice requirements.", "risks": []any{}, "missing_clauses": []any{}}
+			case strings.Contains(system, "Identify every issue") && strings.Contains(prompt, wordFixture["title"]) && wordFixture["title"] != "":
+				out = map[string]any{"issues": []any{map[string]any{"title": "Review indemnity scope", "severity": "major", "why": "Confirm the loss and notice boundaries.", "quote": wordFixture["quote"], "suggested_direction": wordFixture["replacement"]}}}
+			case strings.Contains(system, "Assess each finding") && strings.Contains(prompt, "Review indemnity scope"):
+				out = map[string]any{"issues": []any{map[string]any{"ref": "ai-0", "title": "Review indemnity scope", "status": "unusual", "severity": "major", "why": "Confirm the loss and notice boundaries.", "suggested_language": wordFixture["replacement"]}}}
+			case strings.Contains(system, "Extract concise key terms") && strings.Contains(prompt, wordFixture["title"]) && wordFixture["title"] != "":
+				out = map[string]any{"fields": map[string]any{"indemnification": map[string]any{"value": "Direct losses, with notice and defense participation.", "quote": wordFixture["quote"], "not_found": false}}}
 			case strings.HasPrefix(system, "Classify the user's message"):
 				intent := "ask"
 				if strings.Contains(prompt, "Make a strategy") {

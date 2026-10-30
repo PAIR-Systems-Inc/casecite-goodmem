@@ -7,6 +7,7 @@ import { exerciseChat } from './chat';
 import { exerciseConnectors } from './connectors';
 import { exerciseAdministration } from './administration';
 import { exerciseDocumentFormats } from './document-formats';
+import { exerciseWordAddin } from './word-addin';
 
 // Real Go API and GoodMem; the external connector consent page is simulated.
 // scripts/integration.sh provisions disposable databases and a test provider.
@@ -271,6 +272,7 @@ test('original UI manages matters, GoodMem documents and cited tabular review', 
   const manifest = await request.get('/word-addin/manifest.xml');
   expect(manifest.status()).toBe(200);
   expect(await manifest.text()).toContain('/word-addin/');
+  await exerciseWordAddin(page, request, headers, testInfo);
   await header.getByRole('button', { name: 'Log out' }).click();
   await expect(header.getByRole('button', { name: /Sign In/i })).toBeVisible();
 });

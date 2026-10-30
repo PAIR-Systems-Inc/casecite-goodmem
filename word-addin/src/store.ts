@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ApiClient, SessionExpiredError, type Tokens, webOrigin } from './api/client';
+import { apiBase, ApiClient, SessionExpiredError, type Tokens, webOrigin } from './api/client';
 import type {
   ChatResponse,
   ContractAnalysisResult,
@@ -38,6 +38,7 @@ export interface AnalysisState {
   representing: string;
   /** Issue ref whose select/apply is in flight. */
   busyRef: string | null;
+  appliedRefs: string[];
   /** Last document action outcome, shown under the list. */
   note: string;
 }
@@ -86,6 +87,11 @@ export interface AddinState {
 
 const store = createStore();
 let signInAbort: AbortController | null = null;
+let storageWrites = Promise.resolve();
+function persist(write: () => Promise<void>): Promise<void> {
+  storageWrites = storageWrites.then(write, write);
+  return storageWrites;
+}
 
 const initialSignIn: SignInState = { status: 'idle', code: null, error: '' };
 const initialAnalysis: AnalysisState = {
@@ -94,6 +100,7 @@ const initialAnalysis: AnalysisState = {
   error: '',
   representing: '',
   busyRef: null,
+  appliedRefs: [],
   note: '',
 };
 const initialResearch: ResearchState = {
@@ -131,33 +138,51 @@ export function approvalUrl(serverUrl: string, code: DeviceStart): string {
 }
 
 export const useAddinStore = create<AddinState>((set, get) => {
+  let researchVersion = 0;
+
+  function clearSession(error = ''): void {
+    signInAbort?.abort();
+    signInAbort = null;
+    researchVersion++;
+    set({
+      session: null, client: get().serverUrl ? makeClient(get().serverUrl, null) : null,
+      matters: [], mattersError: '', matterId: null, screen: 'settings',
+      signIn: error ? { status: 'error', code: null, error } : initialSignIn,
+      analysis: initialAnalysis, research: initialResearch,
+    });
+    void persist(async () => {
+      await store.remove(SESSION_KEY);
+      await store.remove(MATTER_KEY);
+    });
+  }
+
   function makeClient(serverUrl: string, tokens: Tokens | null): ApiClient {
-    return new ApiClient({
+    const client = new ApiClient({
       serverUrl,
       tokens,
       onTokens: (next) => {
+        // A refresh/logout from a former server or session cannot alter the
+        // current account, including its persisted refresh token.
+        if (get().client !== client) return;
         const { session } = get();
         if (!next) {
-          if (session) {
-            set({ session: null });
-            void store.remove(SESSION_KEY);
-          }
+          if (session) clearSession('Your CaseCite session has ended. Sign in again.');
           return;
         }
         if (session) {
           const updated = { ...session, accessToken: next.accessToken, refreshToken: next.refreshToken };
           set({ session: updated });
-          void store.set(SESSION_KEY, JSON.stringify(updated));
+          void persist(() => store.set(SESSION_KEY, JSON.stringify(updated)));
         }
       },
     });
+    return client;
   }
 
   /** A failed call that means "signed out" clears the session; everything else is reported. */
   function handleFailure(e: unknown, fallback: string): string {
     if (e instanceof SessionExpiredError) {
-      set({ session: null, client: makeClient(get().serverUrl, null) });
-      void store.remove(SESSION_KEY);
+      clearSession(message(e, 'Sign in again.'));
     }
     return message(e, fallback);
   }
@@ -177,10 +202,14 @@ export const useAddinStore = create<AddinState>((set, get) => {
 
     init: async () => {
       if (get().booted) return;
-      const session = await readJson<StoredSession>(store, SESSION_KEY);
+      const remembered = await readJson<StoredSession>(store, SESSION_KEY);
       const embeddedOrigin = typeof window !== 'undefined' && window.location.pathname.startsWith('/word-addin/') ? window.location.origin : '';
-      const savedUrl = (await store.get(SERVER_URL_KEY)) || session?.serverUrl || embeddedOrigin;
-      const matterId = (await store.get(MATTER_KEY)) || null;
+      const savedUrl = (await store.get(SERVER_URL_KEY)) || remembered?.serverUrl || embeddedOrigin;
+      const session = remembered && typeof remembered.serverUrl === 'string'
+        && typeof remembered.accessToken === 'string' && typeof remembered.refreshToken === 'string'
+        && remembered.user && apiBase(remembered.serverUrl) === apiBase(savedUrl) ? remembered : null;
+      const matterId = session ? (await store.get(MATTER_KEY)) || null : null;
+      if (remembered && !session) await persist(() => store.remove(SESSION_KEY));
       const tokens = session ? { accessToken: session.accessToken, refreshToken: session.refreshToken } : null;
       set({
         booted: true,
@@ -197,14 +226,10 @@ export const useAddinStore = create<AddinState>((set, get) => {
 
     setServerUrl: async (url) => {
       const serverUrl = url.trim().replace(/\/+$/, '');
-      const changed = serverUrl !== get().serverUrl;
+      if (serverUrl === get().serverUrl) return;
+      clearSession();
       set({ serverUrl, client: serverUrl ? makeClient(serverUrl, null) : null });
-      await store.set(SERVER_URL_KEY, serverUrl);
-      if (changed && get().session) {
-        // A session belongs to one server.
-        set({ session: null, matters: [], matterId: null });
-        await store.remove(SESSION_KEY);
-      }
+      await persist(() => store.set(SERVER_URL_KEY, serverUrl));
     },
 
     startSignIn: async () => {
@@ -221,10 +246,12 @@ export const useAddinStore = create<AddinState>((set, get) => {
         const { tokens, user } = await runDeviceFlow(client, {
           signal: abort.signal,
           onCode: (code) => {
+            if (abort.signal.aborted || get().client !== client) return;
             set({ signIn: { status: 'waiting', code, error: '' } });
             openApprovalPage(approvalUrl(serverUrl, code));
           },
         });
+        if (abort.signal.aborted || get().client !== client) return;
         const session: StoredSession = {
           serverUrl,
           accessToken: tokens.accessToken,
@@ -232,9 +259,11 @@ export const useAddinStore = create<AddinState>((set, get) => {
           user,
         };
         set({ session, signIn: initialSignIn, screen: 'analyze' });
-        await store.set(SESSION_KEY, JSON.stringify(session));
+        await persist(() => store.set(SESSION_KEY, JSON.stringify(session)));
+        if (abort.signal.aborted || get().client !== client) return;
         await get().loadMatters();
       } catch (e: unknown) {
+        if (signInAbort !== abort || get().client !== client) return;
         if (e instanceof DeviceFlowError && e.reason === 'cancelled') {
           set({ signIn: initialSignIn });
           return;
@@ -253,9 +282,9 @@ export const useAddinStore = create<AddinState>((set, get) => {
 
     signOut: async () => {
       const { client } = get();
+      clearSession();
       if (client) await client.logout();
-      set({ session: null, matters: [], screen: 'settings', analysis: initialAnalysis, research: initialResearch });
-      await store.remove(SESSION_KEY);
+      await storageWrites;
     },
 
     loadMatters: async () => {
@@ -263,53 +292,66 @@ export const useAddinStore = create<AddinState>((set, get) => {
       if (!client || !session) return;
       try {
         const matters = await client.listMatters();
+        if (get().client !== client) return;
         const { matterId } = get();
+        if (matterId && !matters.some(m => m.id === matterId)) await get().setMatter(null);
+        if (get().client !== client) return;
         set({
           matters,
           mattersError: '',
-          matterId: matterId && matters.some((m) => m.id === matterId) ? matterId : null,
         });
       } catch (e: unknown) {
-        set({ matters: [], mattersError: handleFailure(e, 'Could not load matters.') });
+        if (get().client !== client) return;
+        const error = handleFailure(e, 'Could not load matters.');
+        if (get().client === client) set({ matters: [], mattersError: error });
       }
     },
 
     setMatter: async (matterId) => {
-      set({ matterId });
-      if (matterId) await store.set(MATTER_KEY, matterId);
-      else await store.remove(MATTER_KEY);
+      if (matterId === get().matterId) return;
+      researchVersion++;
+      set({ matterId, research: { ...initialResearch, question: get().research.question } });
+      await persist(() => matterId ? store.set(MATTER_KEY, matterId) : store.remove(MATTER_KEY));
     },
 
     setRepresenting: (value) => set({ analysis: { ...get().analysis, representing: value } }),
 
     analyze: async () => {
       const { client, session, analysis } = get();
-      if (!client || !session) return;
+      if (!client || !session || analysis.busyRef || analysis.status === 'reading' || analysis.status === 'running') return;
       set({ analysis: { ...analysis, status: 'reading', error: '', note: '' } });
       let text = '';
       try {
         text = await readDocumentText();
       } catch (e: unknown) {
+        if (get().client !== client) return;
         set({ analysis: { ...get().analysis, status: 'error', error: message(e, 'Could not read the document.') } });
         return;
       }
+      if (get().client !== client) return;
       if (!text.trim()) {
         set({ analysis: { ...get().analysis, status: 'error', error: 'The document is empty.' } });
         return;
       }
       set({ analysis: { ...get().analysis, status: 'running' } });
       try {
-        const result = await client.analyzeText(text, get().analysis.representing || undefined);
-        set({ analysis: { ...get().analysis, status: 'done', result } });
+        const result = await client.analyzeText(text, analysis.representing || undefined);
+        if (get().client !== client) return;
+        set({ analysis: { ...get().analysis, status: 'done', result, appliedRefs: [] } });
       } catch (e: unknown) {
-        set({ analysis: { ...get().analysis, status: 'error', error: handleFailure(e, 'Analysis failed.') } });
+        if (get().client !== client) return;
+        const error = handleFailure(e, 'Analysis failed.');
+        if (get().client === client) set({ analysis: { ...get().analysis, status: 'error', error } });
       }
     },
 
     selectIssue: async (issue) => {
+      const { client } = get();
+      if (get().analysis.busyRef) return;
       set({ analysis: { ...get().analysis, busyRef: issue.ref, note: '' } });
       try {
-        const hit = await selectQuote(issue.matched_text);
+        const hit = await selectQuote(get().analysis.appliedRefs.includes(issue.ref) ? issue.suggested_language : issue.matched_text);
+        if (get().client !== client) return;
         set({
           analysis: {
             ...get().analysis,
@@ -318,32 +360,44 @@ export const useAddinStore = create<AddinState>((set, get) => {
           },
         });
       } catch (e: unknown) {
+        if (get().client !== client) return;
         set({ analysis: { ...get().analysis, busyRef: null, note: message(e, 'Could not select the passage.') } });
       }
     },
 
     applyRewrite: async (issue) => {
-      if (!issue.suggested_language) return;
+      const { client } = get();
+      if (!issue.suggested_language || get().analysis.busyRef || get().analysis.appliedRefs.includes(issue.ref) || issue.grounding !== 'span') return;
       set({ analysis: { ...get().analysis, busyRef: issue.ref, note: '' } });
       try {
         const hit = await replaceQuoteTracked(issue.matched_text, issue.suggested_language);
+        if (get().client !== client) return;
         set({
           analysis: {
             ...get().analysis,
             busyRef: null,
+            appliedRefs: hit.found ? [...get().analysis.appliedRefs, issue.ref] : get().analysis.appliedRefs,
             note: hit.found
-              ? `Inserted as a tracked change. ${AI_REVIEW_NOTICE}`
-              : 'That passage was not found in the document, so nothing was changed.',
+              ? `${hit.warning || 'Inserted as a tracked change.'} ${AI_REVIEW_NOTICE}`
+              : hit.reason === 'ambiguous' || hit.reason === 'too_many_matches'
+                ? 'More than one passage could match. Select the complete intended passage in Word, then try again.'
+                : hit.reason === 'changed'
+                  ? 'The passage changed while it was being located. Review the current document and analyze it again.'
+                  : 'The complete quoted passage was not found in the document, so nothing was changed.',
           },
         });
       } catch (e: unknown) {
+        if (get().client !== client) return;
         set({ analysis: { ...get().analysis, busyRef: null, note: message(e, 'Could not insert the rewrite.') } });
       }
     },
 
     selectKeyTerm: async (term) => {
+      const { client } = get();
+      if (get().analysis.busyRef) return;
       try {
         const hit = await selectQuote(term.quote);
+        if (get().client !== client) return;
         set({
           analysis: {
             ...get().analysis,
@@ -351,6 +405,7 @@ export const useAddinStore = create<AddinState>((set, get) => {
           },
         });
       } catch (e: unknown) {
+        if (get().client !== client) return;
         set({ analysis: { ...get().analysis, note: message(e, 'Could not select the passage.') } });
       }
     },
@@ -359,14 +414,17 @@ export const useAddinStore = create<AddinState>((set, get) => {
 
     ask: async () => {
       const { client, session, research, matterId } = get();
-      if (!client || !session) return;
+      if (!client || !session || research.status === 'running' || research.inserting) return;
       const question = research.question.trim();
       if (!question) return;
-      set({ research: { ...research, status: 'running', error: '', note: '' } });
+      const version = ++researchVersion;
+      const current = () => get().client === client && researchVersion === version;
+      set({ research: { ...research, status: 'running', result: null, error: '', note: '' } });
       try {
         let documentIds: string[] | undefined;
         if (matterId) {
           const docs = await client.listMatterDocuments(matterId);
+          if (!current()) return;
           documentIds = docs.map((d) => d.id);
           if (documentIds.length === 0) {
             set({
@@ -380,20 +438,29 @@ export const useAddinStore = create<AddinState>((set, get) => {
           }
         }
         const result = await client.research(question, documentIds);
+        if (!current()) return;
         set({ research: { ...get().research, status: 'done', result } });
       } catch (e: unknown) {
-        set({ research: { ...get().research, status: 'error', error: handleFailure(e, 'Research failed.') } });
+        if (!current()) return;
+        const error = handleFailure(e, 'Research failed.');
+        if (current()) set({ research: { ...get().research, status: 'error', error } });
       }
     },
 
     insertAnswer: async () => {
-      const { research } = get();
-      if (!research.result) return;
+      const { client, research } = get();
+      const version = researchVersion;
+      const current = () => get().client === client && researchVersion === version;
+      if (!research.result || research.inserting) return;
       set({ research: { ...research, inserting: true, note: '' } });
       try {
-        await insertAnswerWithFootnotes(research.result.content, research.result.citations, AI_REVIEW_NOTICE);
-        set({ research: { ...get().research, inserting: false, note: 'Inserted at the cursor with the sources as footnotes.' } });
+        const mode = await insertAnswerWithFootnotes(research.result.content, research.result.citations, AI_REVIEW_NOTICE);
+        if (!current()) return;
+        set({ research: { ...get().research, inserting: false, note: mode === 'sources'
+          ? 'Inserted at the cursor with a Sources list. This Word version does not support inserting footnotes.'
+          : mode === 'footnotes' ? 'Inserted at the cursor with the sources as footnotes.' : 'Inserted at the cursor.' } });
       } catch (e: unknown) {
+        if (!current()) return;
         set({ research: { ...get().research, inserting: false, note: message(e, 'Could not insert the answer.') } });
       }
     },

@@ -7,4 +7,5 @@ COPY --from=build /provider /provider
 COPY server/internal/app/testdata/legal_tools.json /fixtures/legal_tools.json
 COPY server/internal/app/testdata/judge.json /fixtures/judge.json
 COPY server/internal/app/testdata/scanned_notice.pdf /fixtures/scanned_notice.pdf
+COPY server/internal/app/testdata/word_contract.json /fixtures/word_contract.json
 ENTRYPOINT ["/provider"]

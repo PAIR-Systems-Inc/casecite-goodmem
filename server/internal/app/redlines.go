@@ -483,7 +483,7 @@ func redlineDOCX(source []byte, edits []M, author string, includeNotice ...bool)
 			appendix.WriteString(paragraph("Proposed: " + str(e, "proposed_text")))
 		}
 	}
-	if len(includeNotice) > 0 && includeNotice[0] {
+	if len(includeNotice) > 0 && includeNotice[0] && !strings.Contains(wordVisibleText(check, nil, 0), aiReviewNotice) {
 		appendix.WriteString(paragraph(aiReviewNotice))
 	}
 	if appendix.Len() > 0 {

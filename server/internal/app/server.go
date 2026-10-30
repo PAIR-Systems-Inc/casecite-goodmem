@@ -291,7 +291,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		limit := 300
 		window := time.Minute
 		bucket := "request:"
-		if r.URL.Path == "/api/v1/auth/login" || r.URL.Path == "/api/v1/auth/register" {
+		if r.URL.Path == "/api/v1/auth/login" || r.URL.Path == "/api/v1/auth/register" || r.URL.Path == "/api/v1/auth/demo/login" {
 			limit = 10
 			window = 15 * time.Minute
 			bucket = "signin:"
