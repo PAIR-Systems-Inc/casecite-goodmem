@@ -7,16 +7,15 @@ export function AuthOverlay() {
 
   return (
     <div className={s.overlay}>
-      <div className={s.iconCircle}>
-        <Icon name="Lock" size={36} className={s.iconGold} />
-      </div>
+      <img src="/pairsys-mark.svg" alt="PAIR Systems" className={s.welcomeMark} width="80" height="80" />
+      <p className={s.eyebrow}>A PRIVATE LEGAL WORKSPACE</p>
       <h2 className={s.heading}>
         Welcome to CaseCite
       </h2>
+      <p className={s.byline}>by PairSys</p>
       <p className={s.subtext}>
-        CaseCite is a legal research platform. Upload your documents, ask questions
-        across them, and research verified case law and judges — all on
-        infrastructure you control, using your own AI keys.
+        Research with context. Review with confidence. Bring your documents,
+        case law and drafting together in one workspace, on infrastructure you control.
       </p>
       <div className={s.buttonGroup}>
         <button

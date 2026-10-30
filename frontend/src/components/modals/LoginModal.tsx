@@ -28,7 +28,7 @@ function LoginModal() {
             </div>
             <div>
               <h2 id={`${id}-title`} className={s.modalTitle}>Sign In</h2>
-              <p className={s.modalSubtitle}>Welcome back</p>
+              <p className={s.modalSubtitle}>CaseCite by PairSys</p>
             </div>
           </div>
           <button className={s.modalClose} onClick={() => setShowLoginModal(false)} aria-label="Close"><Icon name="X" size={20} /></button>

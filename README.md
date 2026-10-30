@@ -32,6 +32,8 @@ See the [parity scope](docs/parity/README.md), [source comparisons and verificat
 
 ## Use an existing GoodMem installation
 
+For a separate instance on this workstation, see [local evaluation with GPU OCR](docs/local-evaluation.md).
+
 Build tools: Go 1.26 and Node 24. The resulting executable needs neither Node nor Go installed on the runtime host.
 
 ```bash

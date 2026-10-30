@@ -334,7 +334,12 @@ func decodeRetrieval(r io.Reader, allowed map[string]bool) ([]Hit, error) {
 		if v, ok := m["status"]; ok {
 			status := object(v)
 			code := str(status, "code")
-			if code != "" && code != "OK" {
+			details := object(status["details"])
+			// The rerank-only postprocessor reports that its optional LLM
+			// summary is disabled before emitting successful ranked results.
+			// CaseCite generates its own answer; all other errors still fail.
+			optionalSummary := code == "FEATURE_DISABLED" && str(details, "feature") == "summarization" && str(details, "required_param") == "llm_id"
+			if code != "" && code != "OK" && !optionalSummary {
 				return nil, errors.New("GoodMem retrieval reported " + code)
 			}
 		}

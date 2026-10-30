@@ -2,6 +2,8 @@
 .env
 .env.local
 .env.production
+.local-eval/
+/casecite-provisioning/
 
 # Data directories
 data/

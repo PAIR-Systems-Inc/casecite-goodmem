@@ -140,3 +140,26 @@ func TestGoodMemInterleavedStagesRetainOwnProvenance(t *testing.T) {
 		t.Fatal(hits, err)
 	}
 }
+
+func TestGoodMemRerankWithoutOptionalSummary(t *testing.T) {
+	// Captured event shape from the pinned GoodMem server with a Voyage
+	// reranker and no llm_id: this notice precedes a successful rerank set.
+	stream := `{"status":{"code":"FEATURE_DISABLED","message":"Abstract reply generation disabled: no LLM configured.","details":{"feature":"summarization","required_param":"llm_id"}}}
+{"resultSetBoundary":{"resultSetId":"ranked","kind":"BEGIN","stageName":"rerank","expectedItems":1}}
+{"retrievedItem":{"chunk":{"resultSetId":"ranked","relevanceScore":0.83,"chunk":{"chunkId":"a","memoryId":"m","chunkText":"Notice is 30 days."}}}}
+{"resultSetBoundary":{"resultSetId":"ranked","kind":"END","stageName":""}}
+`
+	hits, err := decodeRetrieval(strings.NewReader(stream), map[string]bool{"m": true})
+	if err != nil || len(hits) != 1 || hits[0].Stage != "rerank" || hits[0].Score != 0.83 || hits[0].Text != "Notice is 30 days." {
+		t.Fatal(hits, err)
+	}
+	for _, status := range []string{
+		`{"code":"FEATURE_DISABLED"}`,
+		`{"code":"FEATURE_DISABLED","details":{"feature":"reranking","required_param":"reranker_id"}}`,
+		`{"code":"PERMISSION_DENIED","details":{"feature":"summarization","required_param":"llm_id"}}`,
+	} {
+		if _, err := decodeRetrieval(strings.NewReader(`{"status":`+status+`}`), nil); err == nil {
+			t.Fatalf("retrieval error must not be ignored: %s", status)
+		}
+	}
+}
