@@ -24,6 +24,12 @@ cleanup() {
 }
 trap cleanup EXIT
 export CASECITE_IMAGE="$image" CASECITE_INSTALL_DIR="$state"
+# The installer deliberately uses --no-pull to keep the locally built candidate.
+# Preload its database/server dependencies on a clean runner before testing that
+# cached-image path. Read the pins from the real Compose file, not a second list.
+DB_ADMIN_PASSWORD=fixture CASECITE_DB_PASSWORD=fixture GOODMEM_DB_PASSWORD=fixture \
+  SECRET_KEY=fixture REGISTRATION_BOOTSTRAP_TOKEN=fixture \
+  docker compose --env-file /dev/null -f docker-compose.yml pull postgres goodmem
 # The deterministic provider joins the disposable project's private network;
 # it publishes no host port and requires neither paid APIs nor a local GPU.
 docker network create --label "com.docker.compose.project=$project" --label com.docker.compose.network=default --label "ai.pairsys.casecite.install-dir=$state" "${project}_default" >/dev/null
