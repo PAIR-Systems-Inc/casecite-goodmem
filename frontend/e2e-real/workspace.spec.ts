@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { exerciseLegalTools } from './legal-tools';
 
 // No page.route mocks: this suite exercises the built Go image and GoodMem.
 // scripts/integration.sh provisions disposable databases and a test provider.
@@ -250,6 +251,8 @@ test('original UI manages matters, GoodMem documents and cited tabular review', 
   await deleteResearch.getByRole('button', { name: 'Delete', exact: true }).click();
   await expect(researchAnswer).toBeHidden();
   await page.setViewportSize({ width: 1280, height: 720 });
+
+  await exerciseLegalTools(page, testInfo);
 
   const manifest = await request.get('/word-addin/manifest.xml');
   expect(manifest.status()).toBe(200);

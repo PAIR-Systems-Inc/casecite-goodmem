@@ -1,0 +1,120 @@
+{
+  "opinion_types": {
+    "010combined": "Opinion",
+    "015unamimous": "Unanimous opinion",
+    "020lead": "Lead opinion",
+    "025plurality": "Plurality opinion",
+    "030concurrence": "Concurrence",
+    "035concurrenceinpart": "Concurrence in part",
+    "040dissent": "Dissent",
+    "050addendum": "Addendum",
+    "060remittitur": "Remittitur",
+    "070rehearing": "Rehearing",
+    "080onthemerits": "On the merits",
+    "090onmotiontostrike": "On motion to strike"
+  },
+  "jurisdictions": {
+    "federal": [
+      "scotus",
+      "ca1",
+      "ca2",
+      "ca3",
+      "ca4",
+      "ca5",
+      "ca6",
+      "ca7",
+      "ca8",
+      "ca9",
+      "ca10",
+      "ca11",
+      "cadc",
+      "cafc"
+    ],
+    "scotus": [
+      "scotus"
+    ],
+    "supreme_court": [
+      "scotus"
+    ],
+    "ninth_circuit": [
+      "ca9"
+    ],
+    "ca9": [
+      "ca9"
+    ],
+    "second_circuit": [
+      "ca2"
+    ],
+    "ca2": [
+      "ca2"
+    ],
+    "dc_circuit": [
+      "cadc"
+    ],
+    "cadc": [
+      "cadc"
+    ],
+    "federal_circuit": [
+      "cafc"
+    ],
+    "california": [
+      "cal",
+      "calctapp"
+    ],
+    "new_york": [
+      "ny",
+      "nyappdiv",
+      "nysupct"
+    ],
+    "texas": [
+      "tex",
+      "texapp",
+      "texcrimapp"
+    ],
+    "florida": [
+      "fla",
+      "flaapp"
+    ],
+    "immigration": [
+      "bia"
+    ]
+  },
+  "reporter_ranks": [
+    {
+      "pattern": "\\bU\\.S\\.\\s+\\d",
+      "rank": 0
+    },
+    {
+      "pattern": "\\bF\\.\\s?(?:2d|3d|4th)\\s+\\d",
+      "rank": 1
+    },
+    {
+      "pattern": "\\bF\\.\\s+\\d",
+      "rank": 2
+    },
+    {
+      "pattern": "\\bS\\.\\s?Ct\\.\\s+\\d",
+      "rank": 3
+    },
+    {
+      "pattern": "\\bF\\.\\s?Supp\\.\\s?(?:2d|3d)?\\s+\\d",
+      "rank": 4
+    },
+    {
+      "pattern": "\\bB\\.R\\.\\s+\\d",
+      "rank": 5
+    },
+    {
+      "pattern": "\\bL\\.\\s?Ed\\.\\s?(?:2d)?\\s+\\d",
+      "rank": 8
+    },
+    {
+      "pattern": "\\bF\\.\\s?App'?x\\.?\\s+\\d",
+      "rank": 9
+    },
+    {
+      "pattern": "\\b(?:WL|LEXIS|U\\.S\\.L\\.W\\.)\\b",
+      "rank": 10
+    }
+  ]
+}

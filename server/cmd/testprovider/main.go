@@ -9,10 +9,66 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 )
 
 func main() {
+	// The browser suite calls the Go application's real CourtListener adapter.
+	// Its upstream is controlled data from the Python parity oracle, not a live
+	// legal database or a browser network interception.
+	if raw, err := os.ReadFile("/fixtures/legal_tools.json"); err == nil {
+		var fixture struct {
+			Provider map[string]map[string]any `json:"provider"`
+		}
+		if err = json.Unmarshal(raw, &fixture); err != nil {
+			log.Fatal(err)
+		}
+		http.HandleFunc("/api/rest/v4/", func(w http.ResponseWriter, r *http.Request) {
+			if r.Header.Get("Authorization") != "Token test-court-only" {
+				w.WriteHeader(403)
+				return
+			}
+			path := strings.TrimPrefix(r.URL.Path, "/api/rest/v4")
+			params := r.URL.Query()
+			if path == "/search/" {
+				if params.Get("q") == "upstream-failure" {
+					w.WriteHeader(503)
+					return
+				}
+				if after := params.Get("filed_after"); len(after) >= 4 {
+					year, _ := strconv.Atoi(after[:4])
+					write(w, map[string]any{"count": map[int]int{2020: 100, 2021: 120, 2022: 150, 2023: 160}[year]})
+					return
+				}
+				if strings.HasPrefix(params.Get("q"), "cites:") {
+					write(w, map[string]any{"results": []any{map[string]any{"cluster_id": 88, "caseName": "Later v. Notice", "citation": []string{"101 U.S. 2"}, "court": "Court of Appeals", "dateFiled": "2023-01-01", "absolute_url": "/opinion/88/later/", "opinions": []any{map[string]any{"id": 88, "snippet": "We followed <mark>100 U.S. 20</mark> on the notice requirement."}}}}})
+					return
+				}
+				key := map[string]string{"o": "search_opinions", "d": "search_dockets", "oa": "search_audio"}[params.Get("type")]
+				// Copy before adapting pagination; concurrent requests share fixtures.
+				data := map[string]any{}
+				for k, v := range fixture.Provider[key] {
+					data[k] = v
+				}
+				if key == "search_opinions" {
+					data["count"] = 2
+					data["next"] = "http://provider:8080/api/rest/v4/search/?q=notice&type=o&cursor=next"
+					if params.Get("cursor") != "" {
+						data["next"] = nil
+					}
+				}
+				write(w, data)
+				return
+			}
+			if data, ok := fixture.Provider[path]; ok {
+				write(w, data)
+				return
+			}
+			w.WriteHeader(404)
+		})
+	}
 	http.HandleFunc("/v1/embeddings", func(w http.ResponseWriter, r *http.Request) {
 		var in struct {
 			Input any `json:"input"`

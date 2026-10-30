@@ -146,7 +146,7 @@ return ({
   loadPrecedentCase: async (id) => {
     set({ caseLoading: true, selectedCase: null });
     try {
-      const response = await api.authFetch(`${API_BASE_URL}/tools/cases/${id}`, {
+      const response = await api.authFetch(`${API_BASE_URL}/tools/cases/${id}?kind=cluster`, {
         method: 'GET', headers: { 'Content-Type': 'application/json' },
       });
       if (!response.ok) {
@@ -250,7 +250,7 @@ return ({
         set({ toolResult: data });
       }
 
-      if (data.next_cursor) set({ nextCursor: data.next_cursor });
+      set({ nextCursor: data.next_cursor || null });
       persistToolSession();
     } catch (error: unknown) {
       logger.error('Tool search error:', error);

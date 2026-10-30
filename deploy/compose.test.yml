@@ -54,6 +54,8 @@ services:
       OPENAI_BASE_URL: http://provider:8080/v1
       OPENAI_API_KEY: test-provider-only
       LLM_MODEL: test-model
+      COURTLISTENER_BASE_URL: http://provider:8080/api/rest/v4
+      COURTLISTENER_API_TOKEN: test-court-only
     ports: ['127.0.0.1:${TEST_APP_PORT:-29000}:8000']
     volumes: [test-connection:/data:ro]
 volumes:

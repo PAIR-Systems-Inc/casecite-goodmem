@@ -1,5 +1,10 @@
 # Verification record
 
+This records the initial Go/GoodMem core checkpoint, before the full upstream
+UI and feature port. For the current branch's tests and remaining work, see
+[the parity evidence](parity/evidence.md). Binary size and dependency counts
+below describe that earlier checkpoint.
+
 Implementation checked on 2026-10-29. All document fixtures and accounts were synthetic.
 
 | Check | Result |

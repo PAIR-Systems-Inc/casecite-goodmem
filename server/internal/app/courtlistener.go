@@ -2,18 +2,13 @@ package app
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"html"
-	"io"
-	"net/http"
 	"net/url"
 	"regexp"
 	"slices"
 	"strconv"
 	"strings"
-	"sync/atomic"
-	"time"
 )
 
 const courtMethodNotice = "This is a scan of the language courts use near the citation in CourtListener search results — not an editorial citator. It does not replace Shepard's or KeyCite; read the flagged opinions before relying on the case."
@@ -22,7 +17,7 @@ var courtNegativeRE = regexp.MustCompile(`(?i)\b(overrul(?:e|ed|es|ing)|abrogat(
 var courtOtherGroundsRE = regexp.MustCompile(`(?i)\b(overrul|abrogat|disapprov|reject|supersed|rev['’]d|vacat)\w*\s+(?:in part\s+)?on other grounds\b`)
 var courtCautionRE = regexp.MustCompile(`(?i)\b(distinguish(?:ed|able|es|ing)?|questioned|criticiz(?:ed|es|ing)|limited to (?:its|their) facts|narrow(?:ed|ing)|cast(?:s)? doubt|called into doubt|doubted|on other grounds)\b`)
 var courtPositiveRE = regexp.MustCompile(`(?i)\b(followed|affirm(?:ed|s|ing)|approved|adopted|relied (?:up)?on|controlling|reaffirm(?:ed|s|ing)|endorsed|consistent with)\b`)
-var courtCiteLikeRE = regexp.MustCompile(`\d+\s+[A-Za-z.]+\s*\d*[a-z]*\s+\d+`)
+var courtCiteLikeRE = regexp.MustCompile("(?:" + str(caseGuardPatterns, "_REPORTER_CITE_RE") + "|" + str(caseGuardPatterns, "_WL_CITE_RE") + `|\d+\s+[A-Za-z.]+\s*\d*[a-z]*\s+\d+)`)
 var courtNormalizeRE = regexp.MustCompile(`[\s.]`)
 var courtWhitespaceRE = regexp.MustCompile(`[ \t]+`)
 
@@ -39,6 +34,8 @@ func courtID(value any) string {
 		return strconv.FormatFloat(v, 'f', 0, 64)
 	case int:
 		return strconv.Itoa(v)
+	case int64:
+		return strconv.FormatInt(v, 10)
 	}
 	return ""
 }
@@ -102,53 +99,6 @@ func courtMatches(query string, result M) bool {
 		}
 	}
 	return count > 0
-}
-
-func (s *Server) courtJSON(ctx context.Context, user, path string, params url.Values) (M, error) {
-	key, err := s.providerKey(ctx, user, "courtlistener", s.cfg.CourtListenerToken)
-	if err != nil {
-		return nil, err
-	}
-	base := fallback(s.cfg.CourtListenerURL, "https://www.courtlistener.com/api/rest/v4")
-	for attempt := 0; attempt < 2; attempt++ {
-		req, e := http.NewRequestWithContext(ctx, "GET", base+path+"?"+params.Encode(), nil)
-		if e != nil {
-			return nil, e
-		}
-		req.Header.Set("Accept", "application/json")
-		if key != "" {
-			req.Header.Set("Authorization", "Token "+key)
-		}
-		if contacted, ok := ctx.Value(courtContactKey{}).(*atomic.Bool); ok {
-			contacted.Store(true)
-		}
-		resp, e := s.client.Do(req)
-		if e == nil {
-			if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-				out := M{}
-				e = json.NewDecoder(io.LimitReader(resp.Body, 16<<20)).Decode(&out)
-				resp.Body.Close()
-				return out, e
-			}
-			code := resp.StatusCode
-			resp.Body.Close()
-			e = fail(502, fmt.Sprintf("CourtListener returned HTTP %d", code))
-			if code != 429 && code < 500 {
-				return nil, e
-			}
-		}
-		err = e
-		if attempt == 0 {
-			timer := time.NewTimer(2 * time.Second)
-			select {
-			case <-ctx.Done():
-				timer.Stop()
-				return nil, ctx.Err()
-			case <-timer.C:
-			}
-		}
-	}
-	return nil, err
 }
 
 func courtSearchOpinion(result M) M {
@@ -272,7 +222,7 @@ func (s *Server) courtCitingOpinions(ctx context.Context, user string, target M,
 			for _, r := range maps(focused["results"]) {
 				ops := maps(r["opinions"])
 				if len(ops) > 0 && strings.Contains(str(ops[0], "snippet"), "<mark>") {
-					contexts[courtID(r["cluster_id"])] = str(ops[0], "snippet")
+					contexts[fallback(courtID(r["cluster_id"]), courtID(r["id"]))] = str(ops[0], "snippet")
 				}
 			}
 		}
@@ -293,7 +243,8 @@ func (s *Server) courtCitingOpinions(ctx context.Context, user string, target M,
 				snippet = str(ops[0], "snippet")
 			}
 		}
-		out = append(out, M{"id": id, "case_name": fallback(str(r, "caseName"), "Unknown"), "citation": stringsOf(r["citation"]), "court": r["court"], "date_filed": r["dateFiled"], "treatment": treatment, "depth": 1, "snippet": nullable(charSlice(courtText(snippet), 0, 600)), "context_found": found, "url": courtURL(str(r, "absolute_url"))})
+		idNumber, _ := strconv.ParseInt(id, 10, 64)
+		out = append(out, M{"id": idNumber, "case_name": fallback(legalStripMarks(str(r, "caseName")), "Unknown"), "citation": stringsOf(r["citation"]), "court": r["court"], "date_filed": legalDate(r["dateFiled"]), "treatment": treatment, "depth": 1, "snippet": nullable(charSlice(courtText(snippet), 0, 600)), "context_found": found, "url": courtURL(str(r, "absolute_url"))})
 	}
 	return out, nil
 }
@@ -323,10 +274,16 @@ func (s *Server) validateCourtCitation(ctx context.Context, user, citation strin
 	}
 	result := M{"case_id": 0, "case_name": "Not Found", "citation": citation, "absolute_url": nil, "is_good_law": nil, "warning_level": "unknown", "method": "citing_language_scan", "negative_citations": []M{}, "caution_citations": []M{}, "positive_citations": []M{}, "neutral_count": 0, "total_citing_cases": 0, "citing_cases_analyzed": 0, "last_cited": nil, "notes": []string{courtMethodNotice}, "analysis_basis": "not_found"}
 	if target == nil {
-		result["notes"] = []string{"No case in CourtListener matched this citation exactly; nothing was checked.", courtMethodNotice}
+		note := "Citation not found in CourtListener database. Try a different format (e.g., '410 U.S. 113' or 'Roe v. Wade')."
+		if rows := maps(data["results"]); len(rows) > 0 {
+			if nearest := legalStripMarks(str(rows[0], "caseName")); nearest != "" {
+				note = fmt.Sprintf("No case in CourtListener matched this citation exactly, so nothing was checked. The closest search result was %q — if that is the case you meant, search by its reporter citation (e.g., '410 U.S. 113').", nearest)
+			}
+		}
+		result["notes"] = []string{note, courtMethodNotice}
 		return result, nil
 	}
-	mergeMap(result, M{"case_id": number(target, "cluster_id", number(target, "id", 0)), "case_name": target["caseName"], "absolute_url": courtURL(str(target, "absolute_url")), "total_citing_cases": number(target, "citeCount", 0)})
+	mergeMap(result, M{"case_id": number(target, "cluster_id", number(target, "id", 0)), "case_name": legalStripMarks(str(target, "caseName")), "absolute_url": courtURL(str(target, "absolute_url")), "total_citing_cases": number(target, "citeCount", 0)})
 	citeTerm := courtCiteLikeRE.FindString(citation)
 	if !courtCiteLikeRE.MatchString(citation) {
 		citeTerm = ""
@@ -340,13 +297,13 @@ func (s *Server) validateCourtCitation(ctx context.Context, user, citation strin
 	partial := e1 != nil || e2 != nil
 	if e1 != nil && e2 != nil {
 		result["analysis_basis"] = "citing_lookup_failed"
-		result["notes"] = []string{courtMethodNotice, "Citing opinions could not be retrieved; no treatment conclusion is available."}
+		result["notes"] = []string{courtMethodNotice, "Could not verify: the opinions citing this case could not be looked up in CourtListener, so nothing was scanned. This is not a clean result — try again, or check the case in a citator."}
 		return result, nil
 	}
 	byID := map[string]M{}
 	order := []string{}
 	for _, r := range append(most, recent...) {
-		id := str(r, "id")
+		id := courtID(r["id"])
 		old, exists := byID[id]
 		if !exists {
 			order = append(order, id)
@@ -372,10 +329,7 @@ func (s *Server) validateCourtCitation(ctx context.Context, user, citation strin
 	if partial && good == true {
 		warning, good = "unknown", nil
 	}
-	notes := []string{courtMethodNotice, fmt.Sprintf("Scanned the passage around the citation in %d of %d recent and most-cited citing opinions. %d used negative language, %d cautionary language, and %d positive language.", read, len(order), len(groups["negative"]), len(groups["caution"]), len(groups["positive"]))}
-	if read == 0 {
-		notes = append(notes, "No citation context could be read. This is not a clean result.")
-	}
+	notes := courtTreatmentNotes(number(result, "total_citing_cases", 0), len(order), read, len(groups["negative"]), len(groups["caution"]), len(groups["positive"]))
 	if partial {
 		notes = append(notes, "One citing-opinion listing failed; the scan is incomplete.")
 	}
@@ -392,6 +346,35 @@ func (s *Server) validateCourtCitation(ctx context.Context, user, citation strin
 		result["total_citing_cases"] = len(order)
 	}
 	return result, nil
+}
+
+func courtTreatmentNotes(total, retrieved, read, negative, caution, positive int) []string {
+	notes := []string{courtMethodNotice}
+	if total > 0 {
+		count := strconv.Itoa(total)
+		for i := len(count) - 3; i > 0; i -= 3 {
+			count = count[:i] + "," + count[i:]
+		}
+		notes = append(notes, "Cited by "+count+" opinions in CourtListener.")
+	}
+	if retrieved > 0 {
+		notes = append(notes, fmt.Sprintf("Scanned the passage around the citation in %d of the %d most recent and most-cited citing opinions retrieved; the rest could not be located in the text and were not classified.", read, retrieved))
+	} else {
+		notes = append(notes, "No citing opinions could be retrieved — the case may be too recent or the search was limited.")
+	}
+	if negative > 0 {
+		notes = append(notes, fmt.Sprintf("%d citing opinion(s) use negative language near the citation (overruled, abrogated, declined to follow…). Read each before relying on the case.", negative))
+	}
+	if caution > 0 {
+		notes = append(notes, fmt.Sprintf("%d citing opinion(s) use cautionary language (distinguished, questioned, limited, on other grounds…).", caution))
+	}
+	if positive > 0 {
+		notes = append(notes, fmt.Sprintf("%d citing opinion(s) use positive language (followed, affirmed, relied on…).", positive))
+	}
+	if read == 0 && retrieved > 0 {
+		notes = append(notes, "None of the retrieved opinions could be read at the citation, so no treatment signal is available — this is not a clean result.")
+	}
+	return notes
 }
 
 func (s *Server) checkResearchCitation(ctx context.Context, user, citation string) M {

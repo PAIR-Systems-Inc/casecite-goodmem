@@ -74,6 +74,22 @@ describe('CaseView', () => {
     expect(authFetch).toHaveBeenCalledWith(expect.stringMatching(/\/tools\/cases\/42\?kind=opinion$/));
   });
 
+  it('shows dissents and concurrences alongside the lead opinion', () => {
+    useCaseViewStore.setState({ mainViewCase: {
+      id: '77', case_name: 'Notice v. Example', opinion_text: 'Lead text.',
+      opinions: [
+        { id: 55, type_label: 'Lead opinion', author: 'Example', text: 'Lead text.' },
+        { id: 56, type_label: 'Dissent', text: 'Dissent text.' },
+        { id: 57, type_label: 'Concurrence', per_curiam: true, text: 'Concurrence text.' },
+      ],
+    } as unknown as CaseInfo });
+    renderAt();
+    expect(screen.getAllByText('Lead text.')).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: 'Dissent' })).toBeInTheDocument();
+    expect(screen.getByText('Dissent text.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Concurrence · per curiam' })).toBeInTheDocument();
+  });
+
   it('loadCaseDetail sends the kind it was given and omits it otherwise', async () => {
     const authFetch = vi.spyOn(api, 'authFetch').mockImplementation(async () =>
       new Response(JSON.stringify({ id: 7 }), { status: 200 }));

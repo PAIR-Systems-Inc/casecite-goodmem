@@ -30,6 +30,7 @@ type Server struct {
 	log           *slog.Logger
 	mux           *http.ServeMux
 	client        *http.Client
+	court         *courtGate
 	ctx           context.Context
 	cancel        context.CancelFunc
 	wg            sync.WaitGroup
@@ -55,6 +56,7 @@ func New(cfg Config, db *sql.DB, static fs.FS, log *slog.Logger) *Server {
 	ctx, cancel := context.WithCancel(context.Background())
 	s := &Server{cfg: cfg, db: db, log: log, mux: http.NewServeMux(), client: &http.Client{Timeout: 120 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}, ctx: ctx, cancel: cancel, uploads: make(chan struct{}, 2)}
 	s.gm = NewGoodMem(cfg)
+	s.court = newCourtGate()
 	s.configureAzure()
 	s.routes()
 	s.mux.HandleFunc("GET /word-addin/manifest.xml", s.addinManifest(static))

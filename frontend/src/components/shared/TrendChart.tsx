@@ -20,16 +20,15 @@ const TREND_LABEL: Record<string, { icon: string; label: string }> = {
 };
 
 function TrendChart({ styles, topic, years, totalCases, trend, trendBasis, currentYearPartial, yearsFailed }: TrendChartProps) {
-  // A sweep that mostly failed is a rate-limit event, not a trend — say so
-  // plainly instead of charting one or two surviving bars as if they were
-  // the whole story.
+  // A mostly failed sweep cannot establish a trend. An unavailable year may
+  // reflect an outage or timeout as well as rate limiting.
   if (years.length < 3 && (yearsFailed ?? 0) > years.length) {
     return (
       <div className={styles.trendCard}>
         <div className={styles.trendOverline}>Case-law Trend · CourtListener</div>
         <div className={styles.trendTitle}>"{topic}"</div>
         <div className={styles.trendNote}>
-          <Icon name="AlertCircle" size={12} /> CourtListener is rate-limiting yearly counts right now
+          <Icon name="AlertCircle" size={12} /> CourtListener yearly counts could not be retrieved
           ({yearsFailed} of {years.length + (yearsFailed ?? 0)} years unavailable). Wait a minute and run the search again.
         </div>
       </div>
@@ -39,8 +38,10 @@ function TrendChart({ styles, topic, years, totalCases, trend, trendBasis, curre
 
   const maxCount = Math.max(...years.map((yr) => yr.count), 1);
   const lastYear = years[years.length - 1].year;
-  const completeYears = currentYearPartial ? years.filter((y) => y.year !== lastYear) : years;
-  const peak = (completeYears.length ? completeYears : years).reduce((a, b) => (b.count > a.count ? b : a), years[0]);
+  const currentYear = new Date().getFullYear();
+  const completeYears = years.filter((y) => y.year < currentYear);
+  const peakYears = completeYears.length ? completeYears : years;
+  const peak = peakYears.reduce((a, b) => (b.count > a.count ? b : a), peakYears[0]);
   const total = totalCases ?? years.reduce((sum: number, y) => sum + y.count, 0);
   // Keep ~9 x-labels regardless of span; the last year is always labeled.
   const labelStep = Math.max(1, Math.ceil(years.length / 9));
@@ -73,7 +74,7 @@ function TrendChart({ styles, topic, years, totalCases, trend, trendBasis, curre
 
       <div className={styles.trendBars}>
         {years.map((y, i) => {
-          const partial = currentYearPartial && y.year === lastYear;
+          const partial = currentYearPartial && y.year === currentYear;
           return (
             <div key={i} className={styles.trendBarCol}>
               <div className={styles.trendTip}>{y.year} · {y.count.toLocaleString()} cases{partial ? ' so far' : ''}</div>
@@ -91,12 +92,12 @@ function TrendChart({ styles, topic, years, totalCases, trend, trendBasis, curre
 
       {currentYearPartial && (
         <div className={styles.trendNote}>
-          <Icon name="Info" size={11} /> {lastYear} is still in progress; it is shown but not counted toward the trend.
+          <Icon name="Info" size={11} /> {currentYear} is still in progress; it is shown but not counted toward the trend.
         </div>
       )}
       {(yearsFailed ?? 0) > 0 && (
         <div className={styles.trendNote}>
-          <Icon name="AlertCircle" size={11} /> {yearsFailed} year{yearsFailed !== 1 ? 's' : ''} could not be counted (rate-limited) and {yearsFailed !== 1 ? 'are' : 'is'} not shown.
+          <Icon name="AlertCircle" size={11} /> {yearsFailed} year{yearsFailed !== 1 ? 's' : ''} could not be counted and {yearsFailed !== 1 ? 'are' : 'is'} not shown.
         </div>
       )}
     </div>

@@ -4,4 +4,5 @@ COPY server/cmd/testprovider/main.go ./main.go
 RUN CGO_ENABLED=0 go build -o /provider main.go
 FROM scratch
 COPY --from=build /provider /provider
+COPY server/internal/app/testdata/legal_tools.json /fixtures/legal_tools.json
 ENTRYPOINT ["/provider"]
