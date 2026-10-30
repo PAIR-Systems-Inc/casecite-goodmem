@@ -53,15 +53,15 @@ function toUploadedDocument(d: DocumentListResponse['documents'][number]): Uploa
 
 /**
  * After a picker import: refresh every list that shows the Knowledge Base and
- * show the imported files as transient sidebar chips (the `imported` newest
- * documents — the import response carries counts, not ids).
+ * show exactly the returned documents as transient sidebar chips. Another
+ * browser tab or a connector may be importing at the same time.
  */
-async function showImportedDocuments(importedCount: number): Promise<void> {
+async function showImportedDocuments(documentIDs: string[]): Promise<void> {
   const { setDocuments } = useDocumentsStore.getState();
   const docs = await api.getAllDocuments();
-  const newest = [...docs]
-    .sort((a, b) => Date.parse(b.created_at || '') - Date.parse(a.created_at || ''))
-    .slice(0, importedCount)
+  const importedIDs = new Set(documentIDs);
+  const newest = docs
+    .filter(d => importedIDs.has(d.id))
     .map(toUploadedDocument);
   const ids = new Set(newest.map((d) => d.id));
   setDocuments((prev) => [
@@ -138,7 +138,7 @@ export const usePickerStore = create<PickerState>((set, get) => ({
       }
       if (result.imported > 0) {
         addToast(`Imported ${result.imported} file(s) from ${provider}`, 'success');
-        await showImportedDocuments(result.imported);
+        await showImportedDocuments(result.document_ids || []);
       }
       if (result.failed > 0) {
         // Name the files and the reasons — a bare count left people guessing.

@@ -165,7 +165,7 @@ func (s *Server) adminUserAction(q request) (any, error) {
 		return nil, err
 	}
 	if !newActive {
-		if _, err = tx.ExecContext(q.r.Context(), `UPDATE cc_jobs SET status='cancelled',updated_at=now() WHERE user_id=$1 AND status IN ('pending','running')`, id); err != nil {
+		if _, err = tx.ExecContext(q.r.Context(), `UPDATE cc_jobs SET status='cancelled',updated_at=now(),input=CASE WHEN kind='picker.import' THEN input-'encrypted_files' ELSE input END WHERE user_id=$1 AND status IN ('pending','running')`, id); err != nil {
 			return nil, err
 		}
 		if _, err = tx.ExecContext(q.r.Context(), `DELETE FROM cc_device_codes WHERE user_id=$1`, id); err != nil {
@@ -287,12 +287,15 @@ func (s *Server) deleteUser(q request) (any, error) {
 	if _, err = tx.ExecContext(q.r.Context(), `DELETE FROM cc_sessions WHERE user_id=$1`, id); err != nil {
 		return nil, err
 	}
-	if _, err = tx.ExecContext(q.r.Context(), `UPDATE cc_jobs SET status='cancelled',updated_at=now() WHERE user_id=$1 AND status IN ('pending','running')`, id); err != nil {
+	if _, err = tx.ExecContext(q.r.Context(), `UPDATE cc_jobs SET status='cancelled',updated_at=now(),input=CASE WHEN kind='picker.import' THEN input-'encrypted_files' ELSE input END WHERE user_id=$1 AND status IN ('pending','running')`, id); err != nil {
 		return nil, err
 	}
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
+	// The inactive account cannot reconnect. Revoke grants before their local
+	// encrypted copies are removed by the account cascade.
+	s.revokeUserConnectors(q.r.Context(), id)
 	rows, err := s.db.QueryContext(q.r.Context(), `SELECT DISTINCT memory FROM cc_objects CROSS JOIN LATERAL (VALUES (data->>'memory_id'),(data->>'index_memory_id')) AS memories(memory) WHERE kind='document' AND owner_id=$1`, id)
 	if err != nil {
 		return nil, err
@@ -326,7 +329,7 @@ func (s *Server) deleteUser(q request) (any, error) {
 		return nil, err
 	}
 	defer tx.Rollback()
-	if _, err = tx.ExecContext(q.r.Context(), `DELETE FROM cc_kv WHERE key=$1 OR key LIKE $2 OR key LIKE $3 OR (key LIKE 'mfa-challenge:%' OR key LIKE 'password-reset:%') AND value->>'user_id'=$4`, "settings:"+id, "credential:"+id+":%", "connector:"+id+":%", id); err != nil {
+	if _, err = tx.ExecContext(q.r.Context(), `DELETE FROM cc_kv WHERE key=$1 OR key LIKE $2 OR key LIKE $3 OR (key LIKE 'mfa-challenge:%' OR key LIKE 'password-reset:%' OR key LIKE 'connector-oauth:%') AND value->>'user_id'=$4`, "settings:"+id, "credential:"+id+":%", "connector:"+id+":%", id); err != nil {
 		return nil, err
 	}
 	if _, err = tx.ExecContext(q.r.Context(), `DELETE FROM cc_matters WHERE owner_id=$1`, id); err != nil {

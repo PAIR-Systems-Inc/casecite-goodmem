@@ -41,6 +41,8 @@ type Config struct {
 	SMTPHost, SMTPPort, SMTPUser, SMTPPassword, SMTPFrom               string
 	SMTPTLS                                                            bool
 	AddinOrigins                                                       []string
+	ConnectorSettings                                                  map[string]string
+	ExperimentalConnectors, FilevineEnabled                            bool
 }
 
 func LoadConfig() (Config, error) {
@@ -74,6 +76,9 @@ func LoadConfig() (Config, error) {
 		AzureAutoProvision: env("AZURE_SSO_AUTO_PROVISION", "true") == "true", AzureDefaultRole: env("AZURE_SSO_DEFAULT_ROLE", "viewer"),
 		SMTPHost: os.Getenv("SMTP_HOST"), SMTPPort: env("SMTP_PORT", "587"), SMTPUser: os.Getenv("SMTP_USER"), SMTPPassword: os.Getenv("SMTP_PASSWORD"), SMTPFrom: os.Getenv("SMTP_FROM"), SMTPTLS: env("SMTP_TLS", "false") == "true",
 	}
+	c.ConnectorSettings = connectorEnvironment(c.PublicURL)
+	c.ExperimentalConnectors = env("EXPERIMENTAL_CONNECTORS", "false") == "true"
+	c.FilevineEnabled = env("FILEVINE_ENABLED", "false") == "true"
 	approved := strings.TrimSpace(os.Getenv("APPROVED_AI_PROVIDERS"))
 	if strings.HasPrefix(approved, "[") {
 		if err := json.Unmarshal([]byte(approved), &c.ApprovedAIProviders); err != nil {

@@ -33,6 +33,8 @@ func (s *Server) routes() {
 	s.deepResearchRoutes()
 	s.legalToolRoutes()
 	s.judgeRoutes()
+	s.connectorRoutes()
+	s.pickerRoutes()
 	s.api("GET /api/v1/settings", false, s.settings)
 	s.api("PUT /api/v1/settings", false, s.settings)
 	s.api("PUT /api/v1/keys/{provider}", false, s.saveKey)

@@ -57,7 +57,7 @@ export interface ConnectorsState {
 
   hasPickerSupport: (connectorId: string) => boolean;
   handlePickerFilesSelected: (files: PickerFile[], provider: string) => Promise<void>;
-  handleConnectorClick: (connector: Connector) => Promise<void>;
+  handleConnectorClick: (connector: Connector, mode?: 'sync' | 'picker') => Promise<void>;
   loadGooglePicker: () => Promise<void>;
   openGooglePicker: () => Promise<void>;
   openOneDrivePicker: () => Promise<void>;
@@ -108,12 +108,21 @@ export const useConnectorsStore = create<ConnectorsState>((set, get) => ({
     return map[connectorId] || false;
   },
 
-  handleConnectorClick: async (connector) => {
+  handleConnectorClick: async (connector, mode) => {
     const { addToast, showConfirm } = useUIStore.getState();
     const { hasPickerSupport } = get();
 
     if (connector.adminOnly && !isCurrentUserAdmin()) {
       addToast(`${connector.name} uses a firm-wide credential, so only an administrator can connect or sync it.`, 'info');
+      return;
+    }
+
+    // A browser picker can be configured without a server OAuth secret. It
+    // should also remain available after a background-sync grant is connected.
+    if (mode === 'picker' && hasPickerSupport(connector.id)) {
+      set({ activePickerProvider: connector.id, showPickerModal: true });
+      usePickerStore.getState().setActivePickerProvider(connector.id);
+      usePickerStore.getState().setShowPickerModal(true);
       return;
     }
 
@@ -174,7 +183,7 @@ export const useConnectorsStore = create<ConnectorsState>((set, get) => ({
         },
       });
     } else {
-      if (hasPickerSupport(connector.id)) {
+      if (mode !== 'sync' && hasPickerSupport(connector.id)) {
         set({ activePickerProvider: connector.id, showPickerModal: true });
         usePickerStore.getState().setActivePickerProvider(connector.id);
         usePickerStore.getState().setShowPickerModal(true);
@@ -245,6 +254,10 @@ export const useConnectorsStore = create<ConnectorsState>((set, get) => ({
             addToast(describeFileErrors(`${failedCount} file${failedCount === 1 ? '' : 's'} could not be indexed`, result?.errors, failedCount), 'error');
           }
           await get().loadConnectors();
+          const { useRagDocsStore } = await import('./ragDocsStore');
+          if (useRagDocsStore.getState()._initialized) await useRagDocsStore.getState().loadRagDocuments();
+          const { useSettingsStore } = await import('./settingsStore');
+          await useSettingsStore.getState().refreshSystemStats();
           return;
         }
         if (['failed', 'error', 'cancelled'].includes(state)) {

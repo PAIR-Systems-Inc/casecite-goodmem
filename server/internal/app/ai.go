@@ -31,6 +31,12 @@ func withLLMOptions(ctx context.Context, options llmOptions) context.Context {
 }
 
 func (s *Server) execute(ctx context.Context, user, kind string, input M) (M, error) {
+	if kind == "connector.sync" {
+		return s.executeConnectorSync(ctx, user, input)
+	}
+	if kind == "picker.import" {
+		return s.executePickerImport(ctx, user, input)
+	}
 	if kind == "chat.reply" || kind == "strategy.brief" {
 		return s.executeChat(ctx, user, kind, input)
 	}

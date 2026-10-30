@@ -33,10 +33,10 @@ const PRIVATE_INSTALL_GROUPS = [
   {
     label: 'Full Background Sync',
     items: [
-      { id: null, name: 'Google Drive', icon: 'HardDrive', color: '#4285F4', desc: 'Automatic background sync of entire folders' },
-      { id: null, name: 'OneDrive & SharePoint', icon: 'Cloud', color: '#0078D4', desc: 'Continuous sync via Microsoft Graph' },
-      { id: null, name: 'Box', icon: 'Box', color: '#0061D5', desc: 'Enterprise content management sync' },
-      { id: null, name: 'Dropbox', icon: 'Droplet', color: '#0061FF', desc: 'Automatic folder monitoring and sync' },
+      { id: 'google_drive', name: 'Google Drive', icon: 'HardDrive', color: '#4285F4', desc: 'Background document sync' },
+      { id: 'onedrive', name: 'OneDrive & SharePoint', icon: 'Cloud', color: '#0078D4', desc: 'Background sync via Microsoft Graph' },
+      { id: 'box', name: 'Box', icon: 'Box', color: '#0061D5', desc: 'Enterprise content management sync' },
+      { id: 'dropbox', name: 'Dropbox', icon: 'Droplet', color: '#0061FF', desc: 'Background document sync' },
     ],
   },
 ] as const;
@@ -49,7 +49,7 @@ function RagDocsView() {
     init,
   } = useRagDocsStore();
   const { ragSettings } = useSettingsStore();
-  const { connectors, handleConnectorClick, init: initConnectors } = useConnectorsStore();
+  const { connectors, handleConnectorClick, hasPickerSupport, init: initConnectors } = useConnectorsStore();
   const isAdmin = useAuthStore((st) => (st.user?.roles ?? []).includes('admin') || st.user?.role === 'admin');
   const userId = useAuthStore((st) => st.user?.id);
   useEffect(() => { init(); initConnectors(); }, [init, initConnectors]);
@@ -187,9 +187,9 @@ function RagDocsView() {
               .map((connector: Connector) => (
                 <button
                   key={connector.id}
-                  onClick={() => handleConnectorClick(connector)}
+                  onClick={() => handleConnectorClick(connector, 'picker')}
                   className={s.sourceCard}
-                  title={connector.connected ? `Manage ${connector.name}` : `Connect ${connector.name}`}
+                  title={`Choose files from ${connector.name}`}
                 >
                   <div
                     className={s.sourceIcon}
@@ -203,6 +203,8 @@ function RagDocsView() {
                     <span className={s.sourceStatus}>
                       {connector.adminOnly && !isAdmin
                         ? 'Admin only'
+                        : hasPickerSupport(connector.id)
+                          ? 'Choose files'
                         : connector.configured === false
                         ? 'Not configured'
                         : connector.connected
@@ -232,7 +234,7 @@ function RagDocsView() {
                     return (
                       <button
                         key={p.name}
-                        onClick={() => handleConnectorClick(live)}
+                        onClick={() => handleConnectorClick(live, 'sync')}
                         className={s.sourceCard}
                         title={live.connected ? `Manage ${live.name}` : `Connect ${live.name}`}
                       >

@@ -147,10 +147,11 @@ describe('connectorsStore', () => {
   it('shows imported files as sidebar chips in the shape the panel renders, then lets them go', async () => {
     vi.useFakeTimers();
     try {
-      (api.importFromBoxPicker as ReturnType<typeof vi.fn>).mockResolvedValue({ imported: 1, failed: 0, errors: [] });
+      (api.importFromBoxPicker as ReturnType<typeof vi.fn>).mockResolvedValue({ imported: 1, failed: 0, errors: [], document_ids: ['new'] });
       (api.getAllDocuments as ReturnType<typeof vi.fn>).mockResolvedValue([
         { id: 'old', filename: 'old.pdf', size: 10, content_type: 'application/pdf', status: 'indexed', chunk_count: 2, created_at: '2026-01-01T00:00:00Z' },
         { id: 'new', filename: 'new.pdf', size: 20, content_type: 'application/pdf', status: 'indexed', chunk_count: 7, created_at: '2026-03-01T00:00:00Z' },
+        { id: 'unrelated-newer', filename: 'another-tab.pdf', status: 'indexed', created_at: '2026-03-02T00:00:00Z' },
       ]);
       useDocumentsStore.setState({ documents: [{ id: 'pending', name: 'typing.pdf', status: 'error' }] });
 
@@ -253,6 +254,23 @@ describe('connectorsStore', () => {
 
     expect(useConnectorsStore.getState().activePickerProvider).toBe('google_drive');
     expect(useConnectorsStore.getState().showPickerModal).toBe(true);
+  });
+
+  it('keeps a configured picker usable without a background OAuth secret', async () => {
+    useConnectorsStore.setState({ pickerConfig: { google_enabled: true } as any });
+    await useConnectorsStore.getState().handleConnectorClick({ id: 'google_drive', name: 'Google Drive', configured: false, connected: false } as any, 'picker');
+    expect(usePickerStore.getState().showPickerModal).toBe(true);
+    expect(api.connectConnector).not.toHaveBeenCalled();
+  });
+
+  it('background sync starts OAuth even when the provider has a browser picker', async () => {
+    useConnectorsStore.setState({ pickerConfig: { google_enabled: true } as any });
+    const open = vi.spyOn(window, 'open').mockReturnValue(null);
+    (api.connectConnector as ReturnType<typeof vi.fn>).mockResolvedValue({ auth_url: `${window.location.origin}/api/v1/connectors/google_drive/authorize?state=bound` });
+    await useConnectorsStore.getState().handleConnectorClick({ id: 'google_drive', name: 'Google Drive', configured: true, connected: false } as any, 'sync');
+    expect(api.connectConnector).toHaveBeenCalledWith('google_drive');
+    expect(usePickerStore.getState().showPickerModal).toBe(false);
+    open.mockRestore();
   });
 
   it('never starts a whole-account sync without a second, explicit confirmation', async () => {

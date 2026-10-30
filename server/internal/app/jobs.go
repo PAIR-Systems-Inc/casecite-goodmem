@@ -23,10 +23,12 @@ type jobAudit struct {
 }
 type jobOutputs struct {
 	sync.Mutex
-	Objects []jobObject
-	Audits  []jobAudit
-	Judges  []jobJudge
-	Chat    *chatExchange
+	Objects   []jobObject
+	Audits    []jobAudit
+	Judges    []jobJudge
+	Chat      *chatExchange
+	Connector *connectorCompletion
+	Picker    bool
 }
 
 // Stage durable outputs until the worker commits completion while still owning
@@ -174,7 +176,7 @@ func (s *Server) getJob(q request) (any, error) {
 	return M{"job_id": id, "kind": kind, "status": status, "result": out, "error": errorText, "created_at": created, "updated_at": updated, "progress": progressData}, nil
 }
 func (s *Server) cancelJob(q request) (any, error) {
-	r, err := s.db.ExecContext(q.r.Context(), `UPDATE cc_jobs SET status='cancelled',error='Cancelled by the user',updated_at=now() WHERE id=$1 AND user_id=$2 AND status IN ('pending','running')`, q.r.PathValue("id"), q.user.ID)
+	r, err := s.db.ExecContext(q.r.Context(), `UPDATE cc_jobs SET status='cancelled',error='Cancelled by the user',updated_at=now(),input=CASE WHEN kind='picker.import' THEN input-'encrypted_files' ELSE input END WHERE id=$1 AND user_id=$2 AND status IN ('pending','running')`, q.r.PathValue("id"), q.user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -215,12 +217,14 @@ func (s *Server) StartWorkers() {
 	go s.emailWorker()
 	for i := 0; i < 2; i++ {
 		s.wg.Add(1)
-		go s.worker()
+		go s.worker(false)
+		s.wg.Add(1)
+		go s.worker(true)
 	}
 	s.wg.Add(1)
 	go s.maintenance()
 }
-func (s *Server) worker() {
+func (s *Server) worker(ocrOnly bool) {
 	defer s.wg.Done()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
@@ -233,7 +237,9 @@ func (s *Server) worker() {
 		lease := token()
 		var id, user, kind string
 		var b []byte
-		err := s.db.QueryRowContext(s.ctx, `UPDATE cc_jobs SET status='running',lease_token=$1,lease_until=now()+interval '30 seconds',updated_at=now() WHERE id=(SELECT id FROM cc_jobs WHERE status='pending' ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING id,user_id,kind,input`, lease).Scan(&id, &user, &kind, &b)
+		// Separate OCR slots let sync jobs wait for scanned documents without
+		// consuming every worker needed to perform their OCR.
+		err := s.db.QueryRowContext(s.ctx, `UPDATE cc_jobs SET status='running',lease_token=$1,lease_until=now()+interval '30 seconds',updated_at=now() WHERE id=(SELECT id FROM cc_jobs WHERE status='pending' AND (kind='document.ocr_index')=$2 ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING id,user_id,kind,input`, lease, ocrOnly).Scan(&id, &user, &kind, &b)
 		if notFound(err) {
 			continue
 		}
@@ -320,17 +326,24 @@ func (s *Server) runJob(id, user, kind, lease string, b []byte) {
 		return
 	}
 	defer tx.Rollback()
-	r, txErr := tx.ExecContext(finish, `UPDATE cc_jobs SET status=$3,result=$4,error=$5,lease_until=NULL,updated_at=now(),progress=CASE WHEN $6::int>0 THEN progress || jsonb_build_object('error_status',$6::int) ELSE progress END WHERE id=$1 AND lease_token=$2 AND status='running'`, id, lease, status, jsonBytes(result), nullable(message), errorStatus)
+	r, txErr := tx.ExecContext(finish, `UPDATE cc_jobs SET status=$3,result=$4,error=$5,lease_until=NULL,updated_at=now(),input=CASE WHEN kind='picker.import' THEN input-'encrypted_files' ELSE input END,progress=CASE WHEN $6::int>0 THEN progress || jsonb_build_object('error_status',$6::int) ELSE progress END WHERE id=$1 AND lease_token=$2 AND status='running'`, id, lease, status, jsonBytes(result), nullable(message), errorStatus)
 	if txErr != nil {
 		s.log.Error("job finalization failed", "error", txErr)
 		return
 	}
 	n, _ := r.RowsAffected()
 	if n == 1 && err == nil && kind != "document.ocr_index" {
+		if outputs.Connector != nil {
+			if saveErr := s.publishConnector(finish, tx, outputs.Connector); saveErr != nil {
+				_ = tx.Rollback()
+				s.failJobPublication(finish, id, lease, saveErr)
+				return
+			}
+		}
 		if outputs.Chat != nil {
 			if saveErr := s.publishChat(finish, tx, outputs.Chat); saveErr != nil {
 				_ = tx.Rollback()
-				s.failChatPublication(finish, id, lease, saveErr)
+				s.failJobPublication(finish, id, lease, saveErr)
 				return
 			}
 		}
@@ -352,7 +365,7 @@ func (s *Server) runJob(id, user, kind, lease string, b []byte) {
 				return
 			}
 		}
-		if outputs.Chat == nil {
+		if outputs.Chat == nil && outputs.Connector == nil && !outputs.Picker {
 			if str(result, "kind") == "" {
 				result["kind"] = kind
 			}
@@ -398,7 +411,7 @@ func (s *Server) maintenance() {
 			return
 		case <-t.C:
 			s.cleanupDocumentOCR(s.ctx)
-			_, err := s.db.ExecContext(s.ctx, `UPDATE cc_jobs SET status='failed',error='Worker lease expired. Retry explicitly; the previous request may have incurred a model charge.',updated_at=now() WHERE status='running' AND lease_until<now()`)
+			_, err := s.db.ExecContext(s.ctx, `UPDATE cc_jobs SET status='failed',error='Worker lease expired. Retry explicitly; the previous request may have incurred a model charge.',updated_at=now(),input=CASE WHEN kind='picker.import' THEN input-'encrypted_files' ELSE input END WHERE status='running' AND lease_until<now()`)
 			if err != nil {
 				s.log.Error("job recovery failed", "error", err)
 			}

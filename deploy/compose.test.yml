@@ -63,6 +63,9 @@ services:
       COURTLISTENER_BASE_URL: http://provider:8080/api/rest/v4
       COURTLISTENER_API_TOKEN: test-court-only
       WIKIPEDIA_API_URL: http://provider:8080/wiki
+      CLIO_CLIENT_ID: fixture-clio-client
+      CLIO_CLIENT_SECRET: fixture-clio-secret
+      CLIO_BASE_URL: http://provider:8080
     ports: ['127.0.0.1:${TEST_APP_PORT:-29000}:8000']
     volumes: [test-connection:/data:ro]
 volumes:

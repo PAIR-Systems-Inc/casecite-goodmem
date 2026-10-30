@@ -191,7 +191,7 @@ func (s *Server) updateUser(q request) (any, error) {
 			if _, err = tx.ExecContext(q.r.Context(), `DELETE FROM cc_sessions WHERE user_id=$1`, id); err != nil {
 				return nil, err
 			}
-			if _, err = tx.ExecContext(q.r.Context(), `UPDATE cc_jobs SET status='cancelled',error='Account disabled' WHERE user_id=$1 AND status IN ('pending','running')`, id); err != nil {
+			if _, err = tx.ExecContext(q.r.Context(), `UPDATE cc_jobs SET status='cancelled',error='Account disabled',input=CASE WHEN kind='picker.import' THEN input-'encrypted_files' ELSE input END WHERE user_id=$1 AND status IN ('pending','running')`, id); err != nil {
 				return nil, err
 			}
 		}

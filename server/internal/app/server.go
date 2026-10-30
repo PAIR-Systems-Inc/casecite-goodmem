@@ -30,6 +30,8 @@ type Server struct {
 	log           *slog.Logger
 	mux           *http.ServeMux
 	client        *http.Client
+	connectorHTTP *http.Client
+	downloadHTTP  *http.Client
 	court         *courtGate
 	ocr           chan struct{}
 	ctx           context.Context
@@ -57,6 +59,8 @@ func New(cfg Config, db *sql.DB, static fs.FS, log *slog.Logger) *Server {
 	ctx, cancel := context.WithCancel(context.Background())
 	s := &Server{cfg: cfg, db: db, log: log, mux: http.NewServeMux(), client: &http.Client{Timeout: 120 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}, ctx: ctx, cancel: cancel, uploads: make(chan struct{}, 2)}
 	s.gm = NewGoodMem(cfg)
+	s.connectorHTTP = &http.Client{Timeout: 45 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	s.downloadHTTP = newConnectorDownloadClient()
 	s.court = newCourtGate()
 	s.ocr = make(chan struct{}, 2)
 	s.configureAzure()
@@ -236,7 +240,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("X-Frame-Options", "SAMEORIGIN")
 	w.Header().Set("Referrer-Policy", "same-origin")
-	w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://login.microsoftonline.com; frame-src 'self' blob: https://login.microsoftonline.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'")
+	w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' https://accounts.google.com https://apis.google.com https://www.gstatic.com https://www.dropbox.com https://cdn01.boxcdn.net; style-src 'self' 'unsafe-inline' https://cdn01.boxcdn.net; img-src 'self' data: blob: https://*.googleusercontent.com https://*.gstatic.com https://*.boxcloud.com https://*.box.com https://*.dropboxusercontent.com; font-src 'self' https://cdn01.boxcdn.net; connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com https://accounts.google.com https://*.googleapis.com https://*.box.com https://*.boxcloud.com https://*.sharepoint.com https://*.sharepoint.us https://*.sharepoint.de https://*.sharepoint.cn https://onedrive.live.com; frame-src 'self' blob: https://login.microsoftonline.com https://accounts.google.com https://docs.google.com https://drive.google.com https://www.dropbox.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'")
 	if strings.HasPrefix(r.URL.Path, "/word-addin/") {
 		w.Header().Del("X-Frame-Options")
 		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' https://appsforoffice.microsoft.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https:; frame-src 'self' https://appsforoffice.microsoft.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self' https://*.office.com https://*.officeapps.live.com https://*.microsoft365.com https://*.cloud.microsoft https://*.sharepoint.com")

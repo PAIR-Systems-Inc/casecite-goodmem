@@ -270,6 +270,7 @@ export interface ConnectorDataResponse {
 export interface ImportResponse {
   imported: number;
   failed: number;
+  document_ids: string[];
   /** One entry per failed file (first 20); `failed` is the full count. */
   errors: ImportFileError[];
   message?: string;

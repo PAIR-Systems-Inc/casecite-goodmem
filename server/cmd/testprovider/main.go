@@ -21,6 +21,37 @@ import (
 )
 
 func main() {
+	// Clio Manage protocol fixture. OAuth consent is simulated in the browser;
+	// token exchange, listing and download use this real HTTP server.
+	http.HandleFunc("/oauth/token", func(w http.ResponseWriter, r *http.Request) {
+		if r.ParseForm() != nil || r.Form.Get("client_id") != "fixture-clio-client" || r.Form.Get("client_secret") != "fixture-clio-secret" {
+			http.Error(w, "Invalid fixture client", 401)
+			return
+		}
+		write(w, map[string]any{"access_token": "fixture-clio-access", "refresh_token": "fixture-clio-refresh", "expires_in": 3600})
+	})
+	http.HandleFunc("/api/v4/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") != "Bearer fixture-clio-access" {
+			http.Error(w, "Invalid fixture grant", 401)
+			return
+		}
+		switch r.URL.Path {
+		case "/api/v4/users/who_am_i.json":
+			write(w, map[string]any{"data": map[string]any{"id": 1, "name": "Clio Fixture", "email": "fixture@example.test"}})
+		case "/api/v4/documents.json":
+			write(w, map[string]any{"data": []any{map[string]any{"id": 100, "name": "Imported scan", "filename": "clio-scanned-notice.pdf", "content_type": "application/pdf", "updated_at": "2026-10-29T12:00:00Z", "matter": map[string]any{"id": 1, "display_number": "CLIO-1"}}}, "meta": map[string]any{"paging": map[string]any{}}})
+		case "/api/v4/documents/100/download.json":
+			data, err := os.ReadFile("/fixtures/scanned_notice.pdf")
+			if err != nil {
+				http.Error(w, "Missing PDF fixture", 500)
+				return
+			}
+			w.Header().Set("Content-Type", "application/pdf")
+			_, _ = w.Write(data)
+		default:
+			http.NotFound(w, r)
+		}
+	})
 	// This endpoint is an on-network dots.ocr protocol fixture. GoodMem still
 	// decodes the PDF, renders each page, calls OCR and returns page/layout data.
 	// The fixed transcription tests that plumbing, not model OCR accuracy.

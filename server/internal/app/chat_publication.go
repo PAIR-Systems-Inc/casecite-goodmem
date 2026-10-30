@@ -13,13 +13,13 @@ type chatExchange struct {
 	Answer, Revisions            M
 }
 
-func (s *Server) failChatPublication(ctx context.Context, id, lease string, err error) {
-	status, message := 500, "The answer could not be saved. No messages were added. Submit the question again."
+func (s *Server) failJobPublication(ctx context.Context, id, lease string, err error) {
+	status, message := 500, "The job result could not be saved. Check its history before trying again."
 	var ae *apiError
 	if errors.As(err, &ae) {
 		status, message = ae.status, ae.message
 	}
-	s.log.Warn("chat publication failed", "job", id, "error", err)
+	s.log.Warn("job publication failed", "job", id, "error", err)
 	_, saveErr := s.db.ExecContext(ctx, `UPDATE cc_jobs SET status='failed',result=NULL,error=$3,lease_until=NULL,updated_at=now(),progress=progress || jsonb_build_object('error_status',$4::int) WHERE id=$1 AND lease_token=$2 AND status='running'`, id, lease, message, status)
 	if saveErr != nil {
 		s.log.Error("chat failure save failed", "job", id, "error", saveErr)

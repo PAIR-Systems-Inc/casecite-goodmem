@@ -1,0 +1,4237 @@
+{
+  "baseline": "6605cb3474cf0c2894080af216d5fed2a81fc997",
+  "sources": {
+    "backend/app/models/schemas.py": "02ad5763a12be9dc1ec6f6f13b7b17ae3a04a6bccc41a74b36d07127a601baa0",
+    "backend/app/routers/connectors.py": "e7c50bba854e0212e1f7123a27de961ed15a553c38c8f343ec112c1796d1005c",
+    "backend/app/services/connectors/google_drive.py": "5dfeecde27706be82123337816a632f5c052442ffca546099940393e7d03907a",
+    "backend/app/services/connectors/microsoft.py": "dd4e9a7b4bce7844a7f10c90b4ec7a6b1da1b1605d87d192cef13bdc883d812b",
+    "backend/app/services/connectors/box.py": "216b20e0446e582f4b413c9b59b6998669023623b2f96b7eb2789417e33262c5",
+    "backend/app/services/connectors/dropbox.py": "55d0f26762c439e1de3f37c665d1fa248e2974350e0e4f54e8ec8ae1b0beb731",
+    "backend/app/services/connectors/clio.py": "edacf588ee19728d1eccac0a289ae0c94a34380b2da3a9172ffccfa42f6d2eb3",
+    "backend/app/services/connectors/filevine.py": "4a81b74f9c4a765ace738886f35a5532a1e654ba6833b893c42769fa63ce2801",
+    "backend/app/services/connectors/netdocuments.py": "1a1af4e60bb2b01a01c7ad8766916225c1266644eee41400a3d525eb3c8bd972",
+    "backend/app/services/connectors/imanage.py": "a88e77187217c3c22ba3fc7ea0352e486d7ad4463e0a7e643cf3aed15a904931"
+  },
+  "requests": [
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "url": null,
+        "sizeBytes": null,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {},
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "unknown": "discarded"
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "url": null,
+        "sizeBytes": null,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": null,
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "url": null,
+        "sizeBytes": null,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": 4,
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": true,
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": [],
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": {},
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "2048",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "2048",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "url": null,
+        "sizeBytes": null,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": 2048.0,
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": null,
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "",
+        "mimeType": "application/pdf",
+        "url": null,
+        "sizeBytes": null,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": 4,
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": true,
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": [],
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": {},
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "2048",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "2048",
+        "mimeType": "application/pdf",
+        "url": null,
+        "sizeBytes": null,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": 2048.0,
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": null,
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "",
+        "oauthToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "",
+        "url": null,
+        "sizeBytes": null,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": 4,
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": true,
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": [],
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": {},
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "2048",
+        "oauthToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "2048",
+        "url": null,
+        "sizeBytes": null,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": 2048.0,
+        "oauthToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "url": null
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "url": null,
+        "sizeBytes": null,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "url": ""
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "url": "",
+        "sizeBytes": null,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "url": 4
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "url": true
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "url": []
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "url": {}
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "url": "2048"
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "url": "2048",
+        "sizeBytes": null,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "url": 2048.0
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "sizeBytes": null
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "url": null,
+        "sizeBytes": null,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "sizeBytes": ""
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "sizeBytes": 4
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "url": null,
+        "sizeBytes": 4,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "sizeBytes": true
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "url": null,
+        "sizeBytes": 1,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "sizeBytes": []
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "sizeBytes": {}
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "sizeBytes": "2048"
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "url": null,
+        "sizeBytes": 2048,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "private-token",
+        "sizeBytes": 2048.0
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "url": null,
+        "sizeBytes": 2048,
+        "oauthToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": null
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": ""
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "url": null,
+        "sizeBytes": null,
+        "oauthToken": ""
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": 4
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": true
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": []
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": {}
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": "2048"
+      },
+      "valid": true,
+      "expected": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "url": null,
+        "sizeBytes": null,
+        "oauthToken": "2048"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "google",
+      "input": {
+        "id": "g",
+        "name": "notice.pdf",
+        "mimeType": "application/pdf",
+        "oauthToken": 2048.0
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {},
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "unknown": "discarded"
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": null,
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "",
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": 4,
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": true,
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": [],
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": {},
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "2048",
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "2048",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": 2048.0,
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": null,
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "",
+        "accessToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": 4,
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": true,
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": [],
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": {},
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "2048",
+        "accessToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "2048",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": 2048.0,
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": null
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": ""
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": 4
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": 4,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": true
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": 1,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": []
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": {}
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": "2048"
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": 2048,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": 2048.0
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": 2048,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "webUrl": null
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "webUrl": ""
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": "",
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "webUrl": 4
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "webUrl": true
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "webUrl": []
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "webUrl": {}
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "webUrl": "2048"
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": "2048",
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "webUrl": 2048.0
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "downloadUrl": null
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "downloadUrl": ""
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": "",
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "downloadUrl": 4
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "downloadUrl": true
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "downloadUrl": []
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "downloadUrl": {}
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "downloadUrl": "2048"
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": "2048",
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "downloadUrl": 2048.0
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": null
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": ""
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": 4
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": true
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": []
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": {}
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "2048"
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "2048",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": 2048.0
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "driveId": null
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "driveId": ""
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": "",
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "driveId": 4
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "driveId": true
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "driveId": []
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "driveId": {}
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "driveId": "2048"
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": "2048",
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "driveId": 2048.0
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "sharepointEndpoint": null
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "sharepointEndpoint": ""
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": ""
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "sharepointEndpoint": 4
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "sharepointEndpoint": true
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "sharepointEndpoint": []
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "sharepointEndpoint": {}
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "sharepointEndpoint": "2048"
+      },
+      "valid": true,
+      "expected": {
+        "id": "m",
+        "name": "notice.pdf",
+        "size": null,
+        "webUrl": null,
+        "downloadUrl": null,
+        "accessToken": "private-token",
+        "driveId": null,
+        "sharepointEndpoint": "2048"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "microsoft",
+      "input": {
+        "id": "m",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "sharepointEndpoint": 2048.0
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "b",
+        "name": "notice.pdf",
+        "size": null,
+        "accessToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {},
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "unknown": "discarded"
+      },
+      "valid": true,
+      "expected": {
+        "id": "b",
+        "name": "notice.pdf",
+        "size": null,
+        "accessToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": null,
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "",
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "",
+        "name": "notice.pdf",
+        "size": null,
+        "accessToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": 4,
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": true,
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": [],
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": {},
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "2048",
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "2048",
+        "name": "notice.pdf",
+        "size": null,
+        "accessToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": 2048.0,
+        "name": "notice.pdf",
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": null,
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "",
+        "accessToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "b",
+        "name": "",
+        "size": null,
+        "accessToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": 4,
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": true,
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": [],
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": {},
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "2048",
+        "accessToken": "private-token"
+      },
+      "valid": true,
+      "expected": {
+        "id": "b",
+        "name": "2048",
+        "size": null,
+        "accessToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": 2048.0,
+        "accessToken": "private-token"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": null
+      },
+      "valid": true,
+      "expected": {
+        "id": "b",
+        "name": "notice.pdf",
+        "size": null,
+        "accessToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": ""
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": 4
+      },
+      "valid": true,
+      "expected": {
+        "id": "b",
+        "name": "notice.pdf",
+        "size": 4,
+        "accessToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": true
+      },
+      "valid": true,
+      "expected": {
+        "id": "b",
+        "name": "notice.pdf",
+        "size": 1,
+        "accessToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": []
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": {}
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": "2048"
+      },
+      "valid": true,
+      "expected": {
+        "id": "b",
+        "name": "notice.pdf",
+        "size": 2048,
+        "accessToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": "private-token",
+        "size": 2048.0
+      },
+      "valid": true,
+      "expected": {
+        "id": "b",
+        "name": "notice.pdf",
+        "size": 2048,
+        "accessToken": "private-token"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": null
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": ""
+      },
+      "valid": true,
+      "expected": {
+        "id": "b",
+        "name": "notice.pdf",
+        "size": null,
+        "accessToken": ""
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": 4
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": true
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": []
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": {}
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": "2048"
+      },
+      "valid": true,
+      "expected": {
+        "id": "b",
+        "name": "notice.pdf",
+        "size": null,
+        "accessToken": "2048"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "box",
+      "input": {
+        "id": "b",
+        "name": "notice.pdf",
+        "accessToken": 2048.0
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test"
+      },
+      "valid": true,
+      "expected": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": null,
+        "icon": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {},
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "unknown": "discarded"
+      },
+      "valid": true,
+      "expected": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": null,
+        "icon": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": null,
+        "link": "https://dl.dropboxusercontent.com/test"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "",
+        "link": "https://dl.dropboxusercontent.com/test"
+      },
+      "valid": true,
+      "expected": {
+        "name": "",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": null,
+        "icon": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": 4,
+        "link": "https://dl.dropboxusercontent.com/test"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": true,
+        "link": "https://dl.dropboxusercontent.com/test"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": [],
+        "link": "https://dl.dropboxusercontent.com/test"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": {},
+        "link": "https://dl.dropboxusercontent.com/test"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "2048",
+        "link": "https://dl.dropboxusercontent.com/test"
+      },
+      "valid": true,
+      "expected": {
+        "name": "2048",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": null,
+        "icon": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": 2048.0,
+        "link": "https://dl.dropboxusercontent.com/test"
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": null
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": ""
+      },
+      "valid": true,
+      "expected": {
+        "name": "notice.pdf",
+        "link": "",
+        "bytes": null,
+        "icon": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": 4
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": true
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": []
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": {}
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "2048"
+      },
+      "valid": true,
+      "expected": {
+        "name": "notice.pdf",
+        "link": "2048",
+        "bytes": null,
+        "icon": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": 2048.0
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": null
+      },
+      "valid": true,
+      "expected": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": null,
+        "icon": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": ""
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": 4
+      },
+      "valid": true,
+      "expected": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": 4,
+        "icon": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": true
+      },
+      "valid": true,
+      "expected": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": 1,
+        "icon": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": []
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": {}
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": "2048"
+      },
+      "valid": true,
+      "expected": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": 2048,
+        "icon": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": 2048.0
+      },
+      "valid": true,
+      "expected": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": 2048,
+        "icon": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "icon": null
+      },
+      "valid": true,
+      "expected": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": null,
+        "icon": null
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "icon": ""
+      },
+      "valid": true,
+      "expected": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": null,
+        "icon": ""
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "icon": 4
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "icon": true
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "icon": []
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "icon": {}
+      },
+      "valid": false
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "icon": "2048"
+      },
+      "valid": true,
+      "expected": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "bytes": null,
+        "icon": "2048"
+      }
+    },
+    {
+      "kind": "picker",
+      "provider": "dropbox",
+      "input": {
+        "name": "notice.pdf",
+        "link": "https://dl.dropboxusercontent.com/test",
+        "icon": 2048.0
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": null,
+        "sync_all": false
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": null,
+        "sync_all": false
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": null,
+        "sync_all": true
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": null,
+        "sync_all": true
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": null,
+        "sync_all": "yes"
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": null,
+        "sync_all": true
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": null,
+        "sync_all": "off"
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": null,
+        "sync_all": false
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": null,
+        "sync_all": null
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": null,
+        "sync_all": 2
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "",
+        "sync_all": false
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": "",
+        "sync_all": false
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "",
+        "sync_all": true
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": "",
+        "sync_all": true
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "",
+        "sync_all": "yes"
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": "",
+        "sync_all": true
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "",
+        "sync_all": "off"
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": "",
+        "sync_all": false
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "",
+        "sync_all": null
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "",
+        "sync_all": 2
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "root",
+        "sync_all": false
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": "root",
+        "sync_all": false
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "root",
+        "sync_all": true
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": "root",
+        "sync_all": true
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "root",
+        "sync_all": "yes"
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": "root",
+        "sync_all": true
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "root",
+        "sync_all": "off"
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": "root",
+        "sync_all": false
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "root",
+        "sync_all": null
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "root",
+        "sync_all": 2
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": false
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": false
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": true
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": true
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": "yes"
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": true
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": "off"
+      },
+      "valid": true,
+      "expected": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": false
+      }
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": null
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": 2
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": false
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": true
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": "yes"
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": "off"
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": null
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sync_all": 2
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": 5,
+        "sync_all": false
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": 5,
+        "sync_all": true
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": 5,
+        "sync_all": "yes"
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": 5,
+        "sync_all": "off"
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": 5,
+        "sync_all": null
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": 5,
+        "sync_all": 2
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": false,
+        "sync_all": false
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": false,
+        "sync_all": true
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": false,
+        "sync_all": "yes"
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": false,
+        "sync_all": "off"
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": false,
+        "sync_all": null
+      },
+      "valid": false
+    },
+    {
+      "kind": "sync",
+      "input": {
+        "folder_id": false,
+        "sync_all": 2
+      },
+      "valid": false
+    }
+  ],
+  "units": [
+    {
+      "kind": "auth_url",
+      "provider": "google_drive",
+      "values": {
+        "google_client_id": "client-id",
+        "google_client_secret": "client-secret",
+        "google_redirect_uri": "https://casecite.test/callback",
+        "microsoft_client_id": "client-id",
+        "microsoft_client_secret": "client-secret",
+        "microsoft_redirect_uri": "https://casecite.test/callback",
+        "box_client_id": "client-id",
+        "box_client_secret": "client-secret",
+        "box_redirect_uri": "https://casecite.test/callback",
+        "clio_client_id": "client-id",
+        "clio_client_secret": "client-secret",
+        "clio_redirect_uri": "https://casecite.test/callback",
+        "netdocuments_client_id": "client-id",
+        "netdocuments_client_secret": "client-secret",
+        "netdocuments_redirect_uri": "https://casecite.test/callback",
+        "imanage_client_id": "client-id",
+        "imanage_client_secret": "client-secret",
+        "imanage_redirect_uri": "https://casecite.test/callback",
+        "dropbox_app_key": "client-id",
+        "dropbox_app_secret": "client-secret",
+        "dropbox_redirect_uri": "https://casecite.test/callback",
+        "microsoft_tenant_id": "common",
+        "clio_base_url": "https://eu.app.clio.com",
+        "netdocuments_vault_host": "https://vault.netvoyage.com",
+        "netdocuments_api_host": "https://api.vault.netvoyage.com",
+        "imanage_base_url": "https://cloudimanage.com",
+        "filevine_base_url": "https://api.filevine.io",
+        "filevine_enabled": true,
+        "filevine_api_key": "filevine-key",
+        "filevine_api_secret": "filevine-secret"
+      },
+      "state": "state123",
+      "expected": {
+        "base": "https://accounts.google.com/o/oauth2/v2/auth",
+        "query": {
+          "client_id": [
+            "client-id"
+          ],
+          "redirect_uri": [
+            "https://casecite.test/callback"
+          ],
+          "response_type": [
+            "code"
+          ],
+          "scope": [
+            "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
+          ],
+          "access_type": [
+            "offline"
+          ],
+          "prompt": [
+            "consent"
+          ],
+          "state": [
+            "state123"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "auth_url",
+      "provider": "google_drive",
+      "values": {
+        "google_client_id": "client-id",
+        "google_client_secret": "client-secret",
+        "google_redirect_uri": "https://casecite.test/callback",
+        "microsoft_client_id": "client-id",
+        "microsoft_client_secret": "client-secret",
+        "microsoft_redirect_uri": "https://casecite.test/callback",
+        "box_client_id": "client-id",
+        "box_client_secret": "client-secret",
+        "box_redirect_uri": "https://casecite.test/callback",
+        "clio_client_id": "client-id",
+        "clio_client_secret": "client-secret",
+        "clio_redirect_uri": "https://casecite.test/callback",
+        "netdocuments_client_id": "client-id",
+        "netdocuments_client_secret": "client-secret",
+        "netdocuments_redirect_uri": "https://casecite.test/callback",
+        "imanage_client_id": "client-id",
+        "imanage_client_secret": "client-secret",
+        "imanage_redirect_uri": "https://casecite.test/callback",
+        "dropbox_app_key": "client-id",
+        "dropbox_app_secret": "client-secret",
+        "dropbox_redirect_uri": "https://casecite.test/callback",
+        "microsoft_tenant_id": "common",
+        "clio_base_url": "https://eu.app.clio.com",
+        "netdocuments_vault_host": "https://vault.netvoyage.com",
+        "netdocuments_api_host": "https://api.vault.netvoyage.com",
+        "imanage_base_url": "https://cloudimanage.com",
+        "filevine_base_url": "https://api.filevine.io",
+        "filevine_enabled": true,
+        "filevine_api_key": "filevine-key",
+        "filevine_api_secret": "filevine-secret"
+      },
+      "state": "state &/\ud83d\udcdc",
+      "expected": {
+        "base": "https://accounts.google.com/o/oauth2/v2/auth",
+        "query": {
+          "client_id": [
+            "client-id"
+          ],
+          "redirect_uri": [
+            "https://casecite.test/callback"
+          ],
+          "response_type": [
+            "code"
+          ],
+          "scope": [
+            "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
+          ],
+          "access_type": [
+            "offline"
+          ],
+          "prompt": [
+            "consent"
+          ],
+          "state": [
+            "state &/\ud83d\udcdc"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "listing",
+      "provider": "google_drive",
+      "folder": "",
+      "payload": {
+        "files": [
+          {
+            "id": "abc",
+            "name": "Notice.pdf",
+            "size": 123,
+            "modifiedTime": "2026-10-29T12:00:00Z",
+            "mimeType": "application/pdf"
+          },
+          {
+            "id": "doc",
+            "name": "Contract",
+            "size": 123,
+            "modifiedTime": "2026-10-29T12:00:00Z",
+            "mimeType": "application/vnd.google-apps.document"
+          },
+          {
+            "id": "sheet",
+            "name": "Table",
+            "size": 123,
+            "modifiedTime": "2026-10-29T12:00:00Z",
+            "mimeType": "application/vnd.google-apps.spreadsheet"
+          },
+          {
+            "id": "slide",
+            "name": "Slides",
+            "size": 123,
+            "modifiedTime": "2026-10-29T12:00:00Z",
+            "mimeType": "application/vnd.google-apps.presentation"
+          }
+        ],
+        "nextPageToken": "next"
+      },
+      "expected": [
+        {
+          "id": "abc",
+          "name": "Notice.pdf",
+          "mime_type": "application/pdf",
+          "size": 123,
+          "modified_at": "2026-10-29T12:00:00Z",
+          "path": "",
+          "metadata": {
+            "parents": []
+          }
+        },
+        {
+          "id": "doc",
+          "name": "Contract.docx",
+          "mime_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "size": 123,
+          "modified_at": "2026-10-29T12:00:00Z",
+          "path": "",
+          "metadata": {
+            "parents": []
+          }
+        },
+        {
+          "id": "sheet",
+          "name": "Table.xlsx",
+          "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "size": 123,
+          "modified_at": "2026-10-29T12:00:00Z",
+          "path": "",
+          "metadata": {
+            "parents": []
+          }
+        },
+        {
+          "id": "slide",
+          "name": "Slides.pptx",
+          "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          "size": 123,
+          "modified_at": "2026-10-29T12:00:00Z",
+          "path": "",
+          "metadata": {
+            "parents": []
+          }
+        }
+      ],
+      "next": "next"
+    },
+    {
+      "kind": "auth_url",
+      "provider": "onedrive",
+      "values": {
+        "google_client_id": "client-id",
+        "google_client_secret": "client-secret",
+        "google_redirect_uri": "https://casecite.test/callback",
+        "microsoft_client_id": "client-id",
+        "microsoft_client_secret": "client-secret",
+        "microsoft_redirect_uri": "https://casecite.test/callback",
+        "box_client_id": "client-id",
+        "box_client_secret": "client-secret",
+        "box_redirect_uri": "https://casecite.test/callback",
+        "clio_client_id": "client-id",
+        "clio_client_secret": "client-secret",
+        "clio_redirect_uri": "https://casecite.test/callback",
+        "netdocuments_client_id": "client-id",
+        "netdocuments_client_secret": "client-secret",
+        "netdocuments_redirect_uri": "https://casecite.test/callback",
+        "imanage_client_id": "client-id",
+        "imanage_client_secret": "client-secret",
+        "imanage_redirect_uri": "https://casecite.test/callback",
+        "dropbox_app_key": "client-id",
+        "dropbox_app_secret": "client-secret",
+        "dropbox_redirect_uri": "https://casecite.test/callback",
+        "microsoft_tenant_id": "common",
+        "clio_base_url": "https://eu.app.clio.com",
+        "netdocuments_vault_host": "https://vault.netvoyage.com",
+        "netdocuments_api_host": "https://api.vault.netvoyage.com",
+        "imanage_base_url": "https://cloudimanage.com",
+        "filevine_base_url": "https://api.filevine.io",
+        "filevine_enabled": true,
+        "filevine_api_key": "filevine-key",
+        "filevine_api_secret": "filevine-secret"
+      },
+      "state": "state123",
+      "expected": {
+        "base": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+        "query": {
+          "client_id": [
+            "client-id"
+          ],
+          "redirect_uri": [
+            "https://casecite.test/callback"
+          ],
+          "response_type": [
+            "code"
+          ],
+          "scope": [
+            "Files.Read.All Sites.Read.All User.Read offline_access"
+          ],
+          "response_mode": [
+            "query"
+          ],
+          "state": [
+            "state123"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "auth_url",
+      "provider": "onedrive",
+      "values": {
+        "google_client_id": "client-id",
+        "google_client_secret": "client-secret",
+        "google_redirect_uri": "https://casecite.test/callback",
+        "microsoft_client_id": "client-id",
+        "microsoft_client_secret": "client-secret",
+        "microsoft_redirect_uri": "https://casecite.test/callback",
+        "box_client_id": "client-id",
+        "box_client_secret": "client-secret",
+        "box_redirect_uri": "https://casecite.test/callback",
+        "clio_client_id": "client-id",
+        "clio_client_secret": "client-secret",
+        "clio_redirect_uri": "https://casecite.test/callback",
+        "netdocuments_client_id": "client-id",
+        "netdocuments_client_secret": "client-secret",
+        "netdocuments_redirect_uri": "https://casecite.test/callback",
+        "imanage_client_id": "client-id",
+        "imanage_client_secret": "client-secret",
+        "imanage_redirect_uri": "https://casecite.test/callback",
+        "dropbox_app_key": "client-id",
+        "dropbox_app_secret": "client-secret",
+        "dropbox_redirect_uri": "https://casecite.test/callback",
+        "microsoft_tenant_id": "common",
+        "clio_base_url": "https://eu.app.clio.com",
+        "netdocuments_vault_host": "https://vault.netvoyage.com",
+        "netdocuments_api_host": "https://api.vault.netvoyage.com",
+        "imanage_base_url": "https://cloudimanage.com",
+        "filevine_base_url": "https://api.filevine.io",
+        "filevine_enabled": true,
+        "filevine_api_key": "filevine-key",
+        "filevine_api_secret": "filevine-secret"
+      },
+      "state": "state &/\ud83d\udcdc",
+      "expected": {
+        "base": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+        "query": {
+          "client_id": [
+            "client-id"
+          ],
+          "redirect_uri": [
+            "https://casecite.test/callback"
+          ],
+          "response_type": [
+            "code"
+          ],
+          "scope": [
+            "Files.Read.All Sites.Read.All User.Read offline_access"
+          ],
+          "response_mode": [
+            "query"
+          ],
+          "state": [
+            "state &/\ud83d\udcdc"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "listing",
+      "provider": "onedrive",
+      "folder": "drv:drive:folder",
+      "payload": {
+        "value": [
+          {
+            "id": "abc",
+            "name": "Notice.pdf",
+            "size": 123,
+            "modifiedTime": "2026-10-29T12:00:00Z",
+            "mimeType": "application/pdf",
+            "file": {
+              "mimeType": "application/pdf"
+            },
+            "lastModifiedDateTime": "2026-10-29T12:00:00Z",
+            "parentReference": {
+              "path": "/Cases"
+            },
+            "webUrl": "https://example.test/file"
+          },
+          {
+            "id": "folder",
+            "name": "Notice.pdf",
+            "size": 123,
+            "modifiedTime": "2026-10-29T12:00:00Z",
+            "mimeType": "application/pdf",
+            "folder": {},
+            "lastModifiedDateTime": "2026-10-29T12:00:00Z"
+          }
+        ],
+        "@odata.nextLink": "https://graph.microsoft.com/v1.0/next"
+      },
+      "expected": [
+        {
+          "id": "drv:drive:abc",
+          "name": "Notice.pdf",
+          "mime_type": "application/pdf",
+          "size": 123,
+          "modified_at": "2026-10-29T12:00:00Z",
+          "path": "/Cases",
+          "metadata": {
+            "webUrl": "https://example.test/file"
+          }
+        },
+        {
+          "id": "drv:drive:folder",
+          "name": "Notice.pdf",
+          "mime_type": "folder",
+          "size": 123,
+          "modified_at": "",
+          "path": "",
+          "metadata": {
+            "webUrl": null
+          }
+        }
+      ],
+      "next": "drive|https://graph.microsoft.com/v1.0/next"
+    },
+    {
+      "kind": "auth_url",
+      "provider": "box",
+      "values": {
+        "google_client_id": "client-id",
+        "google_client_secret": "client-secret",
+        "google_redirect_uri": "https://casecite.test/callback",
+        "microsoft_client_id": "client-id",
+        "microsoft_client_secret": "client-secret",
+        "microsoft_redirect_uri": "https://casecite.test/callback",
+        "box_client_id": "client-id",
+        "box_client_secret": "client-secret",
+        "box_redirect_uri": "https://casecite.test/callback",
+        "clio_client_id": "client-id",
+        "clio_client_secret": "client-secret",
+        "clio_redirect_uri": "https://casecite.test/callback",
+        "netdocuments_client_id": "client-id",
+        "netdocuments_client_secret": "client-secret",
+        "netdocuments_redirect_uri": "https://casecite.test/callback",
+        "imanage_client_id": "client-id",
+        "imanage_client_secret": "client-secret",
+        "imanage_redirect_uri": "https://casecite.test/callback",
+        "dropbox_app_key": "client-id",
+        "dropbox_app_secret": "client-secret",
+        "dropbox_redirect_uri": "https://casecite.test/callback",
+        "microsoft_tenant_id": "common",
+        "clio_base_url": "https://eu.app.clio.com",
+        "netdocuments_vault_host": "https://vault.netvoyage.com",
+        "netdocuments_api_host": "https://api.vault.netvoyage.com",
+        "imanage_base_url": "https://cloudimanage.com",
+        "filevine_base_url": "https://api.filevine.io",
+        "filevine_enabled": true,
+        "filevine_api_key": "filevine-key",
+        "filevine_api_secret": "filevine-secret"
+      },
+      "state": "state123",
+      "expected": {
+        "base": "https://account.box.com/api/oauth2/authorize",
+        "query": {
+          "client_id": [
+            "client-id"
+          ],
+          "redirect_uri": [
+            "https://casecite.test/callback"
+          ],
+          "response_type": [
+            "code"
+          ],
+          "state": [
+            "state123"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "auth_url",
+      "provider": "box",
+      "values": {
+        "google_client_id": "client-id",
+        "google_client_secret": "client-secret",
+        "google_redirect_uri": "https://casecite.test/callback",
+        "microsoft_client_id": "client-id",
+        "microsoft_client_secret": "client-secret",
+        "microsoft_redirect_uri": "https://casecite.test/callback",
+        "box_client_id": "client-id",
+        "box_client_secret": "client-secret",
+        "box_redirect_uri": "https://casecite.test/callback",
+        "clio_client_id": "client-id",
+        "clio_client_secret": "client-secret",
+        "clio_redirect_uri": "https://casecite.test/callback",
+        "netdocuments_client_id": "client-id",
+        "netdocuments_client_secret": "client-secret",
+        "netdocuments_redirect_uri": "https://casecite.test/callback",
+        "imanage_client_id": "client-id",
+        "imanage_client_secret": "client-secret",
+        "imanage_redirect_uri": "https://casecite.test/callback",
+        "dropbox_app_key": "client-id",
+        "dropbox_app_secret": "client-secret",
+        "dropbox_redirect_uri": "https://casecite.test/callback",
+        "microsoft_tenant_id": "common",
+        "clio_base_url": "https://eu.app.clio.com",
+        "netdocuments_vault_host": "https://vault.netvoyage.com",
+        "netdocuments_api_host": "https://api.vault.netvoyage.com",
+        "imanage_base_url": "https://cloudimanage.com",
+        "filevine_base_url": "https://api.filevine.io",
+        "filevine_enabled": true,
+        "filevine_api_key": "filevine-key",
+        "filevine_api_secret": "filevine-secret"
+      },
+      "state": "state &/\ud83d\udcdc",
+      "expected": {
+        "base": "https://account.box.com/api/oauth2/authorize",
+        "query": {
+          "client_id": [
+            "client-id"
+          ],
+          "redirect_uri": [
+            "https://casecite.test/callback"
+          ],
+          "response_type": [
+            "code"
+          ],
+          "state": [
+            "state &/\ud83d\udcdc"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "listing",
+      "provider": "box",
+      "folder": "0",
+      "payload": {
+        "entries": [
+          {
+            "id": "abc",
+            "name": "Notice.pdf",
+            "size": 123,
+            "modifiedTime": "2026-10-29T12:00:00Z",
+            "mimeType": "application/pdf",
+            "type": "file",
+            "modified_at": "2026-10-29T12:00:00Z"
+          },
+          {
+            "id": "folder",
+            "name": "Notice.pdf",
+            "size": 123,
+            "modifiedTime": "2026-10-29T12:00:00Z",
+            "mimeType": "application/pdf",
+            "type": "folder"
+          }
+        ],
+        "next_marker": "next"
+      },
+      "expected": [
+        {
+          "id": "abc",
+          "name": "Notice.pdf",
+          "mime_type": "application/pdf",
+          "size": 123,
+          "modified_at": "2026-10-29T12:00:00Z",
+          "path": "",
+          "metadata": {
+            "type": "file"
+          }
+        },
+        {
+          "id": "folder",
+          "name": "Notice.pdf",
+          "mime_type": "folder",
+          "size": 123,
+          "modified_at": "",
+          "path": "",
+          "metadata": {
+            "type": "folder"
+          }
+        }
+      ],
+      "next": "next"
+    },
+    {
+      "kind": "auth_url",
+      "provider": "dropbox",
+      "values": {
+        "google_client_id": "client-id",
+        "google_client_secret": "client-secret",
+        "google_redirect_uri": "https://casecite.test/callback",
+        "microsoft_client_id": "client-id",
+        "microsoft_client_secret": "client-secret",
+        "microsoft_redirect_uri": "https://casecite.test/callback",
+        "box_client_id": "client-id",
+        "box_client_secret": "client-secret",
+        "box_redirect_uri": "https://casecite.test/callback",
+        "clio_client_id": "client-id",
+        "clio_client_secret": "client-secret",
+        "clio_redirect_uri": "https://casecite.test/callback",
+        "netdocuments_client_id": "client-id",
+        "netdocuments_client_secret": "client-secret",
+        "netdocuments_redirect_uri": "https://casecite.test/callback",
+        "imanage_client_id": "client-id",
+        "imanage_client_secret": "client-secret",
+        "imanage_redirect_uri": "https://casecite.test/callback",
+        "dropbox_app_key": "client-id",
+        "dropbox_app_secret": "client-secret",
+        "dropbox_redirect_uri": "https://casecite.test/callback",
+        "microsoft_tenant_id": "common",
+        "clio_base_url": "https://eu.app.clio.com",
+        "netdocuments_vault_host": "https://vault.netvoyage.com",
+        "netdocuments_api_host": "https://api.vault.netvoyage.com",
+        "imanage_base_url": "https://cloudimanage.com",
+        "filevine_base_url": "https://api.filevine.io",
+        "filevine_enabled": true,
+        "filevine_api_key": "filevine-key",
+        "filevine_api_secret": "filevine-secret"
+      },
+      "state": "state123",
+      "expected": {
+        "base": "https://www.dropbox.com/oauth2/authorize",
+        "query": {
+          "client_id": [
+            "client-id"
+          ],
+          "redirect_uri": [
+            "https://casecite.test/callback"
+          ],
+          "response_type": [
+            "code"
+          ],
+          "token_access_type": [
+            "offline"
+          ],
+          "state": [
+            "state123"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "auth_url",
+      "provider": "dropbox",
+      "values": {
+        "google_client_id": "client-id",
+        "google_client_secret": "client-secret",
+        "google_redirect_uri": "https://casecite.test/callback",
+        "microsoft_client_id": "client-id",
+        "microsoft_client_secret": "client-secret",
+        "microsoft_redirect_uri": "https://casecite.test/callback",
+        "box_client_id": "client-id",
+        "box_client_secret": "client-secret",
+        "box_redirect_uri": "https://casecite.test/callback",
+        "clio_client_id": "client-id",
+        "clio_client_secret": "client-secret",
+        "clio_redirect_uri": "https://casecite.test/callback",
+        "netdocuments_client_id": "client-id",
+        "netdocuments_client_secret": "client-secret",
+        "netdocuments_redirect_uri": "https://casecite.test/callback",
+        "imanage_client_id": "client-id",
+        "imanage_client_secret": "client-secret",
+        "imanage_redirect_uri": "https://casecite.test/callback",
+        "dropbox_app_key": "client-id",
+        "dropbox_app_secret": "client-secret",
+        "dropbox_redirect_uri": "https://casecite.test/callback",
+        "microsoft_tenant_id": "common",
+        "clio_base_url": "https://eu.app.clio.com",
+        "netdocuments_vault_host": "https://vault.netvoyage.com",
+        "netdocuments_api_host": "https://api.vault.netvoyage.com",
+        "imanage_base_url": "https://cloudimanage.com",
+        "filevine_base_url": "https://api.filevine.io",
+        "filevine_enabled": true,
+        "filevine_api_key": "filevine-key",
+        "filevine_api_secret": "filevine-secret"
+      },
+      "state": "state &/\ud83d\udcdc",
+      "expected": {
+        "base": "https://www.dropbox.com/oauth2/authorize",
+        "query": {
+          "client_id": [
+            "client-id"
+          ],
+          "redirect_uri": [
+            "https://casecite.test/callback"
+          ],
+          "response_type": [
+            "code"
+          ],
+          "token_access_type": [
+            "offline"
+          ],
+          "state": [
+            "state &/\ud83d\udcdc"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "listing",
+      "provider": "dropbox",
+      "folder": "",
+      "payload": {
+        "entries": [
+          {
+            "id": "abc",
+            "name": "Notice.pdf",
+            "size": 123,
+            "modifiedTime": "2026-10-29T12:00:00Z",
+            "mimeType": "application/pdf",
+            ".tag": "file",
+            "path_lower": "/notice.pdf",
+            "path_display": "/Notice.pdf",
+            "server_modified": "2026-10-29T12:00:00Z"
+          },
+          {
+            "id": "folder",
+            "name": "Notice.pdf",
+            "size": 123,
+            "modifiedTime": "2026-10-29T12:00:00Z",
+            "mimeType": "application/pdf",
+            ".tag": "folder",
+            "path_lower": "/folder"
+          }
+        ],
+        "cursor": "next",
+        "has_more": true
+      },
+      "expected": [
+        {
+          "id": "/notice.pdf",
+          "name": "Notice.pdf",
+          "mime_type": "application/pdf",
+          "size": 123,
+          "modified_at": "2026-10-29T12:00:00Z",
+          "path": "/Notice.pdf",
+          "metadata": {
+            "tag": "file"
+          }
+        },
+        {
+          "id": "/folder",
+          "name": "Notice.pdf",
+          "mime_type": "folder",
+          "size": 0,
+          "modified_at": "",
+          "path": "",
+          "metadata": {
+            "tag": "folder"
+          }
+        }
+      ],
+      "next": "next"
+    },
+    {
+      "kind": "auth_url",
+      "provider": "clio",
+      "values": {
+        "google_client_id": "client-id",
+        "google_client_secret": "client-secret",
+        "google_redirect_uri": "https://casecite.test/callback",
+        "microsoft_client_id": "client-id",
+        "microsoft_client_secret": "client-secret",
+        "microsoft_redirect_uri": "https://casecite.test/callback",
+        "box_client_id": "client-id",
+        "box_client_secret": "client-secret",
+        "box_redirect_uri": "https://casecite.test/callback",
+        "clio_client_id": "client-id",
+        "clio_client_secret": "client-secret",
+        "clio_redirect_uri": "https://casecite.test/callback",
+        "netdocuments_client_id": "client-id",
+        "netdocuments_client_secret": "client-secret",
+        "netdocuments_redirect_uri": "https://casecite.test/callback",
+        "imanage_client_id": "client-id",
+        "imanage_client_secret": "client-secret",
+        "imanage_redirect_uri": "https://casecite.test/callback",
+        "dropbox_app_key": "client-id",
+        "dropbox_app_secret": "client-secret",
+        "dropbox_redirect_uri": "https://casecite.test/callback",
+        "microsoft_tenant_id": "common",
+        "clio_base_url": "https://eu.app.clio.com",
+        "netdocuments_vault_host": "https://vault.netvoyage.com",
+        "netdocuments_api_host": "https://api.vault.netvoyage.com",
+        "imanage_base_url": "https://cloudimanage.com",
+        "filevine_base_url": "https://api.filevine.io",
+        "filevine_enabled": true,
+        "filevine_api_key": "filevine-key",
+        "filevine_api_secret": "filevine-secret"
+      },
+      "state": "state123",
+      "expected": {
+        "base": "https://eu.app.clio.com/oauth/authorize",
+        "query": {
+          "client_id": [
+            "client-id"
+          ],
+          "redirect_uri": [
+            "https://casecite.test/callback"
+          ],
+          "response_type": [
+            "code"
+          ],
+          "state": [
+            "state123"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "auth_url",
+      "provider": "clio",
+      "values": {
+        "google_client_id": "client-id",
+        "google_client_secret": "client-secret",
+        "google_redirect_uri": "https://casecite.test/callback",
+        "microsoft_client_id": "client-id",
+        "microsoft_client_secret": "client-secret",
+        "microsoft_redirect_uri": "https://casecite.test/callback",
+        "box_client_id": "client-id",
+        "box_client_secret": "client-secret",
+        "box_redirect_uri": "https://casecite.test/callback",
+        "clio_client_id": "client-id",
+        "clio_client_secret": "client-secret",
+        "clio_redirect_uri": "https://casecite.test/callback",
+        "netdocuments_client_id": "client-id",
+        "netdocuments_client_secret": "client-secret",
+        "netdocuments_redirect_uri": "https://casecite.test/callback",
+        "imanage_client_id": "client-id",
+        "imanage_client_secret": "client-secret",
+        "imanage_redirect_uri": "https://casecite.test/callback",
+        "dropbox_app_key": "client-id",
+        "dropbox_app_secret": "client-secret",
+        "dropbox_redirect_uri": "https://casecite.test/callback",
+        "microsoft_tenant_id": "common",
+        "clio_base_url": "https://eu.app.clio.com",
+        "netdocuments_vault_host": "https://vault.netvoyage.com",
+        "netdocuments_api_host": "https://api.vault.netvoyage.com",
+        "imanage_base_url": "https://cloudimanage.com",
+        "filevine_base_url": "https://api.filevine.io",
+        "filevine_enabled": true,
+        "filevine_api_key": "filevine-key",
+        "filevine_api_secret": "filevine-secret"
+      },
+      "state": "state &/\ud83d\udcdc",
+      "expected": {
+        "base": "https://eu.app.clio.com/oauth/authorize",
+        "query": {
+          "client_id": [
+            "client-id"
+          ],
+          "redirect_uri": [
+            "https://casecite.test/callback"
+          ],
+          "response_type": [
+            "code"
+          ],
+          "state": [
+            "state &/\ud83d\udcdc"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "listing",
+      "provider": "clio",
+      "folder": "",
+      "payload": {
+        "data": [
+          {
+            "id": "abc",
+            "name": "Notice.pdf",
+            "size": 123,
+            "modifiedTime": "2026-10-29T12:00:00Z",
+            "mimeType": "application/pdf",
+            "content_type": "application/pdf",
+            "updated_at": "2026-10-29T12:00:00Z",
+            "matter": {
+              "id": 123,
+              "display_number": "Matter 123"
+            }
+          }
+        ],
+        "meta": {
+          "paging": {
+            "next": "https://eu.app.clio.com/api/v4/documents.json?page=2"
+          }
+        }
+      },
+      "expected": [
+        {
+          "id": "abc",
+          "name": "Notice.pdf",
+          "mime_type": "application/pdf",
+          "size": 123,
+          "modified_at": "2026-10-29T12:00:00Z",
+          "path": "",
+          "metadata": {
+            "clio_matter_id": 123,
+            "clio_matter": "Matter 123"
+          }
+        }
+      ],
+      "next": "https://eu.app.clio.com/api/v4/documents.json?page=2"
+    },
+    {
+      "kind": "listing",
+      "provider": "filevine",
+      "folder": "",
+      "payload": {
+        "items": [
+          {
+            "projectId": {
+              "native": 123
+            },
+            "projectName": "Matter 123"
+          }
+        ],
+        "hasMore": true
+      },
+      "expected": [
+        {
+          "id": "123",
+          "name": "Matter 123",
+          "mime_type": "folder",
+          "size": 0,
+          "modified_at": "",
+          "path": "",
+          "metadata": {
+            "kind": "project"
+          }
+        }
+      ],
+      "next": "2"
+    },
+    {
+      "kind": "listing",
+      "provider": "filevine",
+      "folder": "123",
+      "payload": {
+        "items": [
+          {
+            "docId": {
+              "native": 456
+            },
+            "filename": "Notice",
+            "extension": "pdf",
+            "size": 123,
+            "lastUpdated": "2026-10-29T12:00:00Z"
+          }
+        ],
+        "hasMore": true
+      },
+      "expected": [
+        {
+          "id": "456",
+          "name": "Notice.pdf",
+          "mime_type": "application/pdf",
+          "size": 123,
+          "modified_at": "2026-10-29T12:00:00Z",
+          "path": "",
+          "metadata": {
+            "project_id": "123",
+            "project_name": "",
+            "doc_type": null,
+            "uploaded_by": null
+          }
+        }
+      ],
+      "next": "2"
+    },
+    {
+      "kind": "auth_url",
+      "provider": "netdocuments",
+      "values": {
+        "google_client_id": "client-id",
+        "google_client_secret": "client-secret",
+        "google_redirect_uri": "https://casecite.test/callback",
+        "microsoft_client_id": "client-id",
+        "microsoft_client_secret": "client-secret",
+        "microsoft_redirect_uri": "https://casecite.test/callback",
+        "box_client_id": "client-id",
+        "box_client_secret": "client-secret",
+        "box_redirect_uri": "https://casecite.test/callback",
+        "clio_client_id": "client-id",
+        "clio_client_secret": "client-secret",
+        "clio_redirect_uri": "https://casecite.test/callback",
+        "netdocuments_client_id": "client-id",
+        "netdocuments_client_secret": "client-secret",
+        "netdocuments_redirect_uri": "https://casecite.test/callback",
+        "imanage_client_id": "client-id",
+        "imanage_client_secret": "client-secret",
+        "imanage_redirect_uri": "https://casecite.test/callback",
+        "dropbox_app_key": "client-id",
+        "dropbox_app_secret": "client-secret",
+        "dropbox_redirect_uri": "https://casecite.test/callback",
+        "microsoft_tenant_id": "common",
+        "clio_base_url": "https://eu.app.clio.com",
+        "netdocuments_vault_host": "https://vault.netvoyage.com",
+        "netdocuments_api_host": "https://api.vault.netvoyage.com",
+        "imanage_base_url": "https://cloudimanage.com",
+        "filevine_base_url": "https://api.filevine.io",
+        "filevine_enabled": true,
+        "filevine_api_key": "filevine-key",
+        "filevine_api_secret": "filevine-secret"
+      },
+      "state": "state123",
+      "expected": {
+        "base": "https://vault.netvoyage.com/neWeb2/OAuth.aspx",
+        "query": {
+          "client_id": [
+            "client-id"
+          ],
+          "redirect_uri": [
+            "https://casecite.test/callback"
+          ],
+          "response_type": [
+            "code"
+          ],
+          "scope": [
+            "read"
+          ],
+          "state": [
+            "state123"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "auth_url",
+      "provider": "netdocuments",
+      "values": {
+        "google_client_id": "client-id",
+        "google_client_secret": "client-secret",
+        "google_redirect_uri": "https://casecite.test/callback",
+        "microsoft_client_id": "client-id",
+        "microsoft_client_secret": "client-secret",
+        "microsoft_redirect_uri": "https://casecite.test/callback",
+        "box_client_id": "client-id",
+        "box_client_secret": "client-secret",
+        "box_redirect_uri": "https://casecite.test/callback",
+        "clio_client_id": "client-id",
+        "clio_client_secret": "client-secret",
+        "clio_redirect_uri": "https://casecite.test/callback",
+        "netdocuments_client_id": "client-id",
+        "netdocuments_client_secret": "client-secret",
+        "netdocuments_redirect_uri": "https://casecite.test/callback",
+        "imanage_client_id": "client-id",
+        "imanage_client_secret": "client-secret",
+        "imanage_redirect_uri": "https://casecite.test/callback",
+        "dropbox_app_key": "client-id",
+        "dropbox_app_secret": "client-secret",
+        "dropbox_redirect_uri": "https://casecite.test/callback",
+        "microsoft_tenant_id": "common",
+        "clio_base_url": "https://eu.app.clio.com",
+        "netdocuments_vault_host": "https://vault.netvoyage.com",
+        "netdocuments_api_host": "https://api.vault.netvoyage.com",
+        "imanage_base_url": "https://cloudimanage.com",
+        "filevine_base_url": "https://api.filevine.io",
+        "filevine_enabled": true,
+        "filevine_api_key": "filevine-key",
+        "filevine_api_secret": "filevine-secret"
+      },
+      "state": "state &/\ud83d\udcdc",
+      "expected": {
+        "base": "https://vault.netvoyage.com/neWeb2/OAuth.aspx",
+        "query": {
+          "client_id": [
+            "client-id"
+          ],
+          "redirect_uri": [
+            "https://casecite.test/callback"
+          ],
+          "response_type": [
+            "code"
+          ],
+          "scope": [
+            "read"
+          ],
+          "state": [
+            "state &/\ud83d\udcdc"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "listing",
+      "provider": "netdocuments",
+      "folder": "",
+      "payload": {
+        "cabinets": [
+          {
+            "id": "c1",
+            "name": "Cabinet"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "id": "cabinet:c1",
+          "name": "Cabinet",
+          "mime_type": "folder",
+          "size": 0,
+          "modified_at": "",
+          "path": "",
+          "metadata": {
+            "kind": "cabinet"
+          }
+        }
+      ],
+      "next": null
+    },
+    {
+      "kind": "listing",
+      "provider": "netdocuments",
+      "folder": "cabinet:c1",
+      "payload": {
+        "list": [
+          {
+            "id": "f1",
+            "name": "Folder"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "id": "f1",
+          "name": "Folder",
+          "mime_type": "folder",
+          "size": 0,
+          "modified_at": "",
+          "path": "",
+          "metadata": {
+            "cabinet": "c1"
+          }
+        }
+      ],
+      "next": null
+    },
+    {
+      "kind": "listing",
+      "provider": "netdocuments",
+      "folder": "f1",
+      "payload": {
+        "list": [
+          {
+            "id": "abc",
+            "name": "Notice.pdf",
+            "size": 123,
+            "modifiedTime": "2026-10-29T12:00:00Z",
+            "mimeType": "application/pdf",
+            "type": "document",
+            "modified": {
+              "date": "2026-10-29T12:00:00Z"
+            },
+            "cabinet": "c1",
+            "version": 2,
+            "extension": "pdf"
+          }
+        ],
+        "total": 101
+      },
+      "expected": [
+        {
+          "id": "abc",
+          "name": "Notice.pdf",
+          "mime_type": "application/pdf",
+          "size": 123,
+          "modified_at": "2026-10-29T12:00:00Z",
+          "path": "",
+          "metadata": {
+            "cabinet": "c1",
+            "version": 2,
+            "extension": "pdf"
+          }
+        }
+      ],
+      "next": "1"
+    },
+    {
+      "kind": "auth_url",
+      "provider": "imanage",
+      "values": {
+        "google_client_id": "client-id",
+        "google_client_secret": "client-secret",
+        "google_redirect_uri": "https://casecite.test/callback",
+        "microsoft_client_id": "client-id",
+        "microsoft_client_secret": "client-secret",
+        "microsoft_redirect_uri": "https://casecite.test/callback",
+        "box_client_id": "client-id",
+        "box_client_secret": "client-secret",
+        "box_redirect_uri": "https://casecite.test/callback",
+        "clio_client_id": "client-id",
+        "clio_client_secret": "client-secret",
+        "clio_redirect_uri": "https://casecite.test/callback",
+        "netdocuments_client_id": "client-id",
+        "netdocuments_client_secret": "client-secret",
+        "netdocuments_redirect_uri": "https://casecite.test/callback",
+        "imanage_client_id": "client-id",
+        "imanage_client_secret": "client-secret",
+        "imanage_redirect_uri": "https://casecite.test/callback",
+        "dropbox_app_key": "client-id",
+        "dropbox_app_secret": "client-secret",
+        "dropbox_redirect_uri": "https://casecite.test/callback",
+        "microsoft_tenant_id": "common",
+        "clio_base_url": "https://eu.app.clio.com",
+        "netdocuments_vault_host": "https://vault.netvoyage.com",
+        "netdocuments_api_host": "https://api.vault.netvoyage.com",
+        "imanage_base_url": "https://cloudimanage.com",
+        "filevine_base_url": "https://api.filevine.io",
+        "filevine_enabled": true,
+        "filevine_api_key": "filevine-key",
+        "filevine_api_secret": "filevine-secret"
+      },
+      "state": "state123",
+      "expected": {
+        "base": "https://cloudimanage.com/auth/oauth2/authorize",
+        "query": {
+          "client_id": [
+            "client-id"
+          ],
+          "redirect_uri": [
+            "https://casecite.test/callback"
+          ],
+          "response_type": [
+            "code"
+          ],
+          "scope": [
+            "user"
+          ],
+          "state": [
+            "state123"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "auth_url",
+      "provider": "imanage",
+      "values": {
+        "google_client_id": "client-id",
+        "google_client_secret": "client-secret",
+        "google_redirect_uri": "https://casecite.test/callback",
+        "microsoft_client_id": "client-id",
+        "microsoft_client_secret": "client-secret",
+        "microsoft_redirect_uri": "https://casecite.test/callback",
+        "box_client_id": "client-id",
+        "box_client_secret": "client-secret",
+        "box_redirect_uri": "https://casecite.test/callback",
+        "clio_client_id": "client-id",
+        "clio_client_secret": "client-secret",
+        "clio_redirect_uri": "https://casecite.test/callback",
+        "netdocuments_client_id": "client-id",
+        "netdocuments_client_secret": "client-secret",
+        "netdocuments_redirect_uri": "https://casecite.test/callback",
+        "imanage_client_id": "client-id",
+        "imanage_client_secret": "client-secret",
+        "imanage_redirect_uri": "https://casecite.test/callback",
+        "dropbox_app_key": "client-id",
+        "dropbox_app_secret": "client-secret",
+        "dropbox_redirect_uri": "https://casecite.test/callback",
+        "microsoft_tenant_id": "common",
+        "clio_base_url": "https://eu.app.clio.com",
+        "netdocuments_vault_host": "https://vault.netvoyage.com",
+        "netdocuments_api_host": "https://api.vault.netvoyage.com",
+        "imanage_base_url": "https://cloudimanage.com",
+        "filevine_base_url": "https://api.filevine.io",
+        "filevine_enabled": true,
+        "filevine_api_key": "filevine-key",
+        "filevine_api_secret": "filevine-secret"
+      },
+      "state": "state &/\ud83d\udcdc",
+      "expected": {
+        "base": "https://cloudimanage.com/auth/oauth2/authorize",
+        "query": {
+          "client_id": [
+            "client-id"
+          ],
+          "redirect_uri": [
+            "https://casecite.test/callback"
+          ],
+          "response_type": [
+            "code"
+          ],
+          "scope": [
+            "user"
+          ],
+          "state": [
+            "state &/\ud83d\udcdc"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "listing",
+      "provider": "imanage",
+      "folder": "",
+      "payload": {
+        "data": [
+          {
+            "id": "LIB!123",
+            "name": "Notice.pdf",
+            "size": 123,
+            "modifiedTime": "2026-10-29T12:00:00Z",
+            "mimeType": "application/pdf",
+            "extension": "pdf",
+            "edit_date": "2026-10-29T12:00:00Z",
+            "database": "LIB",
+            "version": 2,
+            "class": "CONTRACT",
+            "author": "Person"
+          }
+        ],
+        "total_count": 101
+      },
+      "expected": [
+        {
+          "id": "LIB!123",
+          "name": "Notice.pdf",
+          "mime_type": "application/pdf",
+          "size": 123,
+          "modified_at": "2026-10-29T12:00:00Z",
+          "path": "",
+          "metadata": {
+            "library": "LIB",
+            "version": 2,
+            "class": "CONTRACT",
+            "author": "Person"
+          }
+        }
+      ],
+      "next": "1"
+    }
+  ]
+}

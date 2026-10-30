@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func (s *Server) upload(q request) (any, error) {
@@ -40,7 +39,7 @@ func (s *Server) upload(q request) (any, error) {
 	if len(data) == 0 || int64(len(data)) > s.cfg.MaxUpload {
 		return nil, bad("File is empty or exceeds the upload limit")
 	}
-	ct, err := validateDocumentUpload(data, name)
+	_, err = validateDocumentUpload(data, name)
 	if err != nil {
 		return nil, err
 	}
@@ -48,44 +47,8 @@ func (s *Server) upload(q request) (any, error) {
 	if err = s.checkMatter(q.r.Context(), q.user.ID, matter, false); err != nil {
 		return nil, err
 	}
-	id, mid := uuid(), uuid()
-	doc := M{"filename": name, "content_type": ct, "size": len(data), "memory_id": mid, "status": "processing", "source": "local", "sha256": digest(string(data)), "chunk_count": 0, "metadata": M{}, "folder_path": nil}
-	if documentNeedsOCR(data) {
-		doc["ocr_required"] = true
-		doc["index_memory_id"] = uuid()
-	}
-	if err = s.saveObject(q.r.Context(), q.user.ID, "document", id, matter, doc); err != nil {
-		return nil, err
-	}
-	_, err = s.gm.Create(q.r.Context(), mid, id, name, ct, data)
-	// A disconnected upload can have succeeded remotely. Preserve the allocated
-	// memory ID and reconcile it instead of re-uploading or losing its identity.
-	ctx, cancel := context.WithTimeout(s.ctx, 5*time.Second)
-	defer cancel()
-	if err != nil {
-		doc["status"] = "upload_uncertain"
-		doc["error"] = "Upload did not finish cleanly. Refresh to reconcile with GoodMem."
-	} else {
-		doc["status"] = "processing"
-	}
-	// Update only upload state, preserving concurrent moves/index reservations.
-	r, saveErr := s.db.ExecContext(ctx, `UPDATE cc_objects SET data=data || $3::jsonb WHERE kind='document' AND id=$1 AND data->>'memory_id'=$2 AND data->>'ingest_job_id' IS NULL`, id, mid, jsonBytes(M{"status": doc["status"], "error": doc["error"]}))
-	if saveErr != nil {
-		return nil, saveErr
-	}
-	if n, _ := r.RowsAffected(); n == 0 {
-		if _, e := s.getObject(ctx, q.user.ID, "document", id); e != nil {
-			_ = s.scheduleMemoryDeletion(ctx, mid)
-			return nil, e
-		}
-	}
-	if err == nil && doc["ocr_required"] == true {
-		if _, err = s.enqueueDocumentOCR(ctx, q.user.ID, id, false); err != nil {
-			return nil, err
-		}
-	}
-	s.audit(ctx, q.user.ID, "document.upload", "document", id, M{"matter_id": matter, "size": len(data)})
-	return s.getObject(ctx, q.user.ID, "document", id)
+	doc, _, err := s.beginDocumentIngest(q.r.Context(), q.user.ID, matter, uuid(), name, "local", "", data, M{})
+	return doc, err
 }
 
 func (s *Server) refreshDocument(ctx context.Context, doc M) M {
