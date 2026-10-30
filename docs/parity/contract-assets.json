@@ -1,0 +1,14 @@
+{
+  "baseline": "6605cb3474cf0c2894080af216d5fed2a81fc997",
+  "source_sha256": {
+    "clause_intel/taxonomy_seed": "2ec33c25fa83e2c123dcabf3f32e85aaabedb7b71bc35d17356ef7b244c4a75d",
+    "clause_intel/classifier": "aafa4d2d0fa3ebb81b461b7cfa42e6b61de6b34526b0c5f3ee343e16fcbb7bac",
+    "clause_intel/jurisdiction_seed": "d322c4f668bc6bbc4fa77f8fe140bd0d0b8bd148744ba6e0084385d7a03be299",
+    "clause_intel/deviation_detector": "2725b2003499b056f25a97dfdb5f35fc920b41da2f2b004f66ccba39fb6a923c",
+    "document_analyzer": "eda67487157ed698a8ebecf1b4a130d325c1e31cd4157c028d568b02636dc4b7",
+    "contract_analysis/drafting": "a4a3f1a2aea3e74c7a04c3fc53cc1a5e9d0463a97c90bb871c8c5876b4a6cc07",
+    "contract_analysis/long_drafting": "8b004328afe76b5144be11957fc9a88e0699c8a1d35c90e1672bfc3f1e5b7e65",
+    "rag/case_law_guard": "1d8852715e4e0892a15eb45997114ae3df2c416fb915c04f7e880cbaec327902"
+  },
+  "change": "Shared untrusted-content instruction uses the Go server's equivalent rule; all substantive prompt text and taxonomy entries are unchanged."
+}

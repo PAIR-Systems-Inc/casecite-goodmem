@@ -67,12 +67,17 @@ function LeftSidebar() {
 
       <div className={`${s.sidebarInner} ${collapsed ? s.sidebarInnerCollapsed : ''}`}>
         {/* Logo */}
-        <div className={`${s.logo} ${collapsed ? s.logoCollapsed : ''}`}>
+        <div className={`${s.logo} ${collapsed ? s.logoCollapsed : ''}`} aria-label="CaseCite by PairSys" title={collapsed ? 'CaseCite by PairSys' : undefined}>
+          <div className={s.pairBrand}>
+            <span className={s.pairMark} role="img" aria-label="PAIR Systems logo" />
+            {!collapsed && <span className={s.pairWordmark}>PAIR<span className={s.pairSystems}>SYSTEMS</span></span>}
+          </div>
           {branding.logo_url ? (
             <img src={branding.logo_url} alt={branding.firm_name || 'CaseCite'} className={s.logoImg} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           ) : (
             <span className={s.logoWordmark}>{collapsed ? 'C' : 'CaseCite'}<span className={s.logoDot}>.</span></span>
           )}
+          {!collapsed && <span className={s.brandByline}>by PairSys</span>}
         </div>
 
         {/* Mode Selection */}

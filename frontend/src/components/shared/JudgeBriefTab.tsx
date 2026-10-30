@@ -80,7 +80,7 @@ function JudgeBriefTab({
             <div>
               <span className={styles.placeholderTitle}>AI-Generated Intelligence Brief</span>
               <span className={styles.placeholderDesc}>
-                An analysis of this judge's background, judicial philosophy, ruling patterns, and practice tips. Uses AI tokens · takes 30-60 seconds.
+                An analysis of this judge's background, available opinions and docket data, with practical preparation tips and clear limits where evidence is missing. Uses AI tokens · takes 30-60 seconds.
               </span>
             </div>
             <button
@@ -102,8 +102,7 @@ function JudgeBriefTab({
             <button
               className={styles.judgeQaClear}
               onClick={clearJudgeConversation}
-              disabled={judgeQueryLoading}
-              title="Clear the conversation and start fresh"
+              title="Clear the conversation and cancel any pending answer"
             >
               <Icon name="Eraser" size={12} /> Clear
             </button>
@@ -137,8 +136,8 @@ function JudgeBriefTab({
           <div className={styles.judgeQueryHints}>
             <span>Try asking:</span>
             {(judgeQueryIncludeDocs
-              ? ['How would this judge likely rule on my case?', 'Compare this judge to cases in my documents', 'What should I know before appearing before this judge?']
-              : ['What is their judicial philosophy?', 'How do they typically rule on immigration cases?', 'What are their most influential decisions?']
+              ? ['What do my documents add to this judge profile?', 'Compare this judge to cases in my documents', 'What should I know before appearing before this judge?']
+              : ['Summarize their judicial career', 'What case types appear in this profile?', 'Which decisions in this sample are most cited?']
             ).map((hint: string, i: number) => (
               <button key={i} className={styles.judgeQueryHint} onClick={() => setJudgeQueryInput(hint)}>
                 {hint}

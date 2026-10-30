@@ -5,6 +5,7 @@ vi.mock('../../api', () => ({
   api: {
     token: null,
     login: vi.fn(),
+	getMicrosoftAuthConfig: vi.fn().mockRejectedValue(new Error('SSO not configured')),
     register: vi.fn(),
     logout: vi.fn().mockResolvedValue(undefined),
     changePassword: vi.fn(),

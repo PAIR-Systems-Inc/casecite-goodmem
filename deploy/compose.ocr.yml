@@ -1,0 +1,80 @@
+# Optional NVIDIA OCR service. Same tested vLLM image and 8 GB profile as local
+# evaluation. Only the application port is published; OCR stays on-network.
+x-ocr-image: &ocr-image vllm/vllm-openai@sha256:014a95f21c9edf6abe0aea6b07353f96baa4ec291c427bb1176dc7c93a85845c
+services:
+  model-download:
+    image: *ocr-image
+    profiles: [setup]
+    labels:
+      ai.pairsys.casecite.install-dir: ${CASECITE_INSTALL_DIR}
+    entrypoint: [python3, /installer/download-ocr.py]
+    environment:
+      HF_HUB_DISABLE_TELEMETRY: '1'
+      HF_HUB_DOWNLOAD_TIMEOUT: '120'
+      OCR_CACHE_READ_ONLY: 'false'
+    volumes:
+      - ocr-models:/models
+      - ./deploy/download-ocr.py:/installer/download-ocr.py:ro
+  ocr:
+    image: *ocr-image
+    labels:
+      ai.pairsys.casecite.install-dir: ${CASECITE_INSTALL_DIR}
+    command:
+      - --model
+      - /models/models--rednote-hilab--dots.ocr/snapshots/c0111ce6bc07803dbc267932ffef0ae3a51dc951
+      - --served-model-name
+      - pairsys/pairsys.ocr
+      - --trust-remote-code
+      - --dtype
+      - bfloat16
+      - --gpu-memory-utilization
+      - '0.68'
+      - --cpu-offload-gb
+      - '3'
+      - --max-model-len
+      - '16384'
+      - --max-num-seqs
+      - '1'
+      - --max-num-batched-tokens
+      - '1024'
+      - --limit-mm-per-prompt
+      - '{"image":1,"video":0}'
+      - --mm-processor-kwargs
+      - '{"max_pixels":3211264}'
+      - --enforce-eager
+      - --disable-log-requests
+    environment:
+      HOME: /tmp
+      HF_HOME: /tmp/huggingface
+      HF_HUB_OFFLINE: '1'
+      TRANSFORMERS_OFFLINE: '1'
+      VLLM_NO_USAGE_STATS: '1'
+      DO_NOT_TRACK: '1'
+      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+    user: '65534:65534'
+    read_only: true
+    tmpfs: ['/tmp:rw,nosuid,nodev,size=2g,mode=1777']
+    shm_size: 4gb
+    mem_limit: 24g
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - ocr-models:/models:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['${OCR_GPU_ID:-0}']
+              capabilities: [gpu]
+    restart: 'on-failure:3'
+    healthcheck:
+      test: [CMD, python3, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      start_period: 120s
+      retries: 20
+volumes:
+  ocr-models:
+    labels:
+      ai.pairsys.casecite.install-dir: ${CASECITE_INSTALL_DIR}

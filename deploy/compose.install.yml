@@ -1,0 +1,57 @@
+# Portable, prebuilt installation. Used by scripts/casecite.sh, never implicitly
+# merged into development or the existing casecite-review installation.
+x-install-labels: &install-labels
+  ai.pairsys.casecite.install-dir: ${CASECITE_INSTALL_DIR:?Use scripts/casecite.sh}
+services:
+  postgres:
+    labels: *install-labels
+  goodmem:
+    labels: *install-labels
+    environment:
+      GOODMEM_OCR_RECOGNITION_PARALLELISM: '1'
+      GOODMEM_PAGE_RENDER_PARALLELISM: '1'
+      GOODMEM_OCR_BUFFERED_PAGES: '2'
+  setup:
+    labels: *install-labels
+    build: !reset null
+    image: ${CASECITE_IMAGE:?Use scripts/casecite.sh}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      GOODMEM_SETUP_MODELS: 'true'
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      LLM_MODEL: ${LLM_MODEL:-gpt-5.4-mini}
+      VOYAGE_API_KEY: ${VOYAGE_API_KEY:-}
+      VOYAGE_BASE_URL: ${VOYAGE_BASE_URL:-https://api.voyageai.com/v1}
+      VOYAGE_RERANKER_MODEL: ${VOYAGE_RERANKER_MODEL:-rerank-3-lite}
+      VOYAGE_EMBEDDING_MODEL: ${VOYAGE_EMBEDDING_MODEL:-voyage-4-large}
+      VOYAGE_EMBEDDING_DIMENSIONS: ${VOYAGE_EMBEDDING_DIMENSIONS:-1024}
+  app:
+    labels: *install-labels
+    build: !reset null
+    image: ${CASECITE_IMAGE:?Use scripts/casecite.sh}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      GOODMEM_OCR_BASE_URL: ${GOODMEM_OCR_BASE_URL:-http://ocr:8000/v1}
+      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-1536}
+      VOYAGE_BASE_URL: ${VOYAGE_BASE_URL:-https://api.voyageai.com/v1}
+      VOYAGE_RERANKER_MODEL: ${VOYAGE_RERANKER_MODEL:-rerank-3-lite}
+      VOYAGE_EMBEDDING_MODEL: ${VOYAGE_EMBEDDING_MODEL:-voyage-4-large}
+      VOYAGE_EMBEDDING_DIMENSIONS: ${VOYAGE_EMBEDDING_DIMENSIONS:-1024}
+    healthcheck:
+      test: [CMD, casecite, wait, 'http://127.0.0.1:8000/ready', '8']
+      interval: 15s
+      timeout: 10s
+      start_period: 30s
+      retries: 6
+volumes:
+  database:
+    labels: *install-labels
+  connection:
+    labels: *install-labels
+  provisioning:
+    labels: *install-labels
+networks:
+  default:
+    labels: *install-labels

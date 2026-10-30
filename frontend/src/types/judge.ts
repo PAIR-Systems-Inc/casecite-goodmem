@@ -75,6 +75,8 @@ export interface JudgeIntelProfile {
   wikipedia_notable_cases?: string;
   wikipedia_personal_life?: string;
   error?: string;
+	data_warnings?: string[];
+	coverage?: { opinions_available?: number; opinions_retrieved?: number; opinion_limit?: number; full_text_limit?: number; dockets_available?: number; dockets_retrieved?: number; docket_limit?: number; note?: string };
   [key: string]: unknown;
 }
 

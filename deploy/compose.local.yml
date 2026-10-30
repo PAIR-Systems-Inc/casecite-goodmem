@@ -1,0 +1,75 @@
+# Isolated local review stack. Always use the explicit project and env file:
+# docker compose -p casecite-review --env-file .local-eval/.env \
+#   -f docker-compose.yml -f deploy/compose.local.yml <command>
+# No ports, networks or volumes from an existing GoodMem installation are used.
+services:
+  goodmem:
+    ports:
+      - '127.0.0.1:18080:8080'
+    environment:
+      GOODMEM_OCR_BASE_URL: http://ocr:8000/v1
+      GOODMEM_OCR_RECOGNITION_PARALLELISM: '1'
+      GOODMEM_PAGE_RENDER_PARALLELISM: '1'
+      GOODMEM_OCR_BUFFERED_PAGES: '2'
+  ocr:
+    # Cached vLLM 0.11.0; Dots OCR is supported natively by this release.
+    image: vllm/vllm-openai@sha256:014a95f21c9edf6abe0aea6b07353f96baa4ec291c427bb1176dc7c93a85845c
+    command:
+      - --model
+      - /models/dots-ocr/snapshots/c0111ce6bc07803dbc267932ffef0ae3a51dc951
+      - --served-model-name
+      - pairsys/pairsys.ocr
+      - --trust-remote-code
+      - --dtype
+      - bfloat16
+      - --gpu-memory-utilization
+      - '0.68'
+      - --cpu-offload-gb
+      - '3'
+      - --max-model-len
+      - '16384'
+      - --max-num-seqs
+      - '1'
+      - --max-num-batched-tokens
+      - '1024'
+      - --limit-mm-per-prompt
+      - '{"image":1,"video":0}'
+      # Bound the vision encoder's working memory; about 185 dpi for A4.
+      - --mm-processor-kwargs
+      - '{"max_pixels":3211264}'
+      - --enforce-eager
+      - --disable-log-requests
+    environment:
+      HOME: /tmp
+      HF_HOME: /tmp/huggingface
+      HF_HUB_OFFLINE: '1'
+      TRANSFORMERS_OFFLINE: '1'
+      VLLM_NO_USAGE_STATS: '1'
+      DO_NOT_TRACK: '1'
+      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+    user: '65534:65534'
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,size=2g,mode=1777
+    shm_size: 4gb
+    mem_limit: 24g
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - '${CASECITE_OCR_MODEL_DIR:?Set CASECITE_OCR_MODEL_DIR to the cached dots.ocr model directory}:/models/dots-ocr:ro'
+    ports:
+      - '127.0.0.1:18081:8000'
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
+    restart: 'on-failure:3'
+    healthcheck:
+      test: [CMD, python3, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      start_period: 120s
+      retries: 4

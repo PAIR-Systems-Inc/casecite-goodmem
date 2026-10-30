@@ -1,0 +1,2497 @@
+{
+  "baseline": "6605cb3474cf0c2894080af216d5fed2a81fc997",
+  "sources": {
+    "backend/app/services/rag/routing.py": "fd93df322d5683ec0bb2a084026c32e71962fcbc68c3ac21924cf434e2ad382a",
+    "backend/app/services/rag/intent.py": "5abf026278d2c9dd555a3458a3d1b7c4410ae3cfb5e39887d6f77327d9d43b4d",
+    "backend/app/services/search.py": "eb877c937c109149b5c7c328c09d0ebfa6b9994222168e2b858a0e6c64da5bd3",
+    "backend/app/services/rag/enhancements.py": "bbacc4759954ed576c9756dcb960fb16282fb2213f74faf37b679474df90b934",
+    "backend/app/services/rag/claim_grounding.py": "5a8995d7eb96277d7a59ebe193a535d87fcf65d27871cbf0d59185003a15211b",
+    "backend/app/services/rag/citation_reasoning.py": "ffea3a5a448cc71fc02765972e6ea0b7c499b8443c139cc10deda411381c8f43",
+    "backend/app/services/rag/per_file.py": "d0367a87746cb7cbd843f26ae19d10da0afa2e11c19df7c026cfe940346787da",
+    "backend/tests/test_query_routing.py": "885f2870abb6c6aae5353640b06a509fd1e9d41bfc506935856e393a87c0f5ee"
+  },
+  "fixtures": [
+    {
+      "kind": "route",
+      "query": "",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": null
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "find me case law",
+      "expected": {
+        "intent": "research",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": null
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "find me case law",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "Please find case law for café liability",
+      "expected": {
+        "intent": "research",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "café liability"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "Please find case law for café liability",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "compare these leases",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": true,
+        "search_query": "compare these leases"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "compare these leases",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "What did the letter say?",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": "What did letter say"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "What did the letter say?",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "What is the risk?",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": "What is risk"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "What is the risk?",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "What is brisk?",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": "What is brisk"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "What is brisk?",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "when was it signed",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": "when was it signed"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "when was it signed",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "An extended request containing more than eight words without trigger phrases",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": "extended request containing more than eight words without trigger phrases"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "An extended request containing more than eight words without trigger phrases",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "our strategy",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": "our strategy"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "our strategy",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "all authorities for this document",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "this document"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "all authorities for this document",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "map the citations in our brief",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "map citations in our brief"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "map the citations in our brief",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "find precedents about our new client",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "our new client"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "find precedents about our new client",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "which one of these renews?",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": true,
+        "search_query": "which one of these renews"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "which one of these renews?",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "Compare each of these contracts",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": true,
+        "search_query": "Compare each of these contracts"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "Compare each of these contracts",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "fínd precedents on préemption",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": "fínd préemption"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "fínd precedents on préemption",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "getgood案例 law",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": "getgood案例 law"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "getgood案例 law",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "support our case",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": "support our"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "support our case",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "each document",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": true,
+        "search_query": "each document"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "each document",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "summarize every agreement",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": true,
+        "search_query": "summarize every agreement"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "summarize every agreement",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "What statute governs?",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "What statute governs"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "What statute governs?",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "What are our strongest arguments in this matter?",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": "What are our strongest arguments in this matter"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "What are our strongest arguments in this matter?",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "Give me all the case law on DWI stops",
+      "expected": {
+        "intent": "research",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "DWI stops"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "Give me all the case law on DWI stops",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "What case law supports our claim here?",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "What supports our claim here"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "What case law supports our claim here?",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "find me case law i could use to get out of this faith group contract",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "i could use to out of this faith group contract"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "find me case law i could use to get out of this faith group contract",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "Summarize the indemnification obligations",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": "Summarize indemnification obligations"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "Summarize the indemnification obligations",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "Look in the Johnson file and find me all relevant case law to support my case",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "Look in Johnson file and to support my"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "Look in the Johnson file and find me all relevant case law to support my case",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "Read all six of these files and give me all of the case law relevant to them",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "Read six of these files and of to them"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "Read all six of these files and give me all of the case law relevant to them",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "Pull case law supporting our position",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "supporting our position"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "Pull case law supporting our position",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "Which court issued the ruling cited in exhibit B?",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "Which court issued cited in exhibit B"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "Which court issued the ruling cited in exhibit B?",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "find me case law for a dwi",
+      "expected": {
+        "intent": "research",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "dwi"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "find me case law for a dwi",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "Find case law on termination for convenience",
+      "expected": {
+        "intent": "research",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "termination convenience"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "Find case law on termination for convenience",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "whatever",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": "whatever"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "whatever",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "not json",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": "not json"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "not json",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "find case law to support my case",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "to support my"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "find case law to support my case",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "summarize the lease",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "per_file": false,
+        "search_query": "summarize lease"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "summarize the lease",
+      "expected": "factual"
+    },
+    {
+      "kind": "route",
+      "query": "pull precedents about qualified immunity excessive force",
+      "expected": {
+        "intent": "research",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": "qualified immunity excessive force"
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "pull precedents about qualified immunity excessive force",
+      "expected": "analytical"
+    },
+    {
+      "kind": "route",
+      "query": "find me some case law",
+      "expected": {
+        "intent": "research",
+        "use_case_law": true,
+        "per_file": false,
+        "search_query": null
+      }
+    },
+    {
+      "kind": "intent",
+      "query": "find me some case law",
+      "expected": "factual"
+    },
+    {
+      "kind": "payload",
+      "raw": null,
+      "query": "find authority to support our case",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "search_query": "to support our"
+      }
+    },
+    {
+      "kind": "payload",
+      "raw": "",
+      "query": "find authority to support our case",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "search_query": "to support our"
+      }
+    },
+    {
+      "kind": "payload",
+      "raw": "garbage",
+      "query": "find authority to support our case",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "search_query": "to support our"
+      }
+    },
+    {
+      "kind": "payload",
+      "raw": "null",
+      "query": "find authority to support our case",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "search_query": "to support our"
+      }
+    },
+    {
+      "kind": "payload",
+      "raw": "[]",
+      "query": "find authority to support our case",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "search_query": "to support our"
+      }
+    },
+    {
+      "kind": "payload",
+      "raw": "42",
+      "query": "find authority to support our case",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "search_query": "to support our"
+      }
+    },
+    {
+      "kind": "payload",
+      "raw": "{}",
+      "query": "find authority to support our case",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "search_query": "to support our"
+      }
+    },
+    {
+      "kind": "payload",
+      "raw": "{\"intent\":\"authority_map\",\"use_case_law\":true}",
+      "query": "find authority to support our case",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "search_query": "to support our"
+      }
+    },
+    {
+      "kind": "payload",
+      "raw": "{\"intent\":\" RESEARCH \",\"use_case_law\":false,\"search_query\":\"DWI stops\"}",
+      "query": "find authority to support our case",
+      "expected": {
+        "intent": "research",
+        "use_case_law": false,
+        "search_query": "DWI stops"
+      }
+    },
+    {
+      "kind": "payload",
+      "raw": "{\"intent\":\"ask\",\"search_query\":\"x\"}",
+      "query": "find authority to support our case",
+      "expected": {
+        "intent": "ask",
+        "use_case_law": false,
+        "search_query": "to support our"
+      }
+    },
+    {
+      "kind": "payload",
+      "raw": "{\"intent\":\"unknown\",\"search_query\":\"  café  \"}",
+      "query": "find authority to support our case",
+      "expected": {
+        "intent": "strategy",
+        "use_case_law": true,
+        "search_query": "café"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "",
+      "expected": {
+        "original": "",
+        "semantic_text": "",
+        "tokens": [],
+        "phrases": [],
+        "required_terms": [],
+        "optional_terms": [],
+        "excluded_terms": [],
+        "field_queries": {},
+        "date_from": null,
+        "date_to": null,
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": ""
+      }
+    },
+    {
+      "kind": "query",
+      "query": "What is not covered?",
+      "expected": {
+        "original": "What is not covered?",
+        "semantic_text": "What is not covered?",
+        "tokens": [
+          {
+            "value": "What",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "is",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "not",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "covered",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          }
+        ],
+        "phrases": [],
+        "required_terms": [
+          "What",
+          "not",
+          "covered"
+        ],
+        "optional_terms": [],
+        "excluded_terms": [],
+        "field_queries": {},
+        "date_from": null,
+        "date_to": null,
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "What is not covered?"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "WHAT IS NOT COVERED",
+      "expected": {
+        "original": "WHAT IS NOT COVERED",
+        "semantic_text": "WHAT IS NOT COVERED",
+        "tokens": [
+          {
+            "value": "WHAT",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "IS",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "NOT",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "COVERED",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          }
+        ],
+        "phrases": [],
+        "required_terms": [
+          "WHAT",
+          "NOT",
+          "COVERED"
+        ],
+        "optional_terms": [],
+        "excluded_terms": [],
+        "field_queries": {},
+        "date_from": null,
+        "date_to": null,
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "WHAT IS NOT COVERED"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "contract AND fraud NOT tort",
+      "expected": {
+        "original": "contract AND fraud NOT tort",
+        "semantic_text": "contract fraud",
+        "tokens": [
+          {
+            "value": "contract",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "fraud",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "tort",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": true
+          }
+        ],
+        "phrases": [],
+        "required_terms": [
+          "contract",
+          "fraud"
+        ],
+        "optional_terms": [],
+        "excluded_terms": [
+          "tort"
+        ],
+        "field_queries": {},
+        "date_from": null,
+        "date_to": null,
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "contract fraud"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "alpha OR beta AND gamma -delta",
+      "expected": {
+        "original": "alpha OR beta AND gamma -delta",
+        "semantic_text": "alpha beta gamma",
+        "tokens": [
+          {
+            "value": "alpha",
+            "operator": "OR",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "beta",
+            "operator": "OR",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "gamma",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "delta",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": true
+          }
+        ],
+        "phrases": [],
+        "required_terms": [
+          "gamma"
+        ],
+        "optional_terms": [
+          "alpha",
+          "beta"
+        ],
+        "excluded_terms": [
+          "delta"
+        ],
+        "field_queries": {},
+        "date_from": null,
+        "date_to": null,
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "alpha beta gamma"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "\"willful infringement\" court:ca9 after:2020 before:2025-02-28",
+      "expected": {
+        "original": "\"willful infringement\" court:ca9 after:2020 before:2025-02-28",
+        "semantic_text": "willful infringement",
+        "tokens": [],
+        "phrases": [
+          "willful infringement"
+        ],
+        "required_terms": [],
+        "optional_terms": [],
+        "excluded_terms": [],
+        "field_queries": {
+          "court": "ca9"
+        },
+        "date_from": "2020-01-01",
+        "date_to": "2025-02-28",
+        "courts": [
+          "ca9"
+        ],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "willful infringement"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "filename:\"my contract.pdf\" type:contract source:local",
+      "expected": {
+        "original": "filename:\"my contract.pdf\" type:contract source:local",
+        "semantic_text": "",
+        "tokens": [],
+        "phrases": [],
+        "required_terms": [],
+        "optional_terms": [],
+        "excluded_terms": [],
+        "field_queries": {
+          "filename": "my contract.pdf",
+          "doc_type": "contract",
+          "source": "local"
+        },
+        "date_from": null,
+        "date_to": null,
+        "courts": [],
+        "doc_types": [
+          "contract"
+        ],
+        "jurisdictions": [],
+        "semantic_query": "filename:\"my contract.pdf\" type:contract source:local"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "Re:Smith at 10:30 https://court.test/a",
+      "expected": {
+        "original": "Re:Smith at 10:30 https://court.test/a",
+        "semantic_text": "Re:Smith at 10:30 https://court.test/a",
+        "tokens": [
+          {
+            "value": "Re:Smith",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "at",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "10:30",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "https://court.test/a",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          }
+        ],
+        "phrases": [],
+        "required_terms": [
+          "Re:Smith",
+          "10:30",
+          "https://court.test/a"
+        ],
+        "optional_terms": [],
+        "excluded_terms": [],
+        "field_queries": {},
+        "date_from": null,
+        "date_to": null,
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "Re:Smith at 10:30 https://court.test/a"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "court:ca9 court:scotus jurisdiction:federal date:2024 year:2024",
+      "expected": {
+        "original": "court:ca9 court:scotus jurisdiction:federal date:2024 year:2024",
+        "semantic_text": "",
+        "tokens": [],
+        "phrases": [],
+        "required_terms": [],
+        "optional_terms": [],
+        "excluded_terms": [],
+        "field_queries": {
+          "court": "scotus",
+          "date_filed": "2024",
+          "year": "2024"
+        },
+        "date_from": null,
+        "date_to": null,
+        "courts": [
+          "ca9",
+          "scotus"
+        ],
+        "doc_types": [],
+        "jurisdictions": [
+          "federal"
+        ],
+        "semantic_query": "court:ca9 court:scotus jurisdiction:federal date:2024 year:2024"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "after:2024/1/2 before:12/31/2025",
+      "expected": {
+        "original": "after:2024/1/2 before:12/31/2025",
+        "semantic_text": "",
+        "tokens": [],
+        "phrases": [],
+        "required_terms": [],
+        "optional_terms": [],
+        "excluded_terms": [],
+        "field_queries": {},
+        "date_from": "2024-01-02",
+        "date_to": "2025-12-31",
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "after:2024/1/2 before:12/31/2025"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "date_from:2024-02-30 date_to:2024-02-29",
+      "expected": {
+        "original": "date_from:2024-02-30 date_to:2024-02-29",
+        "semantic_text": "",
+        "tokens": [],
+        "phrases": [],
+        "required_terms": [],
+        "optional_terms": [],
+        "excluded_terms": [],
+        "field_queries": {},
+        "date_from": null,
+        "date_to": "2024-02-29",
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "date_from:2024-02-30 date_to:2024-02-29"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "-42 -éclair NOT CAFE \"NOT covered\"",
+      "expected": {
+        "original": "-42 -éclair NOT CAFE \"NOT covered\"",
+        "semantic_text": "-42",
+        "tokens": [
+          {
+            "value": "-42",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "éclair",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": true
+          },
+          {
+            "value": "CAFE",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": true
+          }
+        ],
+        "phrases": [
+          "NOT covered"
+        ],
+        "required_terms": [
+          "-42"
+        ],
+        "optional_terms": [],
+        "excluded_terms": [
+          "éclair",
+          "CAFE"
+        ],
+        "field_queries": {},
+        "date_from": null,
+        "date_to": null,
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "-42"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "café:exhibit judge:Smith cite:\"12 F.3d 5\"",
+      "expected": {
+        "original": "café:exhibit judge:Smith cite:\"12 F.3d 5\"",
+        "semantic_text": "café:exhibit",
+        "tokens": [
+          {
+            "value": "café:exhibit",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          }
+        ],
+        "phrases": [],
+        "required_terms": [
+          "café:exhibit"
+        ],
+        "optional_terms": [],
+        "excluded_terms": [],
+        "field_queries": {
+          "judge": "Smith",
+          "citation": "12 F.3d 5"
+        },
+        "date_from": null,
+        "date_to": null,
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "café:exhibit"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "claim NOT the",
+      "expected": {
+        "original": "claim NOT the",
+        "semantic_text": "claim",
+        "tokens": [
+          {
+            "value": "claim",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "the",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": true
+          }
+        ],
+        "phrases": [],
+        "required_terms": [
+          "claim"
+        ],
+        "optional_terms": [],
+        "excluded_terms": [],
+        "field_queries": {},
+        "date_from": null,
+        "date_to": null,
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "claim"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "from:1900 to:2100",
+      "expected": {
+        "original": "from:1900 to:2100",
+        "semantic_text": "",
+        "tokens": [],
+        "phrases": [],
+        "required_terms": [],
+        "optional_terms": [],
+        "excluded_terms": [],
+        "field_queries": {},
+        "date_from": "1900-01-01",
+        "date_to": "2100-01-01",
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "from:1900 to:2100"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "invoice #3:term",
+      "expected": {
+        "original": "invoice #3:term",
+        "semantic_text": "invoice #3:term",
+        "tokens": [
+          {
+            "value": "invoice",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "#3:term",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          }
+        ],
+        "phrases": [],
+        "required_terms": [
+          "invoice",
+          "#3:term"
+        ],
+        "optional_terms": [],
+        "excluded_terms": [],
+        "field_queries": {},
+        "date_from": null,
+        "date_to": null,
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "invoice #3:term"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "NOT OR AND",
+      "expected": {
+        "original": "NOT OR AND",
+        "semantic_text": "NOT OR AND",
+        "tokens": [
+          {
+            "value": "NOT",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "OR",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "AND",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          }
+        ],
+        "phrases": [],
+        "required_terms": [
+          "NOT"
+        ],
+        "optional_terms": [],
+        "excluded_terms": [],
+        "field_queries": {},
+        "date_from": null,
+        "date_to": null,
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "NOT OR AND"
+      }
+    },
+    {
+      "kind": "query",
+      "query": "éfile -資料",
+      "expected": {
+        "original": "éfile -資料",
+        "semantic_text": "éfile",
+        "tokens": [
+          {
+            "value": "éfile",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": false
+          },
+          {
+            "value": "資料",
+            "operator": "AND",
+            "field": null,
+            "is_phrase": false,
+            "negated": true
+          }
+        ],
+        "phrases": [],
+        "required_terms": [
+          "éfile"
+        ],
+        "optional_terms": [],
+        "excluded_terms": [
+          "資料"
+        ],
+        "field_queries": {},
+        "date_from": null,
+        "date_to": null,
+        "courts": [],
+        "doc_types": [],
+        "jurisdictions": [],
+        "semantic_query": "éfile"
+      }
+    },
+    {
+      "kind": "bm25",
+      "documents": [],
+      "query": "none",
+      "expected": []
+    },
+    {
+      "kind": "bm25",
+      "documents": [
+        {
+          "id": "0",
+          "text": ""
+        },
+        {
+          "id": "1",
+          "text": "!!!"
+        },
+        {
+          "id": "2",
+          "text": "brief"
+        }
+      ],
+      "query": "brief",
+      "expected": [
+        [
+          "2",
+          0.5162259226377507
+        ]
+      ]
+    },
+    {
+      "kind": "bm25",
+      "documents": [
+        {
+          "id": "0",
+          "text": "rent rent payable monthly"
+        },
+        {
+          "id": "1",
+          "text": "monthly notice due"
+        },
+        {
+          "id": "2",
+          "text": "contract rent annual"
+        }
+      ],
+      "query": "monthly rent",
+      "expected": [
+        [
+          "0",
+          1.062073344825965
+        ],
+        [
+          "1",
+          0.4921503971159535
+        ],
+        [
+          "2",
+          0.4921503971159535
+        ]
+      ]
+    },
+    {
+      "kind": "bm25",
+      "documents": [
+        {
+          "id": "0",
+          "text": "café coopération café"
+        },
+        {
+          "id": "1",
+          "text": "中文法律 terms"
+        },
+        {
+          "id": "2",
+          "text": "rent payment monthly"
+        }
+      ],
+      "query": "café 中文法律",
+      "expected": [
+        [
+          "0",
+          1.3470616350375642
+        ],
+        [
+          "1",
+          1.1051597217033537
+        ]
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "rent notice",
+      "documents": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ],
+      "count": 2,
+      "expected": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "rent notice",
+      "documents": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ],
+      "count": 4,
+      "expected": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "the with this",
+      "documents": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ],
+      "count": 2,
+      "expected": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "the with this",
+      "documents": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ],
+      "count": 4,
+      "expected": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "unrelated",
+      "documents": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ],
+      "count": 2,
+      "expected": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "unrelated",
+      "documents": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ],
+      "count": 4,
+      "expected": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "missing",
+      "documents": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ],
+      "count": 2,
+      "expected": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "missing",
+      "documents": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ],
+      "count": 4,
+      "expected": [
+        {
+          "text": "One. Two.",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "rent notice",
+      "documents": [
+        {
+          "text": "Rent is payable monthly. Birds fly. Rent increases annually! Cats sleep? Notice is due in writing. The sky is blue.",
+          "metadata": {}
+        }
+      ],
+      "count": 2,
+      "expected": [
+        {
+          "text": "Rent is payable monthly. Rent increases annually!",
+          "metadata": {},
+          "compressed": true
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "rent notice",
+      "documents": [
+        {
+          "text": "Rent is payable monthly. Birds fly. Rent increases annually! Cats sleep? Notice is due in writing. The sky is blue.",
+          "metadata": {}
+        }
+      ],
+      "count": 4,
+      "expected": [
+        {
+          "text": "Rent is payable monthly. Rent increases annually! Notice is due in writing.",
+          "metadata": {},
+          "compressed": true
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "the with this",
+      "documents": [
+        {
+          "text": "Rent is payable monthly. Birds fly. Rent increases annually! Cats sleep? Notice is due in writing. The sky is blue.",
+          "metadata": {}
+        }
+      ],
+      "count": 2,
+      "expected": [
+        {
+          "text": "Rent is payable monthly. Birds fly. Rent increases annually! Cats sleep? Notice is due in writing. The sky is blue.",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "the with this",
+      "documents": [
+        {
+          "text": "Rent is payable monthly. Birds fly. Rent increases annually! Cats sleep? Notice is due in writing. The sky is blue.",
+          "metadata": {}
+        }
+      ],
+      "count": 4,
+      "expected": [
+        {
+          "text": "Rent is payable monthly. Birds fly. Rent increases annually! Cats sleep? Notice is due in writing. The sky is blue.",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "unrelated",
+      "documents": [
+        {
+          "text": "Rent is payable monthly. Birds fly. Rent increases annually! Cats sleep? Notice is due in writing. The sky is blue.",
+          "metadata": {}
+        }
+      ],
+      "count": 2,
+      "expected": [
+        {
+          "text": "Rent is payable monthly. Birds fly.",
+          "metadata": {},
+          "compressed": true
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "unrelated",
+      "documents": [
+        {
+          "text": "Rent is payable monthly. Birds fly. Rent increases annually! Cats sleep? Notice is due in writing. The sky is blue.",
+          "metadata": {}
+        }
+      ],
+      "count": 4,
+      "expected": [
+        {
+          "text": "Rent is payable monthly. Birds fly. Rent increases annually! Cats sleep?",
+          "metadata": {},
+          "compressed": true
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "missing",
+      "documents": [
+        {
+          "text": "Rent is payable monthly. Birds fly. Rent increases annually! Cats sleep? Notice is due in writing. The sky is blue.",
+          "metadata": {}
+        }
+      ],
+      "count": 2,
+      "expected": [
+        {
+          "text": "Rent is payable monthly. Birds fly.",
+          "metadata": {},
+          "compressed": true
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "missing",
+      "documents": [
+        {
+          "text": "Rent is payable monthly. Birds fly. Rent increases annually! Cats sleep? Notice is due in writing. The sky is blue.",
+          "metadata": {}
+        }
+      ],
+      "count": 4,
+      "expected": [
+        {
+          "text": "Rent is payable monthly. Birds fly. Rent increases annually! Cats sleep?",
+          "metadata": {},
+          "compressed": true
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "rent notice",
+      "documents": [
+        {
+          "text": "First unrelated sentence!\nSecond rent sentence.\nThird notice sentence? Fourth rent sentence. Fifth note.",
+          "metadata": {}
+        }
+      ],
+      "count": 2,
+      "expected": [
+        {
+          "text": "Second rent sentence. Third notice sentence?",
+          "metadata": {},
+          "compressed": true
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "rent notice",
+      "documents": [
+        {
+          "text": "First unrelated sentence!\nSecond rent sentence.\nThird notice sentence? Fourth rent sentence. Fifth note.",
+          "metadata": {}
+        }
+      ],
+      "count": 4,
+      "expected": [
+        {
+          "text": "Second rent sentence. Third notice sentence? Fourth rent sentence.",
+          "metadata": {},
+          "compressed": true
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "the with this",
+      "documents": [
+        {
+          "text": "First unrelated sentence!\nSecond rent sentence.\nThird notice sentence? Fourth rent sentence. Fifth note.",
+          "metadata": {}
+        }
+      ],
+      "count": 2,
+      "expected": [
+        {
+          "text": "First unrelated sentence!\nSecond rent sentence.\nThird notice sentence? Fourth rent sentence. Fifth note.",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "the with this",
+      "documents": [
+        {
+          "text": "First unrelated sentence!\nSecond rent sentence.\nThird notice sentence? Fourth rent sentence. Fifth note.",
+          "metadata": {}
+        }
+      ],
+      "count": 4,
+      "expected": [
+        {
+          "text": "First unrelated sentence!\nSecond rent sentence.\nThird notice sentence? Fourth rent sentence. Fifth note.",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "unrelated",
+      "documents": [
+        {
+          "text": "First unrelated sentence!\nSecond rent sentence.\nThird notice sentence? Fourth rent sentence. Fifth note.",
+          "metadata": {}
+        }
+      ],
+      "count": 2,
+      "expected": [
+        {
+          "text": "First unrelated sentence!",
+          "metadata": {},
+          "compressed": true
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "unrelated",
+      "documents": [
+        {
+          "text": "First unrelated sentence!\nSecond rent sentence.\nThird notice sentence? Fourth rent sentence. Fifth note.",
+          "metadata": {}
+        }
+      ],
+      "count": 4,
+      "expected": [
+        {
+          "text": "First unrelated sentence!",
+          "metadata": {},
+          "compressed": true
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "missing",
+      "documents": [
+        {
+          "text": "First unrelated sentence!\nSecond rent sentence.\nThird notice sentence? Fourth rent sentence. Fifth note.",
+          "metadata": {}
+        }
+      ],
+      "count": 2,
+      "expected": [
+        {
+          "text": "First unrelated sentence! Second rent sentence.",
+          "metadata": {},
+          "compressed": true
+        }
+      ]
+    },
+    {
+      "kind": "compression",
+      "query": "missing",
+      "documents": [
+        {
+          "text": "First unrelated sentence!\nSecond rent sentence.\nThird notice sentence? Fourth rent sentence. Fifth note.",
+          "metadata": {}
+        }
+      ],
+      "count": 4,
+      "expected": [
+        {
+          "text": "First unrelated sentence! Second rent sentence. Third notice sentence? Fourth rent sentence.",
+          "metadata": {},
+          "compressed": true
+        }
+      ]
+    },
+    {
+      "kind": "reference",
+      "citation": {
+        "source": "lease_agreement.pdf",
+        "passage": "The tenant must pay rent monthly in advance.",
+        "was_cited_by_ai": false,
+        "notes": null,
+        "status": "pending"
+      },
+      "answer": "The tenant must pay rent monthly in advance.",
+      "expected": {
+        "source": "lease_agreement.pdf",
+        "passage": "The tenant must pay rent monthly in advance.",
+        "was_cited_by_ai": true,
+        "notes": "Referenced in the answer",
+        "status": "pending"
+      }
+    },
+    {
+      "kind": "reference",
+      "citation": {
+        "source": "other.pdf",
+        "passage": "Quarterly maintenance of elevators by vendor.",
+        "was_cited_by_ai": false,
+        "notes": null,
+        "status": "pending"
+      },
+      "answer": "The tenant must pay rent monthly in advance.",
+      "expected": {
+        "source": "other.pdf",
+        "passage": "Quarterly maintenance of elevators by vendor.",
+        "was_cited_by_ai": false,
+        "notes": "Not referenced in answer",
+        "status": "pending"
+      }
+    },
+    {
+      "kind": "reference",
+      "citation": {
+        "source": "a.pdf",
+        "passage": "",
+        "was_cited_by_ai": false,
+        "notes": null,
+        "status": "pending"
+      },
+      "answer": "The tenant must pay rent monthly in advance.",
+      "expected": {
+        "source": "a.pdf",
+        "passage": "",
+        "was_cited_by_ai": true,
+        "notes": "Referenced in the answer",
+        "status": "pending"
+      }
+    },
+    {
+      "kind": "reference",
+      "citation": {
+        "source": "lease_agreement.pdf",
+        "passage": "The tenant must pay rent monthly in advance.",
+        "was_cited_by_ai": false,
+        "notes": null,
+        "status": "pending"
+      },
+      "answer": "Review lease_agreement terms.",
+      "expected": {
+        "source": "lease_agreement.pdf",
+        "passage": "The tenant must pay rent monthly in advance.",
+        "was_cited_by_ai": true,
+        "notes": "Referenced in the answer",
+        "status": "pending"
+      }
+    },
+    {
+      "kind": "reference",
+      "citation": {
+        "source": "other.pdf",
+        "passage": "Quarterly maintenance of elevators by vendor.",
+        "was_cited_by_ai": false,
+        "notes": null,
+        "status": "pending"
+      },
+      "answer": "Review lease_agreement terms.",
+      "expected": {
+        "source": "other.pdf",
+        "passage": "Quarterly maintenance of elevators by vendor.",
+        "was_cited_by_ai": false,
+        "notes": "Not referenced in answer",
+        "status": "pending"
+      }
+    },
+    {
+      "kind": "reference",
+      "citation": {
+        "source": "a.pdf",
+        "passage": "",
+        "was_cited_by_ai": false,
+        "notes": null,
+        "status": "pending"
+      },
+      "answer": "Review lease_agreement terms.",
+      "expected": {
+        "source": "a.pdf",
+        "passage": "",
+        "was_cited_by_ai": true,
+        "notes": "Referenced in the answer",
+        "status": "pending"
+      }
+    },
+    {
+      "kind": "reference",
+      "citation": {
+        "source": "lease_agreement.pdf",
+        "passage": "The tenant must pay rent monthly in advance.",
+        "was_cited_by_ai": false,
+        "notes": null,
+        "status": "pending"
+      },
+      "answer": "No matching source.",
+      "expected": {
+        "source": "lease_agreement.pdf",
+        "passage": "The tenant must pay rent monthly in advance.",
+        "was_cited_by_ai": false,
+        "notes": "Not referenced in answer",
+        "status": "pending"
+      }
+    },
+    {
+      "kind": "reference",
+      "citation": {
+        "source": "other.pdf",
+        "passage": "Quarterly maintenance of elevators by vendor.",
+        "was_cited_by_ai": false,
+        "notes": null,
+        "status": "pending"
+      },
+      "answer": "No matching source.",
+      "expected": {
+        "source": "other.pdf",
+        "passage": "Quarterly maintenance of elevators by vendor.",
+        "was_cited_by_ai": false,
+        "notes": "Not referenced in answer",
+        "status": "pending"
+      }
+    },
+    {
+      "kind": "reference",
+      "citation": {
+        "source": "a.pdf",
+        "passage": "",
+        "was_cited_by_ai": false,
+        "notes": null,
+        "status": "pending"
+      },
+      "answer": "No matching source.",
+      "expected": {
+        "source": "a.pdf",
+        "passage": "",
+        "was_cited_by_ai": true,
+        "notes": "Referenced in the answer",
+        "status": "pending"
+      }
+    },
+    {
+      "kind": "merge",
+      "lists": [
+        [
+          {
+            "text": "A",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a",
+              "chunk_index": 0
+            }
+          },
+          {
+            "text": "B",
+            "similarity": 0.3,
+            "metadata": {
+              "document_id": "b",
+              "chunk_index": 0
+            }
+          }
+        ],
+        [
+          {
+            "text": "B",
+            "similarity": 0.9,
+            "metadata": {
+              "document_id": "b",
+              "chunk_index": 0
+            }
+          },
+          {
+            "text": "C",
+            "similarity": 0.6,
+            "metadata": {
+              "document_id": "c",
+              "chunk_index": 1
+            }
+          }
+        ]
+      ],
+      "count": 0,
+      "expected": [
+        {
+          "text": "B",
+          "similarity": 0.9,
+          "metadata": {
+            "document_id": "b",
+            "chunk_index": 0
+          },
+          "merge_score": 0.03252247488101534,
+          "rank": 1
+        },
+        {
+          "text": "A",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a",
+            "chunk_index": 0
+          },
+          "merge_score": 0.01639344262295082,
+          "rank": 2
+        },
+        {
+          "text": "C",
+          "similarity": 0.6,
+          "metadata": {
+            "document_id": "c",
+            "chunk_index": 1
+          },
+          "merge_score": 0.016129032258064516,
+          "rank": 3
+        }
+      ]
+    },
+    {
+      "kind": "merge",
+      "lists": [
+        [
+          {
+            "text": "A",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a",
+              "chunk_index": 0
+            }
+          },
+          {
+            "text": "B",
+            "similarity": 0.3,
+            "metadata": {
+              "document_id": "b",
+              "chunk_index": 0
+            }
+          }
+        ],
+        [
+          {
+            "text": "B",
+            "similarity": 0.9,
+            "metadata": {
+              "document_id": "b",
+              "chunk_index": 0
+            }
+          },
+          {
+            "text": "C",
+            "similarity": 0.6,
+            "metadata": {
+              "document_id": "c",
+              "chunk_index": 1
+            }
+          }
+        ]
+      ],
+      "count": 1,
+      "expected": [
+        {
+          "text": "B",
+          "similarity": 0.9,
+          "metadata": {
+            "document_id": "b",
+            "chunk_index": 0
+          },
+          "merge_score": 0.03252247488101534,
+          "rank": 1
+        }
+      ]
+    },
+    {
+      "kind": "merge",
+      "lists": [
+        [
+          {
+            "text": "A",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a",
+              "chunk_index": 0
+            }
+          },
+          {
+            "text": "B",
+            "similarity": 0.3,
+            "metadata": {
+              "document_id": "b",
+              "chunk_index": 0
+            }
+          }
+        ],
+        [
+          {
+            "text": "B",
+            "similarity": 0.9,
+            "metadata": {
+              "document_id": "b",
+              "chunk_index": 0
+            }
+          },
+          {
+            "text": "C",
+            "similarity": 0.6,
+            "metadata": {
+              "document_id": "c",
+              "chunk_index": 1
+            }
+          }
+        ]
+      ],
+      "count": 3,
+      "expected": [
+        {
+          "text": "B",
+          "similarity": 0.9,
+          "metadata": {
+            "document_id": "b",
+            "chunk_index": 0
+          },
+          "merge_score": 0.03252247488101534,
+          "rank": 1
+        },
+        {
+          "text": "A",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a",
+            "chunk_index": 0
+          },
+          "merge_score": 0.01639344262295082,
+          "rank": 2
+        },
+        {
+          "text": "C",
+          "similarity": 0.6,
+          "metadata": {
+            "document_id": "c",
+            "chunk_index": 1
+          },
+          "merge_score": 0.016129032258064516,
+          "rank": 3
+        }
+      ]
+    },
+    {
+      "kind": "merge",
+      "lists": [
+        [
+          {
+            "text": "A",
+            "similarity": 0.8,
+            "metadata": {
+              "document_id": "a",
+              "chunk_index": 0
+            }
+          },
+          {
+            "text": "B",
+            "similarity": 0.3,
+            "metadata": {
+              "document_id": "b",
+              "chunk_index": 0
+            }
+          }
+        ],
+        [
+          {
+            "text": "B",
+            "similarity": 0.9,
+            "metadata": {
+              "document_id": "b",
+              "chunk_index": 0
+            }
+          },
+          {
+            "text": "C",
+            "similarity": 0.6,
+            "metadata": {
+              "document_id": "c",
+              "chunk_index": 1
+            }
+          }
+        ]
+      ],
+      "count": 10,
+      "expected": [
+        {
+          "text": "B",
+          "similarity": 0.9,
+          "metadata": {
+            "document_id": "b",
+            "chunk_index": 0
+          },
+          "merge_score": 0.03252247488101534,
+          "rank": 1
+        },
+        {
+          "text": "A",
+          "similarity": 0.8,
+          "metadata": {
+            "document_id": "a",
+            "chunk_index": 0
+          },
+          "merge_score": 0.01639344262295082,
+          "rank": 2
+        },
+        {
+          "text": "C",
+          "similarity": 0.6,
+          "metadata": {
+            "document_id": "c",
+            "chunk_index": 1
+          },
+          "merge_score": 0.016129032258064516,
+          "rank": 3
+        }
+      ]
+    },
+    {
+      "kind": "tidy",
+      "text": "",
+      "expected": null,
+      "ratio": 0.0
+    },
+    {
+      "kind": "tidy",
+      "text": "| --- |",
+      "expected": null,
+      "ratio": 0.0
+    },
+    {
+      "kind": "tidy",
+      "text": "  | Notice requires 30 days. |  ",
+      "expected": [
+        4,
+        27
+      ],
+      "ratio": 0.625
+    },
+    {
+      "kind": "tidy",
+      "text": "😀 Rent is $3,000.",
+      "expected": [
+        0,
+        16
+      ],
+      "ratio": 0.5882352941176471
+    },
+    {
+      "kind": "tidy",
+      "text": "---tiny---",
+      "expected": null,
+      "ratio": 0.4
+    },
+    {
+      "kind": "tidy",
+      "text": "éclair 中文 contract terms",
+      "expected": [
+        0,
+        24
+      ],
+      "ratio": 0.875
+    },
+    {
+      "kind": "excerpt",
+      "repeated_text": "α Notice obligations.\n",
+      "repeats": 1600,
+      "ranges": [],
+      "expected": "α Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice oblig"
+    },
+    {
+      "kind": "excerpt",
+      "repeated_text": "α Notice obligations.\n",
+      "repeats": 1600,
+      "ranges": [
+        [
+          29000,
+          31500
+        ]
+      ],
+      "expected": "α Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice oblig\n[...]\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\n"
+    },
+    {
+      "kind": "excerpt",
+      "repeated_text": "α Notice obligations.\n",
+      "repeats": 1600,
+      "ranges": [
+        [
+          9000,
+          10000
+        ],
+        [
+          10500,
+          11500
+        ],
+        [
+          30000,
+          30500
+        ]
+      ],
+      "expected": "α Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations\n[...]\nbligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obligations.\nα Notice obl"
+    },
+    {
+      "kind": "reasoning",
+      "raw": null,
+      "expected": []
+    },
+    {
+      "kind": "reasoning",
+      "raw": [],
+      "expected": []
+    },
+    {
+      "kind": "reasoning",
+      "raw": "bad",
+      "expected": []
+    },
+    {
+      "kind": "reasoning",
+      "raw": [
+        null,
+        "bad",
+        {},
+        {
+          "type": "Fact used",
+          "description": "  Rent is monthly. ",
+          "evidence": " Rent due monthly "
+        }
+      ],
+      "expected": [
+        {
+          "type": "Fact used",
+          "description": "Rent is monthly.",
+          "evidence": "Rent due monthly"
+        }
+      ]
+    },
+    {
+      "kind": "reasoning",
+      "raw": [
+        {
+          "type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "description": "0",
+          "evidence": null
+        },
+        {
+          "type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "description": "1",
+          "evidence": null
+        },
+        {
+          "type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "description": "2",
+          "evidence": null
+        },
+        {
+          "type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "description": "3",
+          "evidence": null
+        },
+        {
+          "type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "description": "4",
+          "evidence": null
+        },
+        {
+          "type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "description": "5",
+          "evidence": null
+        },
+        {
+          "type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "description": "6",
+          "evidence": null
+        },
+        {
+          "type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "description": "7",
+          "evidence": null
+        }
+      ],
+      "expected": [
+        {
+          "type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "description": "0",
+          "evidence": null
+        },
+        {
+          "type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "description": "1",
+          "evidence": null
+        },
+        {
+          "type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "description": "2",
+          "evidence": null
+        },
+        {
+          "type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "description": "3",
+          "evidence": null
+        },
+        {
+          "type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "description": "4",
+          "evidence": null
+        }
+      ]
+    }
+  ]
+}

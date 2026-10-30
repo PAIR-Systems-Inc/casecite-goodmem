@@ -118,6 +118,7 @@ export class ApiClient {
     let response: Response;
     try {
       response = await this.fetchImpl(`${this.base}${path}`, {
+		credentials: 'omit',
         method: init.method ?? 'GET',
         headers,
         body: init.body === undefined ? undefined : JSON.stringify(init.body),

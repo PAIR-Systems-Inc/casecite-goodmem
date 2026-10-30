@@ -111,7 +111,7 @@ export const DocumentPanel = ({ documents, onUpload, onRemove, inputRef, onUpdat
         onDrop={e => { e.preventDefault(); setDragOver(false); if (isAuthenticated) handleFiles(e.dataTransfer.files); else onAuthRequired?.(); }}
         onClick={() => isAuthenticated ? fileRef.current?.click() : onAuthRequired?.()}
       >
-        <input aria-label="Upload documents" ref={fileRef} type="file" multiple accept=".pdf,.doc,.docx,.xlsx,.xls,.pptx,.odt,.txt,.md,.rtf,.csv,.tsv,.html,.htm,.json,.eml,.msg" className={s.hiddenInput} onChange={e => handleFiles(e.target.files)} />
+        <input aria-label="Upload documents" ref={fileRef} type="file" multiple accept=".pdf,.doc,.docx,.xlsx,.xls,.pptx,.odt,.txt,.md,.markdown,.rtf,.csv,.tsv,.html,.htm,.json,.eml,.msg" className={s.hiddenInput} onChange={e => handleFiles(e.target.files)} />
         {!isAuthenticated && <Icon name="Lock" size={14} className={s.lockBadge} />}
         <Icon name={isAuthenticated ? "Upload" : "Lock"} size={22} className={s.iconMuted} />
         <span className={s.dropText}>{isAuthenticated ? 'Drop files or click to upload' : 'Register to upload documents'}</span>

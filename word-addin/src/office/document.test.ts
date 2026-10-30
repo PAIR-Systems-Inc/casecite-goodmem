@@ -10,6 +10,8 @@ function installWord(hits: Record<string, number>) {
   const inserted: Array<{ text: string; mode: string }> = [];
   const trackingChanges: string[] = [];
   const makeRange = (term: string) => ({
+    text: term,
+    load: vi.fn(),
     select: vi.fn((mode: string) => selected.push(`${term}|${mode}`)),
     insertText: vi.fn((text: string, mode: string) => {
       inserted.push({ text, mode });
@@ -19,6 +21,7 @@ function installWord(hits: Record<string, number>) {
   const document = {
     changeTrackingMode: 'Off',
     load: vi.fn(),
+    getSelection: () => makeRange(''),
     body: {
       search: vi.fn((term: string) => {
         const count = hits[term] ?? 0;

@@ -1,0 +1,1173 @@
+{
+  "baseline": "6605cb3474cf0c2894080af216d5fed2a81fc997",
+  "source_sha256": {
+    "backend/app/services/courtlistener_client.py": "e55783868cecfb5b75e1604a94cd58c3b033452cf0f4b13fa983c66850fba9a8",
+    "backend/app/services/courtlistener.py": "137a2aef2869a8e1d8ee68bbb25982fc104ac72bd39ba13c0f469176cfe158c4",
+    "backend/app/services/legal_tools/_models.py": "071225cf342b02a6efb52447ef02a66b598eb2b8d60d3459df2fd284dc4b9b92",
+    "backend/app/services/legal_tools/_helpers.py": "26941a6123c3b9b329548c913802d22464c2feb298e9fda7cb0954a44cbaeca7",
+    "backend/app/services/legal_tools/_case_lookup.py": "8144777895920951d2c5582644b2af60ff773a92fd0e3d693d87410e74122293",
+    "backend/app/services/legal_tools/_precedents.py": "02f000b7b77d7fc9575b7034c614655df91fad74cfcb4b27efd904be156e3e3d",
+    "backend/app/services/legal_tools/_dockets.py": "9948a122f8088fb2118cc8a6f0897323e4bc2ee64b10d064412e9e9180eb09bd",
+    "backend/app/services/legal_tools/_oral_arguments.py": "0a5369c3f001c4e60997d07909d043600068ca5ee11043c7a63e5bfe59165a05",
+    "backend/app/services/legal_tools/_trends.py": "b0588cc72a2c82fc22cb6498b797d3d885c6f129f8545239a97ee1cddb8066da",
+    "backend/app/services/legal_tools/service.py": "3ccddb508b0f1f22f6693031372c43038b62b84788c28bcb431c42da6aaf93e7",
+    "backend/app/routers/tools.py": "da95c8da8e90aebab4a24c6939ada0781449cf326811cd31ece66c531a7fc274"
+  },
+  "helpers": [
+    {
+      "function": "strip_marks",
+      "input": null,
+      "expected": ""
+    },
+    {
+      "function": "strip_marks",
+      "input": "",
+      "expected": ""
+    },
+    {
+      "function": "strip_marks",
+      "input": "<mark>Ariz</mark>.\n Certiorari  denied",
+      "expected": "Ariz. Certiorari denied"
+    },
+    {
+      "function": "strip_marks",
+      "input": "A &amp; B\tC",
+      "expected": "A & B C"
+    },
+    {
+      "function": "strip_marks",
+      "input": "No <b>raw</b> HTML",
+      "expected": "No raw HTML"
+    },
+    {
+      "function": "nested_snippet",
+      "input": {},
+      "expected": ""
+    },
+    {
+      "function": "nested_snippet",
+      "input": {
+        "snippet": "Root <mark>hit</mark>"
+      },
+      "expected": "Root hit"
+    },
+    {
+      "function": "nested_snippet",
+      "input": {
+        "snippet": "Ignored",
+        "opinions": [
+          {
+            "snippet": "Nested <mark>hit</mark>"
+          }
+        ]
+      },
+      "expected": "Nested hit"
+    },
+    {
+      "function": "nested_snippet",
+      "input": {
+        "snippet": "Ignored",
+        "opinions": [
+          {}
+        ]
+      },
+      "expected": ""
+    },
+    {
+      "function": "order_citations",
+      "input": [],
+      "expected": []
+    },
+    {
+      "function": "order_citations",
+      "input": [
+        "173 L. Ed. 2d 868",
+        "129 S. Ct. 1937",
+        "556 U.S. 662",
+        "2009 U.S. LEXIS 3472"
+      ],
+      "expected": [
+        "556 U.S. 662",
+        "129 S. Ct. 1937",
+        "173 L. Ed. 2d 868",
+        "2009 U.S. LEXIS 3472"
+      ]
+    },
+    {
+      "function": "order_citations",
+      "input": [
+        "12 F. App'x 34",
+        "37 F.4th 1098"
+      ],
+      "expected": [
+        "37 F.4th 1098",
+        "12 F. App'x 34"
+      ]
+    },
+    {
+      "function": "order_citations",
+      "input": [
+        "100 State 2",
+        "2 B.R. 40",
+        "3 F. Supp. 3d 10",
+        "80 F. 2"
+      ],
+      "expected": [
+        "80 F. 2",
+        "3 F. Supp. 3d 10",
+        "2 B.R. 40",
+        "100 State 2"
+      ]
+    },
+    {
+      "function": "order_citations",
+      "input": [
+        " A ",
+        "",
+        null,
+        "A"
+      ],
+      "expected": [
+        "A",
+        "A"
+      ]
+    },
+    {
+      "function": "citation_dict_to_string",
+      "input": null,
+      "expected": null
+    },
+    {
+      "function": "citation_dict_to_string",
+      "input": " 410 U.S. 113 ",
+      "expected": "410 U.S. 113"
+    },
+    {
+      "function": "citation_dict_to_string",
+      "input": {
+        "volume": 410,
+        "reporter": "U.S.",
+        "page": "113"
+      },
+      "expected": "410 U.S. 113"
+    },
+    {
+      "function": "citation_dict_to_string",
+      "input": {
+        "volume": null,
+        "reporter": "",
+        "page": ""
+      },
+      "expected": null
+    },
+    {
+      "function": "_fmt_duration",
+      "input": null,
+      "expected": null
+    },
+    {
+      "function": "_fmt_duration",
+      "input": "",
+      "expected": null
+    },
+    {
+      "function": "_fmt_duration",
+      "input": 0,
+      "expected": null
+    },
+    {
+      "function": "_fmt_duration",
+      "input": -1,
+      "expected": null
+    },
+    {
+      "function": "_fmt_duration",
+      "input": 65,
+      "expected": "1:05"
+    },
+    {
+      "function": "_fmt_duration",
+      "input": 3661,
+      "expected": "1:01:01"
+    },
+    {
+      "function": "_fmt_duration",
+      "input": "72",
+      "expected": "1:12"
+    },
+    {
+      "function": "_fmt_duration",
+      "input": 12.9,
+      "expected": "0:12"
+    },
+    {
+      "function": "_fmt_duration",
+      "input": "12.9",
+      "expected": null
+    },
+    {
+      "function": "_fmt_duration",
+      "input": "bad",
+      "expected": null
+    },
+    {
+      "function": "courts_for_jurisdiction",
+      "input": "federal",
+      "expected": [
+        "scotus",
+        "ca1",
+        "ca2",
+        "ca3",
+        "ca4",
+        "ca5",
+        "ca6",
+        "ca7",
+        "ca8",
+        "ca9",
+        "ca10",
+        "ca11",
+        "cadc",
+        "cafc"
+      ]
+    },
+    {
+      "function": "courts_for_jurisdiction",
+      "input": "ca9",
+      "expected": [
+        "ca9"
+      ]
+    },
+    {
+      "function": "courts_for_jurisdiction",
+      "input": "california",
+      "expected": [
+        "cal",
+        "calctapp"
+      ]
+    },
+    {
+      "function": "courts_for_jurisdiction",
+      "input": "New_York",
+      "expected": [
+        "ny",
+        "nyappdiv",
+        "nysupct"
+      ]
+    },
+    {
+      "function": "courts_for_jurisdiction",
+      "input": "unknown",
+      "expected": []
+    },
+    {
+      "function": "resolve_court_ids",
+      "input": [],
+      "expected": []
+    },
+    {
+      "function": "resolve_court_ids",
+      "input": [
+        "9th cir",
+        "ca9",
+        "ninth circuit"
+      ],
+      "expected": [
+        "ca9"
+      ]
+    },
+    {
+      "function": "resolve_court_ids",
+      "input": [
+        "california",
+        "new york",
+        "dc",
+        "federal"
+      ],
+      "expected": [
+        "cal",
+        "calctapp",
+        "ny",
+        "nyappdiv",
+        "nysupct",
+        "cadc",
+        "scotus",
+        "ca1",
+        "ca2",
+        "ca3",
+        "ca4",
+        "ca5",
+        "ca6",
+        "ca7",
+        "ca8",
+        "ca9",
+        "ca10",
+        "ca11",
+        "cafc"
+      ]
+    },
+    {
+      "function": "resolve_court_ids",
+      "input": [
+        "11th",
+        "3rd circuit",
+        "invalid words"
+      ],
+      "expected": [
+        "ca11",
+        "ca3"
+      ]
+    }
+  ],
+  "provider": {
+    "search_opinions": {
+      "count": 42,
+      "next": "https://www.courtlistener.com/api/rest/v4/search/?cursor=next&q=notice",
+      "previous": null,
+      "results": [
+        {
+          "cluster_id": 77,
+          "id": 999,
+          "caseName": "<mark>Notice</mark> v. Example",
+          "caseNameShort": "Notice",
+          "caseNameFull": "Notice LLC v. Example Inc.",
+          "citation": [
+            "10 S. Ct. 2",
+            "100 U.S. 20"
+          ],
+          "court": "Court of Appeals",
+          "court_id": "ca9",
+          "dateFiled": "2020-03-04",
+          "dateArgued": "2020-01-02",
+          "docketNumber": "20-01",
+          "judge": "A &amp; B",
+          "status": "Precedential",
+          "suitNature": "Contract",
+          "citeCount": 12,
+          "absolute_url": "/opinion/77/notice/",
+          "opinions": [
+            {
+              "id": 55,
+              "snippet": "The <mark>notice</mark> requirement applies."
+            }
+          ]
+        }
+      ]
+    },
+    "search_dockets": {
+      "results": [
+        {
+          "docket_id": 8,
+          "id": 999,
+          "caseName": "Notice v. Example",
+          "docketNumber": "20-01",
+          "court": "Court of Appeals",
+          "court_id": "ca9",
+          "dateFiled": "2020-01-02T00:00:00Z",
+          "dateTerminated": "2021-03-04",
+          "dateArgued": null,
+          "suitNature": "Contract",
+          "cause": "Breach",
+          "juryDemand": "Plaintiff",
+          "jurisdictionType": "Federal",
+          "assignedTo": "Judge Example",
+          "referredTo": "Judge Other",
+          "party": [
+            "Notice LLC",
+            "Example Inc."
+          ],
+          "attorney": "Attorney One",
+          "entry_count": 5,
+          "docket_absolute_url": "/docket/8/notice/"
+        }
+      ]
+    },
+    "search_audio": {
+      "results": [
+        {
+          "id": 9,
+          "caseName": "<mark>Notice</mark> v. Example",
+          "court": "Court of Appeals",
+          "court_id": "ca9",
+          "dateArgued": "2020-01-02",
+          "docketNumber": "20-01",
+          "judge": "Example",
+          "duration": 3661,
+          "local_path_mp3": "audio/2020/notice.mp3",
+          "download_url": "http://example.test/original.mp3",
+          "snippet": "<mark>Notice</mark> arguments",
+          "absolute_url": "/audio/9/notice/",
+          "docket_id": 8
+        }
+      ]
+    },
+    "/clusters/77/": {
+      "id": 77,
+      "case_name": "Notice v. Example",
+      "case_name_short": "Notice",
+      "case_name_full": "Notice LLC v. Example Inc.",
+      "sub_opinions": [
+        "https://www.courtlistener.com/api/rest/v4/opinions/55/",
+        "https://www.courtlistener.com/api/rest/v4/opinions/56/"
+      ],
+      "citations": [
+        {
+          "volume": 10,
+          "reporter": "S. Ct.",
+          "page": "2"
+        },
+        {
+          "volume": 100,
+          "reporter": "U.S.",
+          "page": "20"
+        }
+      ],
+      "docket": "https://www.courtlistener.com/api/rest/v4/dockets/8/",
+      "date_filed": "2020-03-04",
+      "date_argued": "2020-01-02",
+      "judges": "Example",
+      "nature_of_suit": "Contract",
+      "posture": "Appeal",
+      "syllabus": "Notice is required.",
+      "headnotes": "Notice terms.",
+      "summary": "Affirmed.",
+      "citation_count": 12,
+      "precedential_status": "Published",
+      "absolute_url": "/opinion/77/notice/"
+    },
+    "/opinions/55/": {
+      "id": 55,
+      "type": "020lead",
+      "author_str": "Example",
+      "per_curiam": false,
+      "plain_text": "The notice provision applies.",
+      "cluster": "https://www.courtlistener.com/api/rest/v4/clusters/77/"
+    },
+    "/opinions/56/": {
+      "id": 56,
+      "type": "040dissent",
+      "plain_text": "",
+      "html_with_citations": "<p>I respectfully <b>dissent</b>.</p>",
+      "cluster": "https://www.courtlistener.com/api/rest/v4/clusters/77/"
+    },
+    "/dockets/8/": {
+      "id": 8,
+      "case_name": "Notice v. Example",
+      "docket_number": "20-01",
+      "court_id": "ca9",
+      "date_filed": "2020-01-02",
+      "nature_of_suit": "Contract",
+      "cause": "Breach",
+      "assigned_to_str": "Judge Example",
+      "pacer_case_id": "123",
+      "absolute_url": "/docket/8/notice/"
+    },
+    "/courts/ca9/": {
+      "full_name": "United States Court of Appeals for the Ninth Circuit"
+    },
+    "/docket-entries/": {
+      "count": 5,
+      "results": [
+        {
+          "entry_number": 2,
+          "date_filed": "2020-02-03",
+          "description": "",
+          "recap_documents": [
+            {
+              "description": "Motion",
+              "document_number": "2",
+              "page_count": 4,
+              "filepath_local": "/recap/8/motion.pdf",
+              "is_available": true
+            }
+          ]
+        }
+      ]
+    },
+    "/parties/": {
+      "results": [
+        {
+          "name": "Notice LLC",
+          "party_types": [
+            {
+              "name": "Plaintiff"
+            }
+          ],
+          "attorneys": [
+            {
+              "name": "Attorney One"
+            }
+          ]
+        }
+      ]
+    },
+    "citation_target": {
+      "results": [
+        {
+          "cluster_id": 77,
+          "id": 999,
+          "caseName": "Notice v. Example",
+          "caseNameShort": "Notice",
+          "caseNameFull": "Notice LLC v. Example Inc.",
+          "citation": [
+            "10 S. Ct. 2",
+            "100 U.S. 20"
+          ],
+          "court": "Court of Appeals",
+          "court_id": "ca9",
+          "dateFiled": "2020-03-04",
+          "dateArgued": "2020-01-02",
+          "docketNumber": "20-01",
+          "judge": "A &amp; B",
+          "status": "Precedential",
+          "suitNature": "Contract",
+          "citeCount": 12,
+          "absolute_url": "/opinion/77/notice/",
+          "opinions": [
+            {
+              "id": 55,
+              "snippet": "The <mark>notice</mark> requirement applies."
+            }
+          ]
+        }
+      ]
+    },
+    "citing_opinions": {
+      "results": [
+        {
+          "cluster_id": 80,
+          "caseName": "Negative v. Example",
+          "citation": [
+            "101 U.S. 2"
+          ],
+          "court": "Court of Appeals",
+          "dateFiled": "2023-01-01T00:00:00Z",
+          "absolute_url": "/opinion/80/later/",
+          "opinions": [
+            {
+              "id": 90,
+              "snippet": "We overruled <mark>100 U.S. 20</mark>."
+            }
+          ]
+        },
+        {
+          "cluster_id": 81,
+          "caseName": "Caution v. Example",
+          "citation": [
+            "101 U.S. 2"
+          ],
+          "court": "Court of Appeals",
+          "dateFiled": "2023-01-01T00:00:00Z",
+          "absolute_url": "/opinion/81/later/",
+          "opinions": [
+            {
+              "id": 91,
+              "snippet": "We distinguished <mark>100 U.S. 20</mark>."
+            }
+          ]
+        },
+        {
+          "cluster_id": 82,
+          "caseName": "Positive v. Example",
+          "citation": [
+            "101 U.S. 2"
+          ],
+          "court": "Court of Appeals",
+          "dateFiled": "2023-01-01T00:00:00Z",
+          "absolute_url": "/opinion/82/later/",
+          "opinions": [
+            {
+              "id": 92,
+              "snippet": "We followed <mark>100 U.S. 20</mark>."
+            }
+          ]
+        },
+        {
+          "cluster_id": 83,
+          "caseName": "Neutral v. Example",
+          "citation": [
+            "101 U.S. 2"
+          ],
+          "court": "Court of Appeals",
+          "dateFiled": "2023-01-01T00:00:00Z",
+          "absolute_url": "/opinion/83/later/",
+          "opinions": [
+            {
+              "id": 93,
+              "snippet": "Opening summary without the citation."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "calls": [
+    {
+      "function": "search_cases",
+      "args": [
+        "notice",
+        null,
+        20
+      ],
+      "kwargs": {},
+      "expected": {
+        "results": [
+          {
+            "id": 77,
+            "opinion_id": 55,
+            "case_name": "Notice v. Example",
+            "case_name_short": "Notice",
+            "case_name_full": "Notice LLC v. Example Inc.",
+            "citation": [
+              "100 U.S. 20",
+              "10 S. Ct. 2"
+            ],
+            "court": "Court of Appeals",
+            "court_id": "ca9",
+            "date_filed": "2020-03-04",
+            "date_argued": "2020-01-02",
+            "docket_number": "20-01",
+            "judges": "A & B",
+            "status": "Precedential",
+            "nature_of_suit": "Contract",
+            "snippet": "The notice requirement applies.",
+            "times_cited": 12,
+            "url": "https://www.courtlistener.com/opinion/77/notice/"
+          }
+        ],
+        "count": 42,
+        "next_cursor": "https://www.courtlistener.com/api/rest/v4/search/?cursor=next&q=notice",
+        "prev_cursor": null,
+        "has_next": true,
+        "has_prev": false
+      }
+    },
+    {
+      "function": "get_case_detail",
+      "args": [
+        77
+      ],
+      "kwargs": {},
+      "expected": {
+        "id": 77,
+        "resolved_as": "cluster",
+        "cluster_id": 77,
+        "opinion_id": 55,
+        "case_name": "Notice v. Example",
+        "case_name_short": "Notice",
+        "case_name_full": "Notice LLC v. Example Inc.",
+        "citations": [
+          "100 U.S. 20",
+          "10 S. Ct. 2"
+        ],
+        "court": "United States Court of Appeals for the Ninth Circuit",
+        "court_id": "ca9",
+        "date_filed": "2020-03-04",
+        "date_argued": "2020-01-02",
+        "docket_number": "20-01",
+        "judges": "Example",
+        "nature_of_suit": "Contract",
+        "posture": "Appeal",
+        "opinion_text": "The notice provision applies.",
+        "html_text": "",
+        "opinions": [
+          {
+            "id": 55,
+            "type": "020lead",
+            "type_label": "Lead opinion",
+            "author": "Example",
+            "per_curiam": false,
+            "text": "The notice provision applies."
+          },
+          {
+            "id": 56,
+            "type": "040dissent",
+            "type_label": "Dissent",
+            "author": null,
+            "per_curiam": false,
+            "text": "I respectfully dissent ."
+          }
+        ],
+        "syllabus": "Notice is required.",
+        "headnotes": "Notice terms.",
+        "summary": "Affirmed.",
+        "times_cited": 12,
+        "precedential_status": "Published",
+        "url": "https://www.courtlistener.com/opinion/77/notice/"
+      }
+    },
+    {
+      "function": "get_case_detail",
+      "args": [
+        55
+      ],
+      "kwargs": {
+        "id_kind": "opinion"
+      },
+      "expected": {
+        "id": 55,
+        "resolved_as": "opinion",
+        "cluster_id": 77,
+        "opinion_id": 55,
+        "case_name": "Notice v. Example",
+        "case_name_short": "Notice",
+        "case_name_full": "Notice LLC v. Example Inc.",
+        "citations": [
+          "100 U.S. 20",
+          "10 S. Ct. 2"
+        ],
+        "court": "United States Court of Appeals for the Ninth Circuit",
+        "court_id": "ca9",
+        "date_filed": "2020-03-04",
+        "date_argued": "2020-01-02",
+        "docket_number": "20-01",
+        "judges": "Example",
+        "nature_of_suit": "Contract",
+        "posture": "Appeal",
+        "opinion_text": "The notice provision applies.",
+        "html_text": "",
+        "opinions": [
+          {
+            "id": 55,
+            "type": "020lead",
+            "type_label": "Lead opinion",
+            "author": "Example",
+            "per_curiam": false,
+            "text": "The notice provision applies."
+          }
+        ],
+        "syllabus": "Notice is required.",
+        "headnotes": "Notice terms.",
+        "summary": "Affirmed.",
+        "times_cited": 12,
+        "precedential_status": "Published",
+        "url": "https://www.courtlistener.com/opinion/77/notice/"
+      }
+    },
+    {
+      "function": "get_case_detail",
+      "args": [
+        55
+      ],
+      "kwargs": {},
+      "expected": {
+        "id": 55,
+        "resolved_as": "opinion",
+        "cluster_id": 77,
+        "opinion_id": 55,
+        "case_name": "Notice v. Example",
+        "case_name_short": "Notice",
+        "case_name_full": "Notice LLC v. Example Inc.",
+        "citations": [
+          "100 U.S. 20",
+          "10 S. Ct. 2"
+        ],
+        "court": "United States Court of Appeals for the Ninth Circuit",
+        "court_id": "ca9",
+        "date_filed": "2020-03-04",
+        "date_argued": "2020-01-02",
+        "docket_number": "20-01",
+        "judges": "Example",
+        "nature_of_suit": "Contract",
+        "posture": "Appeal",
+        "opinion_text": "The notice provision applies.",
+        "html_text": "",
+        "opinions": [
+          {
+            "id": 55,
+            "type": "020lead",
+            "type_label": "Lead opinion",
+            "author": "Example",
+            "per_curiam": false,
+            "text": "The notice provision applies."
+          }
+        ],
+        "syllabus": "Notice is required.",
+        "headnotes": "Notice terms.",
+        "summary": "Affirmed.",
+        "times_cited": 12,
+        "precedential_status": "Published",
+        "url": "https://www.courtlistener.com/opinion/77/notice/"
+      }
+    },
+    {
+      "function": "find_precedents",
+      "args": [
+        "notice",
+        "federal",
+        5,
+        20
+      ],
+      "kwargs": {},
+      "expected": [
+        {
+          "id": 77,
+          "opinion_id": 55,
+          "case_name": "Notice v. Example",
+          "citation": "100 U.S. 20",
+          "citations": [
+            "100 U.S. 20",
+            "10 S. Ct. 2"
+          ],
+          "court": "Court of Appeals",
+          "court_id": "ca9",
+          "date_filed": "2020-03-04",
+          "docket_number": "20-01",
+          "judges": "A & B",
+          "status": "Precedential",
+          "times_cited": 12,
+          "snippet": "The notice requirement applies.",
+          "url": "https://www.courtlistener.com/opinion/77/notice/"
+        }
+      ]
+    },
+    {
+      "function": "search_dockets",
+      "args": [
+        "notice",
+        "ca9",
+        "Notice",
+        20
+      ],
+      "kwargs": {},
+      "expected": [
+        {
+          "id": 8,
+          "case_name": "Notice v. Example",
+          "case_name_full": null,
+          "docket_number": "20-01",
+          "court": "Court of Appeals",
+          "court_id": "ca9",
+          "date_filed": "2020-01-02",
+          "date_terminated": "2021-03-04",
+          "date_argued": null,
+          "nature_of_suit": "Contract",
+          "cause": "Breach",
+          "jury_demand": "Plaintiff",
+          "jurisdiction_type": "Federal",
+          "assigned_to": "Judge Example",
+          "referred_to": "Judge Other",
+          "parties": [
+            {
+              "name": "Notice LLC"
+            },
+            {
+              "name": "Example Inc."
+            }
+          ],
+          "attorneys": [
+            {
+              "name": "Attorney One"
+            }
+          ],
+          "entry_count": 5,
+          "url": "https://www.courtlistener.com/docket/8/notice/"
+        }
+      ]
+    },
+    {
+      "function": "get_docket_detail",
+      "args": [
+        8
+      ],
+      "kwargs": {},
+      "expected": {
+        "id": 8,
+        "case_name": "Notice v. Example",
+        "case_name_full": null,
+        "docket_number": "20-01",
+        "court": "ca9",
+        "court_name": "United States Court of Appeals for the Ninth Circuit",
+        "date_filed": "2020-01-02",
+        "date_terminated": null,
+        "date_last_filing": null,
+        "date_argued": null,
+        "assigned_to": "Judge Example",
+        "referred_to": null,
+        "nature_of_suit": "Contract",
+        "cause": "Breach",
+        "jury_demand": null,
+        "jurisdiction_type": null,
+        "pacer_case_id": "123",
+        "entries": [
+          {
+            "entry_number": 2,
+            "date_filed": "2020-02-03",
+            "description": "Motion",
+            "documents": [
+              {
+                "description": "Motion",
+                "document_number": "2",
+                "page_count": 4,
+                "url": "https://www.courtlistener.com/recap/8/motion.pdf",
+                "is_available": true
+              }
+            ]
+          }
+        ],
+        "entry_count": 5,
+        "parties": [
+          {
+            "name": "Notice LLC",
+            "role": "Plaintiff",
+            "attorneys": [
+              "Attorney One"
+            ]
+          }
+        ],
+        "url": "https://www.courtlistener.com/docket/8/notice/"
+      }
+    },
+    {
+      "function": "search_oral_arguments",
+      "args": [
+        "notice",
+        "ca9",
+        50
+      ],
+      "kwargs": {},
+      "expected": [
+        {
+          "id": 9,
+          "case_name": "Notice v. Example",
+          "case_name_full": null,
+          "court": "Court of Appeals",
+          "court_id": "ca9",
+          "date_argued": "2020-01-02",
+          "docket_number": "20-01",
+          "judges": "Example",
+          "duration": 3661,
+          "duration_label": "1:01:01",
+          "audio_url": "https://storage.courtlistener.com/audio/2020/notice.mp3",
+          "download_url": "http://example.test/original.mp3",
+          "snippet": "Notice arguments",
+          "url": "https://www.courtlistener.com/audio/9/notice/",
+          "docket_id": 8
+        }
+      ]
+    },
+    {
+      "function": "analyze_legal_trend",
+      "args": [
+        "notice",
+        2020,
+        2023
+      ],
+      "kwargs": {},
+      "expected": {
+        "topic": "notice",
+        "start_year": 2020,
+        "end_year": 2023,
+        "years": [
+          {
+            "year": 2020,
+            "count": 100
+          },
+          {
+            "year": 2021,
+            "count": 120
+          },
+          {
+            "year": 2022,
+            "count": 150
+          },
+          {
+            "year": 2023,
+            "count": 160
+          }
+        ],
+        "cases_by_year": {
+          "2023": 160,
+          "2022": 150,
+          "2021": 120,
+          "2020": 100
+        },
+        "years_failed": 0,
+        "total_cases": 530,
+        "trend": "increasing",
+        "trend_basis": {
+          "from_year": 2020,
+          "to_year": 2023
+        },
+        "current_year_partial": false
+      }
+    }
+  ],
+  "citation_calls": [
+    {
+      "query": "100 U.S. 20",
+      "expected": {
+        "case_id": 77,
+        "case_name": "Notice v. Example",
+        "citation": "100 U.S. 20",
+        "absolute_url": "https://www.courtlistener.com/opinion/77/notice/",
+        "is_good_law": null,
+        "warning_level": "warning",
+        "method": "citing_language_scan",
+        "negative_citations": 1,
+        "caution_citations": 1,
+        "positive_citations": 1,
+        "neutral_count": 1,
+        "total_citing_cases": 12,
+        "citing_cases_analyzed": 4,
+        "last_cited": "2023-01-01",
+        "notes": [
+          "This is a scan of the language courts use near the citation in CourtListener search results — not an editorial citator. It does not replace Shepard's or KeyCite; read the flagged opinions before relying on the case.",
+          "Cited by 12 opinions in CourtListener.",
+          "Scanned the passage around the citation in 3 of the 4 most recent and most-cited citing opinions retrieved; the rest could not be located in the text and were not classified.",
+          "1 citing opinion(s) use negative language near the citation (overruled, abrogated, declined to follow…). Read each before relying on the case.",
+          "1 citing opinion(s) use cautionary language (distinguished, questioned, limited, on other grounds…).",
+          "1 citing opinion(s) use positive language (followed, affirmed, relied on…)."
+        ],
+        "analysis_basis": "language_near_citation",
+        "citing_cases": [
+          {
+            "id": 80,
+            "case_name": "Negative v. Example",
+            "citation": "101 U.S. 2",
+            "court": "Court of Appeals",
+            "date_filed": "2023-01-01",
+            "treatment": "negative",
+            "snippet": "We overruled 100 U.S. 20 .",
+            "context_found": true,
+            "url": "https://www.courtlistener.com/opinion/80/later/"
+          },
+          {
+            "id": 81,
+            "case_name": "Caution v. Example",
+            "citation": "101 U.S. 2",
+            "court": "Court of Appeals",
+            "date_filed": "2023-01-01",
+            "treatment": "caution",
+            "snippet": "We distinguished 100 U.S. 20 .",
+            "context_found": true,
+            "url": "https://www.courtlistener.com/opinion/81/later/"
+          },
+          {
+            "id": 82,
+            "case_name": "Positive v. Example",
+            "citation": "101 U.S. 2",
+            "court": "Court of Appeals",
+            "date_filed": "2023-01-01",
+            "treatment": "positive",
+            "snippet": "We followed 100 U.S. 20 .",
+            "context_found": true,
+            "url": "https://www.courtlistener.com/opinion/82/later/"
+          }
+        ]
+      }
+    },
+    {
+      "query": "999 U.S. 1",
+      "expected": {
+        "case_id": 0,
+        "case_name": "Not Found",
+        "citation": "999 U.S. 1",
+        "absolute_url": null,
+        "is_good_law": null,
+        "warning_level": "unknown",
+        "method": "citing_language_scan",
+        "negative_citations": 0,
+        "caution_citations": 0,
+        "positive_citations": 0,
+        "neutral_count": 0,
+        "total_citing_cases": 0,
+        "citing_cases_analyzed": 0,
+        "last_cited": null,
+        "notes": [
+          "Citation not found in CourtListener database. Try a different format (e.g., '410 U.S. 113' or 'Roe v. Wade').",
+          "This is a scan of the language courts use near the citation in CourtListener search results — not an editorial citator. It does not replace Shepard's or KeyCite; read the flagged opinions before relying on the case."
+        ],
+        "analysis_basis": "not_found",
+        "citing_cases": []
+      }
+    },
+    {
+      "query": "Other v. Party",
+      "expected": {
+        "case_id": 0,
+        "case_name": "Not Found",
+        "citation": "Other v. Party",
+        "absolute_url": null,
+        "is_good_law": null,
+        "warning_level": "unknown",
+        "method": "citing_language_scan",
+        "negative_citations": 0,
+        "caution_citations": 0,
+        "positive_citations": 0,
+        "neutral_count": 0,
+        "total_citing_cases": 0,
+        "citing_cases_analyzed": 0,
+        "last_cited": null,
+        "notes": [
+          "No case in CourtListener matched this citation exactly, so nothing was checked. The closest search result was \"Notice v. Example\" — if that is the case you meant, search by its reporter citation (e.g., '410 U.S. 113').",
+          "This is a scan of the language courts use near the citation in CourtListener search results — not an editorial citator. It does not replace Shepard's or KeyCite; read the flagged opinions before relying on the case."
+        ],
+        "analysis_basis": "not_found",
+        "citing_cases": []
+      }
+    },
+    {
+      "query": "Notice v. Example",
+      "expected": {
+        "case_id": 77,
+        "case_name": "Notice v. Example",
+        "citation": "Notice v. Example",
+        "absolute_url": "https://www.courtlistener.com/opinion/77/notice/",
+        "is_good_law": null,
+        "warning_level": "warning",
+        "method": "citing_language_scan",
+        "negative_citations": 1,
+        "caution_citations": 1,
+        "positive_citations": 1,
+        "neutral_count": 1,
+        "total_citing_cases": 12,
+        "citing_cases_analyzed": 4,
+        "last_cited": "2023-01-01",
+        "notes": [
+          "This is a scan of the language courts use near the citation in CourtListener search results — not an editorial citator. It does not replace Shepard's or KeyCite; read the flagged opinions before relying on the case.",
+          "Cited by 12 opinions in CourtListener.",
+          "Scanned the passage around the citation in 3 of the 4 most recent and most-cited citing opinions retrieved; the rest could not be located in the text and were not classified.",
+          "1 citing opinion(s) use negative language near the citation (overruled, abrogated, declined to follow…). Read each before relying on the case.",
+          "1 citing opinion(s) use cautionary language (distinguished, questioned, limited, on other grounds…).",
+          "1 citing opinion(s) use positive language (followed, affirmed, relied on…)."
+        ],
+        "analysis_basis": "language_near_citation",
+        "citing_cases": [
+          {
+            "id": 80,
+            "case_name": "Negative v. Example",
+            "citation": "101 U.S. 2",
+            "court": "Court of Appeals",
+            "date_filed": "2023-01-01",
+            "treatment": "negative",
+            "snippet": "We overruled 100 U.S. 20 .",
+            "context_found": true,
+            "url": "https://www.courtlistener.com/opinion/80/later/"
+          },
+          {
+            "id": 81,
+            "case_name": "Caution v. Example",
+            "citation": "101 U.S. 2",
+            "court": "Court of Appeals",
+            "date_filed": "2023-01-01",
+            "treatment": "caution",
+            "snippet": "We distinguished 100 U.S. 20 .",
+            "context_found": true,
+            "url": "https://www.courtlistener.com/opinion/81/later/"
+          },
+          {
+            "id": 82,
+            "case_name": "Positive v. Example",
+            "citation": "101 U.S. 2",
+            "court": "Court of Appeals",
+            "date_filed": "2023-01-01",
+            "treatment": "positive",
+            "snippet": "We followed 100 U.S. 20 .",
+            "context_found": true,
+            "url": "https://www.courtlistener.com/opinion/82/later/"
+          }
+        ]
+      }
+    }
+  ]
+}

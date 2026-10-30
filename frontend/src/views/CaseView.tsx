@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useCaseViewStore } from '../stores/caseViewStore';
 import type { CaseMessage } from '../types';
+import type { CaseOpinion } from '../components/shared/CaseDetailView';
 import s from './CaseView.module.css';
 // Shared tool-page shell: scrolling content + the app-wide floating composer.
 import t from './ToolsView.module.css';
@@ -44,6 +45,8 @@ function CaseView() {
   const { id: routeCaseId } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const routeKind = searchParams.get('kind');
+  const opinions = ((Array.isArray(mainViewCase?.opinions) ? mainViewCase.opinions : []) as CaseOpinion[])
+    .filter((opinion) => (opinion.text || '').trim());
   useEffect(() => {
     if (routeCaseId) {
       initCaseFromRoute(routeCaseId, routeKind === 'cluster' || routeKind === 'opinion' ? routeKind : undefined);
@@ -139,7 +142,15 @@ function CaseView() {
                 {mainViewCase.judges && (
                   <div className={s.detailJudges}><strong>Judges:</strong> {mainViewCase.judges}</div>
                 )}
-                {mainViewCase.opinion_text && (
+                {opinions.length > 0 ? opinions.map((opinion, index) => (
+                  <div key={opinion.id ?? index} className={s.detailSection}>
+                    <h3 className={s.detailSectionTitle}>
+                      {opinion.type_label || 'Opinion'}
+                      {opinion.per_curiam ? ' · per curiam' : opinion.author ? ` · ${opinion.author}` : ''}
+                    </h3>
+                    <div className={s.detailText}>{opinion.text}</div>
+                  </div>
+                )) : mainViewCase.opinion_text && (
                   <div className={s.detailSection}>
                     <h3 className={s.detailSectionTitle}>Full Opinion</h3>
                     <div className={s.detailText}>{mainViewCase.opinion_text}</div>

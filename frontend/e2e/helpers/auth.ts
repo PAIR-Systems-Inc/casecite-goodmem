@@ -8,7 +8,7 @@ import { expect, type Page, type Route } from '@playwright/test';
  * different origin from the Vite server, so every reply carries CORS headers
  * and OPTIONS preflights are answered too.
  */
-export const API_ROUTE = /\/\/[^/]+\/api\/|localhost:8000/;
+export const API_ROUTE = /\/\/[^/]+\/api\/|localhost:8000|\/health(?:\?|$)/;
 
 export const TEST_USER = {
   id: 'user-1',

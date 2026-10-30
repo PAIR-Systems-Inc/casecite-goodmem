@@ -1,0 +1,10 @@
+# Optional existing Hugging Face hub cache. Never download into or modify it.
+services:
+  model-download:
+    environment:
+      OCR_CACHE_READ_ONLY: 'true'
+    volumes:
+      - ${CASECITE_OCR_CACHE:?Set CASECITE_OCR_CACHE}:/models:ro
+  ocr:
+    volumes:
+      - ${CASECITE_OCR_CACHE:?Set CASECITE_OCR_CACHE}:/models:ro

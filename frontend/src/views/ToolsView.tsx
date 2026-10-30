@@ -78,7 +78,7 @@ function ToolsView() {
               onKeyDown={(e) => e.key === 'Enter' && toolInput.trim() && handleToolSearch()}
               autoFocus
             />
-            <button className={s.pillBtn} onClick={() => handleToolSearch()} disabled={!toolInput.trim() || toolLoading}>
+            <button aria-label={`Search ${activeTool.name}`} className={s.pillBtn} onClick={() => handleToolSearch()} disabled={!toolInput.trim() || toolLoading}>
               <Icon name="Search" size={16} />
             </button>
           </div>
@@ -179,7 +179,7 @@ function ToolsView() {
                     onKeyDown={(e) => e.key === 'Enter' && !toolChatLoading && toolChatInput.trim() && sendToolChat()}
                     disabled={toolChatLoading}
                   />
-                  <button className={s.pillBtn} onClick={sendToolChat} disabled={toolChatLoading || !toolChatInput.trim()}>
+                  <button aria-label="Ask about these results" className={s.pillBtn} onClick={sendToolChat} disabled={toolChatLoading || !toolChatInput.trim()}>
                     {toolChatLoading ? <Icon name="Loader2" size={16} className={s.spin} /> : <Icon name="Send" size={16} />}
                   </button>
                 </>
@@ -194,7 +194,7 @@ function ToolsView() {
                     onChange={(e) => setToolInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && toolInput.trim() && handleToolSearch()}
                   />
-                  <button className={s.pillBtn} onClick={() => handleToolSearch()} disabled={!toolInput.trim() || toolLoading}>
+                  <button aria-label={`Search ${activeTool.name}`} className={s.pillBtn} onClick={() => handleToolSearch()} disabled={!toolInput.trim() || toolLoading}>
                     {toolLoading ? <Icon name="Loader2" size={16} className={s.spin} /> : <Icon name="Search" size={16} />}
                   </button>
                 </>

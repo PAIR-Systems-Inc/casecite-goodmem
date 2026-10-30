@@ -22,7 +22,7 @@ test.describe('Authentication Flow', () => {
     await header.getByRole('button', { name: /Sign In/i }).click();
 
     await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible();
-    await expect(page.getByText('Welcome back')).toBeVisible();
+    await expect(page.getByRole('dialog').getByText('CaseCite by PairSys', { exact: true })).toBeVisible();
   });
 
   test('login modal has email and password fields', async ({ page }) => {

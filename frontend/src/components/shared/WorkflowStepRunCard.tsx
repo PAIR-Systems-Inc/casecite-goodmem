@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Icon } from './Icon';
 import { stepKindInfo } from '../../stores/workflowsStore';
 import { conditionSummary } from './WorkflowConditionEditor';
@@ -48,6 +48,7 @@ export function WorkflowStepRunCard({
 }: WorkflowStepRunCardProps) {
   const detailed = step.status === 'completed' || step.status === 'awaiting' || step.status === 'rejected' || step.status === 'skipped_condition';
   const [open, setOpen] = useState(step.status === 'awaiting' || step.status === 'rejected');
+  const outputId = useId();
   const info = stepKindInfo(step.kind);
   const data = (step.output?.data || {}) as Record<string, unknown>;
   const hasDetail = detailed && Object.keys(data).length > 0;
@@ -72,7 +73,7 @@ export function WorkflowStepRunCard({
   };
 
   return (
-    <div className={`${styles.stepRun} ${styles[`stepRun_${step.status}`] || ''}`}>
+    <div role="group" aria-label={`Step ${step.index + 1}: ${step.name}`} className={`${styles.stepRun} ${styles[`stepRun_${step.status}`] || ''}`}>
       <div className={styles.stepRunHead}>
         <Icon
           name={STATUS_ICON[step.status] || 'Clock'}
@@ -97,7 +98,7 @@ export function WorkflowStepRunCard({
           </button>
         )}
         {hasDetail && (
-          <button type="button" className={styles.iconBtn} onClick={() => setOpen((o) => !o)} aria-label={open ? 'Hide output' : 'Show output'} title={open ? 'Hide output' : 'Show output'}>
+          <button type="button" className={styles.iconBtn} onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-controls={open ? outputId : undefined} aria-label={open ? 'Hide output' : 'Show output'} title={open ? 'Hide output' : 'Show output'}>
             <Icon name={open ? 'ChevronUp' : 'ChevronDown'} size={14} />
           </button>
         )}
@@ -114,7 +115,7 @@ export function WorkflowStepRunCard({
       )}
       {step.error && <div className={styles.stepRunError}>{step.error}</div>}
       {open && hasDetail && step.status !== 'skipped_condition' && (
-        <div className={styles.stepRunDetail}>{output()}</div>
+        <div id={outputId} className={styles.stepRunDetail}>{output()}</div>
       )}
     </div>
   );

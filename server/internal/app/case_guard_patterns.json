@@ -1,0 +1,30 @@
+{
+  "_REPORTER_CITE_RE": "\\b\\d{1,4}\\s+(?:U\\.?\\s?S\\.?|S\\.?\\s?Ct\\.?|L\\.?\\s?Ed\\.?(?:\\s?2d)?|F\\.?\\s?(?:2d|3d|4th)|F\\.?\\s?Supp\\.?(?:\\s?(?:2d|3d))?|F\\.?\\s?App'?x\\.?|B\\.?\\s?R\\.?|P\\.?\\s?(?:2d|3d)|(?:N\\.\\s?E\\.(?:\\s?(?:2d|3d))?|N\\.?\\s?E\\.?\\s?(?:2d|3d))|(?:N\\.\\s?W\\.(?:\\s?(?:2d|3d))?|N\\.?\\s?W\\.?\\s?(?:2d|3d))|(?:S\\.\\s?E\\.(?:\\s?(?:2d|3d))?|S\\.?\\s?E\\.?\\s?(?:2d|3d))|(?:S\\.\\s?W\\.(?:\\s?(?:2d|3d))?|S\\.?\\s?W\\.?\\s?(?:2d|3d))|A\\.?\\s?(?:2d|3d)|So\\.?\\s?(?:2d|3d)|Cal\\.?\\s?Rptr\\.?(?:\\s?(?:2d|3d))?|N\\.?\\s?Y\\.?\\s?S\\.?(?:\\s?(?:2d|3d))?)\\s+\\d{1,5}\\b",
+  "_WL_CITE_RE": "\\b(?:19|20)\\d{2}\\s+WL\\s+\\d{1,9}\\b",
+  "_CASE_NAME_RE": "\\b([A-Z][A-Za-z'’&.-]*(?:[^\\S\\r\\n]+(?:(?:of|the|and|for|in|de|del|la|van|von|ex|rel\\.?)[^\\S\\r\\n]+)?[A-Z][A-Za-z'’&.-]*){0,5})[^\\S\\r\\n]+vs?\\.?[^\\S\\r\\n]+([A-Z][A-Za-z'’&.-]*(?:[^\\S\\r\\n]+(?:(?:of|the|and|for|in|de|del|la|van|von|ex|rel\\.?)[^\\S\\r\\n]+)?[A-Z][A-Za-z'’&.-]*){0,5})",
+  "_SINGLE_PARTY_RE": "\\b(In[^\\S\\r\\n]+[Rr]e|In[^\\S\\r\\n]+the[^\\S\\r\\n]+Matter[^\\S\\r\\n]+of|Matter[^\\S\\r\\n]+of|Ex[^\\S\\r\\n]+parte)[^\\S\\r\\n]+([A-Z][A-Za-z'’&.-]*(?:[^\\S\\r\\n]+(?:(?:of|the|and|for|in|de|del|la|van|von|ex|rel\\.?)[^\\S\\r\\n]+)?[A-Z][A-Za-z'’&.-]*){0,5})",
+  "lead_in_words": [
+    "accord",
+    "also",
+    "although",
+    "and",
+    "as",
+    "because",
+    "but",
+    "cf",
+    "citing",
+    "compare",
+    "contra",
+    "following",
+    "in",
+    "like",
+    "per",
+    "see",
+    "since",
+    "the",
+    "under",
+    "unlike",
+    "while",
+    "with"
+  ]
+}

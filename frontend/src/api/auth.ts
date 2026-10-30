@@ -1,13 +1,21 @@
 import { api } from './client';
-import type { AuthResponse, UserInfo, MessageResponse, SessionInfo } from './types';
+import type { AuthResponse, UserInfo, MessageResponse, SessionInfo, MicrosoftAuthConfig } from './types';
 
 Object.assign(api, {
+	async getMicrosoftAuthConfig(): Promise<MicrosoftAuthConfig> {
+		return api.request('/auth/azure/config');
+	},
+	async loginWithMicrosoft(token: string): Promise<AuthResponse> {
+		const result = await api.request('/auth/azure/login', { method: 'POST', body: JSON.stringify({ token }) });
+		if (result.access_token) api.setToken(result.access_token);
+		return result;
+	},
   async login(email: string, password: string): Promise<AuthResponse> {
     const result = await api.request('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
-    api.setToken(result.access_token);
+    if (result.access_token) api.setToken(result.access_token);
     return result;
   },
 

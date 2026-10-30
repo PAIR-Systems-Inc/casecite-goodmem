@@ -20,4 +20,13 @@ describe('isAllowedOAuthUrl', () => {
     expect(isAllowedOAuthUrl(undefined)).toBe(false);
     expect(isAllowedOAuthUrl(null)).toBe(false);
   });
+
+  it('accepts only a same-origin connector launch with a state', () => {
+    const origin = window.location.origin;
+    expect(isAllowedOAuthUrl(`${origin}/api/v1/connectors/imanage/authorize?state=bound`)).toBe(true);
+    expect(isAllowedOAuthUrl(`${origin}/api/v1/connectors/filevine/authorize?state=bound`)).toBe(true);
+    expect(isAllowedOAuthUrl(`${origin}/api/v1/connectors/imanage/authorize`)).toBe(false);
+    expect(isAllowedOAuthUrl(`${origin}/redirect?state=bound&url=https://attacker.example`)).toBe(false);
+    expect(isAllowedOAuthUrl('https://attacker.example/api/v1/connectors/imanage/authorize?state=bound')).toBe(false);
+  });
 });

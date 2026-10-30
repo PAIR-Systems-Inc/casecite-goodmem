@@ -4,4 +4,3 @@ export { contractTypeLabel } from './contractLabels';
 export { anchorToCitation } from './docAnchors';
 export { pushCitations } from './citationsBridge';
 export { fetchDocumentPdfUrl } from './documentFile';
-

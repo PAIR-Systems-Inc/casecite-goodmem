@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { installApiMocks } from './helpers/auth';
 
 test.describe('Health Checks', () => {
+  test.beforeEach(async ({page}) => { await installApiMocks(page); });
   test('frontend loads without console errors', async ({ page }) => {
     const consoleErrors: string[] = [];
 
@@ -25,6 +27,8 @@ test.describe('Health Checks', () => {
       if (err.includes('Cross-Origin Request Blocked')) return false;
       if (err.includes('CORS request did not succeed')) return false;
       if (err.includes('NetworkError when attempting to fetch resource')) return false;
+      // Signed-out bootstrap deliberately answers /auth/me with 401.
+      if (err.includes('401 (Unauthorized)')) return false;
       // Ignore favicon 404
       if (err.includes('favicon')) return false;
       // Ignore React DevTools extension messages

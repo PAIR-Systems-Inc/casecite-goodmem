@@ -1,0 +1,11 @@
+FROM golang:1.26.10-alpine AS build
+WORKDIR /src
+COPY server/cmd/testprovider/main.go ./main.go
+RUN CGO_ENABLED=0 go build -o /provider main.go
+FROM scratch
+COPY --from=build /provider /provider
+COPY server/internal/app/testdata/legal_tools.json /fixtures/legal_tools.json
+COPY server/internal/app/testdata/judge.json /fixtures/judge.json
+COPY server/internal/app/testdata/scanned_notice.pdf /fixtures/scanned_notice.pdf
+COPY server/internal/app/testdata/word_contract.json /fixtures/word_contract.json
+ENTRYPOINT ["/provider"]

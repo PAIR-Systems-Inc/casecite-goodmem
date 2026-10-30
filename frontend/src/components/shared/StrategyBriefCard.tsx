@@ -43,7 +43,7 @@ function caseLawOutcome(cl: NonNullable<StrategyBriefResponse['case_law']>): str
   if (cl.errors) reasons.push(`${cl.errors} hit errors while being judged`);
   const partial = cl.partially_read ?? 0;
   const read = partial > 0
-    ? `${cl.opinions_read} opinion${cl.opinions_read === 1 ? ' was' : 's were'} read (${partial} only in part — too long to read in full)`
+    ? `${cl.opinions_read} opinion review${cl.opinions_read === 1 ? ' was' : 's were'} completed (${partial} covered only part of the text)`
     : `${cl.opinions_read} opinion${cl.opinions_read === 1 ? ' was' : 's were'} read in full`;
   const why = reasons.length ? `: ${reasons.join('; ')}` : ', but none survived review';
   return `Case law was searched for ${points} and ${read}${why}. Only verified authorities are ever shown — try Case Citations on a specific filing for a deeper hunt.`;
@@ -69,6 +69,9 @@ function StrategyBriefCard({ brief, citations, onCitationClick, styles }: Strate
             <span className={`${styles.briefPointNum} mono`}>{i + 1}.</span>
             <div className={styles.briefPointBody}>
               <p className={styles.briefPointText}>{p.point || p.step}</p>
+              {p.support === 'unsupported' && (
+                <p className={styles.briefCoverageNote}>No supporting document passage was identified for this point.</p>
+              )}
               {(p.citation_ids?.length ?? 0) > 0 && (
                 <div className={styles.briefCites}>
                   {p.citation_ids.map((id) => {
@@ -143,12 +146,13 @@ function StrategyBriefCard({ brief, citations, onCitationClick, styles }: Strate
   const scopeFolders = brief.scope?.folder_paths?.length
     ? brief.scope.folder_paths
     : brief.scope?.folder_path ? [brief.scope.folder_path] : [];
+  const documentsRead = brief.scope?.documents_read ?? brief.scope?.documents_considered ?? 0;
 
   return (
     <div className={styles.briefCard}>
       <div className={styles.briefOverline}>
-        Strategy brief · {brief.scope?.documents_considered ?? 0} document{(brief.scope?.documents_considered ?? 0) === 1 ? '' : 's'} reviewed
-        {brief.scope?.documents_total > brief.scope?.documents_considered && (
+        Strategy brief · {documentsRead} document{documentsRead === 1 ? '' : 's'} reviewed
+        {brief.scope?.documents_total > documentsRead && (
           <span className={styles.briefTruncNote}> (of {brief.scope.documents_total})</span>
         )}
         {scopeFolders.length > 0 && (
@@ -159,6 +163,9 @@ function StrategyBriefCard({ brief, citations, onCitationClick, styles }: Strate
       </div>
       {brief.scope?.coverage_note && (
         <div className={styles.briefCoverageNote}>{brief.scope.coverage_note}</div>
+      )}
+      {!!brief.scope?.missing_documents?.length && (
+        <div className={styles.briefCoverageNote}>Could not read: {brief.scope.missing_documents.map((doc) => doc.filename).join(', ')}.</div>
       )}
       <p className={styles.briefPosition}>{brief.position}</p>
       {renderPoints('Strengths', brief.strengths)}
@@ -171,8 +178,11 @@ function StrategyBriefCard({ brief, citations, onCitationClick, styles }: Strate
       )}
       {brief.case_law?.requested && brief.case_law.attached > 0 && (brief.case_law.partially_read ?? 0) > 0 && (
         <div className={styles.briefCaseLawNote}>
-          <Icon name="Scale" size={12} /> {brief.case_law.partially_read} of the opinions considered {brief.case_law.partially_read === 1 ? 'was' : 'were'} too long to read in full; only the opening portion was reviewed.
+          <Icon name="Scale" size={12} /> {brief.case_law.partially_read} opinion review{brief.case_law.partially_read === 1 ? '' : 's'} covered only part of the text. Quotes shown were verified against the passages reviewed.
         </div>
+      )}
+      {brief.case_law?.requested && brief.case_law.attached > 0 && brief.case_law.timed_out && (
+        <div className={styles.briefCaseLawNote}><Icon name="Scale" size={12} /> The case-law search reached its time limit. Verified authorities found before the limit are shown; some points may remain unchecked.</div>
       )}
       <CaseLawRemovedNotice removed={brief.case_law_removed} className={styles.briefCaseLawNote} />
       <AiNotice />

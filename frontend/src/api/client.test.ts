@@ -3,6 +3,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 vi.mock('../utils', () => ({ getCookie: vi.fn(() => null) }));
 
 import { api, formatErrorDetail } from './client';
+import { useAuthStore } from '../stores/authStore';
+import { useUIStore } from '../stores/uiStore';
+
+// Session expiry/account gates import stores asynchronously. Finish those
+// handlers before replacing fetch globals or starting the next assertion.
+afterEach(async () => { await vi.dynamicImportSettled(); });
 
 function jsonResponse(status: number, body: unknown): Response {
   return {
@@ -182,7 +188,6 @@ describe('api/client account gates', () => {
   });
 
   it('a 403 with code password_change_required flags the signed-in user', async () => {
-    const { useAuthStore } = await import('../stores/authStore');
     useAuthStore.setState({ user: { id: 'u1', email: 'a@b.c', roles: ['attorney'] }, isAuthenticated: true });
     fetchMock.mockResolvedValueOnce(jsonResponse(403, {
       detail: 'Change your temporary password to continue.', code: 'password_change_required',
@@ -194,8 +199,6 @@ describe('api/client account gates', () => {
   });
 
   it('a 403 with code mfa_enrollment_required opens Settings on the Security tab', async () => {
-    const { useAuthStore } = await import('../stores/authStore');
-    const { useUIStore } = await import('../stores/uiStore');
     useUIStore.setState(useUIStore.getInitialState(), true);
     useAuthStore.setState({ user: { id: 'u1', email: 'a@b.c', roles: ['attorney'] }, isAuthenticated: true });
     fetchMock.mockResolvedValueOnce(jsonResponse(403, { detail: 'Set up MFA.', code: 'mfa_enrollment_required' }));
@@ -208,7 +211,6 @@ describe('api/client account gates', () => {
   });
 
   it('an ordinary 403 changes nothing', async () => {
-    const { useAuthStore } = await import('../stores/authStore');
     useAuthStore.setState({ user: { id: 'u1', email: 'a@b.c', roles: ['viewer'] }, isAuthenticated: true });
     fetchMock.mockResolvedValueOnce(jsonResponse(403, { detail: 'Insufficient permissions' }));
 

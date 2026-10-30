@@ -1,0 +1,1573 @@
+{
+  "upstream_commit": "6605cb3474cf0c2894080af216d5fed2a81fc997",
+  "routes": [
+    {
+      "module": "audit",
+      "method": "GET",
+      "path": "/api/v1/admin/audit/logs",
+      "handler": "query_audit_logs",
+      "source": "backend/app/routers/audit.py:54",
+      "status": "pending"
+    },
+    {
+      "module": "audit",
+      "method": "GET",
+      "path": "/api/v1/admin/audit/verify",
+      "handler": "verify_audit_chain",
+      "source": "backend/app/routers/audit.py:98",
+      "status": "pending"
+    },
+    {
+      "module": "audit",
+      "method": "GET",
+      "path": "/api/v1/admin/audit/export",
+      "handler": "export_audit_logs",
+      "source": "backend/app/routers/audit.py:156",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/demo/login",
+      "handler": "dev_login",
+      "source": "backend/app/routers/auth.py:226",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "handler": "register",
+      "source": "backend/app/routers/auth.py:293",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "handler": "email_login",
+      "source": "backend/app/routers/auth.py:410",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/azure/login",
+      "handler": "login_with_azure",
+      "source": "backend/app/routers/auth.py:549",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/refresh",
+      "handler": "refresh_token",
+      "source": "backend/app/routers/auth.py:759",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/logout",
+      "handler": "logout",
+      "source": "backend/app/routers/auth.py:881",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/logout/all",
+      "handler": "logout_all_sessions",
+      "source": "backend/app/routers/auth.py:916",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "GET",
+      "path": "/api/v1/auth/sessions",
+      "handler": "get_sessions",
+      "source": "backend/app/routers/auth.py:952",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "handler": "get_current_user_info",
+      "source": "backend/app/routers/auth.py:959",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "GET",
+      "path": "/api/v1/auth/azure/config",
+      "handler": "get_azure_config",
+      "source": "backend/app/routers/auth.py:989",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/change-password",
+      "handler": "change_password",
+      "source": "backend/app/routers/auth.py:1012",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/forgot-password",
+      "handler": "forgot_password",
+      "source": "backend/app/routers/auth.py:1086",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/reset-password",
+      "handler": "reset_password",
+      "source": "backend/app/routers/auth.py:1160",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/verify-reset-token",
+      "handler": "verify_reset_token",
+      "source": "backend/app/routers/auth.py:1250",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/device/start",
+      "handler": "device_start",
+      "source": "backend/app/routers/auth.py:1281",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/device/approve",
+      "handler": "device_approve",
+      "source": "backend/app/routers/auth.py:1338",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/device/deny",
+      "handler": "device_deny",
+      "source": "backend/app/routers/auth.py:1369",
+      "status": "pending"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/api/v1/auth/device/token",
+      "handler": "device_token",
+      "source": "backend/app/routers/auth.py:1395",
+      "status": "pending"
+    },
+    {
+      "module": "branding",
+      "method": "GET",
+      "path": "/api/v1/branding",
+      "handler": "get_branding",
+      "source": "backend/app/routers/branding.py:115",
+      "status": "pending"
+    },
+    {
+      "module": "branding",
+      "method": "GET",
+      "path": "/api/v1/branding/assets/{filename}",
+      "handler": "get_branding_asset",
+      "source": "backend/app/routers/branding.py:127",
+      "status": "pending"
+    },
+    {
+      "module": "branding",
+      "method": "PUT",
+      "path": "/api/v1/branding",
+      "handler": "update_branding",
+      "source": "backend/app/routers/branding.py:150",
+      "status": "pending"
+    },
+    {
+      "module": "branding",
+      "method": "POST",
+      "path": "/api/v1/branding/logo",
+      "handler": "upload_logo",
+      "source": "backend/app/routers/branding.py:223",
+      "status": "pending"
+    },
+    {
+      "module": "branding",
+      "method": "POST",
+      "path": "/api/v1/branding/reset",
+      "handler": "reset_branding",
+      "source": "backend/app/routers/branding.py:257",
+      "status": "pending"
+    },
+    {
+      "module": "chat",
+      "method": "POST",
+      "path": "/api/v1/chat/export",
+      "handler": "export_conversation",
+      "source": "backend/app/routers/chat.py:44",
+      "status": "pending"
+    },
+    {
+      "module": "chat",
+      "method": "POST",
+      "path": "/api/v1/chat",
+      "handler": "chat",
+      "source": "backend/app/routers/chat.py:451",
+      "status": "pending"
+    },
+    {
+      "module": "chat_sessions",
+      "method": "GET",
+      "path": "/api/v1/chat/sessions",
+      "handler": "list_chat_sessions",
+      "source": "backend/app/routers/chat_sessions.py:34",
+      "status": "pending"
+    },
+    {
+      "module": "chat_sessions",
+      "method": "POST",
+      "path": "/api/v1/chat/sessions",
+      "handler": "create_chat_session",
+      "source": "backend/app/routers/chat_sessions.py:47",
+      "status": "pending"
+    },
+    {
+      "module": "chat_sessions",
+      "method": "GET",
+      "path": "/api/v1/chat/sessions/{session_id}",
+      "handler": "get_chat_session",
+      "source": "backend/app/routers/chat_sessions.py:63",
+      "status": "pending"
+    },
+    {
+      "module": "chat_sessions",
+      "method": "DELETE",
+      "path": "/api/v1/chat/sessions/{session_id}",
+      "handler": "delete_chat_session",
+      "source": "backend/app/routers/chat_sessions.py:87",
+      "status": "pending"
+    },
+    {
+      "module": "connectors",
+      "method": "GET",
+      "path": "/api/v1/connectors",
+      "handler": "list_connectors",
+      "source": "backend/app/routers/connectors.py:122",
+      "status": "pending"
+    },
+    {
+      "module": "connectors",
+      "method": "GET",
+      "path": "/api/v1/connectors/{connector_type}/status",
+      "handler": "get_connector_status",
+      "source": "backend/app/routers/connectors.py:137",
+      "status": "pending"
+    },
+    {
+      "module": "connectors",
+      "method": "GET",
+      "path": "/api/v1/connectors/{connector_type}/auth",
+      "handler": "get_auth_url",
+      "source": "backend/app/routers/connectors.py:165",
+      "status": "pending"
+    },
+    {
+      "module": "connectors",
+      "method": "GET",
+      "path": "/api/v1/connectors/{connector_type}/callback",
+      "handler": "handle_callback",
+      "source": "backend/app/routers/connectors.py:208",
+      "status": "pending"
+    },
+    {
+      "module": "connectors",
+      "method": "POST",
+      "path": "/api/v1/connectors/{connector_type}/disconnect",
+      "handler": "disconnect_connector",
+      "source": "backend/app/routers/connectors.py:287",
+      "status": "pending"
+    },
+    {
+      "module": "connectors",
+      "method": "POST",
+      "path": "/api/v1/connectors/{connector_type}/sync",
+      "handler": "start_sync",
+      "source": "backend/app/routers/connectors.py:312",
+      "status": "pending"
+    },
+    {
+      "module": "connectors",
+      "method": "GET",
+      "path": "/api/v1/connectors/{connector_type}/sync/{sync_id}",
+      "handler": "get_sync_status_endpoint",
+      "source": "backend/app/routers/connectors.py:389",
+      "status": "pending"
+    },
+    {
+      "module": "contract_analysis",
+      "method": "POST",
+      "path": "/api/v1/contract-analysis/analyze",
+      "handler": "analyze_contract_full",
+      "source": "backend/app/routers/contract_analysis.py:100",
+      "status": "pending"
+    },
+    {
+      "module": "contract_analysis",
+      "method": "POST",
+      "path": "/api/v1/contract-analysis/chat",
+      "handler": "contract_chat",
+      "source": "backend/app/routers/contract_analysis.py:230",
+      "status": "pending"
+    },
+    {
+      "module": "contract_analysis",
+      "method": "POST",
+      "path": "/api/v1/contract-analysis/draft/plan",
+      "handler": "plan_long_draft",
+      "source": "backend/app/routers/contract_analysis.py:394",
+      "status": "pending"
+    },
+    {
+      "module": "contract_analysis",
+      "method": "POST",
+      "path": "/api/v1/contract-analysis/draft/generate",
+      "handler": "generate_long_draft",
+      "source": "backend/app/routers/contract_analysis.py:439",
+      "status": "pending"
+    },
+    {
+      "module": "contract_analysis",
+      "method": "GET",
+      "path": "/api/v1/contract-analysis/analyses",
+      "handler": "list_analyses",
+      "source": "backend/app/routers/contract_analysis.py:486",
+      "status": "pending"
+    },
+    {
+      "module": "contract_analysis",
+      "method": "GET",
+      "path": "/api/v1/contract-analysis/analyses/{analysis_id}",
+      "handler": "get_full_analysis",
+      "source": "backend/app/routers/contract_analysis.py:523",
+      "status": "pending"
+    },
+    {
+      "module": "contract_analysis",
+      "method": "DELETE",
+      "path": "/api/v1/contract-analysis/analyses/{analysis_id}",
+      "handler": "delete_analysis",
+      "source": "backend/app/routers/contract_analysis.py:651",
+      "status": "pending"
+    },
+    {
+      "module": "contract_analysis",
+      "method": "GET",
+      "path": "/api/v1/contract-analysis/analyses/{analysis_id}/export",
+      "handler": "export_analysis",
+      "source": "backend/app/routers/contract_analysis.py:698",
+      "status": "pending"
+    },
+    {
+      "module": "contract_analysis",
+      "method": "POST",
+      "path": "/api/v1/contract-analysis/practice-profile",
+      "handler": "generate_practice_profile",
+      "source": "backend/app/routers/contract_analysis.py:802",
+      "status": "pending"
+    },
+    {
+      "module": "contract_analysis",
+      "method": "POST",
+      "path": "/api/v1/contract-analysis/compare",
+      "handler": "compare_documents",
+      "source": "backend/app/routers/contract_analysis.py:855",
+      "status": "pending"
+    },
+    {
+      "module": "contract_analysis",
+      "method": "POST",
+      "path": "/api/v1/contract-analysis/draft-export",
+      "handler": "export_draft",
+      "source": "backend/app/routers/contract_analysis.py:944",
+      "status": "pending"
+    },
+    {
+      "module": "contract_analysis",
+      "method": "POST",
+      "path": "/api/v1/contract-analysis/analyses/{analysis_id}/redline-export",
+      "handler": "export_redlines_post",
+      "source": "backend/app/routers/contract_analysis.py:968",
+      "status": "pending"
+    },
+    {
+      "module": "contract_analysis",
+      "method": "GET",
+      "path": "/api/v1/contract-analysis/analyses/{analysis_id}/redline-export",
+      "handler": "export_redlines",
+      "source": "backend/app/routers/contract_analysis.py:987",
+      "status": "pending"
+    },
+    {
+      "module": "deep_research",
+      "method": "POST",
+      "path": "/api/v1/deep-research/plan",
+      "handler": "plan_deep_research",
+      "source": "backend/app/routers/deep_research.py:170",
+      "status": "pending"
+    },
+    {
+      "module": "deep_research",
+      "method": "POST",
+      "path": "/api/v1/deep-research/run",
+      "handler": "run_deep_research",
+      "source": "backend/app/routers/deep_research.py:196",
+      "status": "pending"
+    },
+    {
+      "module": "deep_research",
+      "method": "GET",
+      "path": "/api/v1/deep-research",
+      "handler": "list_deep_research",
+      "source": "backend/app/routers/deep_research.py:285",
+      "status": "pending"
+    },
+    {
+      "module": "deep_research",
+      "method": "GET",
+      "path": "/api/v1/deep-research/{run_id}",
+      "handler": "get_deep_research",
+      "source": "backend/app/routers/deep_research.py:302",
+      "status": "pending"
+    },
+    {
+      "module": "deep_research",
+      "method": "DELETE",
+      "path": "/api/v1/deep-research/{run_id}",
+      "handler": "delete_deep_research",
+      "source": "backend/app/routers/deep_research.py:313",
+      "status": "pending"
+    },
+    {
+      "module": "documents",
+      "method": "POST",
+      "path": "/api/v1/documents",
+      "handler": "upload_document",
+      "source": "backend/app/routers/documents.py:51",
+      "status": "pending"
+    },
+    {
+      "module": "documents",
+      "method": "GET",
+      "path": "/api/v1/documents",
+      "handler": "list_documents",
+      "source": "backend/app/routers/documents.py:149",
+      "status": "pending"
+    },
+    {
+      "module": "documents",
+      "method": "GET",
+      "path": "/api/v1/documents/tree",
+      "handler": "get_document_tree",
+      "source": "backend/app/routers/documents.py:184",
+      "status": "pending"
+    },
+    {
+      "module": "documents",
+      "method": "GET",
+      "path": "/api/v1/documents/folders",
+      "handler": "list_folders",
+      "source": "backend/app/routers/documents.py:197",
+      "status": "pending"
+    },
+    {
+      "module": "documents",
+      "method": "POST",
+      "path": "/api/v1/documents/folders",
+      "handler": "create_folder",
+      "source": "backend/app/routers/documents.py:203",
+      "status": "pending"
+    },
+    {
+      "module": "documents",
+      "method": "DELETE",
+      "path": "/api/v1/documents/folders",
+      "handler": "delete_folder",
+      "source": "backend/app/routers/documents.py:215",
+      "status": "pending"
+    },
+    {
+      "module": "documents",
+      "method": "POST",
+      "path": "/api/v1/documents/{document_id}/move",
+      "handler": "move_document",
+      "source": "backend/app/routers/documents.py:238",
+      "status": "pending"
+    },
+    {
+      "module": "documents",
+      "method": "GET",
+      "path": "/api/v1/documents/{document_id}/content",
+      "handler": "get_document_content",
+      "source": "backend/app/routers/documents.py:264",
+      "status": "pending"
+    },
+    {
+      "module": "documents",
+      "method": "GET",
+      "path": "/api/v1/documents/{document_id}/file",
+      "handler": "get_document_file",
+      "source": "backend/app/routers/documents.py:334",
+      "status": "pending"
+    },
+    {
+      "module": "documents",
+      "method": "GET",
+      "path": "/api/v1/documents/{document_id}",
+      "handler": "get_document",
+      "source": "backend/app/routers/documents.py:407",
+      "status": "pending"
+    },
+    {
+      "module": "documents",
+      "method": "DELETE",
+      "path": "/api/v1/documents/{document_id}",
+      "handler": "delete_document",
+      "source": "backend/app/routers/documents.py:422",
+      "status": "pending"
+    },
+    {
+      "module": "integrations",
+      "method": "GET",
+      "path": "/api/v1/admin/integrations/courtlistener",
+      "handler": "courtlistener_status",
+      "source": "backend/app/routers/integrations.py:58",
+      "status": "pending"
+    },
+    {
+      "module": "integrations",
+      "method": "POST",
+      "path": "/api/v1/admin/integrations/courtlistener",
+      "handler": "set_courtlistener_token",
+      "source": "backend/app/routers/integrations.py:64",
+      "status": "pending"
+    },
+    {
+      "module": "integrations",
+      "method": "DELETE",
+      "path": "/api/v1/admin/integrations/courtlistener",
+      "handler": "clear_courtlistener_token",
+      "source": "backend/app/routers/integrations.py:86",
+      "status": "pending"
+    },
+    {
+      "module": "integrations",
+      "method": "GET",
+      "path": "/api/v1/admin/integrations/connectors",
+      "handler": "connector_credentials_status",
+      "source": "backend/app/routers/integrations.py:126",
+      "status": "pending"
+    },
+    {
+      "module": "integrations",
+      "method": "POST",
+      "path": "/api/v1/admin/integrations/connectors/{provider}",
+      "handler": "set_connector_credentials",
+      "source": "backend/app/routers/integrations.py:138",
+      "status": "pending"
+    },
+    {
+      "module": "integrations",
+      "method": "DELETE",
+      "path": "/api/v1/admin/integrations/connectors/{provider}",
+      "handler": "clear_connector_credentials",
+      "source": "backend/app/routers/integrations.py:183",
+      "status": "pending"
+    },
+    {
+      "module": "integrations",
+      "method": "GET",
+      "path": "/api/v1/admin/integrations/local-llm",
+      "handler": "local_llm_status",
+      "source": "backend/app/routers/integrations.py:236",
+      "status": "pending"
+    },
+    {
+      "module": "integrations",
+      "method": "POST",
+      "path": "/api/v1/admin/integrations/local-llm",
+      "handler": "set_local_llm",
+      "source": "backend/app/routers/integrations.py:242",
+      "status": "pending"
+    },
+    {
+      "module": "integrations",
+      "method": "DELETE",
+      "path": "/api/v1/admin/integrations/local-llm",
+      "handler": "clear_local_llm",
+      "source": "backend/app/routers/integrations.py:270",
+      "status": "pending"
+    },
+    {
+      "module": "jobs",
+      "method": "GET",
+      "path": "/api/v1/jobs/{job_id}",
+      "handler": "get_job_status",
+      "source": "backend/app/routers/jobs.py:27",
+      "status": "pending"
+    },
+    {
+      "module": "jobs",
+      "method": "DELETE",
+      "path": "/api/v1/jobs/{job_id}",
+      "handler": "cancel_job",
+      "source": "backend/app/routers/jobs.py:44",
+      "status": "pending"
+    },
+    {
+      "module": "jobs",
+      "method": "GET",
+      "path": "/api/v1/jobs",
+      "handler": "list_jobs",
+      "source": "backend/app/routers/jobs.py:58",
+      "status": "pending"
+    },
+    {
+      "module": "judge_intel",
+      "method": "GET",
+      "path": "/api/v1/judge-intel/search",
+      "handler": "search_judges",
+      "source": "backend/app/routers/judge_intel.py:38",
+      "status": "pending"
+    },
+    {
+      "module": "judge_intel",
+      "method": "POST",
+      "path": "/api/v1/judge-intel/build/{judge_id}",
+      "handler": "build_judge_intel",
+      "source": "backend/app/routers/judge_intel.py:58",
+      "status": "pending"
+    },
+    {
+      "module": "judge_intel",
+      "method": "GET",
+      "path": "/api/v1/judge-intel/profile/{judge_id}",
+      "handler": "get_judge_profile",
+      "source": "backend/app/routers/judge_intel.py:129",
+      "status": "pending"
+    },
+    {
+      "module": "judge_intel",
+      "method": "GET",
+      "path": "/api/v1/judge-intel/profile/{judge_id}/opinions",
+      "handler": "query_opinions",
+      "source": "backend/app/routers/judge_intel.py:149",
+      "status": "pending"
+    },
+    {
+      "module": "judge_intel",
+      "method": "GET",
+      "path": "/api/v1/judge-intel/profile/{judge_id}/opinion/{opinion_id}",
+      "handler": "get_opinion_full_text",
+      "source": "backend/app/routers/judge_intel.py:182",
+      "status": "pending"
+    },
+    {
+      "module": "judge_intel",
+      "method": "GET",
+      "path": "/api/v1/judge-intel/profile/{judge_id}/stats",
+      "handler": "get_statistics",
+      "source": "backend/app/routers/judge_intel.py:200",
+      "status": "pending"
+    },
+    {
+      "module": "judge_intel",
+      "method": "GET",
+      "path": "/api/v1/judge-intel/profile/{judge_id}/metrics",
+      "handler": "get_advanced_metrics",
+      "source": "backend/app/routers/judge_intel.py:214",
+      "status": "pending"
+    },
+    {
+      "module": "judge_intel",
+      "method": "DELETE",
+      "path": "/api/v1/judge-intel/profile/{judge_id}",
+      "handler": "delete_judge_data",
+      "source": "backend/app/routers/judge_intel.py:259",
+      "status": "pending"
+    },
+    {
+      "module": "legal_docs",
+      "method": "GET",
+      "path": "/api/v1/legal-docs/courts",
+      "handler": "get_courts",
+      "source": "backend/app/routers/legal_docs.py:37",
+      "status": "pending"
+    },
+    {
+      "module": "legal_docs",
+      "method": "POST",
+      "path": "/api/v1/legal-docs/extract-text",
+      "handler": "extract_text_from_file",
+      "source": "backend/app/routers/legal_docs.py:60",
+      "status": "pending"
+    },
+    {
+      "module": "legal_docs",
+      "method": "POST",
+      "path": "/api/v1/legal-docs/convert-to-pdf",
+      "handler": "convert_to_pdf",
+      "source": "backend/app/routers/legal_docs.py:166",
+      "status": "pending"
+    },
+    {
+      "module": "matters",
+      "method": "GET",
+      "path": "/api/v1/matters",
+      "handler": "list_matters",
+      "source": "backend/app/routers/matters.py:162",
+      "status": "pending"
+    },
+    {
+      "module": "matters",
+      "method": "GET",
+      "path": "/api/v1/matters/all",
+      "handler": "list_all_matters",
+      "source": "backend/app/routers/matters.py:175",
+      "status": "pending"
+    },
+    {
+      "module": "matters",
+      "method": "POST",
+      "path": "/api/v1/matters",
+      "handler": "create_matter",
+      "source": "backend/app/routers/matters.py:207",
+      "status": "pending"
+    },
+    {
+      "module": "matters",
+      "method": "GET",
+      "path": "/api/v1/matters/{matter_id}",
+      "handler": "get_matter",
+      "source": "backend/app/routers/matters.py:229",
+      "status": "pending"
+    },
+    {
+      "module": "matters",
+      "method": "POST",
+      "path": "/api/v1/matters/{matter_id}/members",
+      "handler": "add_matter_member",
+      "source": "backend/app/routers/matters.py:246",
+      "status": "pending"
+    },
+    {
+      "module": "matters",
+      "method": "DELETE",
+      "path": "/api/v1/matters/{matter_id}/members/{user_id}",
+      "handler": "remove_matter_member",
+      "source": "backend/app/routers/matters.py:297",
+      "status": "pending"
+    },
+    {
+      "module": "matters",
+      "method": "DELETE",
+      "path": "/api/v1/matters/{matter_id}",
+      "handler": "delete_matter",
+      "source": "backend/app/routers/matters.py:329",
+      "status": "pending"
+    },
+    {
+      "module": "matters",
+      "method": "PATCH",
+      "path": "/api/v1/matters/{matter_id}",
+      "handler": "update_matter",
+      "source": "backend/app/routers/matters.py:352",
+      "status": "pending"
+    },
+    {
+      "module": "matters",
+      "method": "POST",
+      "path": "/api/v1/matters/{matter_id}/transfer",
+      "handler": "transfer_matter",
+      "source": "backend/app/routers/matters.py:384",
+      "status": "pending"
+    },
+    {
+      "module": "matters",
+      "method": "GET",
+      "path": "/api/v1/matters/{matter_id}/documents",
+      "handler": "list_matter_documents",
+      "source": "backend/app/routers/matters.py:414",
+      "status": "pending"
+    },
+    {
+      "module": "matters",
+      "method": "POST",
+      "path": "/api/v1/matters/{matter_id}/documents/move",
+      "handler": "move_documents_to_matter",
+      "source": "backend/app/routers/matters.py:426",
+      "status": "pending"
+    },
+    {
+      "module": "matters",
+      "method": "GET",
+      "path": "/api/v1/matters/{matter_id}/chats",
+      "handler": "list_matter_chats",
+      "source": "backend/app/routers/matters.py:478",
+      "status": "pending"
+    },
+    {
+      "module": "matters",
+      "method": "GET",
+      "path": "/api/v1/matters/{matter_id}/analyses",
+      "handler": "list_matter_analyses",
+      "source": "backend/app/routers/matters.py:510",
+      "status": "pending"
+    },
+    {
+      "module": "matters",
+      "method": "GET",
+      "path": "/api/v1/matters/{matter_id}/activity",
+      "handler": "matter_activity",
+      "source": "backend/app/routers/matters.py:556",
+      "status": "pending"
+    },
+    {
+      "module": "mfa",
+      "method": "GET",
+      "path": "/api/v1/auth/mfa/status",
+      "handler": "mfa_status",
+      "source": "backend/app/routers/mfa.py:86",
+      "status": "pending"
+    },
+    {
+      "module": "mfa",
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/setup",
+      "handler": "mfa_setup",
+      "source": "backend/app/routers/mfa.py:99",
+      "status": "pending"
+    },
+    {
+      "module": "mfa",
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/enable",
+      "handler": "mfa_enable",
+      "source": "backend/app/routers/mfa.py:123",
+      "status": "pending"
+    },
+    {
+      "module": "mfa",
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/disable",
+      "handler": "mfa_disable",
+      "source": "backend/app/routers/mfa.py:158",
+      "status": "pending"
+    },
+    {
+      "module": "mfa",
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/recovery-codes",
+      "handler": "mfa_regenerate_recovery_codes",
+      "source": "backend/app/routers/mfa.py:211",
+      "status": "pending"
+    },
+    {
+      "module": "mfa",
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/verify",
+      "handler": "mfa_verify",
+      "source": "backend/app/routers/mfa.py:248",
+      "status": "pending"
+    },
+    {
+      "module": "pickers",
+      "method": "GET",
+      "path": "/api/v1/pickers/config",
+      "handler": "get_picker_config",
+      "source": "backend/app/routers/pickers.py:77",
+      "status": "pending"
+    },
+    {
+      "module": "pickers",
+      "method": "GET",
+      "path": "/api/v1/pickers/box/token",
+      "handler": "get_box_picker_token",
+      "source": "backend/app/routers/pickers.py:119",
+      "status": "pending"
+    },
+    {
+      "module": "pickers",
+      "method": "POST",
+      "path": "/api/v1/pickers/google/import",
+      "handler": "import_from_google_picker",
+      "source": "backend/app/routers/pickers.py:156",
+      "status": "pending"
+    },
+    {
+      "module": "pickers",
+      "method": "POST",
+      "path": "/api/v1/pickers/microsoft/import",
+      "handler": "import_from_onedrive_picker",
+      "source": "backend/app/routers/pickers.py:274",
+      "status": "pending"
+    },
+    {
+      "module": "pickers",
+      "method": "POST",
+      "path": "/api/v1/pickers/box/import",
+      "handler": "import_from_box_picker",
+      "source": "backend/app/routers/pickers.py:379",
+      "status": "pending"
+    },
+    {
+      "module": "pickers",
+      "method": "POST",
+      "path": "/api/v1/pickers/dropbox/import",
+      "handler": "import_from_dropbox_chooser",
+      "source": "backend/app/routers/pickers.py:464",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "GET",
+      "path": "/api/v1/review-tables/schemas",
+      "handler": "list_review_schemas",
+      "source": "backend/app/routers/review_tables.py:239",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "POST",
+      "path": "/api/v1/review-tables/schemas",
+      "handler": "create_review_schema",
+      "source": "backend/app/routers/review_tables.py:255",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "PATCH",
+      "path": "/api/v1/review-tables/schemas/{schema_id}",
+      "handler": "update_review_schema",
+      "source": "backend/app/routers/review_tables.py:296",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "DELETE",
+      "path": "/api/v1/review-tables/schemas/{schema_id}",
+      "handler": "delete_review_schema",
+      "source": "backend/app/routers/review_tables.py:332",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "GET",
+      "path": "/api/v1/review-tables",
+      "handler": "list_review_tables",
+      "source": "backend/app/routers/review_tables.py:351",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "POST",
+      "path": "/api/v1/review-tables",
+      "handler": "create_review_table",
+      "source": "backend/app/routers/review_tables.py:365",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "GET",
+      "path": "/api/v1/review-tables/{table_id}",
+      "handler": "get_review_table",
+      "source": "backend/app/routers/review_tables.py:405",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "PATCH",
+      "path": "/api/v1/review-tables/{table_id}",
+      "handler": "update_review_table",
+      "source": "backend/app/routers/review_tables.py:416",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "DELETE",
+      "path": "/api/v1/review-tables/{table_id}",
+      "handler": "delete_review_table",
+      "source": "backend/app/routers/review_tables.py:450",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "GET",
+      "path": "/api/v1/review-tables/{table_id}/estimate",
+      "handler": "estimate_review_table",
+      "source": "backend/app/routers/review_tables.py:466",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "POST",
+      "path": "/api/v1/review-tables/{table_id}/run",
+      "handler": "run_review_table",
+      "source": "backend/app/routers/review_tables.py:579",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "GET",
+      "path": "/api/v1/review-tables/{table_id}/runs",
+      "handler": "list_review_runs",
+      "source": "backend/app/routers/review_tables.py:598",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "PATCH",
+      "path": "/api/v1/review-tables/{table_id}/cells/{document_id}/{field_key}",
+      "handler": "review_cell",
+      "source": "backend/app/routers/review_tables.py:624",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "POST",
+      "path": "/api/v1/review-tables/{table_id}/cells/bulk",
+      "handler": "bulk_review_cells",
+      "source": "backend/app/routers/review_tables.py:658",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "POST",
+      "path": "/api/v1/review-tables/{table_id}/documents",
+      "handler": "add_review_documents",
+      "source": "backend/app/routers/review_tables.py:691",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "DELETE",
+      "path": "/api/v1/review-tables/{table_id}/documents/{document_id}",
+      "handler": "remove_review_document",
+      "source": "backend/app/routers/review_tables.py:720",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "GET",
+      "path": "/api/v1/review-tables/{table_id}/documents/{document_id}/text",
+      "handler": "review_document_text",
+      "source": "backend/app/routers/review_tables.py:744",
+      "status": "pending"
+    },
+    {
+      "module": "review_tables",
+      "method": "GET",
+      "path": "/api/v1/review-tables/{table_id}/export",
+      "handler": "export_review_table",
+      "source": "backend/app/routers/review_tables.py:777",
+      "status": "pending"
+    },
+    {
+      "module": "settings",
+      "method": "GET",
+      "path": "/api/v1/settings/rag",
+      "handler": "get_rag_settings",
+      "source": "backend/app/routers/settings.py:18",
+      "status": "pending"
+    },
+    {
+      "module": "settings",
+      "method": "PUT",
+      "path": "/api/v1/settings/rag",
+      "handler": "update_rag_settings",
+      "source": "backend/app/routers/settings.py:24",
+      "status": "pending"
+    },
+    {
+      "module": "settings",
+      "method": "GET",
+      "path": "/api/v1/settings/prompts/defaults",
+      "handler": "get_default_prompts",
+      "source": "backend/app/routers/settings.py:52",
+      "status": "pending"
+    },
+    {
+      "module": "settings",
+      "method": "POST",
+      "path": "/api/v1/settings/reindex",
+      "handler": "trigger_reindex",
+      "source": "backend/app/routers/settings.py:73",
+      "status": "pending"
+    },
+    {
+      "module": "settings",
+      "method": "POST",
+      "path": "/api/v1/settings/clear",
+      "handler": "clear_index",
+      "source": "backend/app/routers/settings.py:95",
+      "status": "pending"
+    },
+    {
+      "module": "strategy",
+      "method": "POST",
+      "path": "/api/v1/strategy/brief",
+      "handler": "strategy_brief",
+      "source": "backend/app/routers/strategy.py:33",
+      "status": "pending"
+    },
+    {
+      "module": "system",
+      "method": "GET",
+      "path": "/",
+      "handler": "root",
+      "source": "backend/app/routers/system.py:84",
+      "status": "pending"
+    },
+    {
+      "module": "system",
+      "method": "GET",
+      "path": "/health",
+      "handler": "health_check",
+      "source": "backend/app/routers/system.py:103",
+      "status": "pending"
+    },
+    {
+      "module": "system",
+      "method": "GET",
+      "path": "/ready",
+      "handler": "readiness_check",
+      "source": "backend/app/routers/system.py:216",
+      "status": "pending"
+    },
+    {
+      "module": "system",
+      "method": "GET",
+      "path": "/metrics",
+      "handler": "metrics",
+      "source": "backend/app/routers/system.py:283",
+      "status": "pending"
+    },
+    {
+      "module": "tools",
+      "method": "GET",
+      "path": "/api/v1/tools/cases/search",
+      "handler": "search_cases",
+      "source": "backend/app/routers/tools.py:121",
+      "status": "pending"
+    },
+    {
+      "module": "tools",
+      "method": "GET",
+      "path": "/api/v1/tools/cases/{opinion_id}",
+      "handler": "get_case_detail",
+      "source": "backend/app/routers/tools.py:142",
+      "status": "pending"
+    },
+    {
+      "module": "tools",
+      "method": "GET",
+      "path": "/api/v1/tools/validate-citation",
+      "handler": "validate_citation",
+      "source": "backend/app/routers/tools.py:172",
+      "status": "pending"
+    },
+    {
+      "module": "tools",
+      "method": "GET",
+      "path": "/api/v1/tools/precedents",
+      "handler": "find_precedents_get",
+      "source": "backend/app/routers/tools.py:199",
+      "status": "pending"
+    },
+    {
+      "module": "tools",
+      "method": "GET",
+      "path": "/api/v1/tools/dockets",
+      "handler": "search_dockets_get",
+      "source": "backend/app/routers/tools.py:221",
+      "status": "pending"
+    },
+    {
+      "module": "tools",
+      "method": "GET",
+      "path": "/api/v1/tools/dockets/{docket_id}",
+      "handler": "get_docket_detail",
+      "source": "backend/app/routers/tools.py:240",
+      "status": "pending"
+    },
+    {
+      "module": "tools",
+      "method": "GET",
+      "path": "/api/v1/tools/oral-arguments",
+      "handler": "search_oral_arguments",
+      "source": "backend/app/routers/tools.py:262",
+      "status": "pending"
+    },
+    {
+      "module": "tools",
+      "method": "GET",
+      "path": "/api/v1/tools/trends",
+      "handler": "analyze_trend_get",
+      "source": "backend/app/routers/tools.py:287",
+      "status": "pending"
+    },
+    {
+      "module": "user_keys",
+      "method": "POST",
+      "path": "/api/v1/user/keys/save",
+      "handler": "save_api_key",
+      "source": "backend/app/routers/user_keys.py:68",
+      "status": "pending"
+    },
+    {
+      "module": "user_keys",
+      "method": "DELETE",
+      "path": "/api/v1/user/keys/{key_type}",
+      "handler": "delete_api_key",
+      "source": "backend/app/routers/user_keys.py:126",
+      "status": "pending"
+    },
+    {
+      "module": "user_keys",
+      "method": "GET",
+      "path": "/api/v1/user/keys/status",
+      "handler": "get_key_status",
+      "source": "backend/app/routers/user_keys.py:171",
+      "status": "pending"
+    },
+    {
+      "module": "user_keys",
+      "method": "GET",
+      "path": "/api/v1/user/keys/masked",
+      "handler": "get_masked_keys",
+      "source": "backend/app/routers/user_keys.py:190",
+      "status": "pending"
+    },
+    {
+      "module": "users",
+      "method": "GET",
+      "path": "/api/v1/admin/users",
+      "handler": "list_users",
+      "source": "backend/app/routers/users.py:99",
+      "status": "pending"
+    },
+    {
+      "module": "users",
+      "method": "POST",
+      "path": "/api/v1/admin/users/invite",
+      "handler": "invite_user",
+      "source": "backend/app/routers/users.py:110",
+      "status": "pending"
+    },
+    {
+      "module": "users",
+      "method": "GET",
+      "path": "/api/v1/admin/users/roles",
+      "handler": "get_role_permissions",
+      "source": "backend/app/routers/users.py:188",
+      "status": "pending"
+    },
+    {
+      "module": "users",
+      "method": "PUT",
+      "path": "/api/v1/admin/users/roles/{role}",
+      "handler": "update_role_permissions",
+      "source": "backend/app/routers/users.py:196",
+      "status": "pending"
+    },
+    {
+      "module": "users",
+      "method": "POST",
+      "path": "/api/v1/admin/users/roles/reset",
+      "handler": "reset_role_permissions",
+      "source": "backend/app/routers/users.py:227",
+      "status": "pending"
+    },
+    {
+      "module": "users",
+      "method": "PATCH",
+      "path": "/api/v1/admin/users/{user_id}/role",
+      "handler": "update_user_role",
+      "source": "backend/app/routers/users.py:248",
+      "status": "pending"
+    },
+    {
+      "module": "users",
+      "method": "PATCH",
+      "path": "/api/v1/admin/users/{user_id}/active",
+      "handler": "set_user_active",
+      "source": "backend/app/routers/users.py:301",
+      "status": "pending"
+    },
+    {
+      "module": "users",
+      "method": "POST",
+      "path": "/api/v1/admin/users/{user_id}/sessions/revoke",
+      "handler": "force_sign_out",
+      "source": "backend/app/routers/users.py:357",
+      "status": "pending"
+    },
+    {
+      "module": "users",
+      "method": "POST",
+      "path": "/api/v1/admin/users/{user_id}/mfa/reset",
+      "handler": "reset_user_mfa",
+      "source": "backend/app/routers/users.py:385",
+      "status": "pending"
+    },
+    {
+      "module": "users",
+      "method": "GET",
+      "path": "/api/v1/admin/users/{user_id}/export",
+      "handler": "export_user_data",
+      "source": "backend/app/routers/users.py:432",
+      "status": "pending"
+    },
+    {
+      "module": "users",
+      "method": "DELETE",
+      "path": "/api/v1/admin/users/{user_id}",
+      "handler": "delete_user",
+      "source": "backend/app/routers/users.py:542",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "GET",
+      "path": "/api/v1/workflows",
+      "handler": "list_workflows",
+      "source": "backend/app/routers/workflows.py:462",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "POST",
+      "path": "/api/v1/workflows",
+      "handler": "create_workflow",
+      "source": "backend/app/routers/workflows.py:480",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "POST",
+      "path": "/api/v1/workflows/validate",
+      "handler": "validate_workflow",
+      "source": "backend/app/routers/workflows.py:515",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "GET",
+      "path": "/api/v1/workflows/templates",
+      "handler": "list_templates",
+      "source": "backend/app/routers/workflows.py:525",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "GET",
+      "path": "/api/v1/workflows/runs",
+      "handler": "list_recent_runs",
+      "source": "backend/app/routers/workflows.py:543",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "POST",
+      "path": "/api/v1/workflows/from-template/{key}",
+      "handler": "create_from_template",
+      "source": "backend/app/routers/workflows.py:564",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "GET",
+      "path": "/api/v1/workflows/{workflow_id}",
+      "handler": "get_workflow",
+      "source": "backend/app/routers/workflows.py:607",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "PATCH",
+      "path": "/api/v1/workflows/{workflow_id}",
+      "handler": "update_workflow",
+      "source": "backend/app/routers/workflows.py:618",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "DELETE",
+      "path": "/api/v1/workflows/{workflow_id}",
+      "handler": "delete_workflow",
+      "source": "backend/app/routers/workflows.py:662",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "POST",
+      "path": "/api/v1/workflows/{workflow_id}/duplicate",
+      "handler": "duplicate_workflow",
+      "source": "backend/app/routers/workflows.py:680",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "POST",
+      "path": "/api/v1/workflows/{workflow_id}/archive",
+      "handler": "archive_workflow",
+      "source": "backend/app/routers/workflows.py:712",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "POST",
+      "path": "/api/v1/workflows/{workflow_id}/unarchive",
+      "handler": "unarchive_workflow",
+      "source": "backend/app/routers/workflows.py:729",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "GET",
+      "path": "/api/v1/workflows/{workflow_id}/versions",
+      "handler": "list_versions",
+      "source": "backend/app/routers/workflows.py:748",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "GET",
+      "path": "/api/v1/workflows/{workflow_id}/versions/{version}",
+      "handler": "get_version",
+      "source": "backend/app/routers/workflows.py:763",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "POST",
+      "path": "/api/v1/workflows/{workflow_id}/versions/{version}/restore",
+      "handler": "restore_version",
+      "source": "backend/app/routers/workflows.py:781",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "POST",
+      "path": "/api/v1/workflows/{workflow_id}/run",
+      "handler": "run_workflow",
+      "source": "backend/app/routers/workflows.py:820",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "GET",
+      "path": "/api/v1/workflows/{workflow_id}/runs",
+      "handler": "list_runs",
+      "source": "backend/app/routers/workflows.py:865",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "GET",
+      "path": "/api/v1/workflows/{workflow_id}/runs/{run_id}",
+      "handler": "get_run",
+      "source": "backend/app/routers/workflows.py:882",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "POST",
+      "path": "/api/v1/workflows/{workflow_id}/runs/{run_id}/resume",
+      "handler": "resume_run",
+      "source": "backend/app/routers/workflows.py:897",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "POST",
+      "path": "/api/v1/workflows/{workflow_id}/runs/{run_id}/steps/{index}/retry",
+      "handler": "retry_step",
+      "source": "backend/app/routers/workflows.py:934",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "POST",
+      "path": "/api/v1/workflows/{workflow_id}/runs/{run_id}/steps/{index}/skip",
+      "handler": "skip_step",
+      "source": "backend/app/routers/workflows.py:970",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "POST",
+      "path": "/api/v1/workflows/{workflow_id}/runs/{run_id}/approve",
+      "handler": "approve_run",
+      "source": "backend/app/routers/workflows.py:1018",
+      "status": "pending"
+    },
+    {
+      "module": "workflows",
+      "method": "POST",
+      "path": "/api/v1/workflows/{workflow_id}/runs/{run_id}/reject",
+      "handler": "reject_run",
+      "source": "backend/app/routers/workflows.py:1067",
+      "status": "pending"
+    },
+    {
+      "module": "workspace_sessions",
+      "method": "GET",
+      "path": "/api/v1/workspace-sessions",
+      "handler": "list_sessions",
+      "source": "backend/app/routers/workspace_sessions.py:75",
+      "status": "pending"
+    },
+    {
+      "module": "workspace_sessions",
+      "method": "POST",
+      "path": "/api/v1/workspace-sessions",
+      "handler": "create_session",
+      "source": "backend/app/routers/workspace_sessions.py:101",
+      "status": "pending"
+    },
+    {
+      "module": "workspace_sessions",
+      "method": "GET",
+      "path": "/api/v1/workspace-sessions/{session_id}",
+      "handler": "get_session",
+      "source": "backend/app/routers/workspace_sessions.py:122",
+      "status": "pending"
+    },
+    {
+      "module": "workspace_sessions",
+      "method": "PUT",
+      "path": "/api/v1/workspace-sessions/{session_id}",
+      "handler": "update_session",
+      "source": "backend/app/routers/workspace_sessions.py:146",
+      "status": "pending"
+    },
+    {
+      "module": "workspace_sessions",
+      "method": "DELETE",
+      "path": "/api/v1/workspace-sessions/{session_id}",
+      "handler": "delete_session",
+      "source": "backend/app/routers/workspace_sessions.py:166",
+      "status": "pending"
+    }
+  ]
+}

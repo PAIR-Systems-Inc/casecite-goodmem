@@ -47,9 +47,9 @@ describe('FilePickerModal', () => {
     expect(container.textContent).toContain('Opening Google Drive...');
   });
 
-  it('shows disclaimer text', () => {
+  it('explains where imported documents are stored', () => {
     setPickerState();
     const { container } = render(<FilePickerModal />);
-    expect(container.textContent).toContain('Your files are imported directly');
+    expect(container.textContent).toContain("Imported documents are stored in your firm's knowledge base.");
   });
 });

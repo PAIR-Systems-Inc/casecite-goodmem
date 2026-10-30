@@ -1,0 +1,145 @@
+name: Go and browser checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: integration-only
+          POSTGRES_DB: casecite_test
+          PGUSER: postgres
+        ports: ['5432:5432']
+        options: --health-cmd=pg_isready --health-interval=3s --health-timeout=3s --health-retries=20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26.x'
+          cache-dependency-path: server/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: go vet ./... && go test -race ./...
+        working-directory: server
+        env:
+          TEST_DATABASE_URL: postgres://postgres:integration-only@localhost:5432/casecite_test?sslmode=disable
+      - run: npm ci --ignore-scripts && npm run typecheck && npm test && npm run build && npm audit --omit=dev
+        working-directory: frontend
+      - run: npm ci --ignore-scripts && npm run typecheck && npm test && npm run build
+        working-directory: word-addin
+      - run: bash scripts/build.sh
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26.x'
+          cache-dependency-path: server/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --ignore-scripts && npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npm run test:e2e -- --project=chromium
+        working-directory: frontend
+      - run: bash scripts/integration.sh
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: browser-test-results
+          path: frontend/test-results/
+  installer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: bash scripts/test-doctor.sh
+      - run: docker build -t casecite-packaging:test .
+      - run: docker build -f deploy/Dockerfile.test-provider -t casecite-installer-provider:test .
+      - run: bash scripts/test-installer.sh
+  publish:
+    needs: [check, browser, installer]
+    # Only this repository's trusted migration branch/main may publish. Fork PRs
+    # still receive read-only checks and cannot access package credentials.
+    if: >-
+      github.repository == 'PAIR-Systems-Inc/casecite-goodmem' &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        github.event.pull_request.head.ref == 'goodmem-migration') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+       (github.event_name == 'workflow_dispatch' &&
+        (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/goodmem-migration')))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    env:
+      RELEASE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      IMAGE: ghcr.io/pair-systems-inc/casecite-goodmem
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.RELEASE_SHA }}
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Select release channel
+        id: channel
+        env:
+          REF_NAME: ${{ github.ref }}
+        run: |
+          if [ "$REF_NAME" = refs/heads/main ]; then
+            echo 'tag=latest' >> "$GITHUB_OUTPUT"
+          else
+            echo 'tag=demo' >> "$GITHUB_OUTPUT"
+          fi
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8
+        id: publish
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:sha-${{ env.RELEASE_SHA }}
+            ${{ env.IMAGE }}:${{ steps.channel.outputs.tag }}
+          build-args: |
+            VERSION=sha-${{ env.RELEASE_SHA }}
+            REVISION=${{ env.RELEASE_SHA }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: mode=max
+          sbom: true
+      - name: Record immutable image
+        env:
+          DIGEST: ${{ steps.publish.outputs.digest }}
+        run: echo "Published \`$IMAGE@$DIGEST\` (amd64 and arm64)." >> "$GITHUB_STEP_SUMMARY"

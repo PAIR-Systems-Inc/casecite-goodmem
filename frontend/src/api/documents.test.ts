@@ -52,6 +52,35 @@ describe('api/documents', () => {
     await expect((api as any).uploadDocument(file)).rejects.toThrow('Invalid file');
   });
 
+  it('does not report a GoodMem upload complete until ingestion is indexed', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.mocked(api.request)
+        .mockResolvedValueOnce({ id: 'async-doc', status: 'processing' })
+        .mockResolvedValueOnce({ id: 'async-doc', status: 'processing' })
+        .mockResolvedValueOnce({ id: 'async-doc', status: 'indexed', chunk_count: 3 });
+      let completed = false;
+      const upload = api.uploadDocument(new File(['Text'], 'contract.txt')).then((result) => { completed = true; return result; });
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(completed).toBe(false);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(await upload).toMatchObject({ status: 'indexed', chunk_count: 3 });
+      expect(api.request).toHaveBeenLastCalledWith('/documents/async-doc');
+    } finally { vi.useRealTimers(); }
+  });
+
+  it('returns ingestion failure without turning it into an indexed document', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.mocked(api.request)
+        .mockResolvedValueOnce({ id: 'async-doc', status: 'pending' })
+        .mockResolvedValueOnce({ id: 'async-doc', status: 'failed', metadata: { error: 'Unreadable source' } });
+      const upload = api.uploadDocument(new File(['Text'], 'contract.txt'));
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(await upload).toMatchObject({ status: 'failed', metadata: { error: 'Unreadable source' } });
+    } finally { vi.useRealTimers(); }
+  });
+
   it('getDocuments calls GET /documents with defaults', async () => {
     (api.request as any).mockResolvedValue({ documents: [] });
     await (api as any).getDocuments();
@@ -73,7 +102,7 @@ describe('api/documents', () => {
   it('getDocumentContent calls GET /documents/:id/content', async () => {
     (api.request as any).mockResolvedValue({ text: 'content' });
     await (api as any).getDocumentContent('doc1');
-    expect(api.request).toHaveBeenCalledWith('/documents/doc1/content');
+    expect(api.request).toHaveBeenCalledWith('/documents/doc1/content', { timeout: 600_000 });
   });
 
   it('deleteDocument calls DELETE /documents/:id', async () => {

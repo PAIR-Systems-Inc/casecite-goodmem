@@ -37,7 +37,7 @@ export function Shell() {
   return (
     <div className={s.pane}>
       <header className={s.header}>
-        <span className={s.brand}>CaseCite</span>
+        <span className={s.brand}>CaseCite<span className={s.brandByline}>by PairSys</span></span>
         <span className={s.who}>{session ? session.user.email : 'Not signed in'}</span>
       </header>
       <nav className={s.tabs} aria-label="Sections">

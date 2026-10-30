@@ -74,4 +74,3 @@ export interface ChatMessage {
   /** Structured matter-strategy brief; rendered instead of plain content. */
   strategy?: import('../api/types').StrategyBriefResponse;
 }
-

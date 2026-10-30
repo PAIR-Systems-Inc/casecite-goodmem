@@ -21,6 +21,14 @@ export interface AuthResponse {
   mfa_token?: string;
 }
 
+export interface MicrosoftAuthConfig {
+  authority: string;
+  client_id: string;
+  redirect_uri: string;
+  scopes: string[];
+  nonce: string;
+}
+
 /** POST /auth/device/approve and /deny — the decision recorded for a device code. */
 export interface DeviceDecision {
   status: 'approved' | 'denied';
@@ -262,6 +270,7 @@ export interface ConnectorDataResponse {
 export interface ImportResponse {
   imported: number;
   failed: number;
+  document_ids: string[];
   /** One entry per failed file (first 20); `failed` is the full count. */
   errors: ImportFileError[];
   message?: string;
@@ -309,6 +318,7 @@ export interface StrategyBriefPoint {
   step?: string;
   citation_ids: string[];
   case_refs?: string[];
+  support?: 'unsupported';
 }
 
 interface StrategyBriefCitation {
@@ -337,6 +347,9 @@ export interface StrategyBriefResponse {
     /** Every folder the brief was scoped to (their union). */
     folder_paths?: string[];
     documents_considered: number;
+    /** Documents that supplied usable passages to the synthesis. */
+    documents_read?: number;
+    missing_documents?: { document_id: string; filename: string }[];
     documents_total: number;
     /** Passages the synthesis actually read (the most relevant per document). */
     passages_read?: number;
@@ -359,12 +372,12 @@ export interface StrategyBriefResponse {
     points_searched: number;
     /** Opinions whose full text was actually retrieved and judged. */
     opinions_read: number;
-    /** Opinions too long to judge in full — only their opening windows were read. */
+    /** Reviews that ended before reading the entire opinion, including early matches. */
     partially_read?: number;
     attached: number;
     /** Candidates dropped because no usable opinion text could be retrieved. */
     unreadable?: number;
-    /** Opinions read in full and judged not to support any proposition. */
+    /** Reviews where no supporting passage was found in the text read. */
     unsupportive?: number;
     /** Opinions the judge endorsed but whose quote never verified verbatim. */
     quote_unverified?: number;
@@ -399,6 +412,9 @@ interface RagDocumentItem {
   source: string;
   source_id?: string | null;
   status: 'pending' | 'processing' | 'indexed' | 'failed';
+  ocr_required?: boolean;
+  text_index_required?: boolean;
+  error?: string | null;
   chunk_count: number;
   created_at: string;
   indexed_at?: string | null;
@@ -554,6 +570,13 @@ export interface ReviewDocumentText {
   filename: string;
   text: string;
   length: number;
+  extraction?: {
+    method: 'native' | 'goodmem_ocr' | 'native_and_goodmem_ocr';
+    complete: boolean;
+    page_count: number;
+    failed_pages: number[];
+    pages: Array<{ page_index: number; span_start: number; span_end: number; method: 'native' | 'goodmem_ocr' }>;
+  };
 }
 
 export interface ReviewTableDocument {
@@ -1651,6 +1674,8 @@ export interface ApiClient {
 
   // Auth
   login(email: string, password: string): Promise<AuthResponse>;
+	getMicrosoftAuthConfig(): Promise<MicrosoftAuthConfig>;
+	loginWithMicrosoft(token: string): Promise<AuthResponse>;
   logout(): Promise<void>;
   getCurrentUser(): Promise<UserInfo>;
   register(email: string, name: string, password: string, company: string, bootstrapToken?: string): Promise<AuthResponse>;
@@ -1739,6 +1764,8 @@ export interface ApiClient {
   getAllDocuments(): Promise<DocumentListResponse['documents']>;
   getDocumentTree(): Promise<DocumentTree>;
   getDocumentContent(documentId: string): Promise<DocumentContent>;
+  retryDocumentOCR(documentId: string): Promise<{ job_id: string; status: string }>;
+  retryDocumentIndex(documentId: string): Promise<{ job_id: string; status: string }>;
   deleteDocument(documentId: string): Promise<MessageResponse>;
   listFolders(): Promise<{ folders: string[] }>;
   createFolder(name: string): Promise<{ path: string; folders: string[] }>;

@@ -10,7 +10,7 @@ test.describe('Auth overlay and workspace shell', () => {
 
   test('auth overlay introduces the product when logged out', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'Welcome to CaseCite' })).toBeVisible();
-    await expect(page.getByText(/legal research platform/i)).toBeVisible();
+    await expect(page.getByText(/a private legal workspace/i)).toBeVisible();
   });
 
   test('auth overlay offers Register and Sign In', async ({ page }) => {

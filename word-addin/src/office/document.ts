@@ -1,15 +1,26 @@
 import type { Citation } from '../api/types';
 import { searchCandidates } from './search';
+import { exactQuoteRange, normalizedQuote, type QuoteFailure } from './quote-range';
 
 /**
  * Everything the pane does to the open document, behind `Word.run`.
- * Each function is a complete batch so a failure leaves the document as it was.
+ * Mutations run in sequence so concurrent pane actions cannot change each
+ * other's selection or tracking mode. Office batches are not transactions.
  */
 
 export interface SelectionResult {
   found: boolean;
   /** The search string that matched, for the UI to say what was selected. */
   matched?: string;
+  reason?: QuoteFailure;
+  warning?: string;
+}
+
+let documentWrites: Promise<unknown> = Promise.resolve();
+function writeDocument<T>(operation: () => Promise<T>): Promise<T> {
+  const result = documentWrites.then(operation, operation);
+  documentWrites = result.then(() => undefined, () => undefined);
+  return result;
 }
 
 /** The body text as Word reports it (what the analysis is run on). */
@@ -60,26 +71,46 @@ export async function replaceQuoteTracked(
   quote: string | null | undefined,
   replacement: string,
 ): Promise<SelectionResult> {
-  return Word.run(async (context) => {
+  return writeDocument(() => Word.run(async (context) => {
     const doc = context.document;
+    const hit = await exactQuoteRange(context, quote);
+    if (!('range' in hit)) return hit.reason ? { found: false, reason: hit.reason } : { found: false };
+
+    // Re-read immediately before writing: a coauthor or the user may have
+    // changed the live range while the search was in flight.
+    hit.range.load('text');
     doc.load('changeTrackingMode');
     await context.sync();
+    if (normalizedQuote(hit.range.text) !== normalizedQuote(quote ?? '')) return { found: false, reason: 'changed' };
     const previous = doc.changeTrackingMode;
-
-    const hit = await findRange(context, quote);
-    if (!hit) return { found: false };
-
-    doc.changeTrackingMode = Word.ChangeTrackingMode.trackAll;
+    let applied = false;
+    let writeFailed = false;
+    let writeError: unknown;
+    let warning: string | undefined;
     try {
+      doc.changeTrackingMode = Word.ChangeTrackingMode.trackAll;
       const inserted = hit.range.insertText(replacement, 'Replace');
       inserted.select('Select');
       await context.sync();
-    } finally {
+      applied = true;
+    } catch (error) {
+      writeFailed = true;
+      writeError = error;
+    }
+    try {
       doc.changeTrackingMode = previous;
       await context.sync();
+    } catch (error) {
+      if (applied) {
+        warning = 'The edit was inserted, but the previous tracking mode could not be restored. Check Review → Track Changes in Word.';
+      } else if (!writeFailed) {
+        writeFailed = true;
+        writeError = error;
+      }
     }
-    return { found: true, matched: hit.matched };
-  });
+    if (writeFailed) throw writeError;
+    return { found: true, matched: hit.matched, ...(warning ? { warning } : {}) };
+  }));
 }
 
 function footnotesSupported(): boolean {
@@ -109,14 +140,14 @@ export async function insertAnswerWithFootnotes(
   answer: string,
   citations: Citation[],
   notice: string,
-): Promise<void> {
+): Promise<'footnotes' | 'sources' | 'none'> {
   const paragraphs = answer
     .split(/\n{2,}|\r?\n/)
     .map((p) => p.trim())
     .filter(Boolean);
   const useFootnotes = footnotesSupported();
 
-  return Word.run(async (context) => {
+  await writeDocument(() => Word.run(async (context) => {
     const selection = context.document.getSelection();
     let last: Word.Paragraph | null = null;
     let anchor: Word.Range | Word.Paragraph = selection;
@@ -148,5 +179,6 @@ export async function insertAnswerWithFootnotes(
     noticePara.font.italic = true;
     noticePara.font.bold = false;
     await context.sync();
-  });
+  }));
+  return citations.length ? useFootnotes ? 'footnotes' : 'sources' : 'none';
 }

@@ -1,0 +1,4599 @@
+{
+  "baseline": "6605cb3474cf0c2894080af216d5fed2a81fc997",
+  "source_sha256": {
+    "backend/app/services/contract_analysis/parties.py": "f0e51e8342fd5700f2e136faf27e8e63ac12ffacce6db029912db27edc629b91",
+    "backend/app/services/contract_analysis/obligations.py": "d8ea7f3e5d981ec6bd3f775f0ddd991cec7ac671e8e5f951680331a0d426da70",
+    "backend/app/services/contract_analysis/deadlines.py": "fd0a5b0864cb2bcf53bcea44a161ccee5fa7a3828b0b8b83d5d4da5b9ae207c6",
+    "backend/app/services/contract_analysis/defined_terms.py": "1cc5a03e6c3cef276fd846f7af495de1735719cd04992ff28c711cae958bbd9d"
+  },
+  "offset_normalization": "Python code points to browser UTF-16; all other fields unchanged",
+  "cases": [
+    {
+      "name": "test_contract_extractors.py:29",
+      "text": "Customer may inspect the premises at any reasonable time.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Customer",
+            "role": "customer",
+            "aliases": [
+              "Customer"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [],
+        "deadlines": [],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_extractors.py:33",
+      "text": "Provider should endeavor to respond within one business day.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Provider",
+            "role": "provider",
+            "aliases": [
+              "Provider"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within one business day",
+            "anchor": null,
+            "offset_days": 1,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 36,
+            "span_end": 59,
+            "matched_text": "er should endeavor to respond within one business day."
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_extractors.py:37",
+      "text": "Customer shall pay all invoices within thirty days of receipt.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Customer",
+            "role": "customer",
+            "aliases": [
+              "Customer"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Customer",
+            "modal": "shall",
+            "action": "pay all invoices within thirty days of receipt",
+            "object_text": "all invoices within thirty days of receipt.",
+            "conditions": [],
+            "deadlines": [
+              "within thirty days"
+            ],
+            "span_start": 0,
+            "span_end": 62,
+            "matched_text": "Customer shall pay all invoices within thirty days of receipt.",
+            "category": "payment",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within thirty days",
+            "anchor": "invoice_date",
+            "offset_days": 30,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 32,
+            "span_end": 50,
+            "matched_text": "stomer shall pay all invoices within thirty days of receipt."
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_extractors.py:47",
+      "text": "Customer may inspect the premises at any time. Customer shall pay rent of $2,000 per month.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Customer",
+            "role": "customer",
+            "aliases": [
+              "Customer"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Customer",
+            "modal": "shall",
+            "action": "pay rent of $2,000 per month",
+            "object_text": "rent of $2,000 per month.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 47,
+            "span_end": 91,
+            "matched_text": "Customer shall pay rent of $2,000 per month.",
+            "category": "payment",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_extractors.py:56",
+      "text": "Customer shall pay all invoices within thirty days of receipt.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Customer",
+            "role": "customer",
+            "aliases": [
+              "Customer"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Customer",
+            "modal": "shall",
+            "action": "pay all invoices within thirty days of receipt",
+            "object_text": "all invoices within thirty days of receipt.",
+            "conditions": [],
+            "deadlines": [
+              "within thirty days"
+            ],
+            "span_start": 0,
+            "span_end": 62,
+            "matched_text": "Customer shall pay all invoices within thirty days of receipt.",
+            "category": "payment",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within thirty days",
+            "anchor": "invoice_date",
+            "offset_days": 30,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 32,
+            "span_end": 50,
+            "matched_text": "stomer shall pay all invoices within thirty days of receipt."
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_extractors.py:66",
+      "text": "Provider shall deliver the report and shall maintain the records.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Provider",
+            "role": "provider",
+            "aliases": [
+              "Provider"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver the report and shall maintain the records",
+            "object_text": "the report and shall maintain the records.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 0,
+            "span_end": 65,
+            "matched_text": "Provider shall deliver the report and shall maintain the records.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_extractors.py:72",
+      "text": "Provider shall pay the fee. Provider shall pay the fee.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Provider",
+            "role": "provider",
+            "aliases": [
+              "Provider"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "pay the fee",
+            "object_text": "the fee.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 0,
+            "span_end": 27,
+            "matched_text": "Provider shall pay the fee.",
+            "category": "payment",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_extractors.py:89",
+      "text": "Customer shall pay all invoices within thirty days of receipt. The office is located in Springfield.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Customer",
+            "role": "customer",
+            "aliases": [
+              "Customer"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Customer",
+            "modal": "shall",
+            "action": "pay all invoices within thirty days of receipt",
+            "object_text": "all invoices within thirty days of receipt.",
+            "conditions": [],
+            "deadlines": [
+              "within thirty days"
+            ],
+            "span_start": 0,
+            "span_end": 62,
+            "matched_text": "Customer shall pay all invoices within thirty days of receipt.",
+            "category": "payment",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within thirty days",
+            "anchor": "invoice_date",
+            "offset_days": 30,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 32,
+            "span_end": 50,
+            "matched_text": "stomer shall pay all invoices within thirty days of receipt. The office is located in Springfield."
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_extractors.py:114",
+      "text": "Provider shall deliver the goods within ten days. Customer shall pay the invoice within thirty days.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Provider",
+            "role": "provider",
+            "aliases": [
+              "Provider"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Customer",
+            "role": "customer",
+            "aliases": [
+              "Customer"
+            ],
+            "first_span_start": 50,
+            "first_span_end": 58,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver the goods within ten days",
+            "object_text": "the goods within ten days.",
+            "conditions": [],
+            "deadlines": [
+              "within ten days"
+            ],
+            "span_start": 0,
+            "span_end": 49,
+            "matched_text": "Provider shall deliver the goods within ten days.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Customer",
+            "modal": "shall",
+            "action": "pay the invoice within thirty days",
+            "object_text": "the invoice within thirty days.",
+            "conditions": [],
+            "deadlines": [
+              "within thirty days"
+            ],
+            "span_start": 50,
+            "span_end": 100,
+            "matched_text": "Customer shall pay the invoice within thirty days.",
+            "category": "payment",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within ten days",
+            "anchor": "invoice_date",
+            "offset_days": 10,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 33,
+            "span_end": 48,
+            "matched_text": "vider shall deliver the goods within ten days. Customer shall pay the invoice within thirty days."
+          },
+          {
+            "kind": "relative_offset",
+            "description": "within thirty days",
+            "anchor": "invoice_date",
+            "offset_days": 30,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 81,
+            "span_end": 99,
+            "matched_text": "ustomer shall pay the invoice within thirty days."
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_extractors.py:131",
+      "text": "Provider shall deliver the goods within ten days.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Provider",
+            "role": "provider",
+            "aliases": [
+              "Provider"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver the goods within ten days",
+            "object_text": "the goods within ten days.",
+            "conditions": [],
+            "deadlines": [
+              "within ten days"
+            ],
+            "span_start": 0,
+            "span_end": 49,
+            "matched_text": "Provider shall deliver the goods within ten days.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within ten days",
+            "anchor": null,
+            "offset_days": 10,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 33,
+            "span_end": 48,
+            "matched_text": "vider shall deliver the goods within ten days."
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_extractors.py:144",
+      "text": "Provider shall deliver the goods within ten days.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Provider",
+            "role": "provider",
+            "aliases": [
+              "Provider"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver the goods within ten days",
+            "object_text": "the goods within ten days.",
+            "conditions": [],
+            "deadlines": [
+              "within ten days"
+            ],
+            "span_start": 0,
+            "span_end": 49,
+            "matched_text": "Provider shall deliver the goods within ten days.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within ten days",
+            "anchor": null,
+            "offset_days": 10,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 33,
+            "span_end": 48,
+            "matched_text": "vider shall deliver the goods within ten days."
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_extractors.py:78",
+      "text": "Provider shall deliver item number ",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Provider",
+            "role": "provider",
+            "aliases": [
+              "Provider"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number",
+            "object_text": "item number",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 0,
+            "span_end": 35,
+            "matched_text": "Provider shall deliver item number ",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_extractors.py:96",
+      "text": "within thirty days of receipt",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within thirty days",
+            "anchor": null,
+            "offset_days": 30,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 0,
+            "span_end": 18,
+            "matched_text": "within thirty days of receipt"
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_extractors.py:110",
+      "text": "within thirty days of receipt",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within thirty days",
+            "anchor": null,
+            "offset_days": 30,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 0,
+            "span_end": 18,
+            "matched_text": "within thirty days of receipt"
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_deadlines.py:1",
+      "text": "Deadline extraction reads the number a contract actually states.\n\n\"forty-five (45) days\" was read as 5 days and \"twenty-four (24) months\" as 20\nmonths: the word list lacked most tens and compound words kept only their first\nword. The digits in parentheses are the drafter's own statement of the number.\n",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "forty-five (45) days",
+            "anchor": null,
+            "offset_days": 45,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 67,
+            "span_end": 87,
+            "matched_text": "a contract actually states.\n\n\"forty-five (45) days\" was read as 5 days and \"twenty-four (24) months\" as 20\nmon"
+          },
+          {
+            "kind": "relative_offset",
+            "description": " 5 days",
+            "anchor": null,
+            "offset_days": 5,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 100,
+            "span_end": 107,
+            "matched_text": "ty-five (45) days\" was read as 5 days and \"twenty-four (24) months\" as 20\nmonths: the word list l"
+          },
+          {
+            "kind": "relative_offset",
+            "description": "twenty-four (24) months",
+            "anchor": null,
+            "offset_days": 720,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 113,
+            "span_end": 136,
+            "matched_text": "days\" was read as 5 days and \"twenty-four (24) months\" as 20\nmonths: the word list lacked most tens and compound "
+          },
+          {
+            "kind": "relative_offset",
+            "description": " 20\nmonths",
+            "anchor": null,
+            "offset_days": 600,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 140,
+            "span_end": 150,
+            "matched_text": "d \"twenty-four (24) months\" as 20\nmonths: the word list lacked most tens and compound words kept onl"
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_deadlines.py:68",
+      "text": "for a period of three (3) years thereafter",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": " three (3) years",
+            "anchor": null,
+            "offset_days": 1095,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 15,
+            "span_end": 31,
+            "matched_text": "for a period of three (3) years thereafter"
+          },
+          {
+            "kind": "period",
+            "description": "for a period of three (3) years thereafter",
+            "anchor": null,
+            "offset_days": null,
+            "period_days": 1095,
+            "resolved_date": null,
+            "span_start": 0,
+            "span_end": 42,
+            "matched_text": "for a period of three (3) years thereafter"
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_deadlines.py:47",
+      "text": "Licensee shall pay within forty-five (45) days of the invoice date.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Licensee",
+            "role": "customer",
+            "aliases": [
+              "Licensee"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Licensee",
+            "modal": "shall",
+            "action": "pay within forty-five (45) days of the invoice date",
+            "object_text": "within forty-five (45) days of the invoice date.",
+            "conditions": [],
+            "deadlines": [
+              "within forty-five (45) days"
+            ],
+            "span_start": 0,
+            "span_end": 67,
+            "matched_text": "Licensee shall pay within forty-five (45) days of the invoice date.",
+            "category": "payment",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within forty-five (45) days",
+            "anchor": "invoice_date",
+            "offset_days": 45,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 19,
+            "span_end": 46,
+            "matched_text": "Licensee shall pay within forty-five (45) days of the invoice date."
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_deadlines.py:48",
+      "text": "Notice must be given within twenty-one (21) days after termination.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [
+          {
+            "subject_party": null,
+            "modal": "must",
+            "action": "given within twenty-one (21) days after termination",
+            "object_text": "within twenty-one (21) days after termination.",
+            "conditions": [],
+            "deadlines": [
+              "within twenty-one (21) days after",
+              "twenty-one (21) days after"
+            ],
+            "span_start": 0,
+            "span_end": 67,
+            "matched_text": "Notice must be given within twenty-one (21) days after termination.",
+            "category": "notice",
+            "is_unilateral": false,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.7,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within twenty-one (21) days after",
+            "anchor": "termination",
+            "offset_days": 21,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 21,
+            "span_end": 54,
+            "matched_text": "Notice must be given within twenty-one (21) days after termination."
+          },
+          {
+            "kind": "period",
+            "description": "twenty-one (21) days after",
+            "anchor": null,
+            "offset_days": null,
+            "period_days": 21,
+            "resolved_date": null,
+            "span_start": 28,
+            "span_end": 54,
+            "matched_text": "twenty-one (21) days after"
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_deadlines.py:49",
+      "text": "The warranty runs for twenty-four (24) months following delivery.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": " twenty-four (24) months following",
+            "anchor": "delivery",
+            "offset_days": 720,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 21,
+            "span_end": 55,
+            "matched_text": "The warranty runs for twenty-four (24) months following delivery."
+          },
+          {
+            "kind": "period",
+            "description": "twenty-four (24) months following",
+            "anchor": null,
+            "offset_days": null,
+            "period_days": 720,
+            "resolved_date": null,
+            "span_start": 22,
+            "span_end": 55,
+            "matched_text": "twenty-four (24) months following"
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_deadlines.py:50",
+      "text": "Either party may terminate on ninety (90) days' notice.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": " ninety (90) days",
+            "anchor": "notice",
+            "offset_days": 90,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 29,
+            "span_end": 46,
+            "matched_text": "Either party may terminate on ninety (90) days' notice."
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_deadlines.py:51",
+      "text": "Payment is due within 30 days of invoice.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within 30 days",
+            "anchor": "invoice_date",
+            "offset_days": 30,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 15,
+            "span_end": 29,
+            "matched_text": "Payment is due within 30 days of invoice."
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_deadlines.py:52",
+      "text": "Cure within thirty days after notice.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within thirty days after",
+            "anchor": "notice",
+            "offset_days": 30,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 5,
+            "span_end": 29,
+            "matched_text": "Cure within thirty days after notice."
+          },
+          {
+            "kind": "period",
+            "description": "thirty days after",
+            "anchor": null,
+            "offset_days": null,
+            "period_days": 30,
+            "resolved_date": null,
+            "span_start": 12,
+            "span_end": 29,
+            "matched_text": "thirty days after"
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_deadlines.py:53",
+      "text": "Records are kept for seven (7) years after expiration.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": " seven (7) years after",
+            "anchor": "termination",
+            "offset_days": 2555,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 20,
+            "span_end": 42,
+            "matched_text": "Records are kept for seven (7) years after expiration."
+          },
+          {
+            "kind": "period",
+            "description": "seven (7) years after",
+            "anchor": null,
+            "offset_days": null,
+            "period_days": 2555,
+            "resolved_date": null,
+            "span_start": 21,
+            "span_end": 42,
+            "matched_text": "seven (7) years after"
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_deadlines.py:54",
+      "text": "No later than one hundred twenty (120) days after the Effective Date.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "No later than one hundred twenty (120) days after",
+            "anchor": "effective_date",
+            "offset_days": 120,
+            "period_days": null,
+            "resolved_date": "2026-05-01T00:00:00",
+            "span_start": 0,
+            "span_end": 49,
+            "matched_text": "No later than one hundred twenty (120) days after the Effective Date."
+          },
+          {
+            "kind": "period",
+            "description": "one hundred twenty (120) days after",
+            "anchor": null,
+            "offset_days": null,
+            "period_days": 120,
+            "resolved_date": null,
+            "span_start": 14,
+            "span_end": 49,
+            "matched_text": "one hundred twenty (120) days after"
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_deadlines.py:62",
+      "text": "within forty-five (54) days after notice",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within forty-five (54) days after",
+            "anchor": "notice",
+            "offset_days": 54,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 0,
+            "span_end": 33,
+            "matched_text": "within forty-five (54) days after notice"
+          },
+          {
+            "kind": "period",
+            "description": "forty-five (54) days after",
+            "anchor": null,
+            "offset_days": null,
+            "period_days": 54,
+            "resolved_date": null,
+            "span_start": 7,
+            "span_end": 33,
+            "matched_text": "forty-five (54) days after"
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "test_contract_deadlines.py:65",
+      "text": "at least ten (10) business days prior to the renewal date",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "at least ten (10) business days prior to",
+            "anchor": null,
+            "offset_days": -10,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 0,
+            "span_end": 40,
+            "matched_text": "at least ten (10) business days prior to the renewal date"
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "empty",
+      "text": "",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [],
+        "deadlines": [],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "aliases",
+      "text": "Acme Corporation (\"Provider\") and Bravo LLC (\"Customer\"). Provider shall deliver the goods within ten days. Customer must pay invoices within forty-five (45) days after the Effective Date.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Acme Corporation",
+            "role": "provider",
+            "aliases": [
+              "Provider",
+              "Acme Corporation"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 29,
+            "detection_method": "defined",
+            "confidence": 1.0
+          },
+          {
+            "canonical_name": "Bravo LLC",
+            "role": "customer",
+            "aliases": [
+              "Customer",
+              "Bravo LLC"
+            ],
+            "first_span_start": 34,
+            "first_span_end": 56,
+            "detection_method": "defined",
+            "confidence": 1.0
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Acme Corporation",
+            "modal": "shall",
+            "action": "deliver the goods within ten days",
+            "object_text": "the goods within ten days.",
+            "conditions": [],
+            "deadlines": [
+              "within ten days"
+            ],
+            "span_start": 58,
+            "span_end": 107,
+            "matched_text": "Provider shall deliver the goods within ten days.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Bravo LLC",
+            "modal": "must",
+            "action": "pay invoices within forty-five (45) days after the Effective",
+            "object_text": "invoices within forty-five (45) days after the Effective Date.",
+            "conditions": [],
+            "deadlines": [
+              "within forty-five (45) days after",
+              "forty-five (45) days after"
+            ],
+            "span_start": 108,
+            "span_end": 188,
+            "matched_text": "Customer must pay invoices within forty-five (45) days after the Effective Date.",
+            "category": "payment",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within ten days",
+            "anchor": "invoice_date",
+            "offset_days": 10,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 91,
+            "span_end": 106,
+            "matched_text": "vider shall deliver the goods within ten days. Customer must pay invoices within forty-five (45) days aft"
+          },
+          {
+            "kind": "relative_offset",
+            "description": "within forty-five (45) days after",
+            "anchor": "effective_date",
+            "offset_days": 45,
+            "period_days": null,
+            "resolved_date": "2026-02-15T00:00:00",
+            "span_start": 135,
+            "span_end": 168,
+            "matched_text": "s. Customer must pay invoices within forty-five (45) days after the Effective Date."
+          },
+          {
+            "kind": "period",
+            "description": "forty-five (45) days after",
+            "anchor": null,
+            "offset_days": null,
+            "period_days": 45,
+            "resolved_date": null,
+            "span_start": 142,
+            "span_end": 168,
+            "matched_text": "forty-five (45) days after"
+          }
+        ],
+        "defined_terms": [
+          {
+            "term": "Provider",
+            "definition_text": null,
+            "defined": true,
+            "usage_count": 2,
+            "used_but_undefined": false,
+            "defined_but_unused": false,
+            "circular_reference": false,
+            "span_start": 17,
+            "span_end": 29
+          },
+          {
+            "term": "Customer",
+            "definition_text": null,
+            "defined": true,
+            "usage_count": 2,
+            "used_but_undefined": false,
+            "defined_but_unused": false,
+            "circular_reference": false,
+            "span_start": 44,
+            "span_end": 56
+          }
+        ]
+      }
+    },
+    {
+      "name": "repeated_alias",
+      "text": "Acme Inc. (\"Provider\"). Acme Corporation (\"Provider\"). Provider agrees to maintain records throughout the term.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Acme Inc",
+            "role": "provider",
+            "aliases": [
+              "Provider",
+              "Acme Inc",
+              "Acme Corporation"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 22,
+            "detection_method": "defined",
+            "confidence": 1.0
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Acme Inc",
+            "modal": "agrees_to",
+            "action": "maintain records throughout the term",
+            "object_text": "records throughout the term.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 55,
+            "span_end": 111,
+            "matched_text": "Provider agrees to maintain records throughout the term.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": true,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [],
+        "defined_terms": [
+          {
+            "term": "Provider",
+            "definition_text": null,
+            "defined": true,
+            "usage_count": 3,
+            "used_but_undefined": false,
+            "defined_but_unused": false,
+            "circular_reference": false,
+            "span_start": 10,
+            "span_end": 22
+          }
+        ]
+      }
+    },
+    {
+      "name": "recitals",
+      "text": "This Agreement is by and between Acme Corporation and Bravo LLC. Each party shall maintain confidentiality forever.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Acme Corporation",
+            "role": null,
+            "aliases": [
+              "Acme Corporation"
+            ],
+            "first_span_start": 33,
+            "first_span_end": 49,
+            "detection_method": "header",
+            "confidence": 0.85
+          },
+          {
+            "canonical_name": "Bravo LLC. Each party shall maintain confidentiality forever",
+            "role": null,
+            "aliases": [
+              "Bravo LLC. Each party shall maintain confidentiality forever"
+            ],
+            "first_span_start": 54,
+            "first_span_end": 115,
+            "detection_method": "header",
+            "confidence": 0.85
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Each party",
+            "modal": "shall",
+            "action": "maintain confidentiality forever",
+            "object_text": "confidentiality forever.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 65,
+            "span_end": 115,
+            "matched_text": "Each party shall maintain confidentiality forever.",
+            "category": null,
+            "is_unilateral": false,
+            "is_perpetual": true,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "defined_terms",
+      "text": "\"Services\" means the work described in Schedule A. Services include installation. \"Unused Term\" shall mean a thing never mentioned elsewhere. \"Circular Term\" means all Circular Term deliverables. Special Deliverables are required. Special Deliverables are accepted. Special Deliverables are paid.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [
+          {
+            "subject_party": null,
+            "modal": "shall",
+            "action": "mean a thing never mentioned elsewhere",
+            "object_text": "a thing never mentioned elsewhere.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 82,
+            "span_end": 141,
+            "matched_text": "\"Unused Term\" shall mean a thing never mentioned elsewhere.",
+            "category": null,
+            "is_unilateral": false,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.7,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [],
+        "defined_terms": [
+          {
+            "term": "Services",
+            "definition_text": "the work described in Schedule A.",
+            "defined": true,
+            "usage_count": 2,
+            "used_but_undefined": false,
+            "defined_but_unused": false,
+            "circular_reference": false,
+            "span_start": 0,
+            "span_end": 50
+          },
+          {
+            "term": "Unused Term",
+            "definition_text": "a thing never mentioned elsewhere.",
+            "defined": true,
+            "usage_count": 1,
+            "used_but_undefined": false,
+            "defined_but_unused": true,
+            "circular_reference": false,
+            "span_start": 82,
+            "span_end": 141
+          },
+          {
+            "term": "Circular Term",
+            "definition_text": "all Circular Term deliverables.",
+            "defined": true,
+            "usage_count": 2,
+            "used_but_undefined": false,
+            "defined_but_unused": false,
+            "circular_reference": true,
+            "span_start": 142,
+            "span_end": 195
+          },
+          {
+            "term": "Special Deliverables",
+            "definition_text": null,
+            "defined": false,
+            "usage_count": 3,
+            "used_but_undefined": true,
+            "defined_but_unused": false,
+            "circular_reference": false,
+            "span_start": null,
+            "span_end": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "paragraph_quotes",
+      "text": "Provider shall not disclose information.\n\"Customer\" must not copy it.\n(The parties agree to protect it.)",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Provider",
+            "role": "provider",
+            "aliases": [
+              "Provider"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Customer",
+            "role": "customer",
+            "aliases": [
+              "Customer"
+            ],
+            "first_span_start": 42,
+            "first_span_end": 50,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Provider",
+            "modal": "shall not",
+            "action": "disclose information",
+            "object_text": "information.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 0,
+            "span_end": 40,
+            "matched_text": "Provider shall not disclose information.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Customer",
+            "modal": "must not",
+            "action": "copy it",
+            "object_text": "it.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 41,
+            "span_end": 69,
+            "matched_text": "\"Customer\" must not copy it.",
+            "category": null,
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "The parties",
+            "modal": "agrees_to",
+            "action": "protect it.)",
+            "object_text": "it.)",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 70,
+            "span_end": 104,
+            "matched_text": "(The parties agree to protect it.)",
+            "category": "confidentiality",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "unicode_offsets",
+      "text": "Résumé 📜. Provider shall pay €500 within twenty-one (21) days after the Effective Date. \"Services\" means the café work. Services are due on January 2, 2027.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Provider",
+            "role": "provider",
+            "aliases": [
+              "Provider"
+            ],
+            "first_span_start": 11,
+            "first_span_end": 19,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "pay €500 within twenty-one (21) days after the Effective",
+            "object_text": "€500 within twenty-one (21) days after the Effective Date.",
+            "conditions": [],
+            "deadlines": [
+              "within twenty-one (21) days after",
+              "twenty-one (21) days after"
+            ],
+            "span_start": 11,
+            "span_end": 88,
+            "matched_text": "Provider shall pay €500 within twenty-one (21) days after the Effective Date.",
+            "category": "payment",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": "within twenty-one (21) days after",
+            "anchor": "effective_date",
+            "offset_days": 21,
+            "period_days": null,
+            "resolved_date": "2026-01-22T00:00:00",
+            "span_start": 35,
+            "span_end": 68,
+            "matched_text": "mé 📜. Provider shall pay €500 within twenty-one (21) days after the Effective Date. \"Services\" means the café work. Service"
+          },
+          {
+            "kind": "period",
+            "description": "twenty-one (21) days after",
+            "anchor": null,
+            "offset_days": null,
+            "period_days": 21,
+            "resolved_date": null,
+            "span_start": 42,
+            "span_end": 68,
+            "matched_text": "twenty-one (21) days after"
+          },
+          {
+            "kind": "absolute",
+            "description": "January 2, 2027",
+            "anchor": null,
+            "offset_days": null,
+            "period_days": null,
+            "resolved_date": "2027-01-02T00:00:00",
+            "span_start": 141,
+            "span_end": 156,
+            "matched_text": "January 2, 2027"
+          }
+        ],
+        "defined_terms": [
+          {
+            "term": "Services",
+            "definition_text": "the café work.",
+            "defined": true,
+            "usage_count": 2,
+            "used_but_undefined": false,
+            "defined_but_unused": false,
+            "circular_reference": false,
+            "span_start": 89,
+            "span_end": 120
+          }
+        ]
+      }
+    },
+    {
+      "name": "periods_dates",
+      "text": "A term of twenty-four (24) months following execution. Notice is due at least ten (10) business days prior to termination. January 2, 2027. Feb 30, 2028. March 4, 2029.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [],
+        "obligations": [],
+        "deadlines": [
+          {
+            "kind": "relative_offset",
+            "description": " twenty-four (24) months following",
+            "anchor": "termination",
+            "offset_days": 720,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 9,
+            "span_end": 43,
+            "matched_text": "A term of twenty-four (24) months following execution. Notice is due at least ten (10) business days pr"
+          },
+          {
+            "kind": "relative_offset",
+            "description": "at least ten (10) business days prior to",
+            "anchor": "termination",
+            "offset_days": -10,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 69,
+            "span_end": 109,
+            "matched_text": "wing execution. Notice is due at least ten (10) business days prior to termination. January 2, 2027. Feb 30, 2028. March 4, 2029."
+          },
+          {
+            "kind": "period",
+            "description": "term of twenty-four (24) months following",
+            "anchor": null,
+            "offset_days": null,
+            "period_days": 720,
+            "resolved_date": null,
+            "span_start": 2,
+            "span_end": 43,
+            "matched_text": "term of twenty-four (24) months following"
+          },
+          {
+            "kind": "absolute",
+            "description": "January 2, 2027",
+            "anchor": null,
+            "offset_days": null,
+            "period_days": null,
+            "resolved_date": "2027-01-02T00:00:00",
+            "span_start": 123,
+            "span_end": 138,
+            "matched_text": "January 2, 2027"
+          },
+          {
+            "kind": "absolute",
+            "description": "Feb 30, 2028",
+            "anchor": null,
+            "offset_days": null,
+            "period_days": null,
+            "resolved_date": null,
+            "span_start": 140,
+            "span_end": 152,
+            "matched_text": "Feb 30, 2028"
+          },
+          {
+            "kind": "absolute",
+            "description": "March 4, 2029",
+            "anchor": null,
+            "offset_days": null,
+            "period_days": null,
+            "resolved_date": "2029-03-04T00:00:00",
+            "span_start": 154,
+            "span_end": 167,
+            "matched_text": "March 4, 2029"
+          }
+        ],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "dedup_and_cap",
+      "text": "Provider shall deliver item number 0 to Customer promptly. Provider shall deliver item number 1 to Customer promptly. Provider shall deliver item number 2 to Customer promptly. Provider shall deliver item number 3 to Customer promptly. Provider shall deliver item number 4 to Customer promptly. Provider shall deliver item number 5 to Customer promptly. Provider shall deliver item number 6 to Customer promptly. Provider shall deliver item number 7 to Customer promptly. Provider shall deliver item number 8 to Customer promptly. Provider shall deliver item number 9 to Customer promptly. Provider shall deliver item number 10 to Customer promptly. Provider shall deliver item number 11 to Customer promptly. Provider shall deliver item number 12 to Customer promptly. Provider shall deliver item number 13 to Customer promptly. Provider shall deliver item number 14 to Customer promptly. Provider shall deliver item number 15 to Customer promptly. Provider shall deliver item number 16 to Customer promptly. Provider shall deliver item number 17 to Customer promptly. Provider shall deliver item number 18 to Customer promptly. Provider shall deliver item number 19 to Customer promptly. Provider shall deliver item number 20 to Customer promptly. Provider shall deliver item number 21 to Customer promptly. Provider shall deliver item number 22 to Customer promptly. Provider shall deliver item number 23 to Customer promptly. Provider shall deliver item number 24 to Customer promptly. Provider shall deliver item number 25 to Customer promptly. Provider shall deliver item number 26 to Customer promptly. Provider shall deliver item number 27 to Customer promptly. Provider shall deliver item number 28 to Customer promptly. Provider shall deliver item number 29 to Customer promptly. Provider shall deliver item number 30 to Customer promptly. Provider shall deliver item number 31 to Customer promptly. Provider shall deliver item number 32 to Customer promptly. Provider shall deliver item number 33 to Customer promptly. Provider shall deliver item number 34 to Customer promptly. Provider shall deliver item number 35 to Customer promptly. Provider shall deliver item number 36 to Customer promptly. Provider shall deliver item number 37 to Customer promptly. Provider shall deliver item number 38 to Customer promptly. Provider shall deliver item number 39 to Customer promptly. Provider shall deliver item number 40 to Customer promptly. Provider shall deliver item number 41 to Customer promptly. Provider shall deliver item number 42 to Customer promptly. Provider shall deliver item number 43 to Customer promptly. Provider shall deliver item number 44 to Customer promptly. Provider shall deliver item number 45 to Customer promptly. Provider shall deliver item number 46 to Customer promptly. Provider shall deliver item number 47 to Customer promptly. Provider shall deliver item number 48 to Customer promptly. Provider shall deliver item number 49 to Customer promptly. Provider shall deliver item number 50 to Customer promptly. Provider shall deliver item number 51 to Customer promptly. Provider shall deliver item number 52 to Customer promptly. Provider shall deliver item number 53 to Customer promptly. Provider shall deliver item number 54 to Customer promptly. Provider shall deliver item number 55 to Customer promptly. Provider shall deliver item number 56 to Customer promptly. Provider shall deliver item number 57 to Customer promptly. Provider shall deliver item number 58 to Customer promptly. Provider shall deliver item number 59 to Customer promptly. Provider shall deliver item number 60 to Customer promptly. Provider shall deliver item number 61 to Customer promptly. Provider shall deliver item number 62 to Customer promptly. Provider shall deliver item number 63 to Customer promptly. Provider shall deliver item number 64 to Customer promptly. Provider shall deliver item number 65 to Customer promptly. Provider shall deliver item number 66 to Customer promptly. Provider shall deliver item number 67 to Customer promptly. Provider shall deliver item number 68 to Customer promptly. Provider shall deliver item number 69 to Customer promptly. Provider shall deliver item number 70 to Customer promptly. Provider shall deliver item number 71 to Customer promptly. Provider shall deliver item number 72 to Customer promptly. Provider shall deliver item number 73 to Customer promptly. Provider shall deliver item number 74 to Customer promptly. Provider shall deliver item number 75 to Customer promptly. Provider shall deliver item number 76 to Customer promptly. Provider shall deliver item number 77 to Customer promptly. Provider shall deliver item number 78 to Customer promptly. Provider shall deliver item number 79 to Customer promptly. Provider shall deliver item number 80 to Customer promptly. Provider shall deliver item number 81 to Customer promptly. Provider shall deliver item number 82 to Customer promptly. Provider shall deliver item number 83 to Customer promptly. Provider shall deliver item number 84 to Customer promptly. Provider shall deliver item number 85 to Customer promptly. Provider shall deliver item number 86 to Customer promptly. Provider shall deliver item number 87 to Customer promptly. Provider shall deliver item number 88 to Customer promptly. Provider shall deliver item number 89 to Customer promptly. Provider shall deliver item number 90 to Customer promptly. Provider shall deliver item number 91 to Customer promptly. Provider shall deliver item number 92 to Customer promptly. Provider shall deliver item number 93 to Customer promptly. Provider shall deliver item number 94 to Customer promptly. Provider shall deliver item number 95 to Customer promptly. Provider shall deliver item number 96 to Customer promptly. Provider shall deliver item number 97 to Customer promptly. Provider shall deliver item number 98 to Customer promptly. Provider shall deliver item number 99 to Customer promptly. Provider shall deliver item number 100 to Customer promptly. Provider shall deliver item number 101 to Customer promptly. Provider shall deliver item number 102 to Customer promptly. Provider shall deliver item number 103 to Customer promptly. Provider shall deliver item number 104 to Customer promptly. Provider shall deliver item number 105 to Customer promptly. Provider shall deliver item number 106 to Customer promptly. Provider shall deliver item number 107 to Customer promptly. Provider shall deliver item number 108 to Customer promptly. Provider shall deliver item number 109 to Customer promptly. Provider shall deliver item number 110 to Customer promptly. Provider shall deliver item number 111 to Customer promptly. Provider shall deliver item number 112 to Customer promptly. Provider shall deliver item number 113 to Customer promptly. Provider shall deliver item number 114 to Customer promptly. Provider shall deliver item number 115 to Customer promptly. Provider shall deliver item number 116 to Customer promptly. Provider shall deliver item number 117 to Customer promptly. Provider shall deliver item number 118 to Customer promptly. Provider shall deliver item number 119 to Customer promptly. Provider shall deliver item number 120 to Customer promptly. Provider shall deliver item number 121 to Customer promptly. Provider shall deliver item number 122 to Customer promptly. Provider shall deliver item number 123 to Customer promptly. Provider shall deliver item number 124 to Customer promptly. Provider shall deliver item number 125 to Customer promptly. Provider shall deliver item number 126 to Customer promptly. Provider shall deliver item number 127 to Customer promptly. Provider shall deliver item number 128 to Customer promptly. Provider shall deliver item number 129 to Customer promptly. Provider shall deliver item number 130 to Customer promptly. Provider shall deliver item number 131 to Customer promptly. Provider shall deliver item number 132 to Customer promptly. Provider shall deliver item number 133 to Customer promptly. Provider shall deliver item number 134 to Customer promptly. Provider shall deliver item number 135 to Customer promptly. Provider shall deliver item number 136 to Customer promptly. Provider shall deliver item number 137 to Customer promptly. Provider shall deliver item number 138 to Customer promptly. Provider shall deliver item number 139 to Customer promptly. Provider shall deliver item number 140 to Customer promptly. Provider shall deliver item number 141 to Customer promptly. Provider shall deliver item number 142 to Customer promptly. Provider shall deliver item number 143 to Customer promptly. Provider shall deliver item number 144 to Customer promptly. Provider shall deliver item number 145 to Customer promptly. Provider shall deliver item number 146 to Customer promptly. Provider shall deliver item number 147 to Customer promptly. Provider shall deliver item number 148 to Customer promptly. Provider shall deliver item number 149 to Customer promptly. Provider shall deliver item number 150 to Customer promptly. Provider shall deliver item number 151 to Customer promptly. Provider shall deliver item number 152 to Customer promptly. Provider shall deliver item number 153 to Customer promptly. Provider shall deliver item number 154 to Customer promptly. Provider shall deliver item number 155 to Customer promptly. Provider shall deliver item number 156 to Customer promptly. Provider shall deliver item number 157 to Customer promptly. Provider shall deliver item number 158 to Customer promptly. Provider shall deliver item number 159 to Customer promptly. Provider shall deliver item number 160 to Customer promptly. Provider shall deliver item number 161 to Customer promptly. Provider shall deliver item number 162 to Customer promptly. Provider shall deliver item number 163 to Customer promptly. Provider shall deliver item number 164 to Customer promptly. Provider shall deliver item number 165 to Customer promptly. Provider shall deliver item number 166 to Customer promptly. Provider shall deliver item number 167 to Customer promptly. Provider shall deliver item number 168 to Customer promptly. Provider shall deliver item number 169 to Customer promptly. Provider shall deliver item number 170 to Customer promptly. Provider shall deliver item number 171 to Customer promptly. Provider shall deliver item number 172 to Customer promptly. Provider shall deliver item number 173 to Customer promptly. Provider shall deliver item number 174 to Customer promptly. Provider shall deliver item number 175 to Customer promptly. Provider shall deliver item number 176 to Customer promptly. Provider shall deliver item number 177 to Customer promptly. Provider shall deliver item number 178 to Customer promptly. Provider shall deliver item number 179 to Customer promptly. Provider shall deliver item number 180 to Customer promptly. Provider shall deliver item number 181 to Customer promptly. Provider shall deliver item number 182 to Customer promptly. Provider shall deliver item number 183 to Customer promptly. Provider shall deliver item number 184 to Customer promptly. Provider shall deliver item number 185 to Customer promptly. Provider shall deliver item number 186 to Customer promptly. Provider shall deliver item number 187 to Customer promptly. Provider shall deliver item number 188 to Customer promptly. Provider shall deliver item number 189 to Customer promptly. Provider shall deliver item number 190 to Customer promptly. Provider shall deliver item number 191 to Customer promptly. Provider shall deliver item number 192 to Customer promptly. Provider shall deliver item number 193 to Customer promptly. Provider shall deliver item number 194 to Customer promptly. Provider shall deliver item number 195 to Customer promptly. Provider shall deliver item number 196 to Customer promptly. Provider shall deliver item number 197 to Customer promptly. Provider shall deliver item number 198 to Customer promptly. Provider shall deliver item number 199 to Customer promptly.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Provider",
+            "role": "provider",
+            "aliases": [
+              "Provider"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Customer",
+            "role": "customer",
+            "aliases": [
+              "Customer"
+            ],
+            "first_span_start": 40,
+            "first_span_end": 48,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 0 to Customer promptly",
+            "object_text": "item number 0 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 0,
+            "span_end": 58,
+            "matched_text": "Provider shall deliver item number 0 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 1 to Customer promptly",
+            "object_text": "item number 1 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 59,
+            "span_end": 117,
+            "matched_text": "Provider shall deliver item number 1 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 2 to Customer promptly",
+            "object_text": "item number 2 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 118,
+            "span_end": 176,
+            "matched_text": "Provider shall deliver item number 2 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 3 to Customer promptly",
+            "object_text": "item number 3 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 177,
+            "span_end": 235,
+            "matched_text": "Provider shall deliver item number 3 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 4 to Customer promptly",
+            "object_text": "item number 4 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 236,
+            "span_end": 294,
+            "matched_text": "Provider shall deliver item number 4 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 5 to Customer promptly",
+            "object_text": "item number 5 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 295,
+            "span_end": 353,
+            "matched_text": "Provider shall deliver item number 5 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 6 to Customer promptly",
+            "object_text": "item number 6 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 354,
+            "span_end": 412,
+            "matched_text": "Provider shall deliver item number 6 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 7 to Customer promptly",
+            "object_text": "item number 7 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 413,
+            "span_end": 471,
+            "matched_text": "Provider shall deliver item number 7 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 8 to Customer promptly",
+            "object_text": "item number 8 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 472,
+            "span_end": 530,
+            "matched_text": "Provider shall deliver item number 8 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 9 to Customer promptly",
+            "object_text": "item number 9 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 531,
+            "span_end": 589,
+            "matched_text": "Provider shall deliver item number 9 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 10 to Customer promptly",
+            "object_text": "item number 10 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 590,
+            "span_end": 649,
+            "matched_text": "Provider shall deliver item number 10 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 11 to Customer promptly",
+            "object_text": "item number 11 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 650,
+            "span_end": 709,
+            "matched_text": "Provider shall deliver item number 11 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 12 to Customer promptly",
+            "object_text": "item number 12 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 710,
+            "span_end": 769,
+            "matched_text": "Provider shall deliver item number 12 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 13 to Customer promptly",
+            "object_text": "item number 13 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 770,
+            "span_end": 829,
+            "matched_text": "Provider shall deliver item number 13 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 14 to Customer promptly",
+            "object_text": "item number 14 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 830,
+            "span_end": 889,
+            "matched_text": "Provider shall deliver item number 14 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 15 to Customer promptly",
+            "object_text": "item number 15 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 890,
+            "span_end": 949,
+            "matched_text": "Provider shall deliver item number 15 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 16 to Customer promptly",
+            "object_text": "item number 16 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 950,
+            "span_end": 1009,
+            "matched_text": "Provider shall deliver item number 16 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 17 to Customer promptly",
+            "object_text": "item number 17 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1010,
+            "span_end": 1069,
+            "matched_text": "Provider shall deliver item number 17 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 18 to Customer promptly",
+            "object_text": "item number 18 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1070,
+            "span_end": 1129,
+            "matched_text": "Provider shall deliver item number 18 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 19 to Customer promptly",
+            "object_text": "item number 19 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1130,
+            "span_end": 1189,
+            "matched_text": "Provider shall deliver item number 19 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 20 to Customer promptly",
+            "object_text": "item number 20 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1190,
+            "span_end": 1249,
+            "matched_text": "Provider shall deliver item number 20 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 21 to Customer promptly",
+            "object_text": "item number 21 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1250,
+            "span_end": 1309,
+            "matched_text": "Provider shall deliver item number 21 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 22 to Customer promptly",
+            "object_text": "item number 22 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1310,
+            "span_end": 1369,
+            "matched_text": "Provider shall deliver item number 22 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 23 to Customer promptly",
+            "object_text": "item number 23 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1370,
+            "span_end": 1429,
+            "matched_text": "Provider shall deliver item number 23 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 24 to Customer promptly",
+            "object_text": "item number 24 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1430,
+            "span_end": 1489,
+            "matched_text": "Provider shall deliver item number 24 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 25 to Customer promptly",
+            "object_text": "item number 25 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1490,
+            "span_end": 1549,
+            "matched_text": "Provider shall deliver item number 25 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 26 to Customer promptly",
+            "object_text": "item number 26 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1550,
+            "span_end": 1609,
+            "matched_text": "Provider shall deliver item number 26 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 27 to Customer promptly",
+            "object_text": "item number 27 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1610,
+            "span_end": 1669,
+            "matched_text": "Provider shall deliver item number 27 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 28 to Customer promptly",
+            "object_text": "item number 28 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1670,
+            "span_end": 1729,
+            "matched_text": "Provider shall deliver item number 28 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 29 to Customer promptly",
+            "object_text": "item number 29 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1730,
+            "span_end": 1789,
+            "matched_text": "Provider shall deliver item number 29 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 30 to Customer promptly",
+            "object_text": "item number 30 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1790,
+            "span_end": 1849,
+            "matched_text": "Provider shall deliver item number 30 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 31 to Customer promptly",
+            "object_text": "item number 31 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1850,
+            "span_end": 1909,
+            "matched_text": "Provider shall deliver item number 31 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 32 to Customer promptly",
+            "object_text": "item number 32 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1910,
+            "span_end": 1969,
+            "matched_text": "Provider shall deliver item number 32 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 33 to Customer promptly",
+            "object_text": "item number 33 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 1970,
+            "span_end": 2029,
+            "matched_text": "Provider shall deliver item number 33 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 34 to Customer promptly",
+            "object_text": "item number 34 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2030,
+            "span_end": 2089,
+            "matched_text": "Provider shall deliver item number 34 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 35 to Customer promptly",
+            "object_text": "item number 35 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2090,
+            "span_end": 2149,
+            "matched_text": "Provider shall deliver item number 35 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 36 to Customer promptly",
+            "object_text": "item number 36 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2150,
+            "span_end": 2209,
+            "matched_text": "Provider shall deliver item number 36 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 37 to Customer promptly",
+            "object_text": "item number 37 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2210,
+            "span_end": 2269,
+            "matched_text": "Provider shall deliver item number 37 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 38 to Customer promptly",
+            "object_text": "item number 38 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2270,
+            "span_end": 2329,
+            "matched_text": "Provider shall deliver item number 38 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 39 to Customer promptly",
+            "object_text": "item number 39 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2330,
+            "span_end": 2389,
+            "matched_text": "Provider shall deliver item number 39 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 40 to Customer promptly",
+            "object_text": "item number 40 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2390,
+            "span_end": 2449,
+            "matched_text": "Provider shall deliver item number 40 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 41 to Customer promptly",
+            "object_text": "item number 41 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2450,
+            "span_end": 2509,
+            "matched_text": "Provider shall deliver item number 41 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 42 to Customer promptly",
+            "object_text": "item number 42 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2510,
+            "span_end": 2569,
+            "matched_text": "Provider shall deliver item number 42 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 43 to Customer promptly",
+            "object_text": "item number 43 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2570,
+            "span_end": 2629,
+            "matched_text": "Provider shall deliver item number 43 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 44 to Customer promptly",
+            "object_text": "item number 44 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2630,
+            "span_end": 2689,
+            "matched_text": "Provider shall deliver item number 44 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 45 to Customer promptly",
+            "object_text": "item number 45 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2690,
+            "span_end": 2749,
+            "matched_text": "Provider shall deliver item number 45 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 46 to Customer promptly",
+            "object_text": "item number 46 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2750,
+            "span_end": 2809,
+            "matched_text": "Provider shall deliver item number 46 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 47 to Customer promptly",
+            "object_text": "item number 47 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2810,
+            "span_end": 2869,
+            "matched_text": "Provider shall deliver item number 47 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 48 to Customer promptly",
+            "object_text": "item number 48 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2870,
+            "span_end": 2929,
+            "matched_text": "Provider shall deliver item number 48 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 49 to Customer promptly",
+            "object_text": "item number 49 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2930,
+            "span_end": 2989,
+            "matched_text": "Provider shall deliver item number 49 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 50 to Customer promptly",
+            "object_text": "item number 50 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 2990,
+            "span_end": 3049,
+            "matched_text": "Provider shall deliver item number 50 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 51 to Customer promptly",
+            "object_text": "item number 51 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3050,
+            "span_end": 3109,
+            "matched_text": "Provider shall deliver item number 51 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 52 to Customer promptly",
+            "object_text": "item number 52 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3110,
+            "span_end": 3169,
+            "matched_text": "Provider shall deliver item number 52 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 53 to Customer promptly",
+            "object_text": "item number 53 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3170,
+            "span_end": 3229,
+            "matched_text": "Provider shall deliver item number 53 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 54 to Customer promptly",
+            "object_text": "item number 54 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3230,
+            "span_end": 3289,
+            "matched_text": "Provider shall deliver item number 54 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 55 to Customer promptly",
+            "object_text": "item number 55 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3290,
+            "span_end": 3349,
+            "matched_text": "Provider shall deliver item number 55 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 56 to Customer promptly",
+            "object_text": "item number 56 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3350,
+            "span_end": 3409,
+            "matched_text": "Provider shall deliver item number 56 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 57 to Customer promptly",
+            "object_text": "item number 57 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3410,
+            "span_end": 3469,
+            "matched_text": "Provider shall deliver item number 57 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 58 to Customer promptly",
+            "object_text": "item number 58 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3470,
+            "span_end": 3529,
+            "matched_text": "Provider shall deliver item number 58 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 59 to Customer promptly",
+            "object_text": "item number 59 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3530,
+            "span_end": 3589,
+            "matched_text": "Provider shall deliver item number 59 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 60 to Customer promptly",
+            "object_text": "item number 60 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3590,
+            "span_end": 3649,
+            "matched_text": "Provider shall deliver item number 60 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 61 to Customer promptly",
+            "object_text": "item number 61 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3650,
+            "span_end": 3709,
+            "matched_text": "Provider shall deliver item number 61 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 62 to Customer promptly",
+            "object_text": "item number 62 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3710,
+            "span_end": 3769,
+            "matched_text": "Provider shall deliver item number 62 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 63 to Customer promptly",
+            "object_text": "item number 63 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3770,
+            "span_end": 3829,
+            "matched_text": "Provider shall deliver item number 63 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 64 to Customer promptly",
+            "object_text": "item number 64 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3830,
+            "span_end": 3889,
+            "matched_text": "Provider shall deliver item number 64 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 65 to Customer promptly",
+            "object_text": "item number 65 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3890,
+            "span_end": 3949,
+            "matched_text": "Provider shall deliver item number 65 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 66 to Customer promptly",
+            "object_text": "item number 66 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 3950,
+            "span_end": 4009,
+            "matched_text": "Provider shall deliver item number 66 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 67 to Customer promptly",
+            "object_text": "item number 67 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4010,
+            "span_end": 4069,
+            "matched_text": "Provider shall deliver item number 67 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 68 to Customer promptly",
+            "object_text": "item number 68 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4070,
+            "span_end": 4129,
+            "matched_text": "Provider shall deliver item number 68 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 69 to Customer promptly",
+            "object_text": "item number 69 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4130,
+            "span_end": 4189,
+            "matched_text": "Provider shall deliver item number 69 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 70 to Customer promptly",
+            "object_text": "item number 70 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4190,
+            "span_end": 4249,
+            "matched_text": "Provider shall deliver item number 70 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 71 to Customer promptly",
+            "object_text": "item number 71 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4250,
+            "span_end": 4309,
+            "matched_text": "Provider shall deliver item number 71 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 72 to Customer promptly",
+            "object_text": "item number 72 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4310,
+            "span_end": 4369,
+            "matched_text": "Provider shall deliver item number 72 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 73 to Customer promptly",
+            "object_text": "item number 73 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4370,
+            "span_end": 4429,
+            "matched_text": "Provider shall deliver item number 73 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 74 to Customer promptly",
+            "object_text": "item number 74 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4430,
+            "span_end": 4489,
+            "matched_text": "Provider shall deliver item number 74 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 75 to Customer promptly",
+            "object_text": "item number 75 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4490,
+            "span_end": 4549,
+            "matched_text": "Provider shall deliver item number 75 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 76 to Customer promptly",
+            "object_text": "item number 76 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4550,
+            "span_end": 4609,
+            "matched_text": "Provider shall deliver item number 76 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 77 to Customer promptly",
+            "object_text": "item number 77 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4610,
+            "span_end": 4669,
+            "matched_text": "Provider shall deliver item number 77 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 78 to Customer promptly",
+            "object_text": "item number 78 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4670,
+            "span_end": 4729,
+            "matched_text": "Provider shall deliver item number 78 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 79 to Customer promptly",
+            "object_text": "item number 79 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4730,
+            "span_end": 4789,
+            "matched_text": "Provider shall deliver item number 79 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 80 to Customer promptly",
+            "object_text": "item number 80 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4790,
+            "span_end": 4849,
+            "matched_text": "Provider shall deliver item number 80 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 81 to Customer promptly",
+            "object_text": "item number 81 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4850,
+            "span_end": 4909,
+            "matched_text": "Provider shall deliver item number 81 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 82 to Customer promptly",
+            "object_text": "item number 82 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4910,
+            "span_end": 4969,
+            "matched_text": "Provider shall deliver item number 82 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 83 to Customer promptly",
+            "object_text": "item number 83 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 4970,
+            "span_end": 5029,
+            "matched_text": "Provider shall deliver item number 83 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 84 to Customer promptly",
+            "object_text": "item number 84 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5030,
+            "span_end": 5089,
+            "matched_text": "Provider shall deliver item number 84 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 85 to Customer promptly",
+            "object_text": "item number 85 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5090,
+            "span_end": 5149,
+            "matched_text": "Provider shall deliver item number 85 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 86 to Customer promptly",
+            "object_text": "item number 86 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5150,
+            "span_end": 5209,
+            "matched_text": "Provider shall deliver item number 86 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 87 to Customer promptly",
+            "object_text": "item number 87 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5210,
+            "span_end": 5269,
+            "matched_text": "Provider shall deliver item number 87 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 88 to Customer promptly",
+            "object_text": "item number 88 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5270,
+            "span_end": 5329,
+            "matched_text": "Provider shall deliver item number 88 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 89 to Customer promptly",
+            "object_text": "item number 89 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5330,
+            "span_end": 5389,
+            "matched_text": "Provider shall deliver item number 89 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 90 to Customer promptly",
+            "object_text": "item number 90 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5390,
+            "span_end": 5449,
+            "matched_text": "Provider shall deliver item number 90 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 91 to Customer promptly",
+            "object_text": "item number 91 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5450,
+            "span_end": 5509,
+            "matched_text": "Provider shall deliver item number 91 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 92 to Customer promptly",
+            "object_text": "item number 92 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5510,
+            "span_end": 5569,
+            "matched_text": "Provider shall deliver item number 92 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 93 to Customer promptly",
+            "object_text": "item number 93 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5570,
+            "span_end": 5629,
+            "matched_text": "Provider shall deliver item number 93 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 94 to Customer promptly",
+            "object_text": "item number 94 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5630,
+            "span_end": 5689,
+            "matched_text": "Provider shall deliver item number 94 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 95 to Customer promptly",
+            "object_text": "item number 95 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5690,
+            "span_end": 5749,
+            "matched_text": "Provider shall deliver item number 95 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 96 to Customer promptly",
+            "object_text": "item number 96 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5750,
+            "span_end": 5809,
+            "matched_text": "Provider shall deliver item number 96 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 97 to Customer promptly",
+            "object_text": "item number 97 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5810,
+            "span_end": 5869,
+            "matched_text": "Provider shall deliver item number 97 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 98 to Customer promptly",
+            "object_text": "item number 98 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5870,
+            "span_end": 5929,
+            "matched_text": "Provider shall deliver item number 98 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 99 to Customer promptly",
+            "object_text": "item number 99 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5930,
+            "span_end": 5989,
+            "matched_text": "Provider shall deliver item number 99 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 100 to Customer promptly",
+            "object_text": "item number 100 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 5990,
+            "span_end": 6050,
+            "matched_text": "Provider shall deliver item number 100 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 101 to Customer promptly",
+            "object_text": "item number 101 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6051,
+            "span_end": 6111,
+            "matched_text": "Provider shall deliver item number 101 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 102 to Customer promptly",
+            "object_text": "item number 102 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6112,
+            "span_end": 6172,
+            "matched_text": "Provider shall deliver item number 102 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 103 to Customer promptly",
+            "object_text": "item number 103 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6173,
+            "span_end": 6233,
+            "matched_text": "Provider shall deliver item number 103 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 104 to Customer promptly",
+            "object_text": "item number 104 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6234,
+            "span_end": 6294,
+            "matched_text": "Provider shall deliver item number 104 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 105 to Customer promptly",
+            "object_text": "item number 105 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6295,
+            "span_end": 6355,
+            "matched_text": "Provider shall deliver item number 105 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 106 to Customer promptly",
+            "object_text": "item number 106 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6356,
+            "span_end": 6416,
+            "matched_text": "Provider shall deliver item number 106 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 107 to Customer promptly",
+            "object_text": "item number 107 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6417,
+            "span_end": 6477,
+            "matched_text": "Provider shall deliver item number 107 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 108 to Customer promptly",
+            "object_text": "item number 108 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6478,
+            "span_end": 6538,
+            "matched_text": "Provider shall deliver item number 108 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 109 to Customer promptly",
+            "object_text": "item number 109 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6539,
+            "span_end": 6599,
+            "matched_text": "Provider shall deliver item number 109 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 110 to Customer promptly",
+            "object_text": "item number 110 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6600,
+            "span_end": 6660,
+            "matched_text": "Provider shall deliver item number 110 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 111 to Customer promptly",
+            "object_text": "item number 111 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6661,
+            "span_end": 6721,
+            "matched_text": "Provider shall deliver item number 111 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 112 to Customer promptly",
+            "object_text": "item number 112 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6722,
+            "span_end": 6782,
+            "matched_text": "Provider shall deliver item number 112 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 113 to Customer promptly",
+            "object_text": "item number 113 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6783,
+            "span_end": 6843,
+            "matched_text": "Provider shall deliver item number 113 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 114 to Customer promptly",
+            "object_text": "item number 114 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6844,
+            "span_end": 6904,
+            "matched_text": "Provider shall deliver item number 114 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 115 to Customer promptly",
+            "object_text": "item number 115 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6905,
+            "span_end": 6965,
+            "matched_text": "Provider shall deliver item number 115 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 116 to Customer promptly",
+            "object_text": "item number 116 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 6966,
+            "span_end": 7026,
+            "matched_text": "Provider shall deliver item number 116 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 117 to Customer promptly",
+            "object_text": "item number 117 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7027,
+            "span_end": 7087,
+            "matched_text": "Provider shall deliver item number 117 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 118 to Customer promptly",
+            "object_text": "item number 118 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7088,
+            "span_end": 7148,
+            "matched_text": "Provider shall deliver item number 118 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 119 to Customer promptly",
+            "object_text": "item number 119 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7149,
+            "span_end": 7209,
+            "matched_text": "Provider shall deliver item number 119 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 120 to Customer promptly",
+            "object_text": "item number 120 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7210,
+            "span_end": 7270,
+            "matched_text": "Provider shall deliver item number 120 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 121 to Customer promptly",
+            "object_text": "item number 121 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7271,
+            "span_end": 7331,
+            "matched_text": "Provider shall deliver item number 121 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 122 to Customer promptly",
+            "object_text": "item number 122 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7332,
+            "span_end": 7392,
+            "matched_text": "Provider shall deliver item number 122 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 123 to Customer promptly",
+            "object_text": "item number 123 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7393,
+            "span_end": 7453,
+            "matched_text": "Provider shall deliver item number 123 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 124 to Customer promptly",
+            "object_text": "item number 124 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7454,
+            "span_end": 7514,
+            "matched_text": "Provider shall deliver item number 124 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 125 to Customer promptly",
+            "object_text": "item number 125 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7515,
+            "span_end": 7575,
+            "matched_text": "Provider shall deliver item number 125 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 126 to Customer promptly",
+            "object_text": "item number 126 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7576,
+            "span_end": 7636,
+            "matched_text": "Provider shall deliver item number 126 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 127 to Customer promptly",
+            "object_text": "item number 127 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7637,
+            "span_end": 7697,
+            "matched_text": "Provider shall deliver item number 127 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 128 to Customer promptly",
+            "object_text": "item number 128 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7698,
+            "span_end": 7758,
+            "matched_text": "Provider shall deliver item number 128 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 129 to Customer promptly",
+            "object_text": "item number 129 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7759,
+            "span_end": 7819,
+            "matched_text": "Provider shall deliver item number 129 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 130 to Customer promptly",
+            "object_text": "item number 130 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7820,
+            "span_end": 7880,
+            "matched_text": "Provider shall deliver item number 130 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 131 to Customer promptly",
+            "object_text": "item number 131 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7881,
+            "span_end": 7941,
+            "matched_text": "Provider shall deliver item number 131 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 132 to Customer promptly",
+            "object_text": "item number 132 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 7942,
+            "span_end": 8002,
+            "matched_text": "Provider shall deliver item number 132 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 133 to Customer promptly",
+            "object_text": "item number 133 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8003,
+            "span_end": 8063,
+            "matched_text": "Provider shall deliver item number 133 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 134 to Customer promptly",
+            "object_text": "item number 134 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8064,
+            "span_end": 8124,
+            "matched_text": "Provider shall deliver item number 134 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 135 to Customer promptly",
+            "object_text": "item number 135 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8125,
+            "span_end": 8185,
+            "matched_text": "Provider shall deliver item number 135 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 136 to Customer promptly",
+            "object_text": "item number 136 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8186,
+            "span_end": 8246,
+            "matched_text": "Provider shall deliver item number 136 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 137 to Customer promptly",
+            "object_text": "item number 137 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8247,
+            "span_end": 8307,
+            "matched_text": "Provider shall deliver item number 137 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 138 to Customer promptly",
+            "object_text": "item number 138 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8308,
+            "span_end": 8368,
+            "matched_text": "Provider shall deliver item number 138 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 139 to Customer promptly",
+            "object_text": "item number 139 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8369,
+            "span_end": 8429,
+            "matched_text": "Provider shall deliver item number 139 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 140 to Customer promptly",
+            "object_text": "item number 140 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8430,
+            "span_end": 8490,
+            "matched_text": "Provider shall deliver item number 140 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 141 to Customer promptly",
+            "object_text": "item number 141 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8491,
+            "span_end": 8551,
+            "matched_text": "Provider shall deliver item number 141 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 142 to Customer promptly",
+            "object_text": "item number 142 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8552,
+            "span_end": 8612,
+            "matched_text": "Provider shall deliver item number 142 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 143 to Customer promptly",
+            "object_text": "item number 143 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8613,
+            "span_end": 8673,
+            "matched_text": "Provider shall deliver item number 143 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 144 to Customer promptly",
+            "object_text": "item number 144 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8674,
+            "span_end": 8734,
+            "matched_text": "Provider shall deliver item number 144 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 145 to Customer promptly",
+            "object_text": "item number 145 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8735,
+            "span_end": 8795,
+            "matched_text": "Provider shall deliver item number 145 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 146 to Customer promptly",
+            "object_text": "item number 146 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8796,
+            "span_end": 8856,
+            "matched_text": "Provider shall deliver item number 146 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 147 to Customer promptly",
+            "object_text": "item number 147 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8857,
+            "span_end": 8917,
+            "matched_text": "Provider shall deliver item number 147 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 148 to Customer promptly",
+            "object_text": "item number 148 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8918,
+            "span_end": 8978,
+            "matched_text": "Provider shall deliver item number 148 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "shall",
+            "action": "deliver item number 149 to Customer promptly",
+            "object_text": "item number 149 to Customer promptly.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 8979,
+            "span_end": 9039,
+            "matched_text": "Provider shall deliver item number 149 to Customer promptly.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "all_roles",
+      "text": "Provider Customer Client Licensor Licensee Buyer Seller Disclosing Party Receiving Party Discloser Recipient Indemnitor Indemnitee Company Employee Contractor Vendor Supplier Lessor Lessee Landlord Tenant",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Provider",
+            "role": "provider",
+            "aliases": [
+              "Provider"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Customer",
+            "role": "customer",
+            "aliases": [
+              "Customer"
+            ],
+            "first_span_start": 9,
+            "first_span_end": 17,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Client",
+            "role": "customer",
+            "aliases": [
+              "Client"
+            ],
+            "first_span_start": 18,
+            "first_span_end": 24,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Licensor",
+            "role": "provider",
+            "aliases": [
+              "Licensor"
+            ],
+            "first_span_start": 25,
+            "first_span_end": 33,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Licensee",
+            "role": "customer",
+            "aliases": [
+              "Licensee"
+            ],
+            "first_span_start": 34,
+            "first_span_end": 42,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Buyer",
+            "role": "customer",
+            "aliases": [
+              "Buyer"
+            ],
+            "first_span_start": 43,
+            "first_span_end": 48,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Seller",
+            "role": null,
+            "aliases": [
+              "Seller"
+            ],
+            "first_span_start": 49,
+            "first_span_end": 55,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Disclosing Party",
+            "role": "provider",
+            "aliases": [
+              "Disclosing Party"
+            ],
+            "first_span_start": 56,
+            "first_span_end": 72,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Receiving Party",
+            "role": "customer",
+            "aliases": [
+              "Receiving Party"
+            ],
+            "first_span_start": 73,
+            "first_span_end": 88,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Discloser",
+            "role": "provider",
+            "aliases": [
+              "Discloser"
+            ],
+            "first_span_start": 89,
+            "first_span_end": 98,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Recipient",
+            "role": "customer",
+            "aliases": [
+              "Recipient"
+            ],
+            "first_span_start": 99,
+            "first_span_end": 108,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Indemnitor",
+            "role": "provider",
+            "aliases": [
+              "Indemnitor"
+            ],
+            "first_span_start": 109,
+            "first_span_end": 119,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Indemnitee",
+            "role": "customer",
+            "aliases": [
+              "Indemnitee"
+            ],
+            "first_span_start": 120,
+            "first_span_end": 130,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Company",
+            "role": "company",
+            "aliases": [
+              "Company"
+            ],
+            "first_span_start": 131,
+            "first_span_end": 138,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Employee",
+            "role": "individual",
+            "aliases": [
+              "Employee"
+            ],
+            "first_span_start": 139,
+            "first_span_end": 147,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Contractor",
+            "role": "individual",
+            "aliases": [
+              "Contractor"
+            ],
+            "first_span_start": 148,
+            "first_span_end": 158,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Vendor",
+            "role": "provider",
+            "aliases": [
+              "Vendor"
+            ],
+            "first_span_start": 159,
+            "first_span_end": 165,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Supplier",
+            "role": "provider",
+            "aliases": [
+              "Supplier"
+            ],
+            "first_span_start": 166,
+            "first_span_end": 174,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Lessor",
+            "role": "provider",
+            "aliases": [
+              "Lessor"
+            ],
+            "first_span_start": 175,
+            "first_span_end": 181,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Lessee",
+            "role": "customer",
+            "aliases": [
+              "Lessee"
+            ],
+            "first_span_start": 182,
+            "first_span_end": 188,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Landlord",
+            "role": "provider",
+            "aliases": [
+              "Landlord"
+            ],
+            "first_span_start": 189,
+            "first_span_end": 197,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Tenant",
+            "role": "customer",
+            "aliases": [
+              "Tenant"
+            ],
+            "first_span_start": 198,
+            "first_span_end": 204,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [],
+        "deadlines": [],
+        "defined_terms": []
+      }
+    },
+    {
+      "name": "conditions",
+      "text": "Customer shall promptly pay all invoices if accepted, upon delivery, subject to inspection, provided, however, that the goods comply. Provider is obligated to maintain insurance at all times. Both parties will protect confidential information in perpetuity.",
+      "effective_date": "2026-01-01T00:00:00",
+      "expected": {
+        "parties": [
+          {
+            "canonical_name": "Provider",
+            "role": "provider",
+            "aliases": [
+              "Provider"
+            ],
+            "first_span_start": 134,
+            "first_span_end": 142,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          },
+          {
+            "canonical_name": "Customer",
+            "role": "customer",
+            "aliases": [
+              "Customer"
+            ],
+            "first_span_start": 0,
+            "first_span_end": 8,
+            "detection_method": "heuristic",
+            "confidence": 0.6
+          }
+        ],
+        "obligations": [
+          {
+            "subject_party": "Customer",
+            "modal": "shall",
+            "action": "pay all invoices if accepted, upon delivery, subject to",
+            "object_text": "all invoices if accepted, upon delivery, subject to inspection, provided, however, that the goods comply.",
+            "conditions": [
+              "if",
+              "upon",
+              "subject to",
+              "provided, however"
+            ],
+            "deadlines": [],
+            "span_start": 0,
+            "span_end": 133,
+            "matched_text": "Customer shall promptly pay all invoices if accepted, upon delivery, subject to inspection, provided, however, that the goods comply.",
+            "category": "payment",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Provider",
+            "modal": "is_obligated_to",
+            "action": "maintain insurance at all times",
+            "object_text": "insurance at all times.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 134,
+            "span_end": 191,
+            "matched_text": "Provider is obligated to maintain insurance at all times.",
+            "category": "delivery",
+            "is_unilateral": true,
+            "is_perpetual": false,
+            "is_continuing": true,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          },
+          {
+            "subject_party": "Both parties",
+            "modal": "will",
+            "action": "protect confidential information in perpetuity",
+            "object_text": "confidential information in perpetuity.",
+            "conditions": [],
+            "deadlines": [],
+            "span_start": 192,
+            "span_end": 257,
+            "matched_text": "Both parties will protect confidential information in perpetuity.",
+            "category": "confidentiality",
+            "is_unilateral": false,
+            "is_perpetual": true,
+            "is_continuing": false,
+            "confidence": 0.9,
+            "detection_method": "rule"
+          }
+        ],
+        "deadlines": [],
+        "defined_terms": []
+      }
+    }
+  ]
+}

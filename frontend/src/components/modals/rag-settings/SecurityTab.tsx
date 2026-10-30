@@ -5,6 +5,7 @@ import { useAuthStore } from '../../../stores/authStore';
 import { useUIStore } from '../../../stores/uiStore';
 import { parseUtcDate } from '../../../utils';
 import type { SessionInfo } from '../../../api/types';
+import { GoogleSignIn } from '../../shared/GoogleSignIn';
 import { Icon } from '../../shared/Icon';
 import t from './SecurityTab.module.css';
 
@@ -86,6 +87,7 @@ export function SecurityTab({ styles }: SecurityTabProps) {
         </div>
       </div>
 
+      <GoogleSignIn open={!enrollmentRequired} link />
       {/* Sessions */}
       <div className={t.managePanel}>
         <div className={t.manageHeading}>Active sessions</div>

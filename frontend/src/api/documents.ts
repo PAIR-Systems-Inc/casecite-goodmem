@@ -6,10 +6,19 @@ Object.assign(api, {
     const formData = new FormData();
     formData.append('file', file);
 
-    // Indexing is synchronous server-side (extraction, OCR, chunking,
-    // embeddings) — the default 30s timeout aborts real-world PDFs mid-index
-    // while the server finishes anyway, stranding the UI on "Uploading...".
-    return api.request('/documents', { method: 'POST', body: formData, timeout: 300000 });
+    // GoodMem accepts the original before ingestion finishes. Preserve the
+    // original UI's upload contract: resolve only with a terminal status, so
+    // every upload consumer avoids declaring a processing file "indexed".
+    let document: DocumentInfo = await api.request('/documents', { method: 'POST', body: formData, timeout: 300000 });
+    const deadline = Date.now() + 300000;
+    while (['pending', 'processing', 'upload_uncertain'].includes(String(document.status))) {
+      if (Date.now() >= deadline) {
+        throw new Error('The file was received and is still processing. Check its status in the Knowledge Base before uploading it again.');
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      document = await api.request(`/documents/${encodeURIComponent(document.id)}`);
+    }
+    return document;
   },
 
   async getDocuments(limit: number = 50, offset: number = 0): Promise<DocumentListResponse> {
@@ -40,11 +49,19 @@ Object.assign(api, {
   },
 
   async getDocumentContent(documentId: string): Promise<DocumentContent> {
-    return api.request(`/documents/${documentId}/content`);
+    return api.request(`/documents/${documentId}/content`, { timeout: 600_000 });
   },
 
   async deleteDocument(documentId: string): Promise<MessageResponse> {
     return api.request(`/documents/${documentId}`, { method: 'DELETE' });
+  },
+
+  async retryDocumentOCR(documentId: string): Promise<{ job_id: string; status: string }> {
+    return api.request(`/documents/${encodeURIComponent(documentId)}/retry-ocr`, { method: 'POST' });
+  },
+
+  async retryDocumentIndex(documentId: string): Promise<{ job_id: string; status: string }> {
+    return api.request(`/documents/${encodeURIComponent(documentId)}/retry-index`, { method: 'POST' });
   },
 
   // ── Knowledge-base folders ──────────────────────────────────────

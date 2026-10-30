@@ -19,7 +19,14 @@ const ALLOWED_OAUTH_ORIGINS = new Set([
 export function isAllowedOAuthUrl(url: string | null | undefined): url is string {
   if (!url) return false;
   try {
-    return ALLOWED_OAUTH_ORIGINS.has(new URL(url).origin);
+    const target = new URL(url);
+    if (target.username || target.password) return false;
+    // Regional and on-premise destinations are resolved by the server using
+    // the browser-bound OAuth state, never an arbitrary redirect parameter.
+    if (target.origin === window.location.origin && /^\/api\/v1\/connectors\/(google_drive|onedrive|box|dropbox|filevine|clio|netdocuments|imanage)\/authorize$/.test(target.pathname)) {
+      return !!target.searchParams.get('state');
+    }
+    return ALLOWED_OAUTH_ORIGINS.has(target.origin);
   } catch {
     return false;
   }

@@ -1,8 +1,10 @@
 import { useId } from 'react';
+import { GoogleSignIn } from '../shared/GoogleSignIn';
 import { useAuthStore } from '../../stores/authStore';
 import s from './AuthModals.module.css';
 import { Icon } from '../shared/Icon';
 import { ModalShell } from '../shared/ModalShell';
+import { useMicrosoftSignIn } from '../../hooks/useMicrosoftSignIn';
 
 function LoginModal() {
   const id = useId();
@@ -13,6 +15,7 @@ function LoginModal() {
     handleLoginSubmit, handleShowSignup,
     setShowForgotPassword, setForgotEmail, setForgotSuccess,
   } = useAuthStore();
+	const microsoft = useMicrosoftSignIn(showLoginModal);
 
   if (!showLoginModal) return null;
 
@@ -25,7 +28,7 @@ function LoginModal() {
             </div>
             <div>
               <h2 id={`${id}-title`} className={s.modalTitle}>Sign In</h2>
-              <p className={s.modalSubtitle}>Welcome back</p>
+              <p className={s.modalSubtitle}>CaseCite by PairSys</p>
             </div>
           </div>
           <button className={s.modalClose} onClick={() => setShowLoginModal(false)} aria-label="Close"><Icon name="X" size={20} /></button>
@@ -36,6 +39,13 @@ function LoginModal() {
               {loginError}
             </div>
           )}
+			{microsoft.error && <div className={s.errorBox} role="alert">{microsoft.error}</div>}
+			{microsoft.available && (
+				<button type="button" className={s.btnSecondary} disabled={microsoft.loading || loginLoading} onClick={microsoft.signIn}>
+					{microsoft.loading ? 'Signing in with Microsoft…' : 'Sign in with Microsoft'}
+				</button>
+			)}
+          <GoogleSignIn open={showLoginModal} />
           <form id={`${id}-form`} onSubmit={e => { e.preventDefault(); handleLoginSubmit(); }} className={s.formLayout}>
             <div>
               <label htmlFor={`${id}-email`} className={s.formLabel}>Email</label>

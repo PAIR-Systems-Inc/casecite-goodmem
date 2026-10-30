@@ -68,7 +68,7 @@ function FilePickerModal() {
           </button>
 
           <div className={s.pickerDisclaimer}>
-            Your files are imported directly — nothing is stored on third-party servers.
+            Imported documents are stored in your firm's knowledge base.
           </div>
         </div>
     </ModalShell>

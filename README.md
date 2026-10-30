@@ -1,337 +1,163 @@
-# CaseCite — Private Legal RAG
+# CaseCite GoodMem
 
-If you need help setting up or installing this on your infrastructure, contact me at https://thomasunise.com
+A legal workspace being ported to a **Go server, the original React interface and Word add-in, GoodMem, and PostgreSQL**. The Go application embeds both interfaces. GoodMem owns document ingestion, original files, page images, OCR and retrieval; PostgreSQL replaces Redis for application state and background work.
 
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+Derived from [Thomas Unise's CaseCite](https://github.com/thomasunise/casecite), under Apache-2.0, at commit `6605cb3474cf0c2894080af216d5fed2a81fc997`. The original uses Python/FastAPI and React/TypeScript. Git history retains that implementation.
 
-CaseCite is an **open-source, self-hosted** legal research platform. Upload your firm's documents, ask questions, and research cases & judges — on infrastructure you control. Documents, the search index and chat history are stored on your own servers. AI features send your questions and the relevant document text to the AI providers **you** configure, under your own API keys (BYOK); nothing is sent to the CaseCite maintainers, and there is no telemetry. See [What leaves your infrastructure](#what-leaves-your-infrastructure).
+Generation supports native Claude/Gemini and OpenAI-compatible endpoints, including keyless local models. The original admin endpoint and CourtListener controls persist encrypted settings in PostgreSQL. Clause embeddings use a separate OpenAI/Voyage/Cohere or local provider; GoodMem retains document indexing and retrieval. See [provider configuration](docs/providers.md).
 
-## What it does
+Search-index rebuilds run as durable PostgreSQL jobs, check replacement GoodMem indexes before switching, and reuse completed OCR. Per-user model and chunk settings reach GoodMem; older indexes remain searchable across model changes. Owner-only clearing, health/readiness and JSON/Prometheus metrics are implemented. See [administration and index settings](docs/administration.md).
 
-Nine tools behind one login, all reading from the same document corpus.
+Native Go readers cover Word, spreadsheets, presentations, OpenDocument, email, RTF and text formats, including ruled PDF tables and Excel 2–95 workbooks. The original extraction and PDF-preview APIs are available; scans and unsupported PDF layouts use GoodMem OCR. Its HTML tables are normalized without another model call, and the text viewer displays structured rows and columns. Older Excel files reuse the durable GoodMem text-index path without an OCR call. See [document formats, comparisons and remaining fidelity work](docs/document-formats.md).
 
-| | |
-|---|---|
-| **Research** (`/research`) | Chat over your firm's documents — hybrid retrieval (vector search and a full-corpus keyword index, merged by rank fusion) over clause-aware chunks that know their section and page, and inline citations back to the source, each claim checked against the passage it cites. **Deep research** for bigger questions: a plan of sub-questions you edit before anything runs, each researched over your documents and CourtListener, every quote verified against the text it came from, and a step log of what was searched. |
-| **Documents** (`/documents`) | Upload, index, and organize your corpus. Import from Google Drive, OneDrive, Box, Dropbox, Filevine, or Clio — OAuth sync, or a file picker where OAuth verification isn't needed. iManage and NetDocuments connectors exist but are experimental (untested against a live tenant) and off unless `EXPERIMENTAL_CONNECTORS=true`. |
-| **Contracts** (`/contracts`) | Full contract review pipeline: analyze an indexed contract or pasted text, chat with a single contract, compare 2–4 contracts clause-by-clause against a baseline, and export a redline, a draft, or the analysis itself. |
-| **Tabular review** (`/review-tables`) | Review hundreds of contracts at once: start from a built-in or saved field template, point the table at a set of documents, and get one row per document with every value tied to the exact passage that supports it. Open any cell to see the quote highlighted in the document, override the value, approve or flag it with a note; a re-run never undoes a reviewer's work. Filter by status, sort typed columns, bulk-approve or re-run a selection, add documents later, see the run history and what changed. Export to Excel (Results, Citations, Review and Summary sheets), CSV or JSON, narrowed to the columns and cells you choose. |
-| **Workflows** (`/workflows`) | Save a review, research or drafting process as an ordered list of steps (extract fields, analyse contracts, compare against a baseline, draft a document, deep research, check citations, wait for an approval) and run it over any set of documents as one background job. Steps can run on a condition over an earlier output; an approval step pauses the run until a named approver decides; every step's output is rendered in full (extracted rows, issues, clause differences, the draft with Word export, the research answer, citation treatment); a failed run resumes, retries or skips a step; every change to the steps is a version a run records; and the runner is emailed when a run ends or needs them. Three starter templates (NDA intake, lease review, due-diligence pass) show the shape. See [docs/workflows.md](docs/workflows.md). |
-| **Drafting** (`/drafting`) | Draft a document grounded in up to four documents you pick from the Knowledge Base, with server-side text extraction and PDF conversion. Set a target length for long documents (30-page agreements): you review a section plan first, then every section is drafted in its own context window against the full references and the whole is reconciled. Revisions to long drafts are scoped to the sections they touch. |
-| **Matters** (`/matters`) | One workspace per client engagement: the documents, research chats and contract analyses filed under it, who can see them, and an activity feed from the audit trail. Set a matter as *active* in the header and Research, Contracts and Drafting scope themselves to it. Owners invite colleagues, file documents in bulk, and hand a matter over when someone leaves. |
-| **Case view** (`/case/:id`) | Open a CourtListener opinion and chat with it directly. |
-| **Judge intel** (`/judge-intel`) | Judge analytics from CourtListener. |
-| **Legal tools** (`/tools`) | Case lookup, citation check (a scan of citing opinions for negative-treatment language — not a Shepard's/KeyCite substitute), precedents, dockets, oral arguments, and case-law trends. |
+## Implementation status
 
-### Screenshots
+**Full feature and UI parity is the requirement, and is not yet complete.** The earlier reduced-scope implementation is preserved at `checkpoint/core-goodmem-a74e09e`; its omissions are not accepted scope for this branch.
 
-Captured from the real UI against a mocked API with fictional firm, matter and
-case data (`frontend/e2e/screenshots.spec.ts`). No real client or case appears.
+The current port includes local identity, rotating sessions, MFA/recovery, Microsoft OIDC, device authorization, editable permissions, user administration, audit verification, matters, document folders, GoodMem storage/preview, branding and personal settings. The contract pipeline includes original deterministic extractors and clause data, grounded review, saved analyses, comparison, long drafting, reports, and tracked DOCX redlines that preserve the original package.
 
-| Research over the firm's documents | Knowledge Base |
-|---|---|
-| ![Research view: a question about a liability cap answered with inline citations to three source documents and the AI-review notice](docs/screenshots/research.png) | ![Knowledge Base: indexed documents grouped in matter folders with chunk counts](docs/screenshots/knowledge-base.png) |
+The original React and Word add-in source and tests are restored. Word tracked replacements verify complete passages, preserve the tracking mode and handle repeated clauses through explicit selection. See [Word add-in behavior and verification](docs/word-addin.md). Saved workspace snapshots and shared conversation storage are implemented. Tabular review includes the four original templates, custom schemas, typed extraction, source highlights, scoped reruns, human overrides/approvals, history, and cited Excel/CSV/JSON exports.
 
-| Contract analysis | Citation check |
-|---|---|
-| ![Contracts view: analysis card with parties, executive summary and verified key terms over the contract text](docs/screenshots/contracts.png) | ![Citation check: result card with a negative-treatment badge, citing opinions and the AI-review notice](docs/screenshots/citation-check.png) |
+Saved workflows now include all seven original step types, the three original templates, frozen run versions, conditions, substitutions, approval gates, resume/retry/skip controls, and optional email notifications. Deep research supports editable plans, document/folder/matter filters, bounded parallel searches, verified quotes, saved/shared runs, history and cancellation. Workflow research steps use the same pipeline; citation checks use CourtListener opinion identities and citation-context treatment scans.
 
-**Practice profile.** Nothing about any practice area is baked into the product.
-You state what you practice, CaseCite drafts a profile of what matters in that
-practice, and you edit and own it (saved via Settings). It then rides along with
-every review, redline, and draft as standing context.
+The eight legal-tool routes cover case search and pagination, separate opinion/cluster lookups, citation checks, precedents, docket search/details, oral arguments, and yearly trends. Shared CourtListener pacing and retries apply across tools and research; expiring trend and court-name caches use PostgreSQL.
 
-Every AI-generated answer, analysis and draft carries a notice to verify it
-against the source documents and current law before relying on it. CaseCite is
-a research aid, not a substitute for a lawyer's judgment or for a citator.
+Judge intelligence includes all eight original routes: name search, durable profile builds/refreshes, biography and career, filtered opinions/full text, statistics, all nine computed metrics with methodology, and administrator deletion. Profiles and metrics use PostgreSQL. The original screens show build progress, data coverage and partial-data warnings. Briefs and Q&A use server-held profile evidence, selected GoodMem documents, source checks and saved history. See [judge intelligence](docs/judge-intelligence.md).
 
-## What leaves your infrastructure
+Shared chat now supports scoped GoodMem retrieval, per-file answers, strategy briefs, bounded case-law research, verified quotations and support checks, transactional conversation history, cancellation, and Word/PDF/Markdown exports. The browser uses durable PostgreSQL jobs. See [chat behavior and limits](docs/chat.md).
 
-Documents, the vector index, chat history and analyses are **stored** only on
-your deployment. Using the AI features **transmits** content to third parties
-you choose:
+All eight connector adapters and four file pickers are implemented in Go, including OAuth, rotating grants, encrypted instance credentials, pagination, incremental sync and GoodMem OCR imports. See [connector configuration and verification limits](docs/connectors.md). Remaining document-format fidelity still requires implementation or integration work. Migrating an existing installation's data requires a separate deployment plan. Live provider, Word-host and complete browser verification remain open.
 
-- **Uploading a document** sends its text to the embeddings provider (OpenAI
-  by default; Voyage or Cohere if configured).
-- **Asking a question, analysing or drafting** sends the question and the
-  relevant document text to the LLM provider (OpenAI, Anthropic or Gemini).
-- **Case-law tools** send search queries and citations to CourtListener.
+See the [parity scope](docs/parity/README.md), [source comparisons and verification evidence](docs/parity/evidence.md), and [architecture assessment](docs/migration.md). Known upstream defects should be fixed, with regression tests and documented differences, rather than reproduced.
 
-To keep document text entirely on your network, run both models yourself: set
-`OPENAI_BASE_URL` (chat) **and** `EMBEDDING_BASE_URL` (embeddings) to
-OpenAI-compatible servers you host. Setting only the first still sends
-document text to OpenAI for embedding. The full list of outbound data flows,
-and how to restrict them, is in [docs/subprocessors.md](docs/subprocessors.md).
-
-## License & use
-
-Copyright 2026 Thomas Unise. CaseCite is open source under the
-**Apache License 2.0** ([LICENSE](LICENSE)), an OSI-approved permissive
-license. In plain terms:
-
-- ✅ Free to **self-host**, for internal use or for others, modified or not.
-- ✅ Free to **modify, fork, redistribute and sell**, including inside
-  proprietary products, as long as you keep the copyright and license notices
-  and the [NOTICE.md](NOTICE.md) attributions, and state what you changed.
-- ✅ Contributors grant an explicit **patent license** for their contributions,
-  which the MIT license does not.
-- Your documents, prompts and outputs are yours. The license covers the
-  CaseCite code, not what you put through it.
-
-Commercial support and private installs are available from the maintainer,
-[@thomasunise](https://github.com/thomasunise). See [SUPPORT.md](SUPPORT.md).
-Versions up to 1.3.0 were released under the Elastic License 2.0; that license
-continues to apply to those versions.
-
-## Quick start
-
-### Prerequisites
-
-- Docker + Docker Compose
-- `openssl` (to generate secrets)
-- An AI provider API key (OpenAI is the simplest start: it covers both chat and
-  embeddings). Optional at the server level — users can each save their own.
-
-### Run it (self-contained: bundles Postgres, Redis, and an HTTPS proxy)
+## Quick local evaluation — prebuilt images
 
 ```bash
-git clone https://github.com/thomasunise/casecite.git && cd casecite
-cp .env.example .env
-
-# 1. Generate the three REQUIRED secrets (the .env.example placeholders
-#    intentionally refuse to boot). Copy each value into .env:
-openssl rand -hex 32   # -> SECRET_KEY
-openssl rand -hex 32   # -> AUDIT_HMAC_KEY
-openssl rand -hex 16   # -> ENCRYPTION_SALT
-
-# 2. In .env also set OPENAI_API_KEY (or leave it empty and save a key under
-#    Settings after signing in), then uncomment and set DOMAIN,
-#    POSTGRES_PASSWORD and REDIS_PASSWORD in the "Bundled production stack"
-#    section (generation hints are in the file; use DOMAIN=localhost to try it
-#    on your machine). CORS_ORIGINS and ALLOWED_HOSTS default from DOMAIN.
-#    Set REGISTRATION_BOOTSTRAP_TOKEN too (openssl rand -hex 16) — you need it
-#    to create the first account.
-
-# 3. Set DISK_ENCRYPTION_ACKNOWLEDGED=true in .env (required to boot).
-#    What this acknowledges: the app encrypts BYOK keys and uploaded documents
-#    at the application layer (AES-256-GCM), but derived text (vector chunks,
-#    chat history, analyses) is stored in cleartext in the app, Postgres and
-#    Redis volumes — full-disk encryption of the host is YOUR responsibility.
-
-# 4. Start the full stack (bundled Postgres + Redis + Caddy):
-docker compose -f docker-compose.prod.yml up -d
+git clone --branch goodmem-migration https://github.com/PAIR-Systems-Inc/casecite-goodmem.git
+cd casecite-goodmem
+bash scripts/casecite.sh doctor
+bash scripts/casecite.sh install
 ```
 
-`python3 scripts/setup_production.py --create-env --domain <host>` does steps
-1–2 for you (it generates every secret and writes `.env` with mode 0600).
+Requires Docker/Compose and Bash; no Go, Node or local application build. The installer
+prompts for provider keys, generates secrets, downloads pinned OCR weights, provisions
+its own GoodMem instance and waits for readiness. Open **http://localhost:8000**.
+Use `bash scripts/casecite.sh token` to retrieve the first-administrator setup token.
+Run `bash scripts/casecite.sh doctor` again after installation for connection checks
+and actionable fixes. Add `--probe-providers` to test keys/models with small API requests.
 
-Then open **https://$DOMAIN** (with `DOMAIN=localhost`: **https://localhost**).
-On a localhost trial Caddy redirects HTTP to HTTPS and serves a certificate
-from its own self-signed local CA — the browser warning on first visit is
-expected. See "TLS on Internal Networks" in [docs/deployment.md](docs/deployment.md)
-to trust that CA or bring your own certificate.
+Local OCR needs an available NVIDIA GPU and Container Toolkit. For a machine without
+one, pass `--ocr-url http://ocr-server:8000/v1`. See the **[portable quickstart](docs/quickstart.md)**
+for hardware requirements, existing model caches, restart/update commands and demo preparation.
 
-The first account you register becomes the admin, and registering it requires
-the `REGISTRATION_BOOTSTRAP_TOKEN` from `.env` — so nobody else who reaches a
-fresh instance can claim it. The exact command is under "Create the admin
-account" in [docs/deployment.md](docs/deployment.md). After that, invite
-colleagues from Settings → Users; self-service registration is off by default.
+## Use an existing GoodMem installation
 
-> Deploying behind an existing reverse proxy (Coolify/Traefik)? Use the root
-> `docker-compose.yml` instead (it expects an external Postgres and Redis and
-> declares the persistent data volume), and read `deploy/COOLIFY-SETUP.md` —
-> you must also set `TRUSTED_PROXIES` to the proxy's subnet or client IPs
-> collapse to one.
+For a separate instance on this workstation, see [local evaluation with GPU OCR](docs/local-evaluation.md).
 
-### Key custody (BYOK)
+Build tools: Go 1.26 and Node 24. The resulting executable needs neither Node nor Go installed on the runtime host.
 
-Users provide AI provider keys via the Settings modal. What firm evaluators
-should know about custody:
-
-- Per-user keys are stored **server-side**, AES-256-GCM-encrypted (PBKDF2 key
-  derivation, HKDF per-record separation), in a file store on the data volume.
-- Keys are displayed masked-only and are **never sent to the browser**; the
-  backend decrypts them on demand for each request.
-- Env-configured fallback keys (e.g. `OPENAI_API_KEY` in `.env`) are shared by
-  **all users** of the install — per-user cost attribution requires per-user
-  BYOK keys.
-- `ENCRYPTION_SALT` can be rotated without losing stored keys: keep the old
-  value in `ENCRYPTION_SALT_PREVIOUS` and run `python -m app.utils.reencrypt`
-  inside the backend container — see `docs/secret-rotation.md`. `SECRET_KEY`
-  cannot be rotated without making stored documents unreadable; keep it safe
-  and backed up off the server.
-
-## Word add-in
-
-`word-addin/` is a task-pane add-in for Microsoft Word that talks to your own
-CaseCite server: analyze the open document and jump to each flagged passage,
-insert a suggested rewrite as a tracked change, and research the firm's
-documents with the answer inserted as footnoted paragraphs. It signs in with a
-short code you approve in the web app (`/device`), so the pane never holds
-your browser cookies, and its session shows up under Settings → Security →
-Sessions as "Word add-in". Set `WORD_ADDIN_ORIGIN` on the server to the
-origin the pane is served from. Build, sideloading on Windows, Mac and the
-web, Centralized Deployment and the current limits are in
-[word-addin/README.md](word-addin/README.md).
-
-## Configuration
-
-### Required env vars
-
-The stack fails closed on startup if any of these are missing or left as placeholders.
-
-| Variable | Description |
-|----------|-------------|
-| `SECRET_KEY` | JWT/CSRF signing key and root of at-rest encryption — `openssl rand -hex 32` (**never change after first run**) |
-| `ENCRYPTION_SALT` | At-rest encryption salt — `openssl rand -hex 16` (**never change after first run** except via the rotation procedure) |
-| `AUDIT_HMAC_KEY` | Audit-log chain key, at least 32 characters — `openssl rand -hex 32` |
-| `POSTGRES_PASSWORD` | Password for the bundled Postgres |
-| `REDIS_PASSWORD` | Password for the bundled Redis |
-| `DOMAIN` | Public hostname (or `localhost`); `CORS_ORIGINS` + `ALLOWED_HOSTS` default from it |
-| `DISK_ENCRYPTION_ACKNOWLEDGED` | Set `true` to acknowledge that full-disk encryption of the host volumes is your responsibility (app-layer AES-256-GCM covers BYOK keys + document originals; derived text is cleartext) |
-| `REGISTRATION_BOOTSTRAP_TOKEN` | Needed to register the first (admin) account — `openssl rand -hex 16` |
-
-Not required to boot, but the product does little without them:
-
-| Variable | Description |
-|----------|-------------|
-| `OPENAI_API_KEY` *(or another provider)* | Server-level provider key shared by all users. Without one, each user must save their own key under Settings before chat, analysis or indexing works. |
-| `COURTLISTENER_API_TOKEN` | CourtListener is the only case-law source in the app. Citation check requires a token; the other case-law tools work without one but are heavily rate-limited. Free token; see [CourtListener API token](#courtlistener-api-token). |
-
-> Using the root `docker-compose.yml` (external DB/Redis) instead of the bundled
-> stack? Then `DATABASE_URL`, `REDIS_URL`, `CORS_ORIGINS`, and `ALLOWED_HOSTS`
-> are required directly, and set `DB_SSL=require` for a managed database.
-
-### Optional env vars
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ANTHROPIC_API_KEY` | — | Claude access |
-| `VOYAGE_API_KEY` | — | Voyage AI legal embeddings |
-| `OPENAI_BASE_URL` | — | OpenAI-compatible endpoint for chat (self-hosted model or gateway) |
-| `EMBEDDING_BASE_URL` | — | OpenAI-compatible endpoint for embeddings; set with `OPENAI_BASE_URL` to keep document text on your network |
-| `VECTOR_DB` | `chroma` | `chroma` (local) or `pinecone` (stores document text with Pinecone) |
-| `TRUSTED_PROXIES` | `127.0.0.1` | Reverse-proxy IP/CIDR — **required behind a proxy** |
-| `REQUIRE_MFA` | `false` | Require every password account to enrol TOTP MFA |
-| `SESSION_ABSOLUTE_TIMEOUT_HOURS` / `SESSION_IDLE_TIMEOUT_MINUTES` | `8` / `120` | Session lifetime and idle timeout |
-| `ALLOW_REGISTRATION` | `false` | Allow self-service sign-up after the first account |
-| `SENDGRID_API_KEY` | — | Enables password-reset emails (change-password works without it) |
-
-`.env.example` documents every setting.
-
-### Connector notes
-
-- The sync API imports one folder (`folder_id`) or, with an explicit
-  `sync_all`, the whole account. The UI has no folder picker yet: "Sync Now"
-  imports the whole connected account after a second confirmation that says so.
-  To bring in selected files, use the file pickers instead. Clio's listing is
-  account-wide, so Clio cannot sync a single folder.
-- Filevine uses one firm-wide API key, so it is off until
-  `FILEVINE_ENABLED=true` and is then available to admins only.
-- The iManage and NetDocuments connectors are **experimental**. They are
-  implemented against the vendors' published APIs but have **not** been tested
-  against a live tenant, so they are not registered by default: they do not
-  appear in the connector list and every route for them is refused. Set
-  `EXPERIMENTAL_CONNECTORS=true` to enable them (they are then listed with
-  `"experimental": true`). If you test them against a real tenant, the
-  maintainer welcomes a report of what worked and what did not.
-- Microsoft and Google connections request read-only scopes. Connections made
-  before this release keep their broader grant until reconnected.
-
-### CourtListener API token
-
-Legal tools, Judge intel, Case view, and the case-law side of the strategy
-engine all read from [CourtListener](https://www.courtlistener.com). CourtListener is the **only** case-law source in
-the app. The app starts without a token, but the case-law half of the product
-is not usable without one:
-
-- **Citation check hard-fails without it** — `validate_citation` refuses to run
-  and returns a "token required" error that names where to set the token
-  (`_check_token` in `backend/app/services/courtlistener_client.py`).
-- Every other CourtListener call falls back to anonymous access, which is
-  rate-limited hard enough that research features become unusable under any
-  real load.
-
-Get a **free** token at
-<https://www.courtlistener.com/help/api/rest/#permissions>, then either set
-`COURTLISTENER_API_TOKEN` in `.env`, or save it instance-wide as an admin
-(Settings → API Keys, or `POST /api/v1/admin/integrations/courtlistener`) —
-the stored token overrides the `.env` value at runtime without a restart.
-
-## Project structure
-
-```
-backend/
-  app/
-    main.py              FastAPI app, middleware, health
-    config.py            Pydantic settings
-    routers/             API routers
-    services/
-      rag/               RAG pipeline (search, generation, citations, intent)
-      vectordb.py        ChromaDB/Pinecone abstraction
-      embeddings.py      Multi-provider embeddings
-      auth.py            JWT auth
-      strategy.py        Matter strategy briefs
-      courtlistener.py   CourtListener API
-      ...
-    middleware/          Security, CSRF
-  migrations/            Alembic migrations
-frontend/
-  src/
-    App.tsx
-    api/                 Per-domain API clients
-    views/               Page views
-    stores/              Zustand stores
-    components/          Shared components + modals
-    layout/              App shell
-scripts/                 Backup/restore, production setup, key rotation, NOTICE generator
-docs/                    Deployment, data flows, secret rotation, incident response, ADRs
-Dockerfile               Unified image (frontend + backend)
-docker-compose.prod.yml  Bundled stack: Caddy + Postgres + Redis + backend
-docker-compose.yml       Behind an existing proxy (Coolify/Traefik); external Postgres + Redis
-docker-compose.dev.yml   Local development
+```bash
+bash scripts/build.sh
+export DATABASE_URL='postgres://casecite:password@localhost:5432/casecite?sslmode=require'
+export GOODMEM_BASE_URL='https://your-goodmem-host'
+# Provision separately as an administrator; see docs/goodmem-security.md.
+export GOODMEM_CONFIG_FILE='/secure/runtime/goodmem.json'
+export SECRET_KEY="$(openssl rand -hex 32)"
+export REGISTRATION_BOOTSTRAP_TOKEN="$(openssl rand -hex 32)"
+export DEBUG=true
+export PUBLIC_URL=http://localhost:8000
+# Optional shared model key; personal keys can be added in Settings.
+export OPENAI_API_KEY='your-model-key'
+./bin/casecite
 ```
 
-## API-only (no UI yet)
+Create a `casecite` database and a dedicated `casecite` role on the **same Postgres instance** as GoodMem. CaseCite initializes its `cc_*` tables there. It does not modify GoodMem tables or require a Redis extension. Keep `SECRET_KEY` stable and backed up: it protects stored provider credentials and CSRF signatures. The executable reads process environment variables, not `.env` automatically.
 
-These are implemented and reachable over the API, but the frontend does not
-expose them yet. Treat them as preview:
+Open `http://localhost:8000`, create the first administrator using the setup token, then create additional users in Settings. There is no public signup after the first account.
 
-- **Matters** (`/api/v1/matters`) — matter records, membership, and sharing of
-  documents and chats between members. Creating matters and changing
-  membership requires the `matters.manage` permission.
-- **Strategy briefs** (`/api/v1/strategy`) — each proposition is searched on
-  CourtListener, candidate opinions are read, and a citation is kept only when
-  a verbatim quote can be located in the real opinion text. Unsupported
-  citations are dropped rather than shown.
-- **Azure AD SSO** — backend token exchange only; there is no sign-in button.
-  SAML, generic OIDC and SCIM are not supported.
+GoodMem setup creates a scoped application controller and a reserve of separate reader identities. Every user's document reads and searches use their own reader identity. Document and matter grants are enforced by GoodMem as well as the Go application. The administrative credential is kept in a separate provisioning file; it is never the runtime key.
 
-Everything else in the feature table above, plus user administration and the
-audit log (Settings, admins only), has a UI.
+```bash
+# Administrative shell only. For a fresh GoodMem server use GOODMEM_INITIALIZE=true.
+export GOODMEM_API_KEY='your-administrative-key'
+export GOODMEM_PROVISIONING_FILE=/secure/provisioning/admin.json
+# Set EMBEDDING_API_KEY or OPENAI_API_KEY, or reuse GOODMEM_EMBEDDER_ID.
+./bin/casecite setup-goodmem /secure/runtime/goodmem.json
+unset GOODMEM_API_KEY GOODMEM_PROVISIONING_FILE
+export GOODMEM_CONFIG_FILE=/secure/runtime/goodmem.json
+```
 
-## Security
+See [GoodMem security and upgrades](docs/goodmem-security.md) before upgrading an existing library. Legacy root-key runtime configurations are rejected; `migrate-goodmem-security` copies and verifies existing documents before removing their old shared-space copies. Provisioning adds no running service or Redis dependency.
 
-- Password sign-in (PBKDF2-SHA256) with optional or mandatory TOTP MFA and
-  recovery codes; password reset by email and change-password in the app
-- JWT access tokens with rotating refresh tokens in httpOnly cookies, JTI
-  revocation in Redis (required in production), "sign out everywhere"
-- Sessions capped at 5 per user, with an 8-hour absolute lifetime and an idle
-  timeout
-- Role-based permissions (`require_permission`), adjustable per role by an admin
-- Per-user (and per-matter) scoping on every document, chat and analysis
-- CSRF double-submit cookies, HMAC-signed; per-IP rate limiting; account lockout
-- AES-256-GCM at-rest encryption for uploaded originals, API keys, connector
-  tokens and MFA secrets. The vector index and database rely on disk
-  encryption that you provide
-- CSP, HSTS, X-Frame-Options, Permissions-Policy headers
-- Audit log with HMAC-SHA256 chain hashing, verified at startup and on demand
+## Fresh shared-Postgres stack — build from source
 
-CaseCite holds no security certification (SOC 2, ISO 27001, HIPAA). What it
-does and does not do is described in [SECURITY.md](SECURITY.md), which also
-explains how to report a vulnerability; known gaps are listed in
-[ROADMAP.md](ROADMAP.md).
+For the prebuilt, automated installation, use the quickstart above. These manual
+commands remain available for developers and custom deployments.
 
-## Contributing
+```bash
+node scripts/init-env.mjs
+# Edit .env: add OPENAI_API_KEY (or separate EMBEDDING_API_KEY).
+# These are not needed if you reuse an existing, working embedder.
+docker compose up -d postgres goodmem
+docker compose logs -f goodmem
+# Once the REST server is listening, exit log following with Ctrl-C:
+docker compose run --build --rm setup
+docker compose up --build -d app
+```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). PRs welcome. Contributions are accepted under the Apache License 2.0 with a Developer Certificate of Origin sign-off (`git commit -s`).
+Open `http://localhost:8000`. The installation token is `REGISTRATION_BOOTSTRAP_TOKEN` in your local `.env`. `init-env.mjs` refuses to overwrite an existing file and generates independent database passwords and application secrets.
+
+The application stack has three services. Postgres hosts separate `goodmem` and `casecite` databases with separate logins. The administrative `setup` container writes scoped runtime credentials to `connection` and keeps its administrative credential in `provisioning`. Only `connection` is mounted by the application. The GoodMem image is pinned to the tested v1.0.334 digest. OCR additionally needs GoodMem's on-premise model service, configured with `GOODMEM_OCR_BASE_URL`; see [OCR setup and behavior](docs/ocr.md). Setup automatically replaces the initialization credential with scoped service credentials for runtime use.
+
+The default port is bound to localhost. For production, set `DEBUG=false`, use an HTTPS `PUBLIC_URL`, and put the app behind your existing TLS reverse proxy. GoodMem and Postgres stay on the internal network. See [operations](docs/operations.md) for backup, restart, and migration behavior.
+
+Optional [Google Workspace SSO](docs/google-sso.md) uses the existing account and MFA system. It requires a Google OAuth web client and an explicit domain allowlist; invitation-based enrollment is the default.
+
+## Development and verification
+
+```bash
+cd frontend
+npm ci --ignore-scripts
+npm run dev                   # http://localhost:3000, proxies /api to :8000
+# In another shell, with the server environment configured:
+cd server
+go run ./cmd/casecite
+```
+
+```bash
+cd server
+go vet ./...
+go test ./...
+# Runs database, authorization, queue, and API integration tests:
+TEST_DATABASE_URL='postgres://postgres:test@localhost:5432/casecite_test?sslmode=disable' go test -race ./...
+```
+
+The original frontend and add-in unit suites are retained:
+
+```bash
+npm --prefix frontend run typecheck
+npm --prefix frontend test
+npm --prefix word-addin run typecheck
+npm --prefix word-addin test
+```
+
+The integration harness uses **real GoodMem and Postgres**, with a deterministic local embedding/LLM fixture to avoid external API charges:
+
+```bash
+cd frontend && npm ci --ignore-scripts && npx playwright install chromium && cd ..
+bash scripts/integration.sh
+```
+
+It builds the Docker image and tests the restored UI's sign-in, matter creation, membership display, upload/indexing, original-file and text retrieval, persistent login, Word manifest and logout. The original mocked browser suite runs separately without `E2E_BASE_URL`. Neither suite establishes full parity. The test stack is removed afterward. `KEEP_TEST_STACK=true` preserves it for inspection; ports and project name are configurable in the script. The fixture provider must never be used for real legal work.
+
+`scripts/integration.sh` also runs `TestGoodMemSecurityLive` against the pinned GoodMem server. It tests unauthorized reads and retrieval without application filters, OCR and page-image boundaries, membership changes, retirement, outage recovery, and the legacy-library upgrade. Its administrative credentials and database volumes are disposable test fixtures.
+
+## Limits that matter
+
+Whole-document contract analysis uses original PDF, DOCX or text content retrieved from GoodMem, or explicitly supplied document text. Scanned/mixed PDFs use GoodMem OCR with page coverage, PostgreSQL caching and durable indexing of the extracted text back into GoodMem. Missing pages block full-document analysis. Other binary formats can use GoodMem's completed page images; full format parity remains unverified. Contract comparison accepts two to four documents. Long drafting creates a reviewable section plan and generates sections with shared definitions and instructions. Uploads default to 50 MB.
+
+GoodMem performs ingestion, chunking, embeddings, retrieval, and page rendering. Configure the space's embedders to suit the corpus; optional reranking uses `GOODMEM_RERANKER_ID`. CaseCite does not duplicate a vector index or implement its own OCR pipeline. Page images depend on GoodMem's support for the uploaded format.
+
+CourtListener tools, judge profiles/analytics, judge briefs and Q&A, and deep research use the shared Go chat and job workflows. DOCX redline export preserves the original package and uses native tracked changes; other source formats require a generated DOCX. Exact quotation matches do not establish that the model's interpretation is correct. Real Word-host and visual export verification remain open.
+
+[License](LICENSE) · [Third-party notices](NOTICE.md) · [Architecture and tradeoffs](docs/migration.md) · [Operations](docs/operations.md)

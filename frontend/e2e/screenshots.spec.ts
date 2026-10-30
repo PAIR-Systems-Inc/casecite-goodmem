@@ -113,8 +113,12 @@ const chatResponse = {
 };
 
 const chatMock: MockOverride = async (route, url, method) => {
+	if (method === 'GET' && url.pathname.endsWith('/jobs/chat-screenshot')) {
+	  await fulfillJson(route, 200, { job_id: 'chat-screenshot', status: 'completed', result: chatResponse });
+	  return true;
+	}
   if (method !== 'POST' || !/\/chat$/.test(url.pathname)) return false;
-  await fulfillJson(route, 200, chatResponse);
+  await fulfillJson(route, 202, { job_id: 'chat-screenshot', poll_url: '/api/v1/jobs/chat-screenshot' });
   return true;
 };
 

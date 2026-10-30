@@ -3,6 +3,8 @@ import { useRagDocsStore } from '../stores/ragDocsStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useAuthStore } from '../stores/authStore';
 import { useConnectorsStore } from '../stores/connectorsStore';
+import { useUIStore } from '../stores/uiStore';
+import { api } from '../api';
 import { Icon } from '../components';
 import type { RagDocument, Connector } from '../types';
 import s from './RagDocsView.module.css';
@@ -31,10 +33,10 @@ const PRIVATE_INSTALL_GROUPS = [
   {
     label: 'Full Background Sync',
     items: [
-      { id: null, name: 'Google Drive', icon: 'HardDrive', color: '#4285F4', desc: 'Automatic background sync of entire folders' },
-      { id: null, name: 'OneDrive & SharePoint', icon: 'Cloud', color: '#0078D4', desc: 'Continuous sync via Microsoft Graph' },
-      { id: null, name: 'Box', icon: 'Box', color: '#0061D5', desc: 'Enterprise content management sync' },
-      { id: null, name: 'Dropbox', icon: 'Droplet', color: '#0061FF', desc: 'Automatic folder monitoring and sync' },
+      { id: 'google_drive', name: 'Google Drive', icon: 'HardDrive', color: '#4285F4', desc: 'Background document sync' },
+      { id: 'onedrive', name: 'OneDrive & SharePoint', icon: 'Cloud', color: '#0078D4', desc: 'Background sync via Microsoft Graph' },
+      { id: 'box', name: 'Box', icon: 'Box', color: '#0061D5', desc: 'Enterprise content management sync' },
+      { id: 'dropbox', name: 'Dropbox', icon: 'Droplet', color: '#0061FF', desc: 'Background document sync' },
     ],
   },
 ] as const;
@@ -47,14 +49,35 @@ function RagDocsView() {
     init,
   } = useRagDocsStore();
   const { ragSettings } = useSettingsStore();
-  const { connectors, handleConnectorClick, init: initConnectors } = useConnectorsStore();
+  const { connectors, handleConnectorClick, hasPickerSupport, init: initConnectors } = useConnectorsStore();
   const isAdmin = useAuthStore((st) => (st.user?.roles ?? []).includes('admin') || st.user?.role === 'admin');
+  const userId = useAuthStore((st) => st.user?.id);
   useEffect(() => { init(); initConnectors(); }, [init, initConnectors]);
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({});
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  const [retrying, setRetrying] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (ragDocsLoading || !ragDocs.some((doc) => ['pending', 'processing'].includes(doc.status))) return;
+    const timer = setInterval(() => { void loadRagDocuments(); }, 3000);
+    return () => clearInterval(timer);
+  }, [ragDocs, ragDocsLoading, loadRagDocuments]);
+
+  const retryOCR = async (doc: RagDocument) => {
+    setRetrying((state) => ({ ...state, [doc.id]: true }));
+    try {
+      if (doc.ocr_required) await api.retryDocumentOCR(doc.id);
+      else await api.retryDocumentIndex(doc.id);
+      await loadRagDocuments();
+    } catch (error) {
+      useUIStore.getState().addToast(`Could not retry indexing: ${(error as Error).message}`, 'error');
+    } finally {
+      setRetrying((state) => ({ ...state, [doc.id]: false }));
+    }
+  };
 
   const generalDocs = ragDocsFiltered.filter((d: RagDocument) => !d.folder_path);
   const docsInFolder = (path: string) =>
@@ -83,8 +106,9 @@ function RagDocsView() {
         <div className={s.docFilename}>{doc.filename}</div>
         <div className={`${s.docMetaText} ${doc.status === 'failed' ? s.docMetaError : ''}`}>
           {doc.status === 'failed'
-            ? String(doc.metadata?.error || 'Failed to index')
-            : `${doc.chunk_count || 0} chunks`}
+            ? String(doc.error || doc.metadata?.error || 'Failed to index')
+            : doc.status !== 'indexed' ? (doc.ocr_required ? 'Reading scanned pages and indexing…' : 'Indexing…')
+              : doc.ocr_required ? 'Indexed with OCR' : doc.chunk_count ? `${doc.chunk_count} chunks` : 'Indexed'}
           {doc.created_at && ` · ${new Date(doc.created_at).toLocaleDateString()}`}
         </div>
         {doc.status !== 'failed' && typeof doc.metadata?.extraction_warning === 'string' && doc.metadata.extraction_warning && (
@@ -93,6 +117,11 @@ function RagDocsView() {
           </div>
         )}
       </div>
+      {doc.status === 'failed' && (doc.ocr_required || doc.text_index_required) && doc.user_id === userId && (
+        <button className={s.refreshBtn} type="button" disabled={retrying[doc.id]} onClick={() => void retryOCR(doc)} aria-label={`Retry ${doc.ocr_required ? 'OCR' : 'indexing'} for ${doc.filename}`}>
+          <Icon name={retrying[doc.id] ? 'Loader2' : 'RefreshCw'} size={14} /> Retry {doc.ocr_required ? 'OCR' : 'indexing'}
+        </button>
+      )}
       <button
         onClick={() => handleRagDocDelete(doc)}
         disabled={ragDocsDeleting[doc.id]}
@@ -159,9 +188,9 @@ function RagDocsView() {
               .map((connector: Connector) => (
                 <button
                   key={connector.id}
-                  onClick={() => handleConnectorClick(connector)}
+                  onClick={() => handleConnectorClick(connector, 'picker')}
                   className={s.sourceCard}
-                  title={connector.connected ? `Manage ${connector.name}` : `Connect ${connector.name}`}
+                  title={`Choose files from ${connector.name}`}
                 >
                   <div
                     className={s.sourceIcon}
@@ -175,6 +204,8 @@ function RagDocsView() {
                     <span className={s.sourceStatus}>
                       {connector.adminOnly && !isAdmin
                         ? 'Admin only'
+                        : hasPickerSupport(connector.id)
+                          ? 'Choose files'
                         : connector.configured === false
                         ? 'Not configured'
                         : connector.connected
@@ -204,7 +235,7 @@ function RagDocsView() {
                     return (
                       <button
                         key={p.name}
-                        onClick={() => handleConnectorClick(live)}
+                        onClick={() => handleConnectorClick(live, 'sync')}
                         className={s.sourceCard}
                         title={live.connected ? `Manage ${live.name}` : `Connect ${live.name}`}
                       >

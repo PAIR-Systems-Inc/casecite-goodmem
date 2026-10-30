@@ -18,8 +18,8 @@ import { useUIStore } from './uiStore';
 import { api } from '../api';
 
 const defaultRagSettings = {
-  vectorDb: 'chroma', indexName: 'casecite-legal-docs', embeddingModel: 'text-embedding-3-small',
-  dimensions: 1536, chunkSize: 512, chunkOverlap: 128, similarityThreshold: 0.25,
+  vectorDb: 'goodmem', indexName: 'casecite-legal-docs', embeddingModel: 'text-embedding-3-small',
+  documentEmbedderId: '', dimensions: 1536, chunkSize: 1800, chunkOverlap: 200, similarityThreshold: 0.25,
   topK: 10, enableReranking: true, hybridSearch: true, citationVerification: true,
   contextCompression: false, queryExpansion: true, sourceTracking: true,
   llmModel: 'gpt-5.5', temperature: 0.1, maxTokens: 4096,
@@ -45,7 +45,7 @@ describe('settingsStore', () => {
     const settings = loadSavedRagSettings();
     expect(settings.topK).toBe(20);
     expect(settings.llmModel).toBe('gpt-5.4-mini');
-    expect(settings.vectorDb).toBe('chroma');
+    expect(settings.vectorDb).toBe('goodmem');
   });
 
   it('migrates settings saved under the old key prefix, once', () => {
@@ -134,7 +134,7 @@ describe('settingsStore', () => {
 
   it('loadServerSettings maps the server payload and marks settings as loaded', async () => {
     (api.getSettings as ReturnType<typeof vi.fn>).mockResolvedValue({
-      vector_db: 'chroma', top_k: 7, temperature: 0, similarity_threshold: 0,
+      vector_db: 'goodmem', top_k: 7, temperature: 0, similarity_threshold: 0,
       citation_verification: false, max_tokens: 2048,
       contract_playbook: 'Never accept unlimited liability.',
       practice_profile: 'Commercial leasing',
@@ -280,7 +280,7 @@ describe('settingsStore', () => {
 
     expect(useSettingsStore.getState().isReindexing).toBe(false);
     const toasts = useUIStore.getState().toasts;
-    expect(toasts.some(t => t.message === 'Reindex failed')).toBe(true);
+    expect(toasts.some(t => t.message === 'Reindex error' && t.type === 'error')).toBe(true);
   });
 
 });

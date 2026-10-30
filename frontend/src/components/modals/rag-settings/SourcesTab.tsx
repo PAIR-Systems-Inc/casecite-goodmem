@@ -23,7 +23,7 @@ interface SourceMeta {
 }
 
 const PICKER_SOURCES: SourceMeta[] = [
-  { id: 'google_drive', name: 'Google Drive', icon: 'HardDrive', picker: true, provider: 'google', env: ['GOOGLE_API_KEY', 'GOOGLE_APP_ID', 'GOOGLE_CLIENT_ID'] },
+  { id: 'google_drive', name: 'Google Drive', icon: 'HardDrive', picker: true, provider: 'google', env: ['GOOGLE_PICKER_API_KEY', 'GOOGLE_APP_ID', 'GOOGLE_CLIENT_ID'] },
   { id: 'onedrive', name: 'OneDrive & SharePoint', icon: 'Cloud', picker: true, provider: 'microsoft', env: ['MICROSOFT_CLIENT_ID', 'MICROSOFT_TENANT_ID'] },
   { id: 'box', name: 'Box', icon: 'Box', picker: true, provider: 'box', env: ['BOX_CLIENT_ID', 'BOX_CLIENT_SECRET'] },
   { id: 'dropbox', name: 'Dropbox', icon: 'Droplet', picker: true, provider: 'dropbox', env: ['DROPBOX_APP_KEY', 'DROPBOX_APP_SECRET'] },
@@ -105,6 +105,7 @@ export function SourcesTab({ styles }: SourcesTabProps) {
       const status = await api.setConnectorCredentials(provider, values);
       setCredStatus((prev) => ({ ...prev, [provider]: status }));
       setDrafts((prev) => ({ ...prev, [provider]: {} }));
+      void useConnectorsStore.getState().loadConnectors();
       addToast('Credentials saved and applied — no restart needed.', 'success');
     } catch (e) {
       logger.error('Saving connector credentials failed:', e);
@@ -119,6 +120,7 @@ export function SourcesTab({ styles }: SourcesTabProps) {
     try {
       const status = await api.clearConnectorCredentials(provider);
       setCredStatus((prev) => ({ ...prev, [provider]: status }));
+      void useConnectorsStore.getState().loadConnectors();
       addToast('Instance credentials cleared — reverted to .env values.', 'success');
     } catch (e) {
       logger.error('Clearing connector credentials failed:', e);

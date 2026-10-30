@@ -6,6 +6,9 @@ export interface RagDocument {
   source: string;
   source_id?: string | null;
   status: 'pending' | 'processing' | 'indexed' | 'failed';
+  ocr_required?: boolean;
+  text_index_required?: boolean;
+  error?: string | null;
   chunk_count: number;
   created_at: string;
   indexed_at?: string | null;

@@ -1,0 +1,1408 @@
+{
+  "baseline": "6605cb3474cf0c2894080af216d5fed2a81fc997",
+  "source_sha256": {
+    "backend/app/models/schemas.py": "02ad5763a12be9dc1ec6f6f13b7b17ae3a04a6bccc41a74b36d07127a601baa0",
+    "backend/app/services/documents.py": "eeca557f44f87613701b9d58f77c87b6e78c5f44a9dffccf8692e4ed2a2620d2"
+  },
+  "requests": [
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ]
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "matter_id": "m1"
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": []
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          },
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          },
+          {
+            "id": "EDITED_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ]
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        },
+        {
+          "id": "EDITED_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          },
+          "invalid"
+        ]
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": "not an array"
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": null,
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": "x",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": "📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "bad id",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "xxxxxxxxxxxxxxxxx",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": "x",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": "📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜📜",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": []
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "case_law"
+            ]
+          }
+        ]
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents",
+            "case_law"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "shell"
+            ]
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": "documents"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents",
+              "documents"
+            ]
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              1
+            ]
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {}
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "document_ids": []
+        }
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "folder_paths": [
+            "/folderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolderfolder/"
+          ]
+        }
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "sources": [
+            "local"
+          ]
+        }
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "sources": [
+            "unknown"
+          ]
+        }
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "document_ids": [
+            1
+          ]
+        }
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "matter_ids": [
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x",
+            "x"
+          ]
+        }
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "include_subfolders": false,
+          "search_all": true
+        }
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": "not an object"
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "include_subfolders": false
+        }
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "include_subfolders": true
+        }
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "include_subfolders": 0
+        }
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "include_subfolders": 1
+        }
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "include_subfolders": "yes"
+        }
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "include_subfolders": "FALSE"
+        }
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "include_subfolders": "on"
+        }
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "include_subfolders": "off"
+        }
+      },
+      "valid": true,
+      "question": "What does the agreement require?",
+      "plan": [
+        {
+          "id": "edited_1",
+          "question": "What notice is required?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "include_subfolders": "maybe"
+        }
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "include_subfolders": null
+        }
+      },
+      "valid": false
+    },
+    {
+      "input": {
+        "question": " What does the agreement require? ",
+        "plan": [
+          {
+            "id": "edited_1",
+            "question": " What notice is required? ",
+            "tools": [
+              "documents",
+              "documents"
+            ]
+          }
+        ],
+        "document_filter": {
+          "include_subfolders": 2
+        }
+      },
+      "valid": false
+    }
+  ],
+  "documents": [
+    {
+      "id": "a",
+      "source": "local",
+      "folder_path": null,
+      "metadata": null
+    },
+    {
+      "id": "b",
+      "source": "google_drive",
+      "folder_path": "/Cases/Notice/",
+      "metadata": {
+        "doc_type": "brief"
+      }
+    },
+    {
+      "id": "c",
+      "source": "google_drive",
+      "folder_path": null,
+      "metadata": {
+        "parent_folder": "/Cases/Notice/Sub/",
+        "doc_type": "contract"
+      }
+    },
+    {
+      "id": "d",
+      "source": "box",
+      "folder_path": null,
+      "metadata": {
+        "path": "/Cases/Other/file.pdf"
+      }
+    }
+  ],
+  "filters": [
+    {
+      "filter": {
+        "include_subfolders": true
+      },
+      "expected": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ]
+    },
+    {
+      "filter": {
+        "include_subfolders": false
+      },
+      "expected": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ]
+    },
+    {
+      "filter": {
+        "document_ids": [],
+        "include_subfolders": true
+      },
+      "expected": []
+    },
+    {
+      "filter": {
+        "document_ids": [],
+        "include_subfolders": false
+      },
+      "expected": []
+    },
+    {
+      "filter": {
+        "document_ids": [
+          "a"
+        ],
+        "include_subfolders": true
+      },
+      "expected": [
+        "a"
+      ]
+    },
+    {
+      "filter": {
+        "document_ids": [
+          "a"
+        ],
+        "include_subfolders": false
+      },
+      "expected": [
+        "a"
+      ]
+    },
+    {
+      "filter": {
+        "document_ids": [
+          "a"
+        ],
+        "folder_paths": [
+          "/Cases/Notice/"
+        ],
+        "include_subfolders": true
+      },
+      "expected": [
+        "a",
+        "b",
+        "c"
+      ]
+    },
+    {
+      "filter": {
+        "document_ids": [
+          "a"
+        ],
+        "folder_paths": [
+          "/Cases/Notice/"
+        ],
+        "include_subfolders": false
+      },
+      "expected": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "filter": {
+        "folder_paths": [],
+        "include_subfolders": true
+      },
+      "expected": []
+    },
+    {
+      "filter": {
+        "folder_paths": [],
+        "include_subfolders": false
+      },
+      "expected": []
+    },
+    {
+      "filter": {
+        "folder_paths": [
+          "/Cases/Notice/"
+        ],
+        "include_subfolders": true
+      },
+      "expected": [
+        "b",
+        "c"
+      ]
+    },
+    {
+      "filter": {
+        "folder_paths": [
+          "/Cases/Notice/"
+        ],
+        "include_subfolders": false
+      },
+      "expected": [
+        "b"
+      ]
+    },
+    {
+      "filter": {
+        "folder_paths": [
+          "/Cases/Not"
+        ],
+        "include_subfolders": true
+      },
+      "expected": []
+    },
+    {
+      "filter": {
+        "folder_paths": [
+          "/Cases/Not"
+        ],
+        "include_subfolders": false
+      },
+      "expected": []
+    },
+    {
+      "filter": {
+        "folder_paths": [
+          "/local/"
+        ],
+        "include_subfolders": true
+      },
+      "expected": [
+        "a"
+      ]
+    },
+    {
+      "filter": {
+        "folder_paths": [
+          "/local/"
+        ],
+        "include_subfolders": false
+      },
+      "expected": [
+        "a"
+      ]
+    },
+    {
+      "filter": {
+        "sources": [
+          "local"
+        ],
+        "include_subfolders": true
+      },
+      "expected": [
+        "a"
+      ]
+    },
+    {
+      "filter": {
+        "sources": [
+          "local"
+        ],
+        "include_subfolders": false
+      },
+      "expected": [
+        "a"
+      ]
+    },
+    {
+      "filter": {
+        "sources": [
+          "google_drive"
+        ],
+        "include_subfolders": true
+      },
+      "expected": [
+        "b",
+        "c"
+      ]
+    },
+    {
+      "filter": {
+        "sources": [
+          "google_drive"
+        ],
+        "include_subfolders": false
+      },
+      "expected": [
+        "b",
+        "c"
+      ]
+    },
+    {
+      "filter": {
+        "doc_types": [
+          "brief"
+        ],
+        "include_subfolders": true
+      },
+      "expected": [
+        "b"
+      ]
+    },
+    {
+      "filter": {
+        "doc_types": [
+          "brief"
+        ],
+        "include_subfolders": false
+      },
+      "expected": [
+        "b"
+      ]
+    },
+    {
+      "filter": {
+        "doc_types": [
+          "document"
+        ],
+        "include_subfolders": true
+      },
+      "expected": [
+        "a",
+        "d"
+      ]
+    },
+    {
+      "filter": {
+        "doc_types": [
+          "document"
+        ],
+        "include_subfolders": false
+      },
+      "expected": [
+        "a",
+        "d"
+      ]
+    },
+    {
+      "filter": {
+        "sources": [],
+        "include_subfolders": true
+      },
+      "expected": []
+    },
+    {
+      "filter": {
+        "sources": [],
+        "include_subfolders": false
+      },
+      "expected": []
+    },
+    {
+      "filter": {
+        "doc_types": [],
+        "include_subfolders": true
+      },
+      "expected": []
+    },
+    {
+      "filter": {
+        "doc_types": [],
+        "include_subfolders": false
+      },
+      "expected": []
+    }
+  ]
+}

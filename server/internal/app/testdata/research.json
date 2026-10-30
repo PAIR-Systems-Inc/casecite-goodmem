@@ -1,0 +1,1163 @@
+{
+  "baseline": "6605cb3474cf0c2894080af216d5fed2a81fc997",
+  "source_sha256": {
+    "backend/app/services/rag/prompt_safety.py": "7e10bcd9cf59f072ecb1dcafe0391dea666af73e9a06c245d8b55f8ab5e56fe5",
+    "backend/app/services/deep_research/planner.py": "0a334aa1f759a8c322fcd8329dc18489112f322bd6396666c820dc6b30531f5a",
+    "backend/app/services/deep_research/passages.py": "68a1907049e72e3b64c14578203d962544b2dd781a8683bb26ee9673880b9016",
+    "backend/app/services/deep_research/pipeline.py": "d93b4cf634552afcf4e7502ba7a981b02a90bd2419ed47bc99e245ea07faa953",
+    "backend/app/services/contract_analysis/long_drafting.py": "8b004328afe76b5144be11957fc9a88e0699c8a1d35c90e1672bfc3f1e5b7e65",
+    "backend/app/services/deep_research/tools.py": "60f258cff508f177f3fba217c7307cb1a81842148b9a65bfbd330aeadbde4c85",
+    "backend/app/services/courtlistener.py": "137a2aef2869a8e1d8ee68bbb25982fc104ac72bd39ba13c0f469176cfe158c4"
+  },
+  "plans": [
+    {
+      "raw": null,
+      "available": {
+        "documents": true,
+        "case_law": true
+      },
+      "cap": 8,
+      "expected": []
+    },
+    {
+      "raw": null,
+      "available": {
+        "documents": true,
+        "case_law": false
+      },
+      "cap": 8,
+      "expected": []
+    },
+    {
+      "raw": null,
+      "available": {
+        "documents": false,
+        "case_law": false
+      },
+      "cap": 8,
+      "expected": []
+    },
+    {
+      "raw": {},
+      "available": {
+        "documents": true,
+        "case_law": true
+      },
+      "cap": 8,
+      "expected": []
+    },
+    {
+      "raw": {},
+      "available": {
+        "documents": true,
+        "case_law": false
+      },
+      "cap": 8,
+      "expected": []
+    },
+    {
+      "raw": {},
+      "available": {
+        "documents": false,
+        "case_law": false
+      },
+      "cap": 8,
+      "expected": []
+    },
+    {
+      "raw": {
+        "sub_questions": [
+          null,
+          {},
+          {
+            "question": "x"
+          },
+          {
+            "question": "  What applies? ",
+            "tools": [
+              "DOCUMENTS",
+              "shell",
+              "documents"
+            ]
+          },
+          {
+            "question": "what applies?",
+            "tools": [
+              "case_law"
+            ]
+          },
+          {
+            "question": "Other question",
+            "tools": [
+              "shell"
+            ]
+          }
+        ]
+      },
+      "available": {
+        "documents": true,
+        "case_law": true
+      },
+      "cap": 8,
+      "expected": [
+        {
+          "id": "q1",
+          "question": "What applies?",
+          "tools": [
+            "documents"
+          ]
+        },
+        {
+          "id": "q2",
+          "question": "Other question",
+          "tools": [
+            "documents",
+            "case_law"
+          ]
+        }
+      ]
+    },
+    {
+      "raw": {
+        "sub_questions": [
+          null,
+          {},
+          {
+            "question": "x"
+          },
+          {
+            "question": "  What applies? ",
+            "tools": [
+              "DOCUMENTS",
+              "shell",
+              "documents"
+            ]
+          },
+          {
+            "question": "what applies?",
+            "tools": [
+              "case_law"
+            ]
+          },
+          {
+            "question": "Other question",
+            "tools": [
+              "shell"
+            ]
+          }
+        ]
+      },
+      "available": {
+        "documents": true,
+        "case_law": false
+      },
+      "cap": 8,
+      "expected": [
+        {
+          "id": "q1",
+          "question": "What applies?",
+          "tools": [
+            "documents"
+          ]
+        },
+        {
+          "id": "q2",
+          "question": "Other question",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "raw": {
+        "sub_questions": [
+          null,
+          {},
+          {
+            "question": "x"
+          },
+          {
+            "question": "  What applies? ",
+            "tools": [
+              "DOCUMENTS",
+              "shell",
+              "documents"
+            ]
+          },
+          {
+            "question": "what applies?",
+            "tools": [
+              "case_law"
+            ]
+          },
+          {
+            "question": "Other question",
+            "tools": [
+              "shell"
+            ]
+          }
+        ]
+      },
+      "available": {
+        "documents": false,
+        "case_law": false
+      },
+      "cap": 8,
+      "expected": []
+    },
+    {
+      "raw": {
+        "sub_questions": [
+          {
+            "question": "Question 0?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 1?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 2?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 3?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 4?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 5?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 6?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 7?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 8?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 9?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 10?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 11?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          }
+        ]
+      },
+      "available": {
+        "documents": true,
+        "case_law": true
+      },
+      "cap": 8,
+      "expected": [
+        {
+          "id": "q1",
+          "question": "Question 0?",
+          "tools": [
+            "case_law",
+            "documents"
+          ]
+        },
+        {
+          "id": "q2",
+          "question": "Question 1?",
+          "tools": [
+            "case_law",
+            "documents"
+          ]
+        },
+        {
+          "id": "q3",
+          "question": "Question 2?",
+          "tools": [
+            "case_law",
+            "documents"
+          ]
+        },
+        {
+          "id": "q4",
+          "question": "Question 3?",
+          "tools": [
+            "case_law",
+            "documents"
+          ]
+        },
+        {
+          "id": "q5",
+          "question": "Question 4?",
+          "tools": [
+            "case_law",
+            "documents"
+          ]
+        },
+        {
+          "id": "q6",
+          "question": "Question 5?",
+          "tools": [
+            "case_law",
+            "documents"
+          ]
+        },
+        {
+          "id": "q7",
+          "question": "Question 6?",
+          "tools": [
+            "case_law",
+            "documents"
+          ]
+        },
+        {
+          "id": "q8",
+          "question": "Question 7?",
+          "tools": [
+            "case_law",
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "raw": {
+        "sub_questions": [
+          {
+            "question": "Question 0?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 1?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 2?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 3?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 4?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 5?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 6?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 7?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 8?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 9?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 10?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 11?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          }
+        ]
+      },
+      "available": {
+        "documents": true,
+        "case_law": false
+      },
+      "cap": 8,
+      "expected": [
+        {
+          "id": "q1",
+          "question": "Question 0?",
+          "tools": [
+            "documents"
+          ]
+        },
+        {
+          "id": "q2",
+          "question": "Question 1?",
+          "tools": [
+            "documents"
+          ]
+        },
+        {
+          "id": "q3",
+          "question": "Question 2?",
+          "tools": [
+            "documents"
+          ]
+        },
+        {
+          "id": "q4",
+          "question": "Question 3?",
+          "tools": [
+            "documents"
+          ]
+        },
+        {
+          "id": "q5",
+          "question": "Question 4?",
+          "tools": [
+            "documents"
+          ]
+        },
+        {
+          "id": "q6",
+          "question": "Question 5?",
+          "tools": [
+            "documents"
+          ]
+        },
+        {
+          "id": "q7",
+          "question": "Question 6?",
+          "tools": [
+            "documents"
+          ]
+        },
+        {
+          "id": "q8",
+          "question": "Question 7?",
+          "tools": [
+            "documents"
+          ]
+        }
+      ]
+    },
+    {
+      "raw": {
+        "sub_questions": [
+          {
+            "question": "Question 0?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 1?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 2?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 3?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 4?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 5?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 6?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 7?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 8?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 9?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 10?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          },
+          {
+            "question": "Question 11?",
+            "tools": [
+              "case_law",
+              "documents"
+            ]
+          }
+        ]
+      },
+      "available": {
+        "documents": false,
+        "case_law": false
+      },
+      "cap": 8,
+      "expected": []
+    }
+  ],
+  "refs": [
+    {
+      "text": "Supported [P1]. Missing [P99]. Mixed [P2, P9, P1].",
+      "allowed": [
+        "P1",
+        "P2"
+      ],
+      "expected": {
+        "text": "Supported [P1]. Missing. Mixed [P2, P1].",
+        "cited": [
+          "P1",
+          "P2"
+        ],
+        "stripped": 2
+      }
+    },
+    {
+      "text": "[P1, P1] [plain text] [P1, note] [p2]",
+      "allowed": [
+        "P1",
+        "P2"
+      ],
+      "expected": {
+        "text": "[P1, P1] [plain text] [P1, note] [p2]",
+        "cited": [
+          "P1"
+        ],
+        "stripped": 0
+      }
+    },
+    {
+      "text": "No references.",
+      "allowed": [
+        "P1",
+        "P2"
+      ],
+      "expected": {
+        "text": "No references.",
+        "cited": [],
+        "stripped": 0
+      }
+    },
+    {
+      "text": "[P99]  . [P2] ; 📜 [P3, P1]",
+      "allowed": [
+        "P1",
+        "P2"
+      ],
+      "expected": {
+        "text": ". [P2]; 📜 [P1]",
+        "cited": [
+          "P2",
+          "P1"
+        ],
+        "stripped": 2
+      }
+    },
+    {
+      "text": "[P0] [P01] [P1]\n[P2]",
+      "allowed": [
+        "P1",
+        "P2"
+      ],
+      "expected": {
+        "text": "[P1]\n[P2]",
+        "cited": [
+          "P1",
+          "P2"
+        ],
+        "stripped": 2
+      }
+    }
+  ],
+  "excerpts": [
+    {
+      "text": "Short opinion.",
+      "query": "assignment consent",
+      "limit": 4000,
+      "expected": "Short opinion."
+    },
+    {
+      "text": "Short opinion.",
+      "query": "absent words",
+      "limit": 4000,
+      "expected": "Short opinion."
+    },
+    {
+      "text": "Short opinion.",
+      "query": "the and",
+      "limit": 4000,
+      "expected": "Short opinion."
+    },
+    {
+      "text": "📜 Introduction.\n\nBackground facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. \n\nAssignment requires consent.\n\nMore background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. ",
+      "query": "assignment consent",
+      "limit": 4000,
+      "expected": "ts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. \n\nAssignment requires consent.\n\nMore background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More backgro"
+    },
+    {
+      "text": "📜 Introduction.\n\nBackground facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. \n\nAssignment requires consent.\n\nMore background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. ",
+      "query": "absent words",
+      "limit": 4000,
+      "expected": "📜 Introduction.\n\nBackground facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Backg"
+    },
+    {
+      "text": "📜 Introduction.\n\nBackground facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. \n\nAssignment requires consent.\n\nMore background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. More background. ",
+      "query": "the and",
+      "limit": 4000,
+      "expected": "📜 Introduction.\n\nBackground facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Background facts. Backg"
+    },
+    {
+      "text": "No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split ",
+      "query": "assignment consent",
+      "limit": 4000,
+      "expected": "plit No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No pa"
+    },
+    {
+      "text": "No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split ",
+      "query": "absent words",
+      "limit": 4000,
+      "expected": "plit No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No pa"
+    },
+    {
+      "text": "No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split ",
+      "query": "the and",
+      "limit": 4000,
+      "expected": "plit No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No paragraph split No pa"
+    }
+  ],
+  "treatments": [
+    {
+      "text": "We follow this rule.",
+      "expected": "neutral"
+    },
+    {
+      "text": "We followed Smith.",
+      "expected": "positive"
+    },
+    {
+      "text": "We overruled <mark>Smith</mark>.",
+      "expected": "negative"
+    },
+    {
+      "text": "Smith was overruled on other grounds.",
+      "expected": "caution"
+    },
+    {
+      "text": "Smith, rev'd in part, 500 U.S. 1.",
+      "expected": "negative"
+    },
+    {
+      "text": "The defendant's argument was rejected, citing Smith.",
+      "expected": "neutral"
+    },
+    {
+      "text": "We reject the reasoning in Smith.",
+      "expected": "negative"
+    },
+    {
+      "text": "We distinguish Smith.",
+      "expected": "caution"
+    },
+    {
+      "text": "The question presented is one of limitations.",
+      "expected": "neutral"
+    },
+    {
+      "text": "Smith was vacated in part on other grounds.",
+      "expected": "caution"
+    },
+    {
+      "text": "Smith was affirmed.",
+      "expected": "positive"
+    },
+    {
+      "text": "Smith was wrongly decided.",
+      "expected": "negative"
+    },
+    {
+      "text": "We called Smith into doubt.",
+      "expected": "neutral"
+    },
+    {
+      "text": "The rule was superseded by statute.",
+      "expected": "negative"
+    },
+    {
+      "text": "We followed Smith until it was abrogated.",
+      "expected": "negative"
+    }
+  ],
+  "verdicts": [
+    {
+      "negative": 0,
+      "caution": 0,
+      "read": 0,
+      "level": "unknown",
+      "good": null
+    },
+    {
+      "negative": 0,
+      "caution": 0,
+      "read": 4,
+      "level": "none",
+      "good": true
+    },
+    {
+      "negative": 0,
+      "caution": 1,
+      "read": 0,
+      "level": "caution",
+      "good": null
+    },
+    {
+      "negative": 0,
+      "caution": 1,
+      "read": 4,
+      "level": "caution",
+      "good": null
+    },
+    {
+      "negative": 0,
+      "caution": 2,
+      "read": 0,
+      "level": "caution",
+      "good": null
+    },
+    {
+      "negative": 0,
+      "caution": 2,
+      "read": 4,
+      "level": "caution",
+      "good": null
+    },
+    {
+      "negative": 0,
+      "caution": 3,
+      "read": 0,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 0,
+      "caution": 3,
+      "read": 4,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 0,
+      "caution": 4,
+      "read": 0,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 0,
+      "caution": 4,
+      "read": 4,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 1,
+      "caution": 0,
+      "read": 0,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 1,
+      "caution": 0,
+      "read": 4,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 1,
+      "caution": 1,
+      "read": 0,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 1,
+      "caution": 1,
+      "read": 4,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 1,
+      "caution": 2,
+      "read": 0,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 1,
+      "caution": 2,
+      "read": 4,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 1,
+      "caution": 3,
+      "read": 0,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 1,
+      "caution": 3,
+      "read": 4,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 1,
+      "caution": 4,
+      "read": 0,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 1,
+      "caution": 4,
+      "read": 4,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 2,
+      "caution": 0,
+      "read": 0,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 2,
+      "caution": 0,
+      "read": 4,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 2,
+      "caution": 1,
+      "read": 0,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 2,
+      "caution": 1,
+      "read": 4,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 2,
+      "caution": 2,
+      "read": 0,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 2,
+      "caution": 2,
+      "read": 4,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 2,
+      "caution": 3,
+      "read": 0,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 2,
+      "caution": 3,
+      "read": 4,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 2,
+      "caution": 4,
+      "read": 0,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 2,
+      "caution": 4,
+      "read": 4,
+      "level": "warning",
+      "good": null
+    },
+    {
+      "negative": 3,
+      "caution": 0,
+      "read": 0,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 3,
+      "caution": 0,
+      "read": 4,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 3,
+      "caution": 1,
+      "read": 0,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 3,
+      "caution": 1,
+      "read": 4,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 3,
+      "caution": 2,
+      "read": 0,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 3,
+      "caution": 2,
+      "read": 4,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 3,
+      "caution": 3,
+      "read": 0,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 3,
+      "caution": 3,
+      "read": 4,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 3,
+      "caution": 4,
+      "read": 0,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 3,
+      "caution": 4,
+      "read": 4,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 4,
+      "caution": 0,
+      "read": 0,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 4,
+      "caution": 0,
+      "read": 4,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 4,
+      "caution": 1,
+      "read": 0,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 4,
+      "caution": 1,
+      "read": 4,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 4,
+      "caution": 2,
+      "read": 0,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 4,
+      "caution": 2,
+      "read": 4,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 4,
+      "caution": 3,
+      "read": 0,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 4,
+      "caution": 3,
+      "read": 4,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 4,
+      "caution": 4,
+      "read": 0,
+      "level": "danger",
+      "good": null
+    },
+    {
+      "negative": 4,
+      "caution": 4,
+      "read": 4,
+      "level": "danger",
+      "good": null
+    }
+  ]
+}

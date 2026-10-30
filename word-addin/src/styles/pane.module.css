@@ -45,6 +45,15 @@
   letter-spacing: 0.02em;
 }
 
+.brandByline {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+}
+
 .who {
   font-size: 11px;
   opacity: 0.85;

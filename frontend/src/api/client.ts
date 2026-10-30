@@ -3,9 +3,9 @@ import logger from '../utils/logger';
 import type { ApiClient, RequestOptions } from './types';
 
 // ==================== API CLIENT ====================
-export const API_BASE_URL = import.meta.env.DEV
-  ? 'http://localhost:8000/api/v1'
-  : `${window.location.origin}/api/v1`;
+// Vite proxies /api during development; production assets share the Go origin.
+// Keep cookies, CSRF and Microsoft redirects on that same origin in both modes.
+export const API_BASE_URL = `${window.location.origin}/api/v1`;
 
 // Endpoints where a 401 means "wrong credentials", not "expired session":
 // no refresh attempt, and the server's own message is surfaced.
@@ -13,6 +13,9 @@ const CREDENTIAL_ENDPOINTS = new Set([
   '/auth/login',
   '/auth/register',
   '/auth/mfa/verify',
+  '/auth/azure/login',
+  '/auth/google/login',
+  '/auth/google/link',
 ]);
 
 const AUTH_FETCH_TIMEOUT_MS = 120000;

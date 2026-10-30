@@ -26,4 +26,3 @@ export interface CaseMessage {
   type: 'user' | 'assistant';
   content: string;
 }
-

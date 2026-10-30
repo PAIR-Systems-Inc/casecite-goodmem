@@ -65,8 +65,7 @@ describe('RetrievalTab', () => {
 
   it('lists vector database options', () => {
     const { container } = render(<RetrievalTab {...defaultProps()} />);
-    expect(container.textContent).toContain('ChromaDB');
-    expect(container.textContent).toContain('Pinecone');
+    expect(container.textContent).toContain('GoodMem');
   });
 
   it('has range inputs for sliders', () => {

@@ -73,6 +73,7 @@
 }
 .pillInput {
   flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
   outline: none;
@@ -230,4 +231,11 @@
 .dockOffsets {
   --dock-bottom: 140px;
   --dock-bottom-low: 40px;
+}
+
+/* Keep the search action clear of the mobile navigation and sources buttons. */
+@media (max-width: 768px) {
+  .bottomBar { bottom: 74px; width: calc(100% - 32px); }
+  .resultsScroll { padding-bottom: 190px; }
+  .dockOffsets { --dock-bottom: 196px; --dock-bottom-low: 96px; }
 }

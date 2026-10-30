@@ -14,7 +14,7 @@ export const AdvancedTab = ({ local, setLocal, styles }: AdvancedTabProps) => {
   return (
   <div className={styles.toggleList}>
     {[
-      { key: 'enableReranking', label: 'Cross-Encoder Reranking', desc: 'Rerank retrieved passages with a cross-encoder model. Takes effect only when the server has the optional sentence-transformers package installed; otherwise it is ignored and results keep their similarity order.' },
+      { key: 'enableReranking', label: 'Cross-Encoder Reranking', desc: 'Use the reranker configured in GoodMem to improve passage ranking. When no reranker is configured, passages keep their similarity order.' },
       { key: 'hybridSearch', label: 'Keyword Rescoring (BM25)', desc: 'Blend keyword-match scores into the ranking of the passages that semantic search retrieved' },
       { key: 'citationVerification', label: 'Citation Verification', desc: 'Cross-reference citations against source documents' },
       { key: 'contextCompression', label: 'Context Compression', desc: 'Compress retrieved context to fit more documents' },
@@ -44,7 +44,8 @@ export const AdvancedTab = ({ local, setLocal, styles }: AdvancedTabProps) => {
         <div className={styles.toggleLabel}>Rebuild Search Index</div>
         <div className={styles.toggleDesc}>
           Re-embed every one of your documents from its stored file. Use this when documents
-          show as indexed but chat can't find them.
+          show as indexed but chat can't find them. Existing search results stay available
+          while each replacement is prepared. Completed OCR pages are reused.
         </div>
       </div>
       <button className={styles.reindexBtn} onClick={handleReindex} disabled={isReindexing}>

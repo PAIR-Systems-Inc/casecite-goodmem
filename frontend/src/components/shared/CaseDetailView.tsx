@@ -2,7 +2,7 @@ import { Icon } from './Icon';
 import type { CaseInfo } from '../../types';
 import { safeHttpUrl } from './safeUrl';
 
-interface CaseOpinion {
+export interface CaseOpinion {
   id?: number;
   type?: string;
   type_label?: string;

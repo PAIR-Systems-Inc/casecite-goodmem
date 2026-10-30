@@ -55,11 +55,21 @@ interface PopoverState {
   left?: number;
 }
 
-interface Block {
+interface TextRange {
   start: number;
   end: number;
+}
+
+interface TextBlock extends TextRange {
   kind: 'heading' | 'para';
 }
+
+interface TableBlock extends TextRange {
+  kind: 'table';
+  rows: TextRange[][];
+}
+
+type Block = TextBlock | TableBlock;
 
 interface MarkSpan {
   start: number;
@@ -79,11 +89,29 @@ interface Segment {
 
 const HEADING_RE = /^\s*(?:(?:ARTICLE|SECTION|EXHIBIT|SCHEDULE|APPENDIX)\s+[\dIVXLC]+|\d+(?:\.\d+)*[.)]?\s+\S|[A-Z][A-Z0-9 ,;:&()/'-]{3,})\s*$/;
 
+// Keep every cell in the original UTF-16 coordinate system. Delimiters and
+// escapes are presentation only; editing/exporting still uses the full source.
+function tableRow(line: string, offset: number): TextRange[] | null {
+  const pipes: number[] = [];
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '\\' && /[\\|]/.test(line[i + 1] ?? '')) { i++; continue; }
+    if (line[i] === '|') pipes.push(i);
+  }
+  if (pipes.length < 2 || pipes.length > 513 || line.slice(0, pipes[0]).trim() || line.slice(pipes[pipes.length - 1] + 1).trim()) return null;
+  return pipes.slice(0, -1).map((p, i) => {
+    let start = p + 1;
+    let end = pipes[i + 1];
+    while (start < end && /\s/.test(line[start])) start++;
+    while (end > start && /\s/.test(line[end - 1])) end--;
+    return { start: offset + start, end: offset + end };
+  });
+}
+
 /* Group the extracted text into document blocks: blank lines split
    paragraphs; a short line in caps or numbered like "7.2 Termination" is a
    heading. Rendering paragraphs with normal whitespace re-flows the
    extraction's hard-wrapped lines back into real paragraphs. */
-function buildBlocks(text: string): Block[] {
+function buildBlocks(text: string, wordParagraphs: boolean): Block[] {
   const blocks: Block[] = [];
   let cursor = 0;
   let paraStart = -1;
@@ -91,18 +119,39 @@ function buildBlocks(text: string): Block[] {
     if (paraStart >= 0 && end > paraStart) blocks.push({ start: paraStart, end, kind: 'para' });
     paraStart = -1;
   };
-  for (const line of text.split('\n')) {
+  const lines = text.split('\n');
+  for (let li = 0; li < lines.length; li++) {
+    const line = lines[li];
     const start = cursor;
     const end = cursor + line.length;
     cursor = end + 1;
     const trimmed = line.trim();
     if (!trimmed) { flush(start); continue; }
+    const header = tableRow(line, start);
+    const divider = header && li + 1 < lines.length ? tableRow(lines[li + 1], cursor) : null;
+    if (header && divider?.length === header.length && divider.every(c => /^:?-{3,}:?$/.test(text.slice(c.start, c.end)))) {
+      flush(start);
+      const rows = [header];
+      cursor += lines[++li].length + 1;
+      while (li + 1 < lines.length) {
+        const row = tableRow(lines[li + 1], cursor);
+        if (!row || row.length !== header.length) break;
+        rows.push(row);
+        cursor += lines[++li].length + 1;
+      }
+      blocks.push({ start, end: Math.min(cursor - 1, text.length), kind: 'table', rows });
+      continue;
+    }
     if (trimmed.length <= 80 && HEADING_RE.test(trimmed)) {
       flush(start);
       blocks.push({ start, end, kind: 'heading' });
       continue;
     }
     if (paraStart < 0) paraStart = start;
+    // Canonical Word text uses a newline for a paragraph, while PDF text can
+    // contain hard-wrapped lines. Preserve Word paragraphs without changing
+    // the source string or the offsets used by selection and tracked edits.
+    if (wordParagraphs) flush(end);
   }
   flush(text.length);
   return blocks;
@@ -130,7 +179,17 @@ function locateQuote(text: string, normalizedText: string, quote: string): [numb
       norm++;
     }
   }
-  return [raw, Math.min(text.length, raw + normalizedQuote.length + 40)];
+  const rawStart = raw;
+  const normEnd = normStart + normalizedQuote.length;
+  while (norm < normEnd && raw < text.length) {
+    if (/\s/.test(text[raw])) {
+      while (raw < text.length && /\s/.test(text[raw])) raw++;
+    } else {
+      raw++;
+    }
+    norm++;
+  }
+  return [rawStart, raw];
 }
 
 /* Combine highlight + redline quotes into non-overlapping marks; where they
@@ -142,7 +201,15 @@ function buildMarkSpans(
   const redlineSpans: MarkSpan[] = [];
   for (const edit of redlines) {
     if (edit.kind !== 'replace' || !edit.original_text) continue;
-    const located = locateQuote(text, normalizedText, edit.original_text);
+    const hasExactSpan = Number.isInteger(edit.span_start) && Number.isInteger(edit.span_end)
+      && edit.span_start >= 0 && edit.span_end > edit.span_start && edit.span_end <= text.length
+      && text.slice(edit.span_start, edit.span_end) === edit.original_text;
+    if (!hasExactSpan) {
+      const normalizedQuote = edit.original_text.replace(/\s+/g, ' ').trim();
+      const first = normalizedText.indexOf(normalizedQuote);
+      if (first >= 0 && normalizedText.indexOf(normalizedQuote, first + 1) >= 0) continue;
+    }
+    const located = hasExactSpan ? [edit.span_start, edit.span_end] : locateQuote(text, normalizedText, edit.original_text);
     if (located) {
       redlineSpans.push({ start: located[0], end: located[1], kind: 'redline', editRef: edit.ref });
     }
@@ -169,7 +236,7 @@ function buildMarkSpans(
 }
 
 /* Slice one block into segments from the merged mark spans. */
-function blockSegments(text: string, block: Block, spans: MarkSpan[]): Segment[] {
+function blockSegments(text: string, block: TextRange, spans: MarkSpan[]): Segment[] {
   const segments: Segment[] = [];
   let cursor = block.start;
   for (const span of spans) {
@@ -185,6 +252,21 @@ function blockSegments(text: string, block: Block, spans: MarkSpan[]): Segment[]
   }
   if (cursor < block.end) segments.push({ text: text.slice(cursor, block.end), kind: 'plain' });
   return segments;
+}
+
+function tableSegments(text: string, cell: TextRange, spans: MarkSpan[]): Segment[] {
+  const segments = blockSegments(text, cell, spans);
+  const ends: number[] = [];
+  let end = cell.start;
+  for (const segment of segments) { end += segment.text.length; ends.push(end); }
+  const visible = segments.map(segment => ({ ...segment, text: '' }));
+  let si = 0;
+  for (let i = cell.start; i < cell.end; i++) {
+    if (text[i] === '\\' && /[\\|]/.test(text[i + 1] ?? '')) i++;
+    while (si < ends.length - 1 && i >= ends[si]) si++;
+    visible[si].text += text[i];
+  }
+  return visible;
 }
 
 const SEVERITY_ORDER: Record<string, number> = { critical: 0, major: 1, minor: 2 };
@@ -231,7 +313,7 @@ export function ContractTextViewer({
     for (const edit of activeRedlines) map[edit.ref] = edit;
     return map;
   }, [activeRedlines]);
-  const blocks = useMemo(() => buildBlocks(text), [text]);
+  const blocks = useMemo(() => buildBlocks(text, /\.docx?$/i.test(filename)), [text, filename]);
   const spans = useMemo(
     () => buildMarkSpans(text, highlights, activeRedlines),
     [text, highlights, activeRedlines],
@@ -318,7 +400,28 @@ export function ContractTextViewer({
     const sel = window.getSelection();
     const container = bodyRef.current;
     if (!sel || sel.isCollapsed || !container) { setSelection(null); return; }
-    const selected = sel.toString().trim();
+    let selected = sel.toString().trim();
+    // A table selection includes visual column separators, which differ from
+    // the Markdown source. Map its endpoints back before requesting an edit.
+    const range = sel.getRangeAt(0);
+    const tableOffset = (node: Node, offset: number): number | null => {
+      const el = (node.nodeType === Node.ELEMENT_NODE ? node as Element : node.parentElement)?.closest<HTMLElement>('[data-cell-start]');
+      if (!el || !container.contains(el) || el.querySelector('ins')) return null;
+      const prefix = document.createRange();
+      prefix.selectNodeContents(el);
+      prefix.setEnd(node, offset);
+      const displayLength = prefix.toString().length;
+      const start = Number(el.dataset.cellStart);
+      const end = Number(el.dataset.cellEnd);
+      let raw = start;
+      for (let i = 0; i < displayLength && raw < end; i++, raw++) {
+        if (text[raw] === '\\' && /[\\|]/.test(text[raw + 1] ?? '')) raw++;
+      }
+      return raw;
+    };
+    const sourceStart = tableOffset(range.startContainer, range.startOffset);
+    const sourceEnd = tableOffset(range.endContainer, range.endOffset);
+    if (sourceStart !== null && sourceEnd !== null) selected = text.slice(sourceStart, sourceEnd).trim();
     if (selected.length < 8 || !container.contains(sel.anchorNode)) { setSelection(null); return; }
     const rect = sel.getRangeAt(0).getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
@@ -612,6 +715,24 @@ export function ContractTextViewer({
         ) : (
           <div className={s.text}>
               {blocks.map((block, bi) => {
+                if (block.kind === 'table') {
+                  // Edits spanning delimiters retain a verbatim view so their
+                  // proposed replacement cannot be split across table cells.
+                  const crossesCells = spans.some(sp => sp.start < block.end && sp.end > block.start && !block.rows.some(row => row.some(c => sp.start >= c.start && sp.end <= c.end)));
+                  if (crossesCells) return <div key={bi} className={s.tableSource}>{blockSegments(text, block, spans).map(renderSegment)}</div>;
+                  const rowContent = (row: TextRange[], header: boolean) => row.map((cell, ci) => {
+                    const Cell = header ? 'th' : 'td';
+                    return <Cell key={ci} scope={header ? 'col' : undefined} data-cell-start={cell.start} data-cell-end={cell.end}>
+                      {tableSegments(text, cell, spans).map(renderSegment)}
+                    </Cell>;
+                  });
+                  return <div key={bi} className={s.tableWrap} tabIndex={0} role="region" aria-label={`Document table ${bi + 1}`}>
+                    <table className={s.table}>
+                      <thead><tr>{rowContent(block.rows[0], true)}</tr></thead>
+                      <tbody>{block.rows.slice(1).map((row, ri) => <tr key={ri}>{rowContent(row, false)}</tr>)}</tbody>
+                    </table>
+                  </div>;
+                }
                 const segments = blockSegments(text, block, spans);
                 const content = segments.map((seg, i) => renderSegment(seg, i));
                 return block.kind === 'heading' ? (
