@@ -46,6 +46,12 @@ func TestSystemHealthMetricsPrivacyReadinessAndCounts(t *testing.T) {
 	viewer := f.account(owner, "viewer@example.test")
 	doc := f.upload(owner, "", "contract.txt", "Notice is 30 days.")
 	f.s.cfg.Debug = false
+	for _, path := range []string{"/ready", "/healthz"} {
+		v, _ := systemCall(t, f, path, "", "", "", 200)
+		if v["ready"] != true {
+			t.Fatal(path, v)
+		}
+	}
 	public, _ := systemCall(t, f, "/health", "", "", "", 200)
 	if str(public, "status") != "healthy" || str(public, "started_at") == "" || public["components"] != nil || public["version"] != nil {
 		t.Fatal(public)
@@ -94,9 +100,11 @@ func TestSystemHealthMetricsPrivacyReadinessAndCounts(t *testing.T) {
 	if str(v, "status") != "degraded" || strings.Contains(text, "secret") {
 		t.Fatal(v)
 	}
-	v, text = systemCall(t, f, "/ready", "", "", "", 503)
-	if v["ready"] != false || len(stringsOf(v["issues"])) != 1 || strings.Contains(text, "secret") {
-		t.Fatal(v)
+	for _, path := range []string{"/ready", "/healthz"} {
+		v, text = systemCall(t, f, path, "", "", "", 503)
+		if v["ready"] != false || len(stringsOf(v["issues"])) != 1 || strings.Contains(text, "secret") {
+			t.Fatal(path, v)
+		}
 	}
 	if err := f.s.db.Close(); err != nil {
 		t.Fatal(err)

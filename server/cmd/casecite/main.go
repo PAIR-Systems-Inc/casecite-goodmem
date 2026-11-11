@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -71,7 +72,7 @@ func run() error {
 		fmt.Printf("casecite-goodmem %s (%s)\n", version, revision)
 		return nil
 	}
-	if len(os.Args) > 1 && os.Args[1] != "migrate-goodmem-security" {
+	if len(os.Args) > 1 && os.Args[1] != "migrate-goodmem-security" && !strings.HasPrefix(os.Args[1], "demo-") {
 		return fmt.Errorf("unknown command; use version, doctor, init-env, wait, setup-goodmem or migrate-goodmem-security")
 	}
 	cfg, err := app.LoadConfig()
@@ -90,9 +91,44 @@ func run() error {
 		defer server.Close()
 		return server.MigrateGoodMemSecurity(context.Background(), os.Getenv("GOODMEM_PROVISIONING_FILE"))
 	}
+	if err := server.InitializePublicDemo(context.Background()); err != nil {
+		server.Close()
+		return err
+	}
 	if err := server.InitializeGoodMemSecurity(context.Background()); err != nil {
 		server.Close()
 		return err
+	}
+	if len(os.Args) > 1 && strings.HasPrefix(os.Args[1], "demo-") {
+		defer server.Close()
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
+		defer cancel()
+		switch os.Args[1] {
+		case "demo-invite":
+			if len(os.Args) != 4 {
+				return fmt.Errorf("usage: casecite demo-invite GUEST DURATION (example: safwan 168h)")
+			}
+			ttl, err := time.ParseDuration(os.Args[3])
+			if err != nil {
+				return err
+			}
+			link, err := server.DemoInvite(ctx, os.Args[2], ttl)
+			if err != nil {
+				return err
+			}
+			fmt.Println(link)
+			return nil
+		case "demo-revoke":
+			if len(os.Args) != 3 {
+				return fmt.Errorf("usage: casecite demo-revoke GUEST")
+			}
+			return server.DemoRevoke(ctx, os.Args[2])
+		case "demo-seed":
+			server.StartWorkers()
+			return server.DemoSeed(ctx, os.Args[2:])
+		default:
+			return fmt.Errorf("unknown demo command; use demo-invite, demo-revoke or demo-seed")
+		}
 	}
 	server.StartWorkers()
 	defer server.Close()

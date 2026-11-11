@@ -9,10 +9,19 @@ func (s *Server) routes() {
 		return M{"csrf_token": t}, nil
 	})
 	s.api("GET /api/v1/config", true, func(q request) (any, error) {
+		if s.cfg.PublicDemo {
+			return M{"public_demo": true, "setup_required": false, "self_registration": false, "edition": "CaseCite GoodMem"}, nil
+		}
 		var count int
 		err := s.db.QueryRowContext(q.r.Context(), `SELECT count(*) FROM cc_users WHERE id<>$1 OR email<>$2 OR role<>'viewer' OR password_hash<>''`, demoUserID, demoEmail).Scan(&count)
 		return M{"setup_required": count == 0, "edition": "CaseCite GoodMem", "self_registration": false}, err
 	})
+	// Register an explicit, small API surface. Normal auth, administration,
+	// imports and document mutations must never be reachable in a public demo.
+	if s.cfg.PublicDemo {
+		s.publicDemoRoutes()
+		return
+	}
 	s.api("POST /api/v1/auth/register", true, s.register)
 	s.api("POST /api/v1/auth/login", true, s.login)
 	s.api("POST /api/v1/auth/demo/login", true, s.demoLogin)

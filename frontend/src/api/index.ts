@@ -20,5 +20,7 @@ import './contracts';
 import './integrations';
 import './users';
 import './branding';
+import './publicDemo';
 
 export { api, API_BASE_URL };
+export { DemoSessionExpired } from './client';

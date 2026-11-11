@@ -1,8 +1,9 @@
 import { expect, type APIRequestContext, type Page, type TestInfo } from '@playwright/test';
+import { openWorkspace } from './workspace-navigation';
 
 export async function exerciseChat(page: Page, request: APIRequestContext, headers: Record<string, string>, testInfo: TestInfo) {
   const main = page.locator('main[data-layout="main-content"]');
-  await page.goto('/research');
+  await openWorkspace(page, '/research');
   await main.getByLabel('Search matters and files').fill('scanned-notice');
   const expand = main.getByRole('button', { name: /Show files in/ });
   for (let count = 0; count < 5 && await expand.count(); count++) await expand.first().click();

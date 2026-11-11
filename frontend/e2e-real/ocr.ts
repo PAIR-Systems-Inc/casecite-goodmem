@@ -1,9 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import { expect, type APIRequestContext, type Page, type TestInfo } from '@playwright/test';
+import { openWorkspace } from './workspace-navigation';
 
 export async function exerciseGoodMemOCR(page: Page, request: APIRequestContext, headers: Record<string, string>, testInfo: TestInfo) {
   const main = page.locator('main[data-layout="main-content"]');
-  await page.goto('/documents');
+  await openWorkspace(page, '/documents');
   const pdf = await readFile('../server/internal/app/testdata/scanned_notice.pdf');
   const upload = page.waitForResponse((r) => r.request().method() === 'POST' && new URL(r.url()).pathname === '/api/v1/documents');
   await page.getByLabel('Upload documents').setInputFiles({ name: 'scanned-notice.pdf', mimeType: 'application/pdf', buffer: pdf });
@@ -41,7 +42,7 @@ export async function exerciseGoodMemOCR(page: Page, request: APIRequestContext,
   expect(result.result.citations[0]).toMatchObject({ document_id: document.id, source: 'scanned-notice.pdf' });
   expect(result.result.citations[0].passage).toContain('Notice is 30 days.');
 
-  await page.goto('/review-tables');
+  await openWorkspace(page, '/review-tables');
   await main.getByRole('button', { name: /Blank.*define your own fields/ }).click();
   await main.getByLabel('Review name', { exact: true }).fill('Scanned agreement review');
   await main.getByRole('button', { name: 'Add field', exact: true }).click();

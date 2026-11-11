@@ -1,5 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { expect, type APIRequestContext, type Page, type TestInfo } from '@playwright/test';
+import { openWorkspace } from './workspace-navigation';
 
 export async function exerciseDocumentFormats(page: Page, request: APIRequestContext, headers: Record<string, string>, testInfo: TestInfo) {
   const corpus = JSON.parse(await readFile('../server/internal/app/testdata/text_extraction.json', 'utf8')) as {
@@ -68,7 +69,7 @@ export async function exerciseDocumentFormats(page: Page, request: APIRequestCon
       return url;
     };
   });
-  await page.goto('/contracts');
+  await openWorkspace(page, '/contracts');
   const conversion = page.waitForResponse(r => r.request().method() === 'POST' && new URL(r.url()).pathname === '/api/v1/legal-docs/convert-to-pdf');
   const upload = page.waitForResponse(r => r.request().method() === 'POST' && new URL(r.url()).pathname === '/api/v1/documents');
   await page.getByLabel('Upload a contract', { exact: true }).setInputFiles({ name: source.name, mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', buffer: Buffer.from(source.content, 'base64') });

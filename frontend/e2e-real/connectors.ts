@@ -1,5 +1,6 @@
 import { expect, type APIRequestContext, type Page, type TestInfo } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
+import { openWorkspace } from './workspace-navigation';
 
 export async function exerciseConnectors(page: Page, request: APIRequestContext, headers: Record<string, string>, testInfo: TestInfo) {
   // Playwright only routes the first URL in a redirect chain. Fetch the real,
@@ -20,7 +21,7 @@ export async function exerciseConnectors(page: Page, request: APIRequestContext,
     const link = callback.href.replaceAll('&', '&amp;').replaceAll('"', '&quot;');
     await route.fulfill({ status: 200, contentType: 'text/html', body: `<a href="${link}">Authorize fixture Clio</a>` });
   });
-  await page.goto('/documents');
+  await openWorkspace(page, '/documents');
   const main = page.locator('main[data-layout="main-content"]');
   await page.locator('header[data-layout="header"]').getByRole('button', { name: /Settings/ }).click();
   const settings = page.getByRole('dialog', { name: 'Settings', exact: true });

@@ -80,7 +80,10 @@ func New(cfg Config, db *sql.DB, static fs.FS, log *slog.Logger) *Server {
 	})
 	s.mux.HandleFunc("GET /health", s.health)
 	s.mux.HandleFunc("GET /ready", s.health)
-	s.api("GET /metrics", true, s.metrics)
+	s.mux.HandleFunc("GET /healthz", s.health)
+	if !cfg.PublicDemo {
+		s.api("GET /metrics", true, s.metrics)
+	}
 	s.mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 404, M{"detail": "This endpoint is not available in the Go edition."})
 	})
@@ -112,6 +115,9 @@ func New(cfg Config, db *sql.DB, static fs.FS, log *slog.Logger) *Server {
 		if err != nil {
 			http.Error(w, "Frontend not built", 503)
 			return
+		}
+		if cfg.PublicDemo && name == "index.html" {
+			b = []byte(strings.Replace(string(b), "</head>", `<meta name="casecite-public-demo" content="true"></head>`, 1))
 		}
 		if strings.HasPrefix(name, "assets/") {
 			w.Header().Set("Cache-Control", "public,max-age=31536000,immutable")

@@ -185,8 +185,9 @@ export const api = {
       // A 401 from a credential endpoint means the credentials were wrong —
       // there is no session to refresh, and the server's message ("Invalid
       // email or password", "Invalid code") is the one the user needs.
-      if (isCredentialEndpoint(endpoint)) {
+      if (isCredentialEndpoint(endpoint) || endpoint.startsWith('/demo/')) {
         const error = await response.json().catch(() => ({}));
+        if (endpoint.startsWith('/demo/')) throw new DemoSessionExpired(formatErrorDetail(error.detail, 'Invitation expired'));
         throw new Error(formatErrorDetail(error.detail, 'Invalid credentials'));
       }
       // Attempt one token refresh before giving up
@@ -298,3 +299,5 @@ export const api = {
     return response;
   },
 } as ApiClient;
+
+export class DemoSessionExpired extends Error {}

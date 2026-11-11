@@ -34,7 +34,7 @@ chmod 600 "$test_security_dir/"*.json
   TEST_GOODMEM_BASE_URL="http://localhost:${TEST_GOODMEM_PORT:-29080}" \
   TEST_GOODMEM_SECURITY_CONFIG="$test_security_dir/runtime.json" \
   TEST_GOODMEM_PROVISIONING_FILE="$test_security_dir/provisioning.json" \
-  "${GO:-go}" test -race ./internal/app -run '^TestGoodMemSecurityLive$' -count=1
+  "${GO:-go}" test -race ./internal/app -run '^Test(GoodMemSecurityLive|PublicDemoGoodMemLive)$' -count=1
 )
 "${compose[@]}" up -d app
 ready=false

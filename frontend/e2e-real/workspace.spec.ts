@@ -8,11 +8,15 @@ import { exerciseConnectors } from './connectors';
 import { exerciseAdministration } from './administration';
 import { exerciseDocumentFormats } from './document-formats';
 import { exerciseWordAddin } from './word-addin';
+import { paceAPIRequests } from './request-pacing';
+import { openWorkspace, reloadWorkspace } from './workspace-navigation';
 
 // Real Go API and GoodMem; the external connector consent page is simulated.
 // scripts/integration.sh provisions disposable databases and a test provider.
-test('original UI manages matters, GoodMem documents and cited tabular review', async ({ page, request }, testInfo) => {
-  test.setTimeout(300_000);
+test('original UI manages matters, GoodMem documents and cited tabular review', async ({ page, context, request: unpacedRequest, baseURL }, testInfo) => {
+  // This exercises the whole workspace at the production API request limit.
+  test.setTimeout(600_000);
+  const request = await paceAPIRequests(context, unpacedRequest, baseURL!);
   const email = 'browser-owner@example.test';
   const password = 'Cedar!Trail7826';
   const csrf = await request.get('/api/v1/csrf-token');
@@ -25,7 +29,7 @@ test('original UI manages matters, GoodMem documents and cited tabular review', 
   const access = (await registration.json()).access_token as string;
   const headers = { Authorization: `Bearer ${access}` };
 
-  await page.goto('/matters');
+  await openWorkspace(page, '/matters');
   const header = page.locator('header[data-layout="header"]');
   await header.getByRole('button', { name: /Sign In/i }).click();
   const modal = page.locator('[class*="modalContainer"]');
@@ -46,7 +50,7 @@ test('original UI manages matters, GoodMem documents and cited tabular review', 
   await main.getByRole('tab', { name: 'Members' }).click();
   await expect(main.getByRole('listitem').filter({ hasText: email })).toContainText('Browser Owner');
 
-  await page.goto('/documents');
+  await openWorkspace(page, '/documents');
   await expect(main.getByRole('heading', { name: 'Knowledge Base' })).toBeVisible();
   const uploadResponse = page.waitForResponse((r) => r.request().method() === 'POST' && new URL(r.url()).pathname === '/api/v1/documents');
   const source = 'Acme Corporation ("Provider") and Bravo LLC ("Customer").\n\nCustomer shall pay all invoices within thirty days.\n\nNotice is 30 days.';
@@ -68,11 +72,11 @@ test('original UI manages matters, GoodMem documents and cited tabular review', 
   expect(content.status()).toBe(200);
   expect((await content.json()).text).toContain('Customer shall pay all invoices');
 
-  await page.reload();
+  await reloadWorkspace(page);
   await expect(header.getByText('browser-owner', { exact: true })).toBeVisible();
   await expect(main.getByText('browser-agreement.txt', { exact: true })).toBeVisible();
 
-  await page.goto('/review-tables');
+  await openWorkspace(page, '/review-tables');
   await expect(main.getByRole('heading', { name: 'Tabular Review' })).toBeVisible();
   await main.getByRole('button', { name: /Blank.*define your own fields/ }).click();
   await main.getByLabel('Review name', { exact: true }).fill('Browser diligence');
@@ -157,7 +161,7 @@ test('original UI manages matters, GoodMem documents and cited tabular review', 
   await page.screenshot({ path: testInfo.outputPath('review-source-mobile.png'), fullPage: true, animations: 'disabled' });
   await page.setViewportSize({ width: 1280, height: 720 });
 
-  await page.goto('/workflows');
+  await openWorkspace(page, '/workflows');
   await expect(main.getByRole('heading', { name: 'Workflows', exact: true })).toBeVisible();
   await main.getByRole('button', { name: 'New workflow', exact: true }).click();
   await main.getByLabel('Workflow name', { exact: true }).fill('Browser approval workflow');
@@ -226,7 +230,7 @@ test('original UI manages matters, GoodMem documents and cited tabular review', 
   expect(workflowRuns.runs[0]).toMatchObject({ status: 'completed', workflow_version: 2, completed_steps: 3 });
   await page.setViewportSize({ width: 1280, height: 720 });
 
-  await page.goto('/research');
+  await openWorkspace(page, '/research');
   await main.getByRole('button', { name: 'Deep research', exact: true }).click();
   const research = main.getByRole('region', { name: 'Deep research', exact: true });
   await research.getByLabel('Research question', { exact: true }).fill('What notice does the agreement require?');

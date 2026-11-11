@@ -1,0 +1,25 @@
+.page { max-width: 1120px; margin: auto; padding: 40px 24px; color: #193344; }
+.page h1 { font-size: 2.8rem; margin: 8px 0; letter-spacing: -0.04em; }
+.page h2 { font-size: 1.25rem; margin-bottom: 16px; }
+.page p { line-height: 1.6; margin: 12px 0; }
+.eyebrow { color: #1d6475; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 28px 0 20px; }
+.page button { border: 1px solid #aac3cc; padding: 10px 14px; border-radius: 8px; background: #fff; color: #193344; cursor: pointer; }
+.page button[aria-pressed="true"], .page button[type="submit"] { background: #176477; color: #fff; border-color: #176477; }
+.page button:disabled { opacity: 0.5; cursor: default; }
+.page button:focus-visible, .page textarea:focus-visible, .page input:focus-visible { outline: 3px solid #2592aa; outline-offset: 3px; }
+.layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; align-items: start; }
+.panel { border: 1px solid #d6e2e7; border-radius: 14px; padding: 24px; background: #fff; min-width: 0; }
+.panel ul { list-style: none; padding: 0; margin: 20px 0; }
+.panel li { padding: 12px 0; border-bottom: 1px solid #e4edf0; overflow-wrap: anywhere; }
+.panel li span { display: block; color: #4c6777; font-size: 0.85rem; margin-top: 4px; }
+.page label { display: block; font-weight: 600; }
+.upload { margin-top: 20px; }
+.upload input { display: block; max-width: 100%; margin-top: 10px; }
+.page textarea { display: block; width: 100%; box-sizing: border-box; border: 1px solid #aac3cc; border-radius: 8px; padding: 12px; margin: 8px 0 12px; resize: vertical; font: inherit; }
+.answer { border-top: 1px solid #d6e2e7; padding: 20px 0; overflow-wrap: anywhere; }
+.answer p, .answer blockquote { white-space: pre-wrap; }
+.answer blockquote { margin: 12px 0; padding-left: 16px; border-left: 3px solid #aac3cc; line-height: 1.6; }
+.answer summary { cursor: pointer; padding: 8px 0; }
+.error { background: #fff1ee; color: #8a2b19; border-radius: 8px; padding: 12px; }
+@media (max-width: 720px) { .layout { grid-template-columns: 1fr; } .page { padding: 24px 16px; } .panel { padding: 18px; } }

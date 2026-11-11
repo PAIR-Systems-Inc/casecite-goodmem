@@ -55,7 +55,7 @@ func (s *Server) dependencyHealth(ctx context.Context) (bool, bool) {
 func (s *Server) health(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 	database, goodmem := s.dependencyHealth(r.Context())
-	if r.URL.Path == "/ready" {
+	if r.URL.Path == "/ready" || r.URL.Path == "/healthz" {
 		issues := []string{}
 		if !database {
 			issues = append(issues, "Database connection failed")

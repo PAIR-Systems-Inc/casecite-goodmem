@@ -11,6 +11,7 @@ import (
 )
 
 type Config struct {
+	PublicDemo                                                         bool
 	GoogleSSOClientID, GoogleDefaultRole                               string
 	GoogleSSODomains                                                   []string
 	GoogleAutoProvision                                                bool
@@ -51,7 +52,8 @@ type Config struct {
 
 func LoadConfig() (Config, error) {
 	c := Config{
-		Address: env("LISTEN_ADDR", ":8000"), DatabaseURL: os.Getenv("DATABASE_URL"),
+		PublicDemo: env("PUBLIC_DEMO", "false") == "true",
+		Address:    env("LISTEN_ADDR", ":8000"), DatabaseURL: os.Getenv("DATABASE_URL"),
 		Secret: os.Getenv("SECRET_KEY"), BootstrapToken: os.Getenv("REGISTRATION_BOOTSTRAP_TOKEN"),
 		PublicURL:  strings.TrimRight(env("PUBLIC_URL", "http://localhost:8000"), "/"),
 		GoodMemURL: strings.TrimRight(env("GOODMEM_BASE_URL", "http://goodmem:8080"), "/"),

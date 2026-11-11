@@ -1,5 +1,10 @@
 // ==================== Branding Types ====================
 
+export interface DemoDocument { id: string; filename: string; status: string }
+export interface DemoSession { private: true; uploads_used: number; upload_limit: number; expires_at: string }
+export interface DemoAnswer { answer: string; sources: { number: number; filename: string; text: string }[] }
+export type DemoScope = 'public' | 'private';
+
 export interface BrandingConfig {
   firm_name: string;
   logo_url: string | null;
@@ -1653,6 +1658,12 @@ export interface ConversationExportPayload {
 }
 
 export interface ApiClient {
+  demoSession(): Promise<DemoSession>;
+  demoRedeem(token: string): Promise<void>;
+  demoLogout(): Promise<void>;
+  demoDocuments(scope: DemoScope): Promise<DemoDocument[]>;
+  demoChat(scope: DemoScope, question: string): Promise<DemoAnswer>;
+  demoUpload(file: File): Promise<DemoDocument>;
   token: string | null;
 
   // Token management (the refresh token is an httpOnly cookie — never in JS)

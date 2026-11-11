@@ -44,6 +44,9 @@ func (s *Server) upload(q request) (any, error) {
 		return nil, err
 	}
 	matter := q.r.FormValue("matter_id")
+	if s.cfg.PublicDemo && matter != "" {
+		return nil, bad("Demo uploads cannot be shared with a matter")
+	}
 	if err = s.checkMatter(q.r.Context(), q.user.ID, matter, false); err != nil {
 		return nil, err
 	}
